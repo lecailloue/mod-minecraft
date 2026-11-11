@@ -12,6 +12,9 @@ Un volcan rare, une lave qui pâlit, et au-delà : la Hautemarche.
 Peuples, anneaux de pouvoir, mines naines et seigneur de cendre.
 '''
 
+[[mixins]]
+config="ringsofash.mixins.json"
+
 [[dependencies.ringsofash]]
 modId="neoforge"
 type="required"

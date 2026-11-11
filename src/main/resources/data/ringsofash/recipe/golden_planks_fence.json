@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","category":"misc","pattern":["#s#","#s#"],"key":{"#":{"item":"ringsofash:golden_planks"},"s":{"item":"minecraft:stick"}},"result":{"id":"ringsofash:golden_planks_fence","count":3}}
