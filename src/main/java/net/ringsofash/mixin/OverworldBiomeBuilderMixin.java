@@ -18,6 +18,11 @@ import java.util.function.Consumer;
 public abstract class OverworldBiomeBuilderMixin {
     @ModifyVariable(method = "addBiomes", at = @At("HEAD"), argsOnly = true)
     private Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> roa$splitMushroom(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> key) {
+        // Le jeu construit aussi une copie "vanilla pure" de ses registres (validation, generation de donnees) :
+        // notre biome n'y existe pas, il ne faut donc pas l'y injecter.
+        boolean vanillaBootstrap = StackWalker.getInstance().walk(st -> st.anyMatch(f ->
+                f.getClassName().endsWith("RegistrySetBuilder") || f.getClassName().endsWith("VanillaRegistries")));
+        if (vanillaBootstrap) return key;
         return pair -> {
             if (pair.getSecond() == Biomes.MUSHROOM_FIELDS) {
                 Climate.ParameterPoint p = pair.getFirst();
