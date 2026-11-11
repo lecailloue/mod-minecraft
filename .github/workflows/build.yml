@@ -32,6 +32,7 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p run && echo "eula=true" > run/eula.txt
+          printf "max-tick-time=-1\nlevel-seed=20261111\nonline-mode=false\nspawn-protection=0\n" > run/server.properties
           timeout 25m gradle runServer -Pselftest --stacktrace 2>&1 | tee selftest.log
           grep -q "RESULTAT: OK" selftest.log
       - name: Publier les resultats

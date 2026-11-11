@@ -10,3 +10,5 @@ done
 echo "run: $R"
 rm -rf /tmp/ci && git fetch -q origin ci-results 2>/dev/null && git worktree prune && git worktree add -q -f /tmp/ci FETCH_HEAD 2>/dev/null
 cat /tmp/ci/STATUS 2>/dev/null; echo "commit: $(cat /tmp/ci/COMMIT 2>/dev/null) (head $SHA)"; ls /tmp/ci 2>/dev/null
+
+if [ -f /tmp/ci/build.log ]; then grep -E "error:|FAILED" /tmp/ci/build.log | head -${1:-60}; fi

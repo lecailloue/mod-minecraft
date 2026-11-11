@@ -26,9 +26,9 @@ public abstract class OverworldBiomeBuilderMixin {
         return pair -> {
             if (pair.getSecond() == Biomes.MUSHROOM_FIELDS) {
                 Climate.ParameterPoint p = pair.getFirst();
-                key.accept(Pair.of(new Climate.ParameterPoint(Climate.Parameter.span(-1.0F, 0.0F), p.humidity(), p.continentalness(),
+                key.accept(Pair.of(new Climate.ParameterPoint(Climate.Parameter.span(-1.0F, 0.22F), p.humidity(), p.continentalness(),
                         p.erosion(), p.depth(), p.weirdness(), p.offset()), Biomes.MUSHROOM_FIELDS));
-                key.accept(Pair.of(new Climate.ParameterPoint(Climate.Parameter.span(0.0F, 1.0F), p.humidity(), p.continentalness(),
+                key.accept(Pair.of(new Climate.ParameterPoint(Climate.Parameter.span(0.22F, 1.0F), p.humidity(), p.continentalness(),
                         p.erosion(), p.depth(), p.weirdness(), p.offset()), ModWorldgen.VOLCANO_BIOME));
             } else {
                 key.accept(pair);

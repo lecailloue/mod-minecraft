@@ -21,6 +21,7 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
     public long overworldPos, landsPos;
     public int quest;
     public boolean rewarded;
+    public int grow;
     public final Set<String> bestiary = new HashSet<>();
 
     public int rep(People p) { return rep[p.ordinal()]; }

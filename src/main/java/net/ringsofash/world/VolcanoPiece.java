@@ -79,7 +79,7 @@ public class VolcanoPiece extends StructurePiece {
                 double wob = 1.0 + 0.16 * n.fbm(Math.cos(ang) * 1.7 + 40, Math.sin(ang) * 1.7 + 40);
                 double R = radius * wob;
                 if (d > R) continue;
-                int ground = level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, x, z);
+                int ground = level.getHeight(level instanceof net.minecraft.server.level.WorldGenRegion ? Heightmap.Types.OCEAN_FLOOR_WG : Heightmap.Types.OCEAN_FLOOR, x, z);
                 double detail = n.fbm(x * 0.06, z * 0.06);
                 double fine = n.fbm(x * 0.21 + 300, z * 0.21 + 300);
                 int topY;

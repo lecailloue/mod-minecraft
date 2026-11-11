@@ -3,8 +3,10 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import genlib as G
 G.clean()
-import content, worldgen
+import content, worldgen, gear, mobs
 content.build()
+gear.build()
+mobs.build()
 worldgen.build()
 try:
     import models

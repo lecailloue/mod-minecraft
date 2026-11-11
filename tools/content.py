@@ -15,7 +15,7 @@ def build():
 def blocks():
     # --- volcan
     btex('ash_block', stone('#625f61', 1, var=0.5, cell=2, speck=0.9))
-    block('ash_block', 'Bloc de cendre', copy='SAND', tool='shovel', tags=['dirt'])
+    block('ash_block', 'Bloc de cendre', copy='SAND', extra='.mapColor(MapColor.COLOR_GRAY)', tool='shovel', tags=['dirt'])
     vr = stone('#2f2b2d', 2, var=0.9, cell=4, speck=0.5)
     btex('volcanic_rock', ore(vr, ['#4a2a22', '#3a3436'], 5, 5))
     block('volcanic_rock', 'Roche volcanique', copy='BLACKSTONE', tool='pickaxe')

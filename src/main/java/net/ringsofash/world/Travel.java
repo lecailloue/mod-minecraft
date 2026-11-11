@@ -67,18 +67,22 @@ public final class Travel {
 
     /** Transforme la surface du lac de lave en lave pale. Renvoie le nombre de blocs changes. */
     public static int awaken(ServerLevel level, BlockPos start) {
+        return transformLake(level, start, Reg.PALE_LAVA.get().defaultBlockState(), null);
+    }
+
+    /** Remplace la surface d'un lac de lave (2 couches) par un autre bloc. */
+    public static int transformLake(ServerLevel level, BlockPos start, BlockState pale, BlockState alt) {
         // remonte jusqu'a la surface du lac
         BlockPos top = start;
         while (level.getFluidState(top.above()).is(FluidTags.LAVA) && top.getY() < level.getMaxBuildHeight()) top = top.above();
         Set<BlockPos> seen = new HashSet<>();
         ArrayDeque<BlockPos> queue = new ArrayDeque<>();
         queue.add(top); seen.add(top);
-        BlockState pale = Reg.PALE_LAVA.get().defaultBlockState();
         int count = 0;
         while (!queue.isEmpty() && count < 3000) {
             BlockPos p = queue.poll();
             if (!level.getFluidState(p).is(FluidTags.LAVA)) continue;
-            level.setBlock(p, pale, 2);
+            level.setBlock(p, alt != null && ((p.getX() * 31 + p.getZ() * 17) & 7) == 0 ? alt : pale, 2);
             count++;
             BlockPos below = p.below();
             if (level.getFluidState(below).is(FluidTags.LAVA) && top.getY() - below.getY() < 2) level.setBlock(below, pale, 2);
@@ -120,7 +124,6 @@ public final class Travel {
         teleport(p, lands, dest, !first && lore.hasLandsPos);
         if (first) {
             lore.arrived = true;
-            give(p, new ItemStack(Reg.HALFLING_RING.get()));
             net.ringsofash.GameEvents.onFirstArrival(p);
             p.displayClientMessage(Component.literal("Vous foulez la Hautemarche. Un anneau tiède repose dans votre main...").withStyle(ChatFormatting.GREEN), false);
         }

@@ -24,7 +24,10 @@ public class RingsOfAsh {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.ringsofash"))
             .icon(() -> new ItemStack(Reg.HALFLING_RING.get()))
-            .displayItems((params, out) -> Reg.ITEMS.getEntries().forEach(e -> out.accept(e.get())))
+            .displayItems((params, out) -> {
+                out.accept(net.ringsofash.data.Guide.create(null));
+                Reg.ITEMS.getEntries().forEach(e -> out.accept(e.get()));
+            })
             .build());
 
     public RingsOfAsh(IEventBus modBus) {
@@ -33,7 +36,10 @@ public class RingsOfAsh {
         TABS.register(modBus);
         ModWorldgen.register(modBus);
         ModData.ATTACHMENTS.register(modBus);
+        net.ringsofash.entity.ModEntities.register(modBus);
+        net.ringsofash.item.ModGear.ARMOR_MATERIALS.register(modBus);
         GameEvents.init(modBus);
+        if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) net.ringsofash.client.ClientSetup.init(modBus);
     }
 
     public static ResourceLocation id(String path) {

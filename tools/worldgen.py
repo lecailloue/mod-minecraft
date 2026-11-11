@@ -249,6 +249,7 @@ def biome(id, fr, temp, down, sky, fog, water='#3f76e4', wfog='#050533', grass=N
                   'features': steps}
     LANG[f'biome.{MOD}.{id}'] = fr
 
+ORCS = [('orc', 40, 2, 4), ('warg', 18, 2, 3), ('pale_rider', 3, 1, 2), ('goblin', 30, 3, 5), ('cave_troll', 6, 1, 1), ('cave_thief', 3, 1, 1)]
 FARM = [('minecraft:sheep', 12, 4, 4), ('minecraft:pig', 10, 4, 4), ('minecraft:chicken', 10, 4, 4), ('minecraft:cow', 8, 4, 4)]
 BATS = [('minecraft:bat', 10, 8, 8)]
 FISH = [('minecraft:cod', 15, 3, 6), ('minecraft:salmon', 10, 1, 5)]
@@ -265,47 +266,47 @@ def biomes():
     biome('vertes_collines', 'Vertes-Collines', 0.7, 0.6, '#79b4ff', '#c4dcff', grass='#7cc24a', foliage='#6fb53c',
           veg=('minecraft:trees_plains', 'sunstar_patch_rare', 'pipeweed_patch', 'minecraft:flower_plains', 'minecraft:patch_tall_grass_2',
                'minecraft:patch_grass_plain', 'minecraft:patch_sugar_cane', 'minecraft:patch_pumpkin', 'minecraft:patch_berry_common'),
-          spawns={'creature': FARM + [('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS})
+          spawns={'creature': FARM + [('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS, 'monster': [('orc', 20, 1, 3), ('warg', 8, 1, 2), ('pale_rider', 2, 1, 1), ('goblin', 30, 3, 5), ('cave_thief', 3, 1, 1)]})
     biome('plaines_du_vent', 'Plaines du Vent', 0.6, 0.35, '#86b8f5', '#d2e2f2', grass='#b3b45a', foliage='#9aa64a',
           veg=('boulders', 'trees_golden_sparse', 'minecraft:flower_default', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
-          spawns={'creature': [('minecraft:horse', 10, 2, 6), ('minecraft:cow', 8, 4, 4), ('minecraft:sheep', 6, 4, 4)], 'ambient': BATS})
+          spawns={'creature': [('minecraft:horse', 10, 2, 6), ('minecraft:cow', 8, 4, 4), ('minecraft:sheep', 6, 4, 4), ('stag', 2, 1, 2)], 'ambient': BATS, 'monster': ORCS + [('warg', 20, 2, 4)]})
     biome('foret_doree', 'Forêt Dorée', 0.7, 0.8, '#8fc0ff', '#f1e6b8', water='#4f9ad6', grass='#a3c955', foliage='#d8b83a',
           veg=('trees_golden_big', 'trees_golden_small', 'sunstar_patch', 'moonbell_patch', 'minecraft:flower_default', 'minecraft:patch_grass_forest'),
-          spawns={'creature': [('minecraft:rabbit', 6, 2, 3), ('minecraft:fox', 3, 1, 2)], 'ambient': BATS})
+          spawns={'creature': [('minecraft:rabbit', 6, 2, 3), ('minecraft:fox', 3, 1, 2), ('stag', 6, 1, 3)], 'ambient': BATS, 'monster': [('orc', 10, 1, 2), ('pale_rider', 2, 1, 1), ('goblin', 20, 2, 4)]})
     biome('vieille_foret', 'Vieille-Forêt', 0.6, 0.9, '#6f9ed8', '#7f9a78', water='#3d6a55', wfog='#0c1f16', grass='#4f8a3a', foliage='#3d7a2e',
           veg=('boulders', 'trees_ancient_big', 'trees_ancient_small', 'moonbell_patch', 'minecraft:patch_grass_forest', 'minecraft:patch_large_fern',
                'minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal'),
-          spawns={'creature': [('minecraft:fox', 4, 1, 2), ('minecraft:rabbit', 4, 2, 3)], 'ambient': BATS})
+          spawns={'creature': [('minecraft:fox', 4, 1, 2), ('minecraft:rabbit', 4, 2, 3), ('treeman', 5, 1, 1), ('stag', 4, 1, 2)], 'ambient': BATS, 'monster': ORCS + [('giant_spider', 6, 1, 1)]})
     biome('bois_noir', 'Bois-Noir', 0.5, 0.8, '#4a5a70', '#2a3238', water='#2e4a48', wfog='#081210', grass='#3f5c32', foliage='#34502a',
           veg=('minecraft:dark_forest_vegetation', 'cobweb_patch', 'minecraft:patch_grass_forest', 'minecraft:patch_large_fern',
                'minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal'),
-          spawns={'ambient': BATS})
+          spawns={'ambient': BATS + [('crow', 8, 1, 3)], 'monster': [('giant_spider', 50, 1, 2), ('orc', 15, 1, 3), ('goblin', 20, 2, 4), ('pale_rider', 2, 1, 1)]})
     biome('landes_des_tertres', 'Landes des Tertres', 0.35, 0.5, '#8a96a6', '#9aa2a8', water='#4a6a7a', grass='#7d8a5e', foliage='#6f7c50',
           veg=('boulders', 'standing_stones', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain', 'minecraft:patch_dead_bush_2'),
-          spawns={'creature': [('minecraft:sheep', 8, 2, 4), ('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS})
+          spawns={'creature': [('minecraft:sheep', 8, 2, 4), ('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS + [('crow', 8, 1, 3)], 'monster': [('wight', 45, 1, 2), ('warg', 15, 2, 3), ('stone_troll', 12, 1, 1), ('pale_rider', 6, 1, 2), ('goblin', 20, 2, 4)]})
     biome('marais_des_morts', 'Marais des Morts', 0.6, 0.9, '#6c7a70', '#55604e', water='#4c5a3a', wfog='#1a2212', grass='#5c6a3c', foliage='#55632f',
           veg=('dead_trees_marsh', 'minecraft:trees_swamp', 'minecraft:patch_grass_plain', 'minecraft:patch_dead_bush_2', 'minecraft:patch_waterlily',
                'minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal', 'minecraft:patch_sugar_cane', 'minecraft:seagrass_swamp'),
-          spawns={'creature': [('minecraft:frog', 10, 2, 5)], 'ambient': BATS})
+          spawns={'creature': [('minecraft:frog', 10, 2, 5)], 'ambient': BATS + [('crow', 6, 1, 2)], 'monster': [('wight', 30, 1, 2), ('orc', 20, 2, 3), ('lurker', 12, 1, 1), ('pale_rider', 3, 1, 1), ('goblin', 20, 2, 4)]})
     biome('monts_de_fer', 'Monts de Fer', 0.3, 0.4, '#7fa6e0', '#c0d0e0', grass='#6f9a5a', foliage='#5f8a4c', lunar='ore_lunargent',
           veg=('boulders', 'minecraft:trees_taiga', 'minecraft:patch_grass_plain', 'minecraft:patch_large_fern', 'minecraft:patch_berry_common'),
-          spawns={'creature': [('minecraft:goat', 10, 1, 3), ('minecraft:sheep', 4, 2, 3)], 'ambient': BATS},
+          spawns={'creature': [('minecraft:goat', 10, 1, 3), ('minecraft:sheep', 4, 2, 3), ('eagle', 3, 1, 1)], 'ambient': BATS, 'monster': [('orc', 25, 2, 4), ('goblin', 60, 3, 6), ('cave_troll', 14, 1, 1), ('stone_troll', 12, 1, 1), ('warg', 10, 2, 3), ('cave_thief', 6, 1, 1), ('pale_rider', 2, 1, 1)]},
           extra_steps={6: ORES + [R('ore_lunargent'), R('ore_lunargent_rich')] + ORES_TAIL})
     biome('pics_blancs', 'Pics Blancs', -0.5, 0.6, '#9cc4ff', '#e6f0ff', grass='#8ab08a', foliage='#7aa07a', lunar='ore_lunargent_scarce',
           veg=('boulders', 'minecraft:trees_windswept_hills', 'minecraft:patch_grass_plain'),
-          spawns={'creature': [('minecraft:goat', 10, 1, 3)], 'ambient': BATS})
+          spawns={'creature': [('minecraft:goat', 10, 1, 3), ('eagle', 8, 1, 2)], 'ambient': BATS, 'monster': [('stone_troll', 20, 1, 1), ('warg', 20, 2, 3), ('goblin', 40, 3, 5), ('cave_troll', 8, 1, 1)]})
     biome('terres_de_cendre', 'Terres de Cendre', 2.0, 0.0, '#5a2a22', '#3a201c', water='#4a3a36', wfog='#1c100c', grass='#57503f', foliage='#57503f',
           veg=('ash_spires', 'dead_trees', 'ashroot_patch'), lava_surface=True, precip=False, particle=('minecraft:ash', 0.05),
-          spawns={'ambient': BATS})
+          spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 60, 3, 5), ('war_orc', 35, 2, 3), ('warg', 25, 2, 4), ('cave_troll', 10, 1, 1), ('pale_rider', 5, 1, 2), ('goblin', 20, 3, 5)]})
     biome('terres_sauvages', 'Terres Sauvages', 1.2, 0.2, '#86b0e8', '#d8d2b0', grass='#b5a74f', foliage='#9a9a42', precip=False,
           veg=('boulders', 'minecraft:trees_savanna', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_savanna', 'minecraft:patch_dead_bush_2'),
-          spawns={'creature': [('minecraft:horse', 4, 2, 4), ('minecraft:donkey', 2, 1, 3), ('minecraft:cow', 6, 2, 4)], 'ambient': BATS})
+          spawns={'creature': [('minecraft:horse', 4, 2, 4), ('minecraft:donkey', 2, 1, 3), ('minecraft:cow', 6, 2, 4), ('mammoth', 5, 1, 2)], 'ambient': BATS, 'monster': [('wild_man', 30, 2, 4), ('warg', 25, 2, 4), ('orc', 20, 2, 3), ('pale_rider', 2, 1, 1), ('goblin', 20, 2, 4)]})
     biome('mer_grise', 'Mer Grise', 0.5, 0.5, '#7fa6d8', '#b8c8d8', water='#3a6a8a', wfog='#061a2a',
           veg=('minecraft:seagrass_normal', 'minecraft:kelp_cold'),
-          spawns={'water_ambient': FISH, 'water_creature': SQUID})
+          spawns={'water_ambient': FISH, 'water_creature': SQUID, 'monster': [('lurker', 4, 1, 1)]})
     biome('rivage', 'Rivage', 0.7, 0.5, '#82b4f0', '#c8dcf0', veg=('minecraft:patch_sugar_cane',), spawns={'creature': [('minecraft:turtle', 3, 1, 2)]})
     biome('riviere', 'Rivière', 0.6, 0.6, '#82b4f0', '#c8dcf0', veg=('minecraft:patch_sugar_cane', 'minecraft:seagrass_river'),
-          spawns={'water_ambient': [('minecraft:salmon', 6, 1, 5)], 'water_creature': SQUID})
+          spawns={'water_ambient': [('minecraft:salmon', 6, 1, 5)], 'water_creature': SQUID, 'monster': [('lurker', 6, 1, 1), ('orc', 10, 1, 2)]})
     for id, b in BIOMES.items(): wjson(f'{W}/biome/{id}.json', b)
 
 # ------------------------------------------------------------ source de biomes
