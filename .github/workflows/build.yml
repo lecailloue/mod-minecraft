@@ -11,7 +11,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -35,6 +35,23 @@ jobs:
           printf "max-tick-time=-1\nlevel-seed=20261111\nonline-mode=false\nspawn-protection=0\n" > run/server.properties
           timeout 25m gradle runServer -Pselftest --stacktrace 2>&1 | tee selftest.log
           grep -q "RESULTAT: OK" selftest.log
+      - name: Test client (captures d'ecran)
+        id: clienttest
+        if: steps.build.outcome == 'success' && hashFiles('CLIENTTEST') != ''
+        continue-on-error: true
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq xvfb imagemagick libgl1-mesa-dri > /dev/null
+          rm -rf run/saves run/screenshots
+          mkdir -p run
+          printf "onboardAccessibility:false\ntutorialStep:none\nrenderDistance:12\nsimulationDistance:8\nnarrator:0\nsoundCategory_master:0.0\njoinedFirstServer:true\nskipMultiplayerWarning:true\npauseOnLostFocus:false\nmaxFps:60\ngraphicsMode:0\nenableVsync:false\nguiScale:2\nfullscreen:false\noverrideWidth:1280\noverrideHeight:720\nrenderClouds:\"false\"\n" > run/options.txt
+          export LIBGL_ALWAYS_SOFTWARE=1
+          set -o pipefail
+          timeout 28m xvfb-run -a -s "-screen 0 1280x720x24" gradle runClient -Pclienttest 2>&1 | tail -n 400 | tee clienttest.log || true
+          mkdir -p shots
+          if ls run/screenshots/*.png > /dev/null 2>&1; then
+            for f in run/screenshots/*.png; do convert "$f" -resize 1024x576 -quality 84 "shots/$(basename "${f%.png}").jpg"; done
+          fi
+          ls shots | wc -l
       - name: Publier les resultats
         if: always()
         run: |
@@ -45,6 +62,9 @@ jobs:
           cp -r run/selftest /tmp/out/selftest 2>/dev/null || true
           cp run/logs/latest.log /tmp/out/server-latest.log 2>/dev/null || true
           cp -r run/crash-reports /tmp/out/crash-reports 2>/dev/null || true
+          cp -r shots /tmp/out/shots 2>/dev/null || true
+          grep -E "CLIENTTEST|ERROR|WARN" run/logs/latest.log 2>/dev/null | grep -v "Unprimed" | head -c 300000 > /tmp/out/client.log || true
+          cp clienttest.log /tmp/out/ 2>/dev/null || true
           echo "${{ github.sha }}" > /tmp/out/COMMIT
           echo "build=${{ steps.build.outcome }} selftest=${{ steps.selftest.outcome }}" > /tmp/out/STATUS
           cd /tmp/out

@@ -151,6 +151,7 @@ public class Build {
         if (homeRadius > 0) e.restrictTo(p, homeRadius);
         if (setup != null) setup.accept(e);
         level.addFreshEntityWithPassengers(e);
+        if (System.getProperty("roa.selftest") != null) RingsOfAsh.LOGGER.info("[SELFTEST] + " + type.toShortString() + " en " + p + " retire=" + e.isRemoved());
     }
 
     /** hauteur du sol (bloc solide le plus haut) a une position locale, relative a l'origine */

@@ -41,6 +41,7 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::keys);
         modBus.addListener(ClientSetup::setup);
         NeoForge.EVENT_BUS.addListener(ClientSetup::tick);
+        if (System.getProperty("roa.clienttest") != null) ClientTest.init();
     }
 
     private static void keys(RegisterKeyMappingsEvent e) { e.register(REP_KEY); }

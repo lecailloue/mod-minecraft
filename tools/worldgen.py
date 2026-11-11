@@ -365,6 +365,7 @@ def structures():
     settlement('pyre_tower', ['plaines_du_vent', 'vertes_collines'], 19, 9, 5109, [])
     settlement('ruin', ['vertes_collines', 'plaines_du_vent', 'foret_doree', 'vieille_foret', 'landes_des_tertres', 'terres_sauvages', 'marais_des_morts'], 9, 4, 5110, [])
     tag('worldgen/structure', 'volcanoes', R('volcano'), R('mont_funeste'), ns=MOD)
+    tag('worldgen/structure', 'doom', R('mont_funeste'), ns=MOD)
     LANG['structure.ringsofash.volcano'] = 'Volcan'
 
 def build():
