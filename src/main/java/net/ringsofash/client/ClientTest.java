@@ -54,7 +54,7 @@ import java.util.function.Consumer;
 public final class ClientTest {
     private ClientTest() {}
 
-    private record Scene(String name, int wait, Consumer<ServerPlayer> setup) {}
+    private record Scene(String name, int ticks, Consumer<ServerPlayer> setup) {}
     private static final List<Scene> SCENES = new ArrayList<>();
     private static int state = 0, wait = 0, index = 0;
     private static final int SX = 0, SY = 200, SZ = 0;
@@ -101,7 +101,7 @@ public final class ClientTest {
                         try { s.setup.accept(server.getPlayerList().getPlayers().get(0)); }
                         catch (Throwable t) { RingsOfAsh.LOGGER.error("[CLIENTTEST] ECHEC scene " + s.name, t); }
                     });
-                    wait = s.wait; state = 3;
+                    wait = s.ticks; state = 3;
                 }
                 case 3 -> {
                     if (--wait <= 0) {
