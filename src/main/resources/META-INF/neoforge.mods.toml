@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="ringsofash"
+version="0.1.0"
+displayName="Les Anneaux de Cendre"
+authors="lecailloue"
+description='''
+Un volcan rare, une lave qui pâlit, et au-delà : la Hautemarche.
+Peuples, anneaux de pouvoir, mines naines et seigneur de cendre.
+'''
+
+[[dependencies.ringsofash]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.0,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.ringsofash]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1,1.21.2)"
+ordering="NONE"
+side="BOTH"
