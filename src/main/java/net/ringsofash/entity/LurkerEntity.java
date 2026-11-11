@@ -35,6 +35,7 @@ public class LurkerEntity extends Monster {
     @Override
     public void aiStep() {
         super.aiStep();
+        setAirSupply(getMaxAirSupply());
         if (level().isClientSide) return;
         LivingEntity t = getTarget();
         if (t == null || !t.isAlive()) return;
@@ -63,8 +64,6 @@ public class LurkerEntity extends Monster {
 
     @Override
     public boolean isPushable() { return false; }
-    @Override
-    public boolean canBreatheUnderwater() { return true; }
     @Override
     public boolean isPushedByFluid() { return false; }
     @Override
