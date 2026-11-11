@@ -310,15 +310,15 @@ def biomes():
     for id, b in BIOMES.items(): wjson(f'{W}/biome/{id}.json', b)
 
 # ------------------------------------------------------------ source de biomes
-T_B = {'cold': (-1.0, -0.35), 'mild': (-0.35, 0.3), 'hot': (0.3, 1.0)}
+T_B = {'cold': (-1.0, -0.2), 'mild': (-0.2, 0.3), 'hot': (0.3, 1.0)}
 H_B = {'dry': (-1.0, -0.25), 'mid': (-0.25, 0.25), 'wet': (0.25, 1.0)}
 E_B = {'peaks': (-1.0, -0.4), 'hills': (-0.4, 0.15), 'flat': (0.15, 1.0)}
 TABLE = {
     'peaks': {'cold': ('pics_blancs',) * 3, 'mild': ('monts_de_fer',) * 3, 'hot': ('terres_de_cendre', 'terres_de_cendre', 'monts_de_fer')},
     'hills': {'cold': ('landes_des_tertres', 'bois_noir', 'bois_noir'), 'mild': ('plaines_du_vent', 'vieille_foret', 'foret_doree'),
               'hot': ('terres_de_cendre', 'terres_sauvages', 'foret_doree')},
-    'flat': {'cold': ('landes_des_tertres', 'plaines_du_vent', 'marais_des_morts'), 'mild': ('plaines_du_vent', 'vertes_collines', 'vertes_collines'),
-             'hot': ('terres_de_cendre', 'terres_sauvages', 'marais_des_morts')},
+    'flat': {'cold': ('landes_des_tertres', 'plaines_du_vent', 'marais_des_morts'), 'mild': ('plaines_du_vent', 'vertes_collines', 'marais_des_morts'),
+             'hot': ('terres_de_cendre', 'terres_sauvages', 'vertes_collines')},
 }
 FULL = (-1.0, 1.0)
 
@@ -351,6 +351,19 @@ def structures():
               'placement': {'type': 'minecraft:random_spread', 'spacing': spacing, 'separation': separation, 'salt': salt}})
     structure('volcano', 'volcano', ['volcan'], {'radius': 78, 'height': 104, 'doom': False}, 10, 5, 774411)
     structure('mont_funeste', 'volcano', ['terres_de_cendre'], {'radius': 96, 'height': 132, 'doom': True}, 36, 18, 774412)
+    def settlement(name, biomes_list, spacing, separation, salt, tags_):
+        structure(name, 'settlement', biomes_list, {'kind': name}, spacing, separation, salt)
+        for t in tags_: tag('worldgen/structure', t, R(name), ns=MOD)
+    settlement('halfling_village', ['vertes_collines'], 14, 7, 5101, ['villages_halfling', 'arrival_villages'])
+    settlement('human_village', ['plaines_du_vent', 'terres_sauvages'], 17, 8, 5102, ['villages_human'])
+    settlement('elf_village', ['foret_doree'], 12, 6, 5103, ['villages_elf'])
+    settlement('dwarf_mine', ['monts_de_fer', 'pics_blancs'], 20, 10, 5104, ['villages_dwarf', 'dwarf_mines'])
+    settlement('orc_fort', ['terres_de_cendre'], 13, 6, 5105, ['orc_forts'])
+    settlement('dark_tower', ['terres_de_cendre', 'bois_noir', 'landes_des_tertres', 'marais_des_morts'], 24, 11, 5106, ['dark_towers'])
+    settlement('barrow', ['landes_des_tertres'], 6, 3, 5107, ['barrows'])
+    settlement('hoard', ['monts_de_fer', 'pics_blancs'], 38, 18, 5108, ['hoards'])
+    settlement('pyre_tower', ['plaines_du_vent', 'vertes_collines'], 19, 9, 5109, [])
+    settlement('ruin', ['vertes_collines', 'plaines_du_vent', 'foret_doree', 'vieille_foret', 'landes_des_tertres', 'terres_sauvages', 'marais_des_morts'], 9, 4, 5110, [])
     tag('worldgen/structure', 'volcanoes', R('volcano'), R('mont_funeste'), ns=MOD)
     LANG['structure.ringsofash.volcano'] = 'Volcan'
 

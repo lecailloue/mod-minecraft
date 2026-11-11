@@ -208,6 +208,24 @@ public final class SelfTest {
         ImageIO.write(img, "png", f);
     }
 
+    /** plan horizontal a une altitude donnee (vide = clair) */
+    public static void slice(ServerLevel level, int x0, int z0, int x1, int z1, int y, File f, int scale) throws Exception {
+        int w = x1 - x0 + 1, h = z1 - z0 + 1;
+        BufferedImage img = new BufferedImage(w * scale, h * scale, BufferedImage.TYPE_INT_RGB);
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        for (int x = x0; x <= x1; x++) {
+            for (int z = z0; z <= z1; z++) {
+                p.set(x, y, z);
+                BlockState s = level.getBlockState(p);
+                int rgb;
+                if (s.isAir()) { p.set(x, y - 1, z); BlockState below = level.getBlockState(p); rgb = below.isAir() ? 0xE8F0FF : shade(color(level, p), 1.6) | 0x404040; }
+                else rgb = shade(color(level, p), 0.55);
+                for (int a = 0; a < scale; a++) for (int b = 0; b < scale; b++) img.setRGB((x - x0) * scale + a, (z - z0) * scale + b, rgb);
+            }
+        }
+        ImageIO.write(img, "png", f);
+    }
+
     private static int color(ServerLevel level, BlockPos p) {
         BlockState s = level.getBlockState(p);
         if (!s.getFluidState().isEmpty()) return s.getFluidState().is(net.minecraft.tags.FluidTags.LAVA) ? 0xFF6A00 : 0x3F76E4;

@@ -57,6 +57,7 @@ public class PeopleEntity extends AbstractVillager {
     private int premiumFrom = 0;
     private long lastRestock = 0;
     private long premiumDay = -1;
+    private int tempLife = 0;
 
     public PeopleEntity(EntityType<? extends PeopleEntity> type, Level level) {
         super(type, level);
@@ -80,6 +81,8 @@ public class PeopleEntity extends AbstractVillager {
         entityData.set(ROLE, role);
         if (role == GUARD) equipGuard();
     }
+
+    public void setTempLife(int ticks) { this.tempLife = ticks; }
 
     public void setProfession(int p) { this.profession = p; this.offers = null; }
 
@@ -194,6 +197,10 @@ public class PeopleEntity extends AbstractVillager {
             for (int i = 0; i < offers.size(); i++) if (i < premiumFrom) offers.get(i).resetUses();
         }
         if (tickCount % 100 == 0 && getHealth() < getMaxHealth()) heal(1);
+        if (tempLife > 0 && --tempLife == 0) {
+            ((ServerLevel) level()).sendParticles(net.minecraft.core.particles.ParticleTypes.POOF, getX(), getY() + 1, getZ(), 12, 0.3, 0.6, 0.3, 0.02);
+            discard();
+        }
     }
 
     @Nullable
@@ -216,7 +223,7 @@ public class PeopleEntity extends AbstractVillager {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Variant", variant()); tag.putInt("Role", role()); tag.putInt("Profession", profession);
-        tag.putInt("PremiumFrom", premiumFrom); tag.putLong("LastRestock", lastRestock);
+        tag.putInt("PremiumFrom", premiumFrom); tag.putInt("TempLife", tempLife); tag.putLong("LastRestock", lastRestock);
         if (hasRestriction()) { tag.putLong("HomePos", getRestrictCenter().asLong()); tag.putInt("HomeRadius", (int) getRestrictRadius()); }
     }
 
@@ -225,7 +232,7 @@ public class PeopleEntity extends AbstractVillager {
         super.readAdditionalSaveData(tag);
         entityData.set(VARIANT, tag.getInt("Variant")); entityData.set(ROLE, tag.getInt("Role"));
         profession = tag.contains("Profession") ? tag.getInt("Profession") : -1;
-        premiumFrom = tag.getInt("PremiumFrom"); lastRestock = tag.getLong("LastRestock");
+        premiumFrom = tag.getInt("PremiumFrom"); tempLife = tag.getInt("TempLife"); lastRestock = tag.getLong("LastRestock");
         if (tag.contains("HomePos")) restrictTo(net.minecraft.core.BlockPos.of(tag.getLong("HomePos")), tag.getInt("HomeRadius"));
     }
 }

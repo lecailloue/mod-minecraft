@@ -174,7 +174,7 @@ public final class Travel {
             Pair<BlockPos, Holder<Biome>> b = lands.findClosestBiome3d(h -> h.is(ModWorldgen.HALFLING_BIOME), new BlockPos(0, 80, 0), 6400, 64, 64);
             found = b != null ? b.getFirst() : BlockPos.ZERO;
         }
-        found = new BlockPos(found.getX(), 0, found.getZ());
+        found = new BlockPos(found.getX() + 14, 0, found.getZ() + 14);
         data.setArrival(found);
         return found;
     }

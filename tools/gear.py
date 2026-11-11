@@ -217,6 +217,31 @@ def build():
     btex('rope', rp)
     block('rope', 'Corde elfique', 'cross', java='new RopeBlock(BlockBehaviour.Properties.of().noCollission().strength(0.2F).sound(SoundType.WOOL).noOcclusion())',
           drop='elven_rope', tags=['climbable'], item=False)
+    # ---- forge naine et bucher d'alarme
+    fs = bricks('#4b505b', '#2a2d34', 81, var=0.09)
+    stamp(fs, ['oooooooo', 'offyyffo', 'ofyyyyfo', 'offyyffo', 'oooooooo'], {'o': '#1c1e24', 'f': '#e0601a', 'y': '#ffc040'}, 4, 6)
+    btex('dwarven_forge_side', fs)
+    ft = framed('#3a3e48', 82)
+    for y in range(4, 12):
+        for x in range(4, 12): ft.putpixel((x, y), mix(rgb('#ffb030'), rgb('#c03010'), ((x * 7 + y * 3) % 5) / 5) + (255,))
+    btex('dwarven_forge_top', ft)
+    block('dwarven_forge', 'Forge naine', 'custom_cube', java='new ForgeBlock(copy(Blocks.DEEPSLATE_BRICKS).lightLevel(s -> 10))', tool='pickaxe',
+          faces={'top': 'dwarven_forge_top', 'bottom': 'dwarven_bricks', 'side': 'dwarven_forge_side'})
+    shaped('dwarven_forge', ['###', '#l#', '###'], {'#': 'dwarven_bricks', 'l': 'minecraft:lava_bucket'}, 'dwarven_forge')
+    ps = log_side('#6b4a2a', 83).rotate(90)
+    btex('alarm_pyre_side', ps)
+    pt = log_top('#6b4a2a', '#9a7448', 84); btex('alarm_pyre_top', pt)
+    pl = pt.copy()
+    for y in range(3, 13):
+        for x in range(3, 13):
+            if (x + y) % 3: pl.putpixel((x, y), mix(rgb('#ffd040'), rgb('#e04010'), abs(x - 7.5) / 6) + (255,))
+    btex('alarm_pyre_top_lit', pl)
+    block('alarm_pyre', "Bûcher d'alarme", 'custom', java='new AlarmPyreBlock(copy(Blocks.OAK_PLANKS).lightLevel(s -> s.getValue(AlarmPyreBlock.LIT) ? 15 : 0))', tool='axe')
+    for lit in ('', '_lit'):
+        bmodel('alarm_pyre' + lit, 'minecraft:block/cube_bottom_top', {'top': T('alarm_pyre_top' + lit), 'bottom': T('alarm_pyre_top'), 'side': T('alarm_pyre_side')})
+    bstate('alarm_pyre', {'variants': {'lit=false': {'model': T('alarm_pyre')}, 'lit=true': {'model': T('alarm_pyre_lit')}}})
+    imodel('alarm_pyre', {'parent': T('alarm_pyre')})
+    shaped('alarm_pyre', ['###', '#c#', '###'], {'#': '#minecraft:logs', 'c': 'minecraft:coal'}, 'alarm_pyre')
     # ---- recettes
     shaped('lunargent_sword', [' #', ' #', ' s'], {'#': 'lunargent_ingot', 's': 'minecraft:stick'}, 'lunargent_sword', cat='equipment')
     shaped('lunargent_pickaxe', ['###', ' s ', ' s '], {'#': 'lunargent_ingot', 's': 'minecraft:stick'}, 'lunargent_pickaxe', cat='equipment')

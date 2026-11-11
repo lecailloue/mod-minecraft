@@ -24,12 +24,44 @@ public final class Extra {
 
     public static void run(MinecraftServer server, File out) throws Exception {
         SelfTest.step("creatures", () -> entities(server));
+        ServerLevel lands = server.getLevel(ModWorldgen.LANDS);
+        if (lands != null) {
+            String[][] list = {{"halfling_village", "vertes_collines"}, {"human_village", "plaines_du_vent"}, {"elf_village", "foret_doree"}, {"dwarf_mine", "monts_de_fer"},
+                    {"orc_fort", "terres_de_cendre"}, {"dark_tower", "bois_noir"}, {"barrow", "landes_des_tertres"}, {"hoard", "monts_de_fer"}, {"pyre_tower", "plaines_du_vent"}, {"ruin", "vieille_foret"}};
+            for (String[] e : list) SelfTest.step("structure " + e[0], () -> settlement(lands, e[0], e[1], out));
+        }
         SelfTest.step("objets", () -> {
             int n = 0;
             for (var e : Reg.ITEMS.getEntries()) { new ItemStack(e.get()).getHoverName().getString(); n++; }
             ItemStack guide = Guide.create(null);
             RingsOfAsh.LOGGER.info("[SELFTEST] " + n + " objets ; livre-guide : " + guide.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().size() + " pages");
         });
+    }
+
+    private static void settlement(ServerLevel lands, String name, String biome, File out) throws Exception {
+        var bkey = ModWorldgen.biome(biome);
+        var found = lands.findClosestBiome3d(h -> h.is(bkey), new BlockPos(0, 80, 0), 6400, 64, 64);
+        if (found == null) { RingsOfAsh.LOGGER.info("[SELFTEST] structure " + name + " : biome introuvable"); return; }
+        var key = net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.STRUCTURE, RingsOfAsh.id(name));
+        net.minecraft.world.level.levelgen.structure.StructureStart start = null;
+        BlockPos at = null;
+        for (int i = 0; i < 60 && start == null; i++) {
+            at = found.getFirst().offset((i % 8 - 3) * 40, 0, (i / 8 - 3) * 40);
+            if (!lands.getUncachedNoiseBiome(at.getX() >> 2, 20, at.getZ() >> 2).is(bkey)) continue;
+            start = SelfTest.place(lands, key, at);
+        }
+        if (start == null) throw new IllegalStateException("aucun emplacement valide pour " + name);
+        var bb = start.getBoundingBox();
+        SelfTest.topDown(lands, bb.minX() - 4, bb.minZ() - 4, bb.maxX() + 4, bb.maxZ() + 4, new File(out, "st_" + name + ".png"), bb.getXSpan() > 100 ? 3 : 5);
+        java.util.Map<String, Integer> mobs = new java.util.TreeMap<>();
+        for (Mob m : lands.getEntitiesOfClass(Mob.class, net.minecraft.world.phys.AABB.of(bb).inflate(2))) mobs.merge(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).getPath(), 1, Integer::sum);
+        RingsOfAsh.LOGGER.info("[SELFTEST] structure " + name + " en " + at + " : " + start.getPieces().size() + " morceaux, bbox " + bb + ", creatures " + mobs);
+        for (var piece : start.getPieces()) {
+            if (piece instanceof Settlement.Piece sp && (sp.type == Settlement.T.DHALL || sp.type == Settlement.T.LAIR || sp.type == Settlement.T.HOARD || sp.type == Settlement.T.BARROW)) {
+                int y = sp.type == Settlement.T.HOARD ? sp.oy - 20 : sp.type == Settlement.T.BARROW ? sp.oy - 3 : sp.oy + 2;
+                SelfTest.slice(lands, bb.minX() - 2, bb.minZ() - 2, bb.maxX() + 2, bb.maxZ() + 2, y, new File(out, "st_" + name + "_plan_" + sp.type.name().toLowerCase() + ".png"), 4);
+            }
+        }
     }
 
     private static void entities(MinecraftServer server) {

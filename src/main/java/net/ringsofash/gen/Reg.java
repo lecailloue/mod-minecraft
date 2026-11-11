@@ -74,6 +74,8 @@ public final class Reg {
     public static final DeferredBlock<Block> ASHROOT = BLOCKS.register("ashroot", () -> new AshPlantBlock(copy(Blocks.DEAD_BUSH)));
     public static final DeferredBlock<Block> PIPEWEED = BLOCKS.register("pipeweed", () -> new FlowerBlock(MobEffects.SLOW_FALLING, 5.0F, copy(Blocks.DANDELION)));
     public static final DeferredBlock<Block> ROPE = BLOCKS.register("rope", () -> new RopeBlock(BlockBehaviour.Properties.of().noCollission().strength(0.2F).sound(SoundType.WOOL).noOcclusion()));
+    public static final DeferredBlock<Block> DWARVEN_FORGE = BLOCKS.register("dwarven_forge", () -> new ForgeBlock(copy(Blocks.DEEPSLATE_BRICKS).lightLevel(s -> 10)));
+    public static final DeferredBlock<Block> ALARM_PYRE = BLOCKS.register("alarm_pyre", () -> new AlarmPyreBlock(copy(Blocks.OAK_PLANKS).lightLevel(s -> s.getValue(AlarmPyreBlock.LIT) ? 15 : 0)));
 
     public static final DeferredItem<BlockItem> BI_ASH_BLOCK = ITEMS.registerSimpleBlockItem("ash_block", ASH_BLOCK);
     public static final DeferredItem<BlockItem> BI_VOLCANIC_ROCK = ITEMS.registerSimpleBlockItem("volcanic_rock", VOLCANIC_ROCK);
@@ -119,6 +121,8 @@ public final class Reg {
     public static final DeferredItem<BlockItem> BI_MOONBELL = ITEMS.registerSimpleBlockItem("moonbell", MOONBELL);
     public static final DeferredItem<BlockItem> BI_ASHROOT = ITEMS.registerSimpleBlockItem("ashroot", ASHROOT);
     public static final DeferredItem<BlockItem> BI_PIPEWEED = ITEMS.registerSimpleBlockItem("pipeweed", PIPEWEED);
+    public static final DeferredItem<BlockItem> BI_DWARVEN_FORGE = ITEMS.registerSimpleBlockItem("dwarven_forge", DWARVEN_FORGE);
+    public static final DeferredItem<BlockItem> BI_ALARM_PYRE = ITEMS.registerSimpleBlockItem("alarm_pyre", ALARM_PYRE);
 
     public static final DeferredItem<Item> RAW_LUNARGENT = ITEMS.register("raw_lunargent", () -> new Item(props()));
     public static final DeferredItem<Item> LUNARGENT_INGOT = ITEMS.register("lunargent_ingot", () -> new Item(props()));

@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","category":"misc","pattern":["###","#c#","###"],"key":{"#":{"tag":"minecraft:logs"},"c":{"item":"minecraft:coal"}},"result":{"id":"ringsofash:alarm_pyre","count":1}}

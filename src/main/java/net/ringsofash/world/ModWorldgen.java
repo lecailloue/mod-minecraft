@@ -28,6 +28,11 @@ public final class ModWorldgen {
     public static final DeferredHolder<StructurePieceType, StructurePieceType> VOLCANO_PIECE =
             PIECES.register("volcano", () -> (StructurePieceType.ContextlessType) VolcanoPiece::new);
 
+    public static final DeferredHolder<StructureType<?>, StructureType<Settlement.S>> SETTLEMENT =
+            STRUCTURE_TYPES.register("settlement", () -> (StructureType<Settlement.S>) () -> Settlement.S.CODEC);
+    public static final DeferredHolder<StructurePieceType, StructurePieceType> SETTLEMENT_PIECE =
+            PIECES.register("settlement", () -> (StructurePieceType.ContextlessType) Settlement.Piece::new);
+
     public static final ResourceKey<Level> LANDS = ResourceKey.create(Registries.DIMENSION, RingsOfAsh.id("hautemarche"));
     public static final ResourceKey<Biome> VOLCANO_BIOME = biome("volcan");
     public static final ResourceKey<Biome> HALFLING_BIOME = biome("vertes_collines");
