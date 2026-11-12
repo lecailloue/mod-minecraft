@@ -174,13 +174,14 @@ if places_out:
     ids = np.where(walk)
     out_pl = {}
     for k, v in pl.items():
+        if k == 'mont_du_destin': continue
         gx, gy = int(np.clip(v['x'] + 1000, 0, N - 1)), int(np.clip(v['z'] + 1000, 0, N - 1))
         if not walk[gy, gx]:
             dd = (ids[1] - gx) ** 2 + (ids[0] - gy) ** 2; j = dd.argmin(); gx, gy = int(ids[1][j]), int(ids[0][j])
         out_pl[k] = {'x': (gx - 1000) * SC, 'z': (gy - 1000) * SC}
     rim = (int(vx + RC * 1.15), int(vy))
     out_pl['mont_du_destin'] = {'x': (rim[0] - 1000) * SC, 'z': (rim[1] - 1000) * SC}
-    json.dump(out_pl, open(places_out, 'w'), indent=1)
+    json.dump(out_pl, open(places_out, 'w'), indent=1)  # (mont_du_destin reste sur le bord du cratere)
     lava = int(h[int(vy), int(vx)]) + 30
     json.dump({'x': round((vx - 1000) * SC), 'z': round((vy - 1000) * SC), 'r': round(RC * SC * .98), 'level': lava},
               open(os.path.join(os.path.dirname(places_out), 'volcan.json'), 'w'))
