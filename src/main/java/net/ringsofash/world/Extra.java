@@ -26,8 +26,8 @@ public final class Extra {
         SelfTest.step("creatures", () -> entities(server));
         ServerLevel lands = server.getLevel(ModWorldgen.LANDS);
         if (lands != null) {
-            String[][] list = {{"halfling_village", "vertes_collines"}, {"human_village", "plaines_du_vent"}, {"elf_village", "foret_doree"}, {"dwarf_mine", "monts_de_fer"},
-                    {"orc_fort", "terres_de_cendre"}, {"dark_tower", "bois_noir"}, {"barrow", "landes_des_tertres"}, {"hoard", "monts_de_fer"}, {"pyre_tower", "plaines_du_vent"}, {"ruin", "vieille_foret"}};
+            String[][] list = {{"halfling_village", "plaines_vertes"}, {"human_village", "plaines_jaunes"}, {"elf_village", "grande_foret"}, {"dwarf_mine", "monts_rocheux"},
+                    {"orc_fort", "plaines_cendre"}, {"dark_tower", "plaines_cendre"}, {"barrow", "plaines_jaunes"}, {"hoard", "monts_rocheux"}, {"pyre_tower", "plaines_vertes"}, {"ruin", "grande_foret"}};
             for (String[] e : list) SelfTest.step("structure " + e[0], () -> settlement(lands, e[0], e[1], out));
         }
         SelfTest.step("objets", () -> {
@@ -40,7 +40,7 @@ public final class Extra {
 
     private static void settlement(ServerLevel lands, String name, String biome, File out) throws Exception {
         var bkey = ModWorldgen.biome(biome);
-        var found = lands.findClosestBiome3d(h -> h.is(bkey), new BlockPos(0, 80, 0), 6400, 64, 64);
+        var found = lands.findClosestBiome3d(h -> h.is(bkey), new BlockPos(0, 80, 0), 2400, 64, 64);
         if (found == null) { RingsOfAsh.LOGGER.info("[SELFTEST] structure " + name + " : biome introuvable"); return; }
         var key = net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.STRUCTURE, RingsOfAsh.id(name));
         net.minecraft.world.level.levelgen.structure.StructureStart start = null;

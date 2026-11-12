@@ -1,6 +1,9 @@
 package net.ringsofash.world;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.Level;
@@ -19,6 +22,13 @@ public final class ModWorldgen {
     public static final DeferredRegister<StructureType<?>> STRUCTURE_TYPES = DeferredRegister.create(Registries.STRUCTURE_TYPE, RingsOfAsh.MODID);
     public static final DeferredRegister<StructurePieceType> PIECES = DeferredRegister.create(Registries.STRUCTURE_PIECE, RingsOfAsh.MODID);
 
+    public static final DeferredRegister<MapCodec<? extends ChunkGenerator>> GENERATORS = DeferredRegister.create(Registries.CHUNK_GENERATOR, RingsOfAsh.MODID);
+    public static final DeferredRegister<MapCodec<? extends BiomeSource>> BIOME_SOURCES = DeferredRegister.create(Registries.BIOME_SOURCE, RingsOfAsh.MODID);
+    static {
+        GENERATORS.register("map", () -> MapChunkGenerator.CODEC);
+        BIOME_SOURCES.register("map", () -> MapBiomeSource.CODEC);
+    }
+
     public static final DeferredHolder<Feature<?>, VolcanicSurfaceFeature> VOLCANIC_SURFACE = FEATURES.register("volcanic_surface", VolcanicSurfaceFeature::new);
     public static final DeferredHolder<Feature<?>, SpireFeature> SPIRE = FEATURES.register("spire", SpireFeature::new);
     public static final DeferredHolder<Feature<?>, BigTreeFeature> BIG_TREE = FEATURES.register("big_tree", BigTreeFeature::new);
@@ -35,8 +45,8 @@ public final class ModWorldgen {
 
     public static final ResourceKey<Level> LANDS = ResourceKey.create(Registries.DIMENSION, RingsOfAsh.id("hautemarche"));
     public static final ResourceKey<Biome> VOLCANO_BIOME = biome("volcan");
-    public static final ResourceKey<Biome> HALFLING_BIOME = biome("vertes_collines");
-    public static final ResourceKey<Biome> ASH_BIOME = biome("terres_de_cendre");
+    public static final ResourceKey<Biome> HALFLING_BIOME = biome("plaines_vertes");
+    public static final ResourceKey<Biome> ASH_BIOME = biome("plaines_cendre");
     public static final TagKey<Structure> VOLCANOES = TagKey.create(Registries.STRUCTURE, RingsOfAsh.id("volcanoes"));
     public static final ResourceKey<Structure> VOLCANO_STRUCTURE = ResourceKey.create(Registries.STRUCTURE, RingsOfAsh.id("volcano"));
     public static final ResourceKey<Structure> DOOM_STRUCTURE = ResourceKey.create(Registries.STRUCTURE, RingsOfAsh.id("mont_funeste"));
@@ -44,6 +54,8 @@ public final class ModWorldgen {
     public static ResourceKey<Biome> biome(String name) { return ResourceKey.create(Registries.BIOME, RingsOfAsh.id(name)); }
 
     public static void register(IEventBus bus) {
+        GENERATORS.register(bus);
+        BIOME_SOURCES.register(bus);
         FEATURES.register(bus);
         STRUCTURE_TYPES.register(bus);
         PIECES.register(bus);

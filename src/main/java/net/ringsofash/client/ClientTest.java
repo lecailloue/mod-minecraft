@@ -161,6 +161,16 @@ public final class ClientTest {
         }));
     }
 
+    private static void spot(String name, int x, int z, int up, float yaw, float pitch) {
+        SCENES.add(new Scene(name, 320, p -> {
+            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+            lands.getChunk(x >> 4, z >> 4);
+            int y = lands.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+            lands.setDayTime(6000);
+            view(p, lands, x + 0.5, y + up, z + 0.5, yaw, pitch);
+        }));
+    }
+
     private static void locate(String name, TagKey<Structure> tag, Settlement.T inside) {
         SCENES.add(new Scene(name, 320, p -> {
             ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
@@ -288,24 +298,12 @@ public final class ClientTest {
             lands.setDayTime(6000);
             p.teleportTo(lands, p.getX(), p.getY(), p.getZ(), 135F, 5F);
         }));
-        locate("14_village_semi_hommes", GameEvents.T_HALFLING, null);
-        locate("15_village_hommes", GameEvents.T_HUMAN, null);
-        locate("16_village_elfe", GameEvents.T_ELF, null);
-        locate("17_porte_naine", GameEvents.T_DWARF, null);
-        locate("18_salle_naine", GameEvents.T_DWARF, Settlement.T.DHALL);
-        locate("19_antre_du_demon", GameEvents.T_DWARF, Settlement.T.LAIR);
-        locate("20_forteresse_orque", GameEvents.T_FORTS, null);
-        locate("21_tour_noire", GameEvents.T_TOWERS, null);
-        locate("22_tertre", GameEvents.T_BARROWS, null);
-        SCENES.add(new Scene("23_mont_funeste", 500, p -> {
-            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
-            BlockPos pos = lands.findNearestMapStructure(TagKey.create(Registries.STRUCTURE, RingsOfAsh.id("doom")), p.blockPosition(), 100, false);
-            if (pos == null) { log("mont funeste introuvable"); return; }
-            int cx = pos.getX() + 8, cz = pos.getZ() + 8;
-            lands.getChunk(cx >> 4, cz >> 4);
-            int y = lands.getHeight(Heightmap.Types.MOTION_BLOCKING, cx, cz);
-            view(p, lands, cx - 115, Math.min(300, y + 10), cz - 115, -45F, 14F);
-        }));
+        spot("14_plaines_vertes", -445, -230, 30, 160F, 12F);
+        spot("15_grande_foret", 250, -297, 60, -45F, 25F);
+        spot("16_plaines_jaunes", 800, 100, 30, 0F, 10F);
+        spot("17_cimes", -90, -144, 120, -90F, 8F);
+        spot("18_mer", -740, 0, 25, 90F, 6F);
+        spot("19_plaines_cendre", 600, 700, 40, 90F, 15F);
         SCENES.add(new Scene("24_reputation", 60, p -> {
             for (var pp : net.ringsofash.data.People.values()) ModData.lore(p).rep[pp.ordinal()] = new int[]{35, 60, -20, 12}[pp.ordinal()];
             net.ringsofash.data.Net.sync(p);

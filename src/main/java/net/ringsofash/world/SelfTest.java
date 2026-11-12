@@ -39,11 +39,9 @@ public final class SelfTest {
 
     public static final Map<String, Integer> BIOME_COLORS = new LinkedHashMap<>();
     static {
-        BIOME_COLORS.put("vertes_collines", 0x7CD04A); BIOME_COLORS.put("plaines_du_vent", 0xD8D070); BIOME_COLORS.put("foret_doree", 0xF0B020);
-        BIOME_COLORS.put("vieille_foret", 0x1F6A2A); BIOME_COLORS.put("bois_noir", 0x203020); BIOME_COLORS.put("landes_des_tertres", 0x9A9A80);
-        BIOME_COLORS.put("marais_des_morts", 0x5A6A8A); BIOME_COLORS.put("monts_de_fer", 0x808080); BIOME_COLORS.put("pics_blancs", 0xFFFFFF);
-        BIOME_COLORS.put("terres_de_cendre", 0xC02010); BIOME_COLORS.put("terres_sauvages", 0xC09040); BIOME_COLORS.put("mer_grise", 0x2040A0);
-        BIOME_COLORS.put("rivage", 0xF0E0A0); BIOME_COLORS.put("riviere", 0x40A0F0);
+        BIOME_COLORS.put("plaines_vertes", 0xBEEB9E); BIOME_COLORS.put("plaines_jaunes", 0xFFEB9E); BIOME_COLORS.put("plaines_cendre", 0x96938E);
+        BIOME_COLORS.put("grande_foret", 0x1F6A2A); BIOME_COLORS.put("monts_rocheux", 0x808080); BIOME_COLORS.put("cimes_neigeuses", 0xFFFFFF);
+        BIOME_COLORS.put("mer_grise", 0x2040A0); BIOME_COLORS.put("rivage", 0xF0E0A0); BIOME_COLORS.put("riviere", 0x40A0F0);
     }
 
     public static void run(MinecraftServer server) {
@@ -58,11 +56,7 @@ public final class SelfTest {
                 step("carte biomes", () -> biomeMap(lands));
                 step("biomes", () -> eachBiome(lands));
                 step("arrivee", () -> log("arrivee: " + Travel.arrival(server, lands)));
-                step("mont funeste", () -> {
-                    Pair<BlockPos, Holder<Biome>> b = lands.findClosestBiome3d(h -> h.is(ModWorldgen.ASH_BIOME), new BlockPos(0, 80, 0), 6400, 64, 64);
-                    if (b == null) { fail("pas de terres de cendre"); return; }
-                    volcano(lands, ModWorldgen.DOOM_STRUCTURE, b.getFirst(), "mont_funeste");
-                });
+                step("carte", () -> mapCheck(lands));
             }
             Extra.run(server, OUT);
         } catch (Throwable t) {
@@ -134,8 +128,32 @@ public final class SelfTest {
         if (s == null) fail("aucun volcan naturel pres du biome volcan");
     }
 
+    /** Verifie que le terrain genere suit la carte predefinie, et fait quelques vues du dessus. */
+    private static void mapCheck(ServerLevel lands) throws Exception {
+        Map<String, int[]> spots = new LinkedHashMap<>(MapData.places());
+        spots.put("foret", new int[]{250, -297});
+        spots.put("cote_ouest", new int[]{-720, 0});
+        int bad = 0, n = 0;
+        for (Map.Entry<String, int[]> e : spots.entrySet()) {
+            int px = e.getValue()[0], pz = e.getValue()[1];
+            for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) lands.getChunk((px >> 4) + dx, (pz >> 4) + dz);
+            for (int x = px - 24; x <= px + 24; x += 6) {
+                for (int z = pz - 24; z <= pz + 24; z += 6) {
+                    n++;
+                    BlockPos at = new BlockPos(x, MapData.height(x, z), z);
+                    var st = lands.getBlockState(at);
+                    if (st.isAir() || !st.getFluidState().isEmpty()) { bad++; if (bad < 6) log("ecart de relief en " + at + " : " + st); }
+                }
+            }
+            topDown(lands, px - 40, pz - 40, px + 39, pz + 39, new File(OUT, "carte_" + e.getKey() + ".png"), 4);
+            log("carte " + e.getKey() + " (" + px + "," + pz + ") relief " + MapData.height(px, pz) + " biome " + MapData.BIOMES[MapData.biome(px, pz)]);
+        }
+        log("carte : " + bad + " ecarts sur " + n + " points");
+        if (bad > n / 10) fail("le terrain ne suit pas la carte (" + bad + "/" + n + ")");
+    }
+
     private static void biomeMap(ServerLevel lands) throws Exception {
-        int size = 384, step = 32;
+        int size = 384, step = 6;
         BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
         Map<String, Integer> counts = new TreeMap<>();
         for (int px = 0; px < size; px++) {
@@ -156,8 +174,8 @@ public final class SelfTest {
     private static void eachBiome(ServerLevel lands) throws Exception {
         for (String id : BIOME_COLORS.keySet()) {
             ResourceKey<Biome> key = ModWorldgen.biome(id);
-            Pair<BlockPos, Holder<Biome>> b = lands.findClosestBiome3d(h -> h.is(key), new BlockPos(0, 80, 0), 6400, 64, 64);
-            if (b == null) { log("biome " + id + " introuvable dans 6400 blocs"); continue; }
+            Pair<BlockPos, Holder<Biome>> b = lands.findClosestBiome3d(h -> h.is(key), new BlockPos(0, 80, 0), 2400, 64, 64);
+            if (b == null) { log("biome " + id + " introuvable dans 2400 blocs"); continue; }
             BlockPos p = b.getFirst();
             int cx = p.getX() >> 4, cz = p.getZ() >> 4;
             for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) lands.getChunk(cx + dx, cz + dz);

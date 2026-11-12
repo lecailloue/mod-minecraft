@@ -177,7 +177,9 @@ public final class GameEvents {
     }
 
     private static void onPlayerTick(PlayerTickEvent.Post e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || p.tickCount % 20 != 0) return;
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        Travel.keepInside(p);
+        if (p.tickCount % 20 != 0) return;
         PlayerLore lore = ModData.lore(p);
         RingItem.Kind ring = RingItem.worn(p);
         int corrupt = 0;
@@ -432,6 +434,19 @@ public final class GameEvents {
                     ctx.getSource().sendSuccess(() -> Component.literal("Volcan en " + pos.getX() + ", " + pos.getZ() + " (à l'ouest de vous).").withStyle(ChatFormatting.GOLD), false);
                     return 1;
                 }))
+                .then(Commands.literal("carte").requires(s -> s.hasPermission(2)).then(Commands.argument("lieu", com.mojang.brigadier.arguments.StringArgumentType.word())
+                        .suggests((c, b) -> net.minecraft.commands.SharedSuggestionProvider.suggest(net.ringsofash.world.MapData.places().keySet(), b))
+                        .executes(ctx -> {
+                            ServerPlayer p = ctx.getSource().getPlayerOrException();
+                            String name = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "lieu");
+                            int[] at = net.ringsofash.world.MapData.place(name);
+                            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+                            if (at == null || lands == null) { ctx.getSource().sendFailure(Component.literal("Lieu inconnu : " + name)); return 0; }
+                            if (!Travel.isLands(p.level())) ModData.lore(p).setOverworld(p.blockPosition());
+                            Travel.teleport(p, lands, new BlockPos(at[0], 0, at[1]), false);
+                            ctx.getSource().sendSuccess(() -> Component.literal(name + " : x=" + at[0] + " z=" + at[1]).withStyle(ChatFormatting.GOLD), false);
+                            return 1;
+                        })))
                 .then(Commands.literal("lieux").requires(s -> s.hasPermission(2)).executes(ctx -> { seeingStone(ctx.getSource().getPlayerOrException()); return 1; }))
                 .then(Commands.literal("rep").requires(s -> s.hasPermission(2)).then(Commands.argument("valeur", IntegerArgumentType.integer(-100, 100)).executes(ctx -> {
                     ServerPlayer p = ctx.getSource().getPlayerOrException();

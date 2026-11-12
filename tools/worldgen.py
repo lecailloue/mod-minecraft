@@ -4,116 +4,6 @@ from genlib import *
 W = f'{D}/worldgen'
 def R(x): return f'{MOD}:{x}'
 
-# ------------------------------------------------------------ fonctions de densite
-def add(a, b): return {'type': 'minecraft:add', 'argument1': a, 'argument2': b}
-def mul(a, b): return {'type': 'minecraft:mul', 'argument1': a, 'argument2': b}
-def dmin(a, b): return {'type': 'minecraft:min', 'argument1': a, 'argument2': b}
-def dmax(a, b): return {'type': 'minecraft:max', 'argument1': a, 'argument2': b}
-def noise(n, xz=1.0, y=1.0): return {'type': 'minecraft:noise', 'noise': n, 'xz_scale': xz, 'y_scale': y}
-def grad(fy, ty, fv, tv): return {'type': 'minecraft:y_clamped_gradient', 'from_y': fy, 'to_y': ty, 'from_value': fv, 'to_value': tv}
-def clamp(i, lo, hi): return {'type': 'minecraft:clamp', 'input': i, 'min': lo, 'max': hi}
-def rchoice(i, lo, hi, a, b): return {'type': 'minecraft:range_choice', 'input': i, 'min_inclusive': lo, 'max_exclusive': hi, 'when_in_range': a, 'when_out_of_range': b}
-def un(t, a): return {'type': f'minecraft:{t}', 'argument': a}
-def shifted(n, scale): return {'type': 'minecraft:shifted_noise', 'noise': n, 'shift_x': 'minecraft:shift_x', 'shift_y': 0.0,
-                               'shift_z': 'minecraft:shift_z', 'xz_scale': scale, 'y_scale': 0.0}
-
-def slides(inner):
-    return add(0.1171875, mul(grad(-64, -40, 0.0, 1.0), add(-0.1171875, add(-0.078125, mul(grad(240, 256, 1.0, 0.0), add(0.078125, inner))))))
-
-def noise_router():
-    sc = 'minecraft:overworld/sloped_cheese'
-    ent = 'minecraft:overworld/caves/entrances'
-    underground = dmax(
-        dmin(dmin(add(mul(4.0, un('square', noise('minecraft:cave_layer', 1.0, 8.0))),
-                      add(clamp(add(0.27, noise('minecraft:cave_cheese', 1.0, 0.6666666666666666)), -1.0, 1.0),
-                          clamp(add(1.5, mul(-0.64, sc)), 0.0, 0.5))), ent),
-             add('minecraft:overworld/caves/spaghetti_2d', 'minecraft:overworld/caves/spaghetti_roughness_function')),
-        rchoice('minecraft:overworld/caves/pillars', -1000000.0, 0.03, -1000000.0, 'minecraft:overworld/caves/pillars'))
-    final = dmin(un('squeeze', mul(0.64, un('interpolated', un('blend_density', slides(
-        rchoice(sc, -1000000.0, 1.5625, dmin(sc, mul(5.0, ent)), underground)))))), 'minecraft:overworld/caves/noodle')
-    initial = slides(clamp(add(-0.703125, mul(4.0, un('quarter_negative', mul('minecraft:overworld/depth', un('cache_2d', 'minecraft:overworld/factor'))))), -64.0, 64.0))
-    return {
-        'barrier': noise('minecraft:aquifer_barrier', 1.0, 0.5),
-        'fluid_level_floodedness': noise('minecraft:aquifer_fluid_level_floodedness', 1.0, 0.67),
-        'fluid_level_spread': noise('minecraft:aquifer_fluid_level_spread', 1.0, 0.7142857142857143),
-        'lava': noise('minecraft:aquifer_lava', 1.0, 1.0),
-        'temperature': shifted('minecraft:temperature', 0.45),
-        'vegetation': shifted('minecraft:vegetation', 0.45),
-        'continents': 'minecraft:overworld/continents',
-        'erosion': 'minecraft:overworld/erosion',
-        'depth': 'minecraft:overworld/depth',
-        'ridges': 'minecraft:overworld/ridges',
-        'initial_density_without_jaggedness': initial,
-        'final_density': final,
-        'vein_toggle': 0.0, 'vein_ridged': 0.0, 'vein_gap': 0.0,
-    }
-
-# ------------------------------------------------------------ regles de surface
-def seq(*r): return {'type': 'minecraft:sequence', 'sequence': list(r)}
-def cond(c, r): return {'type': 'minecraft:condition', 'if_true': c, 'then_run': r}
-def blk(name, **props):
-    st = {'Name': mid(name) if ':' not in name else name}
-    if props: st['Properties'] = {k: str(v) for k, v in props.items()}
-    return {'type': 'minecraft:block', 'result_state': st}
-def biome_is(*b): return {'type': 'minecraft:biome', 'biome_is': [R(x) for x in b]}
-def sdepth(offset=0, add_depth=False, secondary=0, kind='floor'):
-    return {'type': 'minecraft:stone_depth', 'offset': offset, 'surface_type': kind, 'add_surface_depth': add_depth, 'secondary_depth_range': secondary}
-def water(offset, mult=0, add_stone=False): return {'type': 'minecraft:water', 'offset': offset, 'surface_depth_multiplier': mult, 'add_stone_depth': add_stone}
-def y_above(y, mult=0): return {'type': 'minecraft:y_above', 'anchor': {'absolute': y}, 'surface_depth_multiplier': mult, 'add_stone_depth': False}
-def nthr(n, lo, hi): return {'type': 'minecraft:noise_threshold', 'noise': n, 'min_threshold': lo, 'max_threshold': hi}
-def cnot(c): return {'type': 'minecraft:not', 'invert': c}
-STEEP = {'type': 'minecraft:steep'}
-
-def surface_rule():
-    grass_or_dirt = seq(cond(water(0), blk('minecraft:grass_block')), blk('minecraft:dirt'))
-    top = seq(
-        cond(biome_is('terres_de_cendre'), seq(
-            cond(nthr('minecraft:surface', 0.25, 9.0), blk('volcanic_rock')),
-            cond(nthr('minecraft:surface', -9.0, -0.35), blk('minecraft:basalt', axis='y')),
-            blk('ash_block'))),
-        cond(biome_is('pics_blancs'), seq(
-            cond(STEEP, blk('white_stone')),
-            cond(y_above(118, 1), blk('minecraft:snow_block')),
-            cond(nthr('minecraft:surface', 0.1, 9.0), blk('white_stone')),
-            grass_or_dirt)),
-        cond(biome_is('monts_de_fer'), seq(
-            cond(STEEP, blk('minecraft:stone')),
-            cond(y_above(150, 1), blk('minecraft:snow_block')),
-            cond(y_above(112, 1), seq(cond(nthr('minecraft:surface', -0.2, 0.3), blk('minecraft:gravel')), blk('minecraft:stone'))),
-            cond(nthr('minecraft:surface', 0.35, 9.0), blk('minecraft:coarse_dirt')),
-            grass_or_dirt)),
-        cond(biome_is('marais_des_morts'), seq(
-            cond(y_above(62), cond(cnot(y_above(63)), cond(nthr('minecraft:surface_swamp', 0.0, 9.0), blk('minecraft:water', level=0)))),
-            cond(cnot(y_above(64)), cond(nthr('minecraft:surface', -0.1, 9.0), blk('minecraft:mud'))),
-            grass_or_dirt)),
-        cond(biome_is('rivage'), blk('minecraft:sand')),
-        cond(biome_is('landes_des_tertres'), seq(
-            cond(nthr('minecraft:surface', 0.45, 9.0), blk('minecraft:coarse_dirt')),
-            cond(nthr('minecraft:surface', -9.0, -0.5), blk('minecraft:podzol')), grass_or_dirt)),
-        cond(biome_is('vieille_foret', 'bois_noir'), seq(
-            cond(nthr('minecraft:surface', 0.3, 9.0), blk('minecraft:podzol')), grass_or_dirt)),
-        cond(biome_is('mer_grise', 'riviere'), seq(
-            cond(water(-1), grass_or_dirt),
-            cond(nthr('minecraft:surface', -0.1, 0.25), blk('minecraft:gravel')), blk('minecraft:sand'))),
-        cond(water(-1), grass_or_dirt),
-        blk('minecraft:sand'))
-    under = seq(
-        cond(biome_is('terres_de_cendre'), blk('volcanic_rock')),
-        cond(biome_is('pics_blancs'), seq(cond(y_above(118, 1), blk('white_stone')), blk('minecraft:stone'))),
-        cond(biome_is('monts_de_fer'), blk('minecraft:stone')),
-        cond(biome_is('rivage', 'mer_grise', 'riviere'), seq(cond(water(-1), blk('minecraft:dirt')), blk('minecraft:sand'))),
-        blk('minecraft:dirt'))
-    deep_white = cond(biome_is('pics_blancs'), cond(y_above(90), cond(sdepth(0, True, 6), blk('white_stone'))))
-    return seq(
-        cond({'type': 'minecraft:vertical_gradient', 'random_name': 'minecraft:bedrock_floor',
-              'true_at_and_below': {'above_bottom': 0}, 'false_at_and_above': {'above_bottom': 5}}, blk('minecraft:bedrock')),
-        cond({'type': 'minecraft:above_preliminary_surface'}, seq(
-            cond(sdepth(0, False, 0), top),
-            cond(sdepth(0, True, 0), under),
-            deep_white)),
-        cond({'type': 'minecraft:vertical_gradient', 'random_name': 'minecraft:deepslate',
-              'true_at_and_below': {'absolute': 0}, 'false_at_and_above': {'absolute': 8}}, blk('minecraft:deepslate', axis='y')))
-
 # ------------------------------------------------------------ features
 def cf(name, typ, config): wjson(f'{W}/configured_feature/{name}.json', {'type': typ if ':' in typ else f'minecraft:{typ}', 'config': config})
 def pf(name, feature, placement): wjson(f'{W}/placed_feature/{name}.json', {'feature': R(feature) if ':' not in feature else feature, 'placement': placement})
@@ -180,6 +70,21 @@ def features():
     pf('trees_golden_sparse', 'golden_tree_small', TREE_PL(RARE(6)))
     pf('trees_ancient_big', 'ancient_tree_big', TREE_PL(COUNT(2)))
     pf('trees_ancient_small', 'ancient_tree_small', TREE_PL(COUNT(5)))
+    # arbres vanilla, legerement plus grands
+    tree('oak_big', 'minecraft:oak_log', 'minecraft:oak_leaves', {'type': 'minecraft:straight_trunk_placer', 'base_height': 6, 'height_rand_a': 2, 'height_rand_b': 0},
+         {'type': 'minecraft:blob_foliage_placer', 'radius': 3, 'offset': 0, 'height': 3})
+    tree('birch_big', 'minecraft:birch_log', 'minecraft:birch_leaves', {'type': 'minecraft:straight_trunk_placer', 'base_height': 7, 'height_rand_a': 2, 'height_rand_b': 0},
+         {'type': 'minecraft:blob_foliage_placer', 'radius': 2, 'offset': 0, 'height': 3})
+    tree('spruce_big', 'minecraft:spruce_log', 'minecraft:spruce_leaves', {'type': 'minecraft:straight_trunk_placer', 'base_height': 8, 'height_rand_a': 3, 'height_rand_b': 1},
+         {'type': 'minecraft:spruce_foliage_placer', 'radius': {'type': 'minecraft:uniform', 'min_inclusive': 3, 'max_inclusive': 4},
+          'offset': {'type': 'minecraft:uniform', 'min_inclusive': 0, 'max_inclusive': 2},
+          'trunk_height': {'type': 'minecraft:uniform', 'min_inclusive': 2, 'max_inclusive': 3}})
+    pf('trees_oak_big', 'oak_big', TREE_PL(COUNT(4)))
+    pf('trees_oak_sparse', 'oak_big', TREE_PL(RARE(2)))
+    pf('trees_birch_big', 'birch_big', TREE_PL(COUNT(3)))
+    pf('trees_birch_sparse', 'birch_big', TREE_PL(RARE(3)))
+    pf('trees_spruce_big', 'spruce_big', TREE_PL(COUNT(3)))
+    pf('trees_spruce_sparse', 'spruce_big', TREE_PL(RARE(2)))
     # fleurs
     patch('sunstar_patch', st('sunstar'), 40, 6, 2)
     pf('sunstar_patch', 'sunstar_patch', [RARE(2), SQ, HM(), BIOME])
@@ -209,6 +114,7 @@ ORES_TAIL = ['minecraft:underwater_magma', 'minecraft:disk_sand', 'minecraft:dis
 # ordre global de la vegetation (toujours respecter cet ordre relatif)
 VEG_ORDER = ['minecraft:glow_lichen', 'ash_spires', 'dead_trees', 'dead_trees_marsh', 'boulders', 'standing_stones',
              'trees_golden_big', 'trees_golden_small', 'trees_golden_sparse', 'trees_ancient_big', 'trees_ancient_small',
+             'trees_oak_big', 'trees_oak_sparse', 'trees_birch_big', 'trees_birch_sparse', 'trees_spruce_big', 'trees_spruce_sparse',
              'minecraft:dark_forest_vegetation', 'minecraft:trees_swamp', 'minecraft:trees_taiga', 'minecraft:trees_windswept_hills',
              'minecraft:trees_plains', 'minecraft:trees_savanna', 'minecraft:trees_birch_and_oak',
              'sunstar_patch', 'sunstar_patch_rare', 'moonbell_patch', 'pipeweed_patch', 'cobweb_patch', 'ashroot_patch',
@@ -262,45 +168,29 @@ def biomes():
           spawns={'monster': [('minecraft:magma_cube', 10, 1, 3)], 'ambient': BATS},
           extra_steps={1: ['minecraft:lake_lava_underground', 'minecraft:lake_lava_surface'], 2: ['minecraft:amethyst_geode', R('basalt_spires')],
                        10: ['minecraft:freeze_top_layer', R('volcanic_surface')]})
-    # Hautemarche
-    biome('vertes_collines', 'Vertes-Collines', 0.7, 0.6, '#79b4ff', '#c4dcff', grass='#7cc24a', foliage='#6fb53c',
-          veg=('minecraft:trees_plains', 'sunstar_patch_rare', 'pipeweed_patch', 'minecraft:flower_plains', 'minecraft:patch_tall_grass_2',
+    # Hautemarche : trois plaines (herbe coloree), forets, montagnes, cimes, mer
+    biome('plaines_vertes', 'Plaines Vertes', 0.7, 0.6, '#79b4ff', '#c4dcff', grass='#BEEB9E', foliage='#9bd36a',
+          veg=('trees_oak_sparse', 'sunstar_patch_rare', 'pipeweed_patch', 'minecraft:flower_plains', 'minecraft:patch_tall_grass_2',
                'minecraft:patch_grass_plain', 'minecraft:patch_sugar_cane', 'minecraft:patch_pumpkin', 'minecraft:patch_berry_common'),
           spawns={'creature': FARM + [('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS, 'monster': [('orc', 20, 1, 3), ('warg', 8, 1, 2), ('pale_rider', 2, 1, 1), ('goblin', 30, 3, 5), ('cave_thief', 3, 1, 1)]})
-    biome('plaines_du_vent', 'Plaines du Vent', 0.6, 0.35, '#86b8f5', '#d2e2f2', grass='#b3b45a', foliage='#9aa64a',
-          veg=('boulders', 'trees_golden_sparse', 'minecraft:flower_default', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
+    biome('plaines_jaunes', 'Plaines Pâles', 0.6, 0.35, '#86b8f5', '#d2e2f2', grass='#FFEB9E', foliage='#d9c85a',
+          veg=('boulders', 'trees_birch_sparse', 'trees_oak_sparse', 'minecraft:flower_default', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
           spawns={'creature': [('minecraft:horse', 10, 2, 6), ('minecraft:cow', 8, 4, 4), ('minecraft:sheep', 6, 4, 4), ('stag', 2, 1, 2)], 'ambient': BATS, 'monster': ORCS + [('warg', 20, 2, 4)]})
-    biome('foret_doree', 'Forêt Dorée', 0.7, 0.8, '#8fc0ff', '#f1e6b8', water='#4f9ad6', grass='#a3c955', foliage='#d8b83a',
-          veg=('trees_golden_big', 'trees_golden_small', 'sunstar_patch', 'moonbell_patch', 'minecraft:flower_default', 'minecraft:patch_grass_forest'),
-          spawns={'creature': [('minecraft:rabbit', 6, 2, 3), ('minecraft:fox', 3, 1, 2), ('stag', 6, 1, 3)], 'ambient': BATS, 'monster': [('orc', 10, 1, 2), ('pale_rider', 2, 1, 1), ('goblin', 20, 2, 4)]})
-    biome('vieille_foret', 'Vieille-Forêt', 0.6, 0.9, '#6f9ed8', '#7f9a78', water='#3d6a55', wfog='#0c1f16', grass='#4f8a3a', foliage='#3d7a2e',
-          veg=('boulders', 'trees_ancient_big', 'trees_ancient_small', 'moonbell_patch', 'minecraft:patch_grass_forest', 'minecraft:patch_large_fern',
+    biome('plaines_cendre', 'Plaines de Cendre', 0.9, 0.1, '#8a8480', '#6a6460', water='#4a4a44', wfog='#1c1c18', grass='#96938E', foliage='#7d7a6a',
+          veg=('dead_trees', 'boulders', 'ashroot_patch', 'minecraft:patch_dead_bush_2', 'trees_spruce_sparse'), precip=False, particle=('minecraft:ash', 0.02),
+          spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 60, 3, 5), ('war_orc', 35, 2, 3), ('warg', 25, 2, 4), ('cave_troll', 10, 1, 1), ('pale_rider', 5, 1, 2), ('goblin', 20, 3, 5)]})
+    biome('grande_foret', 'Grande Forêt', 0.6, 0.9, '#6f9ed8', '#7f9a78', water='#3d6a55', wfog='#0c1f16', grass='#3f7a2e', foliage='#2f6a25',
+          veg=('boulders', 'trees_oak_big', 'trees_birch_big', 'trees_spruce_big', 'moonbell_patch', 'minecraft:patch_grass_forest', 'minecraft:patch_large_fern',
                'minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal'),
-          spawns={'creature': [('minecraft:fox', 4, 1, 2), ('minecraft:rabbit', 4, 2, 3), ('treeman', 5, 1, 1), ('stag', 4, 1, 2)], 'ambient': BATS, 'monster': ORCS + [('giant_spider', 6, 1, 1)]})
-    biome('bois_noir', 'Bois-Noir', 0.5, 0.8, '#4a5a70', '#2a3238', water='#2e4a48', wfog='#081210', grass='#3f5c32', foliage='#34502a',
-          veg=('minecraft:dark_forest_vegetation', 'cobweb_patch', 'minecraft:patch_grass_forest', 'minecraft:patch_large_fern',
-               'minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal'),
-          spawns={'ambient': BATS + [('crow', 8, 1, 3)], 'monster': [('giant_spider', 50, 1, 2), ('orc', 15, 1, 3), ('goblin', 20, 2, 4), ('pale_rider', 2, 1, 1)]})
-    biome('landes_des_tertres', 'Landes des Tertres', 0.35, 0.5, '#8a96a6', '#9aa2a8', water='#4a6a7a', grass='#7d8a5e', foliage='#6f7c50',
-          veg=('boulders', 'standing_stones', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain', 'minecraft:patch_dead_bush_2'),
-          spawns={'creature': [('minecraft:sheep', 8, 2, 4), ('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS + [('crow', 8, 1, 3)], 'monster': [('wight', 45, 1, 2), ('warg', 15, 2, 3), ('stone_troll', 12, 1, 1), ('pale_rider', 6, 1, 2), ('goblin', 20, 2, 4)]})
-    biome('marais_des_morts', 'Marais des Morts', 0.6, 0.9, '#6c7a70', '#55604e', water='#4c5a3a', wfog='#1a2212', grass='#5c6a3c', foliage='#55632f',
-          veg=('dead_trees_marsh', 'minecraft:trees_swamp', 'minecraft:patch_grass_plain', 'minecraft:patch_dead_bush_2', 'minecraft:patch_waterlily',
-               'minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal', 'minecraft:patch_sugar_cane', 'minecraft:seagrass_swamp'),
-          spawns={'creature': [('minecraft:frog', 10, 2, 5)], 'ambient': BATS + [('crow', 6, 1, 2)], 'monster': [('wight', 30, 1, 2), ('orc', 20, 2, 3), ('lurker', 12, 1, 1), ('pale_rider', 3, 1, 1), ('goblin', 20, 2, 4)]})
-    biome('monts_de_fer', 'Monts de Fer', 0.3, 0.4, '#7fa6e0', '#c0d0e0', grass='#6f9a5a', foliage='#5f8a4c', lunar='ore_lunargent',
-          veg=('boulders', 'minecraft:trees_taiga', 'minecraft:patch_grass_plain', 'minecraft:patch_large_fern', 'minecraft:patch_berry_common'),
+          spawns={'creature': [('minecraft:fox', 4, 1, 2), ('minecraft:rabbit', 4, 2, 3), ('treeman', 5, 1, 1), ('stag', 6, 1, 3)], 'ambient': BATS,
+                  'monster': ORCS + [('giant_spider', 10, 1, 1)]})
+    biome('monts_rocheux', 'Monts Rocheux', 0.3, 0.4, '#7fa6e0', '#c0d0e0', grass='#7a9a64', foliage='#6a8a54', lunar='ore_lunargent',
+          veg=('boulders', 'trees_spruce_sparse', 'minecraft:patch_grass_plain', 'minecraft:patch_berry_common'),
           spawns={'creature': [('minecraft:goat', 10, 1, 3), ('minecraft:sheep', 4, 2, 3), ('eagle', 3, 1, 1)], 'ambient': BATS, 'monster': [('orc', 25, 2, 4), ('goblin', 60, 3, 6), ('cave_troll', 14, 1, 1), ('stone_troll', 12, 1, 1), ('warg', 10, 2, 3), ('cave_thief', 6, 1, 1), ('pale_rider', 2, 1, 1)]},
           extra_steps={6: ORES + [R('ore_lunargent'), R('ore_lunargent_rich')] + ORES_TAIL})
-    biome('pics_blancs', 'Pics Blancs', -0.5, 0.6, '#9cc4ff', '#e6f0ff', grass='#8ab08a', foliage='#7aa07a', lunar='ore_lunargent_scarce',
-          veg=('boulders', 'minecraft:trees_windswept_hills', 'minecraft:patch_grass_plain'),
+    biome('cimes_neigeuses', 'Cimes Neigeuses', -0.5, 0.6, '#9cc4ff', '#e6f0ff', grass='#8ab08a', foliage='#7aa07a', lunar='ore_lunargent_scarce',
+          veg=('boulders', 'trees_spruce_sparse'),
           spawns={'creature': [('minecraft:goat', 10, 1, 3), ('eagle', 8, 1, 2)], 'ambient': BATS, 'monster': [('stone_troll', 20, 1, 1), ('warg', 20, 2, 3), ('goblin', 40, 3, 5), ('cave_troll', 8, 1, 1)]})
-    biome('terres_de_cendre', 'Terres de Cendre', 2.0, 0.0, '#5a2a22', '#3a201c', water='#4a3a36', wfog='#1c100c', grass='#57503f', foliage='#57503f',
-          veg=('ash_spires', 'dead_trees', 'ashroot_patch'), lava_surface=True, precip=False, particle=('minecraft:ash', 0.05),
-          spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 60, 3, 5), ('war_orc', 35, 2, 3), ('warg', 25, 2, 4), ('cave_troll', 10, 1, 1), ('pale_rider', 5, 1, 2), ('goblin', 20, 3, 5)]})
-    biome('terres_sauvages', 'Terres Sauvages', 1.2, 0.2, '#86b0e8', '#d8d2b0', grass='#b5a74f', foliage='#9a9a42', precip=False,
-          veg=('boulders', 'minecraft:trees_savanna', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_savanna', 'minecraft:patch_dead_bush_2'),
-          spawns={'creature': [('minecraft:horse', 4, 2, 4), ('minecraft:donkey', 2, 1, 3), ('minecraft:cow', 6, 2, 4), ('mammoth', 5, 1, 2)], 'ambient': BATS, 'monster': [('wild_man', 30, 2, 4), ('warg', 25, 2, 4), ('orc', 20, 2, 3), ('pale_rider', 2, 1, 1), ('goblin', 20, 2, 4)]})
     biome('mer_grise', 'Mer Grise', 0.5, 0.5, '#7fa6d8', '#b8c8d8', water='#3a6a8a', wfog='#061a2a',
           veg=('minecraft:seagrass_normal', 'minecraft:kelp_cold'),
           spawns={'water_ambient': FISH, 'water_creature': SQUID, 'monster': [('lurker', 4, 1, 1)]})
@@ -309,37 +199,11 @@ def biomes():
           spawns={'water_ambient': [('minecraft:salmon', 6, 1, 5)], 'water_creature': SQUID, 'monster': [('lurker', 6, 1, 1), ('orc', 10, 1, 2)]})
     for id, b in BIOMES.items(): wjson(f'{W}/biome/{id}.json', b)
 
-# ------------------------------------------------------------ source de biomes
-T_B = {'cold': (-1.0, -0.2), 'mild': (-0.2, 0.3), 'hot': (0.3, 1.0)}
-H_B = {'dry': (-1.0, -0.25), 'mid': (-0.25, 0.25), 'wet': (0.25, 1.0)}
-E_B = {'peaks': (-1.0, -0.4), 'hills': (-0.4, 0.15), 'flat': (0.15, 1.0)}
-TABLE = {
-    'peaks': {'cold': ('pics_blancs',) * 3, 'mild': ('monts_de_fer',) * 3, 'hot': ('terres_de_cendre', 'terres_de_cendre', 'monts_de_fer')},
-    'hills': {'cold': ('landes_des_tertres', 'bois_noir', 'bois_noir'), 'mild': ('plaines_du_vent', 'vieille_foret', 'foret_doree'),
-              'hot': ('terres_de_cendre', 'terres_sauvages', 'foret_doree')},
-    'flat': {'cold': ('landes_des_tertres', 'plaines_du_vent', 'marais_des_morts'), 'mild': ('plaines_du_vent', 'vertes_collines', 'marais_des_morts'),
-             'hot': ('terres_de_cendre', 'terres_sauvages', 'vertes_collines')},
-}
-FULL = (-1.0, 1.0)
+# ------------------------------------------------------------ source de biomes (carte predefinie)
+BIOME_ORDER = ['plaines_vertes', 'plaines_jaunes', 'plaines_cendre', 'grande_foret', 'monts_rocheux', 'cimes_neigeuses', 'mer_grise', 'rivage', 'riviere']
 
 def biome_source():
-    out = []
-    def pt(b, t=FULL, h=FULL, c=FULL, e=FULL, w=FULL):
-        out.append({'biome': R(b), 'parameters': {'temperature': list(t), 'humidity': list(h), 'continentalness': list(c),
-                                                  'erosion': list(e), 'weirdness': list(w), 'depth': 0.0, 'offset': 0.0}})
-    pt('mer_grise', c=(-1.2, -0.19))
-    pt('rivage', c=(-0.19, -0.11))
-    inland = (-0.11, 1.0)
-    pt('riviere', c=inland, e=(-0.4, 1.0), w=(-0.05, 0.05))
-    for en, e in E_B.items():
-        for tn, t in T_B.items():
-            for i, (hn, h) in enumerate(H_B.items()):
-                b = TABLE[en][tn][i]
-                if en == 'peaks':
-                    pt(b, t, h, inland, e)
-                else:
-                    pt(b, t, h, inland, e, (-1.0, -0.05)); pt(b, t, h, inland, e, (0.05, 1.0))
-    return {'type': 'minecraft:multi_noise', 'biomes': out}
+    return {'type': R('map'), 'biomes': [R(b) for b in BIOME_ORDER]}
 
 def structures():
     def structure(name, typ, biomes_list, extra, spacing, separation, salt, step='surface_structures', adapt='none'):
@@ -350,20 +214,20 @@ def structures():
         wjson(f'{W}/structure_set/{name}.json', {'structures': [{'structure': R(name), 'weight': 1}],
               'placement': {'type': 'minecraft:random_spread', 'spacing': spacing, 'separation': separation, 'salt': salt}})
     structure('volcano', 'volcano', ['volcan'], {'radius': 78, 'height': 104, 'doom': False}, 10, 5, 774411)
-    structure('mont_funeste', 'volcano', ['terres_de_cendre'], {'radius': 96, 'height': 132, 'doom': True}, 36, 18, 774412)
+    structure('mont_funeste', 'volcano', [], {'radius': 96, 'height': 132, 'doom': True}, 36, 18, 774412)
     def settlement(name, biomes_list, spacing, separation, salt, tags_):
         structure(name, 'settlement', biomes_list, {'kind': name}, spacing, separation, salt)
         for t in tags_: tag('worldgen/structure', t, R(name), ns=MOD)
-    settlement('halfling_village', ['vertes_collines'], 14, 7, 5101, ['villages_halfling', 'arrival_villages'])
-    settlement('human_village', ['plaines_du_vent', 'terres_sauvages'], 17, 8, 5102, ['villages_human'])
-    settlement('elf_village', ['foret_doree'], 12, 6, 5103, ['villages_elf'])
-    settlement('dwarf_mine', ['monts_de_fer', 'pics_blancs'], 20, 10, 5104, ['villages_dwarf', 'dwarf_mines'])
-    settlement('orc_fort', ['terres_de_cendre'], 13, 6, 5105, ['orc_forts'])
-    settlement('dark_tower', ['terres_de_cendre', 'bois_noir', 'landes_des_tertres', 'marais_des_morts'], 24, 11, 5106, ['dark_towers'])
-    settlement('barrow', ['landes_des_tertres'], 6, 3, 5107, ['barrows'])
-    settlement('hoard', ['monts_de_fer', 'pics_blancs'], 38, 18, 5108, ['hoards'])
-    settlement('pyre_tower', ['plaines_du_vent', 'vertes_collines'], 19, 9, 5109, [])
-    settlement('ruin', ['vertes_collines', 'plaines_du_vent', 'foret_doree', 'vieille_foret', 'landes_des_tertres', 'terres_sauvages', 'marais_des_morts'], 9, 4, 5110, [])
+    settlement('halfling_village', [], 14, 7, 5101, ['villages_halfling', 'arrival_villages'])
+    settlement('human_village', [], 17, 8, 5102, ['villages_human'])
+    settlement('elf_village', [], 12, 6, 5103, ['villages_elf'])
+    settlement('dwarf_mine', [], 20, 10, 5104, ['villages_dwarf', 'dwarf_mines'])
+    settlement('orc_fort', [], 13, 6, 5105, ['orc_forts'])
+    settlement('dark_tower', [], 24, 11, 5106, ['dark_towers'])
+    settlement('barrow', [], 6, 3, 5107, ['barrows'])
+    settlement('hoard', [], 38, 18, 5108, ['hoards'])
+    settlement('pyre_tower', [], 19, 9, 5109, [])
+    settlement('ruin', [], 9, 4, 5110, [])
     tag('worldgen/structure', 'volcanoes', R('volcano'), R('mont_funeste'), ns=MOD)
     tag('worldgen/structure', 'doom', R('mont_funeste'), ns=MOD)
     LANG['structure.ringsofash.volcano'] = 'Volcan'
@@ -375,12 +239,6 @@ def build():
     wjson(f'{D}/dimension_type/hautemarche.json', {
         'ultrawarm': False, 'natural': True, 'coordinate_scale': 1.0, 'has_skylight': True, 'has_ceiling': False, 'ambient_light': 0.0,
         'monster_spawn_light_level': {'type': 'minecraft:uniform', 'min_inclusive': 0, 'max_inclusive': 7}, 'monster_spawn_block_light_limit': 0,
-        'piglin_safe': False, 'bed_works': True, 'respawn_anchor_works': False, 'has_raids': False, 'logical_height': 384, 'min_y': -64,
-        'height': 384, 'infiniburn': '#minecraft:infiniburn_overworld', 'effects': 'minecraft:overworld'})
-    wjson(f'{W}/noise_settings/hautemarche.json', {
-        'sea_level': 63, 'disable_mob_generation': False, 'aquifers_enabled': True, 'ore_veins_enabled': False, 'legacy_random_source': False,
-        'default_block': {'Name': 'minecraft:stone'}, 'default_fluid': {'Name': 'minecraft:water', 'Properties': {'level': '0'}},
-        'noise': {'min_y': -64, 'height': 384, 'size_horizontal': 1, 'size_vertical': 2},
-        'noise_router': noise_router(), 'spawn_target': [], 'surface_rule': surface_rule()})
-    wjson(f'{D}/dimension/hautemarche.json', {'type': R('hautemarche'), 'generator': {
-        'type': 'minecraft:noise', 'settings': R('hautemarche'), 'biome_source': biome_source()}})
+        'piglin_safe': False, 'bed_works': True, 'respawn_anchor_works': False, 'has_raids': False, 'logical_height': 512, 'min_y': -64,
+        'height': 512, 'infiniburn': '#minecraft:infiniburn_overworld', 'effects': 'minecraft:overworld'})
+    wjson(f'{D}/dimension/hautemarche.json', {'type': R('hautemarche'), 'generator': {'type': R('map'), 'biome_source': biome_source()}})

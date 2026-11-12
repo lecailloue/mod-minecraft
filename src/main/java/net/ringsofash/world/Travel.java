@@ -160,23 +160,23 @@ public final class Travel {
         return false;
     }
 
-    /** Village d'arrivee (calcule une seule fois par monde). */
+    /** Point d'arrivee : le village des semi-hommes, a l'emplacement place sur la carte ("comte"). */
     public static BlockPos arrival(MinecraftServer server, ServerLevel lands) {
-        LandsData data = LandsData.get(server);
-        if (data.hasArrival) return BlockPos.of(data.arrival);
-        BlockPos found = null;
-        try {
-            found = lands.findNearestMapStructure(net.ringsofash.GameEvents.ARRIVAL_VILLAGES, BlockPos.ZERO, 120, false);
-        } catch (Exception e) {
-            RingsOfAsh.LOGGER.warn("Recherche du village d'arrivee impossible", e);
-        }
-        if (found == null) {
-            Pair<BlockPos, Holder<Biome>> b = lands.findClosestBiome3d(h -> h.is(ModWorldgen.HALFLING_BIOME), new BlockPos(0, 80, 0), 6400, 64, 64);
-            found = b != null ? b.getFirst() : BlockPos.ZERO;
-        }
-        found = new BlockPos(found.getX() + 14, 0, found.getZ() + 14);
-        data.setArrival(found);
-        return found;
+        int[] p = MapData.place("comte");
+        int x = p != null ? p[0] : 0, z = p != null ? p[1] : 0;
+        return new BlockPos(x, MapData.height(x, z) + 1, z);
+    }
+
+    /** La limite du monde : un joueur ne peut pas sortir de la carte de la Hautemarche. */
+    public static void keepInside(ServerPlayer p) {
+        if (!isLands(p.level())) return;
+        double lim = MapData.HALF - 2.0;
+        double x = p.getX(), z = p.getZ();
+        if (Math.abs(x) <= lim && Math.abs(z) <= lim) return;
+        double nx = Math.max(-lim, Math.min(lim, x)), nz = Math.max(-lim, Math.min(lim, z));
+        p.connection.teleport(nx, p.getY(), nz, p.getYRot(), p.getXRot());
+        p.setDeltaMovement(0, Math.min(0, p.getDeltaMovement().y), 0);
+        if (p.tickCount % 40 == 0) p.displayClientMessage(Component.literal("Une brume infranchissable vous barre la route.").withStyle(ChatFormatting.GRAY), true);
     }
 
     public static void teleport(ServerPlayer p, ServerLevel dest, BlockPos pos, boolean exactY) {
