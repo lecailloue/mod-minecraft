@@ -41,9 +41,19 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::renderers);
         modBus.addListener(ClientSetup::keys);
         modBus.addListener(ClientSetup::gui);
+        modBus.addListener(ClientSetup::blockColors);
+        modBus.addListener(ClientSetup::itemColors);
         modBus.addListener(ClientSetup::setup);
         NeoForge.EVENT_BUS.addListener(ClientSetup::tick);
         if (System.getProperty("roa.clienttest") != null) ClientTest.init();
+    }
+
+    private static void blockColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Block e) {
+        e.register((state, level, pos, idx) -> level == null || pos == null ? DwarvenTint.item() : DwarvenTint.at(pos), net.ringsofash.gen.Tinted.blocks());
+    }
+
+    private static void itemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item e) {
+        e.register((stack, idx) -> 0xFF000000 | DwarvenTint.item(), net.ringsofash.gen.Tinted.items());
     }
 
     private static void gui(net.neoforged.neoforge.client.event.RegisterGuiLayersEvent e) {

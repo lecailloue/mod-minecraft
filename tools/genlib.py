@@ -66,8 +66,92 @@ def stairs_state(id):
                 v[f'facing={f},half={half},shape={shape}'] = e
     bstate(id, {'variants': v})
 
+# ------------------------------------------------------------------ modeles teintes (tintindex 0) faits de boites
+def _face_uv(face, f, t, mirror=False):
+    x1, y1, z1 = f; x2, y2, z2 = t
+    uv = {'up': [x1, z1, x2, z2], 'down': [x1, 16 - z2, x2, 16 - z1], 'north': [16 - x2, 16 - y2, 16 - x1, 16 - y1],
+          'south': [x1, 16 - y2, x2, 16 - y1], 'west': [z1, 16 - y2, z2, 16 - y1], 'east': [16 - z2, 16 - y2, 16 - z1, 16 - y1]}[face]
+    if mirror and face in ('east', 'west', 'north', 'south'): uv = [uv[2], uv[1], uv[0], uv[3]]
+    return uv
+
+def box(f, t, tex='#all', per=None, cull=True, mirror_faces=()):
+    faces = {}
+    x1, y1, z1 = f; x2, y2, z2 = t
+    edge = {'down': y1 == 0, 'up': y2 == 16, 'north': z1 == 0, 'south': z2 == 16, 'west': x1 == 0, 'east': x2 == 16}
+    for fc in ('down', 'up', 'north', 'south', 'west', 'east'):
+        face = {'uv': _face_uv(fc, f, t, fc in mirror_faces), 'texture': (per or {}).get(fc, tex), 'tintindex': 0}
+        if cull and edge[fc]: face['cullface'] = fc
+        faces[fc] = face
+    return {'from': list(f), 'to': list(t), 'faces': faces}
+
+def tmodel(name, elements, textures, particle):
+    wjson(f'{A}/models/block/{name}.json', {'parent': 'minecraft:block/block', 'textures': dict(textures, particle=particle), 'elements': elements})
+
+DOOR_STATES = {('east', 'left', False): ('left', 0), ('east', 'left', True): ('left_open', 90), ('east', 'right', False): ('right', 0), ('east', 'right', True): ('right_open', 270),
+               ('north', 'left', False): ('left', 270), ('north', 'left', True): ('left_open', 0), ('north', 'right', False): ('right', 270), ('north', 'right', True): ('right_open', 180),
+               ('south', 'left', False): ('left', 90), ('south', 'left', True): ('left_open', 180), ('south', 'right', False): ('right', 90), ('south', 'right', True): ('right_open', 0),
+               ('west', 'left', False): ('left', 180), ('west', 'left', True): ('left_open', 270), ('west', 'right', False): ('right', 180), ('west', 'right', True): ('right_open', 90)}
+
+def gen_tinted(b):
+    id, kind = b['id'], b['kind']
+    tx = b.get('tex', id)
+    if kind in ('cube', 'custom_cube'):
+        tmodel(id, [box((0, 0, 0), (16, 16, 16))], {'all': T(tx)}, T(tx))
+        bstate(id, {'variants': {'': {'model': T(id)}}}); imodel(id, {'parent': T(id)})
+    elif kind == 'pillar':
+        tmodel(id, [box((0, 0, 0), (16, 16, 16), per={'up': '#end', 'down': '#end', 'north': '#side', 'south': '#side', 'west': '#side', 'east': '#side'})],
+               {'end': T(tx + '_top'), 'side': T(tx)}, T(tx))
+        bstate(id, {'variants': {'axis=y': {'model': T(id)}, 'axis=z': {'model': T(id), 'x': 90}, 'axis=x': {'model': T(id), 'x': 90, 'y': 90}}})
+        imodel(id, {'parent': T(id)})
+    elif kind in ('stairs', 'slab'):
+        t = {'all': T(tx)}
+        low = box((0, 0, 0), (16, 8, 16))
+        if kind == 'slab':
+            tmodel(id, [low], t, T(tx)); tmodel(id + '_top', [box((0, 8, 0), (16, 16, 16))], t, T(tx))
+            bstate(id, {'variants': {'type=bottom': {'model': T(id)}, 'type=top': {'model': T(id + '_top')}, 'type=double': {'model': T(b['base'])}}})
+        else:
+            tmodel(id, [low, box((8, 8, 0), (16, 16, 16))], t, T(tx))
+            tmodel(id + '_inner', [low, box((8, 8, 0), (16, 16, 16)), box((0, 8, 8), (8, 16, 16))], t, T(tx))
+            tmodel(id + '_outer', [low, box((8, 8, 8), (16, 16, 16))], t, T(tx))
+            stairs_state(id)
+        imodel(id, {'parent': T(id)})
+    elif kind == 'wall':
+        t = {'all': T(tx)}
+        post = box((4, 0, 4), (12, 16, 12), cull=False)
+        tmodel(id + '_post', [post], t, T(tx))
+        tmodel(id + '_side', [box((5, 0, 0), (11, 14, 8), cull=False)], t, T(tx))
+        tmodel(id + '_side_tall', [box((5, 0, 0), (11, 16, 8), cull=False)], t, T(tx))
+        tmodel(id + '_inventory', [post, box((5, 0, 0), (11, 14, 16), cull=False)], t, T(tx))
+        mp = [{'when': {'up': 'true'}, 'apply': {'model': T(id + '_post')}}]
+        for d, y in (('north', 0), ('east', 90), ('south', 180), ('west', 270)):
+            for h, suf in (('low', '_side'), ('tall', '_side_tall')):
+                ap = {'model': T(id + suf), 'uvlock': True}
+                if y: ap['y'] = y
+                mp.append({'when': {d: h}, 'apply': ap})
+        bstate(id, {'multipart': mp}); imodel(id, {'parent': T(id + '_inventory')})
+    elif kind == 'door':
+        for half, var in (('bottom', '#bottom'), ('top', '#top')):
+            for hinge in ('left', 'right'):
+                m = hinge == 'right'
+                tmodel(f'{id}_{half}_{hinge}', [box((0, 0, 0), (3, 16, 16), tex=var, mirror_faces=('west', 'east') if m else ())],
+                       {'bottom': T(id + '_bottom'), 'top': T(id + '_top')}, T(id + '_top'))
+                tmodel(f'{id}_{half}_{hinge}_open', [box((0, 0, 13), (16, 16, 16), tex=var, mirror_faces=('north', 'south') if m else ())],
+                       {'bottom': T(id + '_bottom'), 'top': T(id + '_top')}, T(id + '_top'))
+        v = {}
+        for (facing, hinge, op), (m, y) in DOOR_STATES.items():
+            for half in ('lower', 'upper'):
+                name = f'{id}_{"bottom" if half == "lower" else "top"}_{m}'
+                e = {'model': T(name)}
+                if y: e['y'] = y
+                v[f'facing={facing},half={half},hinge={hinge},open={str(op).lower()}'] = e
+        bstate(id, {'variants': v})
+        imodel(id, {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/{id}'}})
+    else:
+        raise ValueError(kind)
+
 def gen_block_assets(b):
     id, kind = b['id'], b['kind']
+    if b.get('tint'): return gen_tinted(b)
     tx = b.get('tex', id)       # nom de texture principal
     if kind in ('cube', 'ore', 'custom_cube'):
         faces = b.get('faces')
@@ -148,6 +232,9 @@ def gen_block_data(b):
     drop = b.get('drop', 'self')
     lt = None
     if drop == 'none': lt = None
+    elif kind == 'door':
+        lt = {'type': 'minecraft:block', 'pools': [{'rolls': 1, 'entries': [{'type': 'minecraft:item', 'name': mid(id)}], 'conditions': [
+            {'condition': 'minecraft:block_state_property', 'block': mid(id), 'properties': {'half': 'lower'}}, {'condition': 'minecraft:survives_explosion'}]}]}
     elif kind == 'slab':
         lt = {'type': 'minecraft:block', 'pools': [{'rolls': 1, 'entries': [{'type': 'minecraft:item', 'name': mid(id),
               'functions': [{'function': 'minecraft:set_count', 'count': 2, 'add': False, 'conditions': [
@@ -179,6 +266,7 @@ def gen_block_data(b):
     if b.get('level'): tag('block', f'needs_{b["level"]}_tool', mid(id))
     for t in b.get('tags', []): tag('block', t, mid(id))
     for t in b.get('itags', []): tag('item', t, mid(id))
+    if kind == 'door': tag('block', 'doors', mid(id)); tag('item', 'doors', mid(id))
     if kind == 'stairs': tag('block', 'stairs', mid(id)); tag('item', 'stairs', mid(id))
     if kind == 'slab': tag('block', 'slabs', mid(id)); tag('item', 'slabs', mid(id))
     if kind == 'wall': tag('block', 'walls', mid(id)); tag('item', 'walls', mid(id))
@@ -204,11 +292,11 @@ def block_java(b):
     t = JAVA_KIND[b['kind']]
     return t.format(copy=b.get('copy', 'STONE'), extra=b.get('extra', ''), BASE=(b.get('base') or '').upper())
 
-def family(base_id, fr_base, fr_plural_fem, kinds=('stairs', 'slab', 'wall'), tool='pickaxe', tags=()):
+def family(base_id, fr_base, fr_plural_fem, kinds=('stairs', 'slab', 'wall'), tool='pickaxe', tags=(), tint=False):
     names = {'stairs': ('Escalier en ' + fr_plural_fem), 'slab': ('Dalle en ' + fr_plural_fem),
              'wall': ('Muret en ' + fr_plural_fem), 'fence': ('Barrière en ' + fr_plural_fem)}
     for k in kinds:
-        block(f'{base_id}_{k}', names[k], k, base=base_id, tex=base_id, tool=tool, tags=list(tags))
+        block(f'{base_id}_{k}', names[k], k, base=base_id, tex=base_id, tool=tool, tags=list(tags), tint=tint)
 
 # ------------------------------------------------------------------ objets
 def item(id, fr, java='new Item(props())', model='generated', tex=None, tags=(), tex_name=None):
@@ -279,6 +367,13 @@ def write_java():
         L.append(f'    public static final DeferredItem<Item> {it["id"].upper()} = ITEMS.register("{it["id"]}", () -> {it["java"]});')
     L += ['    private Reg() {}', '}', '']
     with open(os.path.join(JAVA_GEN, 'Reg.java'), 'w', encoding='utf-8') as f: f.write('\n'.join(L))
+    tb = [b['id'] for b in BLOCKS if b.get('tint')]
+    T_ = ['// FICHIER GENERE - blocs dont la teinte varie (pierre naine)', 'package net.ringsofash.gen;', '', 'import net.minecraft.world.item.Item;',
+          'import net.minecraft.world.level.block.Block;', '', 'public final class Tinted {',
+          '    public static Block[] blocks() { return new Block[]{' + ', '.join(f'Reg.{i.upper()}.get()' for i in tb) + '}; }',
+          '    public static Item[] items() { return new Item[]{' + ', '.join(f'Reg.BI_{i.upper()}.get()' for i in tb) + '}; }',
+          '    private Tinted() {}', '}', '']
+    with open(os.path.join(JAVA_GEN, 'Tinted.java'), 'w', encoding='utf-8') as f: f.write('\n'.join(T_))
 
 def finish():
     for b in BLOCKS:

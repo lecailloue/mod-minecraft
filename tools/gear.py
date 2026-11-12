@@ -226,7 +226,7 @@ def build():
         for x in range(4, 12): ft.putpixel((x, y), mix(rgb('#ffb030'), rgb('#c03010'), ((x * 7 + y * 3) % 5) / 5) + (255,))
     btex('dwarven_forge_top', ft)
     block('dwarven_forge', 'Forge naine', 'custom_cube', java='new ForgeBlock(copy(Blocks.DEEPSLATE_BRICKS).lightLevel(s -> 10))', tool='pickaxe',
-          faces={'top': 'dwarven_forge_top', 'bottom': 'dwarven_bricks', 'side': 'dwarven_forge_side'})
+          faces={'top': 'dwarven_forge_top', 'bottom': 'dwarven_bricks_plain', 'side': 'dwarven_forge_side'})
     shaped('dwarven_forge', ['###', '#l#', '###'], {'#': 'dwarven_bricks', 'l': 'minecraft:lava_bucket'}, 'dwarven_forge')
     ps = log_side('#6b4a2a', 83).rotate(90)
     btex('alarm_pyre_side', ps)

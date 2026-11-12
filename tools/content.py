@@ -1,6 +1,7 @@
 """Contenu : blocs, objets, recettes, textures."""
 from genlib import *
 from tex import *
+import dwarf
 
 def build():
     blocks()
@@ -37,12 +38,24 @@ def blocks():
     btex('white_pillar', pillar_side('#e6e3da', 13)); btex('white_pillar_top', framed('#e6e3da', 14))
     block('white_pillar', 'Pilier blanc', 'pillar', copy='STONE_BRICKS', tool='pickaxe')
 
-    # --- nains
-    btex('dwarven_bricks', bricks('#4b505b', '#2a2d34', 21, var=0.09))
-    block('dwarven_bricks', 'Briques naines', copy='DEEPSLATE_BRICKS', tool='pickaxe')
-    family('dwarven_bricks', 'dwarven', 'briques naines')
-    btex('dwarven_pillar', pillar_side('#555a66', 22)); btex('dwarven_pillar_top', framed('#555a66', 23))
-    block('dwarven_pillar', 'Pilier nain', 'pillar', copy='DEEPSLATE_BRICKS', tool='pickaxe')
+    # --- nains : pierre grise, teinte en jeu = degrade entre deux couleurs (voir DwarvenTint.java)
+    btex('dwarven_bricks_plain', bricks('#4b505b', '#2a2d34', 21, var=0.09))
+    btex('dwarven_stone', dwarf.d_stone())
+    block('dwarven_stone', 'Pierre naine', copy='DEEPSLATE', tool='pickaxe', tint=True)
+    btex('dwarven_cobblestone', dwarf.d_cobble())
+    block('dwarven_cobblestone', 'Pavés nains', copy='COBBLED_DEEPSLATE', tool='pickaxe', tint=True)
+    family('dwarven_cobblestone', 'dwarven', 'pavés nains', tint=True)
+    btex('dwarven_bricks', dwarf.d_bricks())
+    block('dwarven_bricks', 'Briques naines', copy='DEEPSLATE_BRICKS', tool='pickaxe', tint=True)
+    family('dwarven_bricks', 'dwarven', 'briques naines', tint=True)
+    ps, pt = dwarf.d_pillar()
+    btex('dwarven_pillar', ps); btex('dwarven_pillar_top', pt)
+    block('dwarven_pillar', 'Pilier nain', 'pillar', copy='DEEPSLATE_BRICKS', tool='pickaxe', tint=True)
+    btex('dwarven_chiseled', dwarf.d_chiseled())
+    block('dwarven_chiseled', 'Pierre naine ciselée', copy='CHISELED_DEEPSLATE', tool='pickaxe', tint=True)
+    dl, du, di = dwarf.d_door()
+    btex('dwarven_door_bottom', dl); btex('dwarven_door_top', du); itex('dwarven_door', di)
+    block('dwarven_door', 'Porte naine', 'door', java='new DoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.STONE, copy(Blocks.IRON_DOOR).noOcclusion())', tool='pickaxe', tint=True)
     rune = framed('#474c57', 24)
     stamp(rune, ['..x..x..', '..x.xx..', '..xx.x..', '..x..x..', '.xxx.x..', '..x..xx.', '..x..x..', '..x..x..'],
           {'x': '#f2b23a'}, 4, 4)
@@ -104,7 +117,18 @@ def blocks():
     for (x, y) in [(2, 3), (9, 2), (5, 8), (12, 9), (3, 12), (9, 13)]:
         stamp(gp, ['.bb.', 'baad', 'baad', '.dd.'], {'a': '#f4c430', 'b': '#fff1a0', 'd': '#a87410'}, x, y)
     btex('gold_pile', gp)
-    block('gold_pile', "Tas d'or", copy='GOLD_BLOCK', tool='pickaxe', level='iron')
+    # tas d'or pose en couches (1 a 8) comme la neige
+    loot = {'type': 'minecraft:block', 'pools': [{'rolls': 1, 'entries': [{'type': 'minecraft:item', 'name': mid('gold_pile'), 'functions': [
+        {'function': 'minecraft:set_count', 'count': n, 'add': False, 'conditions': [
+            {'condition': 'minecraft:block_state_property', 'block': mid('gold_pile'), 'properties': {'layers': str(n)}}]} for n in range(1, 9)]}],
+        'conditions': [{'condition': 'minecraft:survives_explosion'}]}]}
+    block('gold_pile', "Tas d'or", 'custom', java='new CoinPileBlock(copy(Blocks.GOLD_BLOCK).noOcclusion().forceSolidOff().strength(1.2F).pushReaction(PushReaction.DESTROY)'
+          '.isViewBlocking((s, l, p) -> s.getValue(SnowLayerBlock.LAYERS) >= 8))', tool='pickaxe', level='iron', drop=loot)
+    for n in range(1, 8):
+        bmodel(f'gold_pile_h{n}', f'minecraft:block/snow_height{2 * n}', {'texture': T('gold_pile'), 'particle': T('gold_pile')})
+    bmodel('gold_pile_h8', 'minecraft:block/cube_all', {'all': T('gold_pile')})
+    bstate('gold_pile', {'variants': {f'layers={n}': {'model': T(f'gold_pile_h{n}')} for n in range(1, 9)}})
+    imodel('gold_pile', {'parent': T('gold_pile_h2')})
 
     # --- plantes
     fl = {'s': '#3f7a34', 'r': '#2d5a26', 'a': '#f2c21e', 'b': '#fff0a0', 'c': '#ffffff', 'x': '#8fb7ff', 'y': '#dfeaff', 'z': '#5d83d6',

@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.ringsofash.entity.ModEntities;
 import net.ringsofash.entity.PeopleEntity;
+import net.ringsofash.block.CoinPileBlock;
 import net.ringsofash.gen.Reg;
 
 import static net.ringsofash.world.Build.E;
@@ -435,7 +436,7 @@ public final class Buildings {
         // dortoir et tresor (au fond)
         for (int x = 2; x <= 8; x += 3) b.bed(x, 1, 24, Blocks.BROWN_BED, S);
         b.chest(30, 1, 24, W, "dwarf_hall"); b.chest(30, 1, 22, W, "dwarf_hall"); b.chest(30, 1, 20, W, "dwarf_hall");
-        b.fill(28, 1, 24, 29, 1, 24, Blocks.GOLD_BLOCK); b.s(28, 2, 24, Reg.GOLD_PILE.get());
+        b.fill(28, 1, 24, 29, 1, 24, Blocks.GOLD_BLOCK); b.s(28, 2, 24, CoinPileBlock.of(5));
         for (int i = 0; i < 6; i++) people(b, ModEntities.DWARF.get(), 8 + i * 3, 1, 8 + (i % 3) * 5, PeopleEntity.CIVIL, i % 3, 14);
         people(b, ModEntities.DWARF.get(), 15, 1, 3, PeopleEntity.GUARD, -1, 10);
         people(b, ModEntities.DWARF.get(), 17, 1, 3, PeopleEntity.GUARD, -1, 10);
@@ -488,7 +489,7 @@ public final class Buildings {
         // estrade du tresor
         b.fill(9, 1, 22, 17, 1, 25, Blocks.POLISHED_DEEPSLATE);
         b.chest(11, 2, 24, N, "mine_treasure"); b.chest(13, 2, 24, N, "mine_treasure"); b.chest(15, 2, 24, N, "mine_treasure");
-        b.s(10, 2, 24, Reg.GOLD_PILE.get()); b.s(16, 2, 24, Reg.GOLD_PILE.get()); b.s(13, 2, 23, Reg.DWARVEN_LAMP.get());
+        b.s(10, 2, 24, CoinPileBlock.of(4)); b.s(16, 2, 24, CoinPileBlock.of(6)); b.s(13, 2, 23, Reg.DWARVEN_LAMP.get());
         b.mob(ModEntities.FIRE_DEMON.get(), 13, 1, 15, 0, null);
     }
 
@@ -597,7 +598,7 @@ public final class Buildings {
             b.air(x, -22, z, x, top, z);
             b.s(x, -23, z, Blocks.STONE);
             int gold = (int) Math.round(Math.max(0, n.fbm(x * 0.18, z * 0.18) + 0.25) * 4 * Math.sqrt(base));
-            for (int y = 0; y < gold; y++) b.s(x, -22 + y, z, y == gold - 1 || b.rnd.nextInt(3) == 0 ? Reg.GOLD_PILE.get() : Blocks.GOLD_BLOCK);
+            for (int y = 0; y < gold; y++) b.s(x, -22 + y, z, y == gold - 1 ? CoinPileBlock.of(3 + b.rnd.nextInt(5)) : Blocks.GOLD_BLOCK.defaultBlockState());
             if (gold == 0 && b.rnd.nextInt(60) == 0) b.s(x, -22, z, Blocks.BONE_BLOCK);
             if (b.rnd.nextInt(90) == 0) b.s(x, top + 1, z, Blocks.SHROOMLIGHT);
         }
