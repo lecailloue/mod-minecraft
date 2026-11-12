@@ -115,6 +115,17 @@ public final class MapChunkGenerator extends ChunkGenerator {
         return vnoise3(x, y, z, seed) * 0.62f + vnoise3(x * 2.2 + 11, y * 2.2, z * 2.2 - 7, seed + 29) * 0.38f;
     }
 
+    /** taches de sol continues : renvoie 0 (rien), 1 (terre), 2 (chemin) ; seed distincte par biome */
+    static int groundPatch(int x, int z, int seed, float thr) {
+        float n = fbm(x * 0.022, z * 0.022, seed);
+        if (n <= thr) return 0;
+        float t = fbm(x * 0.09, z * 0.09, seed + 6) + (hash(x, seed, z) - 0.5f) * 0.05f;
+        float d = n - thr;
+        if (t > 0.62f - d * 1.6f) return 2;
+        if (t > 0.5f - d * 1.6f) return 1;
+        return 0;
+    }
+
     /** texture de roche en volume : pierre, andesite, andesite polie, cobblestone et gravier, partout dans la montagne */
     static BlockState rock(int x, int y, int z) {
         float v = fbm3(x * 0.045, y * 0.06, z * 0.045, 14) + (hash(x, y + 11, z) - 0.5f) * 0.06f;
@@ -163,7 +174,13 @@ public final class MapChunkGenerator extends ChunkGenerator {
             }
             case 0, MapData.B_BOSQ -> {
                 if (slope >= 4 && h >= 78) { top = rock(x, h, z); layers = 1; }
-                else { top = GRASS; layers = 3; }
+                else {
+                    top = GRASS; layers = 3;
+                    int gp = under ? 0 : groundPatch(x, z, 21, 0.545f);
+                    if (gp == 2) top = hash(x, 3, z) < 0.5f ? COARSE : PATH;
+                    else if (gp == 1) top = COARSE;
+                    else if (fbm(x * 0.05, z * 0.05, 23) > 0.66f && fbm(x * 0.2, z * 0.2, 24) > 0.5f) top = DIRT;
+                }
             }
             case 1 -> {
                 if (slope >= 4 && h >= 78) { top = rock(x, h, z); layers = 1; }
@@ -187,7 +204,16 @@ public final class MapChunkGenerator extends ChunkGenerator {
             }
             case MapData.B_FORET, MapData.B_CLAIR -> {
                 if (slope >= 4 && h >= 78) { top = rock(x, h, z); layers = 1; }
-                else { top = under ? DIRT : fbm(x * 0.06, z * 0.06, 8) > (b == MapData.B_FORET ? 0.58f : 0.68f) ? PODZOL : GRASS; layers = 3; }
+                else {
+                    top = under ? DIRT : GRASS; layers = 3;
+                    if (!under) {
+                        float pz = fbm(x * 0.06, z * 0.06, 8);
+                        int gp = groundPatch(x, z, 26, b == MapData.B_FORET ? 0.55f : 0.58f);
+                        if (pz > (b == MapData.B_FORET ? 0.56f : 0.66f)) top = PODZOL;
+                        else if (gp == 2) top = COARSE;
+                        else if (gp == 1) top = hash(x, 4, z) < 0.5f ? PODZOL : COARSE;
+                    }
+                }
             }
             case MapData.B_MONTS -> {
                 top = mountainTop(x, z, h, slope, under);

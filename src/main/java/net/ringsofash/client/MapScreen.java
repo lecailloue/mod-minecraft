@@ -56,6 +56,18 @@ public class MapScreen extends Screen {
         g.fill(x0 - 3, y0 - 3, x0 + s + 3, y0 + s + 3, 0xFF6B5330);
         g.blit(texture, x0, y0, s, s, 0f, 0f, TEX, TEX, TEX, TEX);
         g.drawCenteredString(this.font, "§6§lCarte de la Hautemarche", this.width / 2, y0 - 12, 0xFFFFFF);
+        // nord : le haut de la carte (rose des vents en haut a droite)
+        int cx = x0 + s - 22, cy = y0 + 28;
+        g.fill(cx - 15, cy - 20, cx + 16, cy + 21, 0xB0201A14);
+        g.fill(cx, cy - 15, cx + 1, cy + 14, 0xFFE8D9A8);
+        g.fill(cx - 14, cy, cx + 15, cy + 1, 0xFF8A7A50);
+        g.fill(cx - 2, cy - 13, cx + 3, cy - 11, 0xFFE02020);
+        g.fill(cx - 1, cy - 15, cx + 2, cy - 13, 0xFFE02020);
+        g.drawCenteredString(this.font, "§c§lN", cx, cy - 31, 0xFFFFFF);
+        g.drawString(this.font, "S", cx - 2, cy + 12, 0xFFCCBB99, false);
+        g.drawString(this.font, "O", cx - 14, cy - 3, 0xFFCCBB99, false);
+        g.drawString(this.font, "E", cx + 8, cy - 3, 0xFFCCBB99, false);
+        g.drawCenteredString(this.font, "§7Nord en haut", this.width / 2, y0 + s + 20, 0xFFFFFF);
         double k = s / (double) MapData.SIZE;
         // lieux connus
         for (Map.Entry<String, int[]> e : MapData.places().entrySet()) {

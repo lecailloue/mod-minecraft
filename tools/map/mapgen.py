@@ -69,6 +69,29 @@ orzd = binary_dilation(orange, iterations=10)
 rockf &= ~orzd; peak &= ~orzd            # la zone orange reste libre de montagnes : on y passe a pied
 rock = rockf | peak
 river = up(binary_dilation(binary_closing(river0, iterations=2), iterations=1), 1.6, .35)
+river &= land
+# les affluents rejoignent un autre cours d'eau ou la mer : aucune riviere isolee
+for _ in range(6):
+    lab, nl = label(river | sea, structure=np.ones((3, 3)))
+    sizes = np.bincount(lab.ravel()); sea_lab = set(np.unique(lab[sea]))
+    changed = False
+    for c in range(1, nl + 1):
+        if c in sea_lab or sizes[c] == 0: continue
+        comp = lab == c
+        if sizes[c] < 25: river &= ~comp; changed = True; continue
+        others = (river | sea) & ~comp
+        dd, ind = edt(~others, return_indices=True)
+        ys_, xs_ = np.where(comp)
+        j = dd[ys_, xs_].argmin()
+        if dd[ys_[j], xs_[j]] > 260: continue
+        y0_, x0_ = ys_[j], xs_[j]; y1_, x1_ = ind[0][y0_, x0_], ind[1][y0_, x0_]
+        t = np.linspace(0, 1, int(max(abs(y1_ - y0_), abs(x1_ - x0_))) + 2)
+        wob = np.sin(t * np.pi) * (octave(40)[y0_, x0_] - .5) * 40
+        ly = np.rint(y0_ + (y1_ - y0_) * t + wob * (x1_ - x0_) / (abs(y1_ - y0_) + abs(x1_ - x0_) + 1)).astype(int).clip(0, N - 1)
+        lx = np.rint(x0_ + (x1_ - x0_) * t - wob * (y1_ - y0_) / (abs(y1_ - y0_) + abs(x1_ - x0_) + 1)).astype(int).clip(0, N - 1)
+        line = np.zeros((N, N), bool); line[ly, lx] = True
+        river |= binary_dilation(line, iterations=1) & land; changed = True
+    if not changed: break
 riv_d = edt(~river)
 notch = np.clip((riv_d - 5) / 36.0, 0, 1)            # les montagnes s'ecartent pour laisser passer les rivieres
 
