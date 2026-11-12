@@ -16,7 +16,7 @@ import java.util.Map;
 public class MapScreen extends Screen {
     private static final int TEX = 640;
     private static final int[] COLORS = {
-            0xBEEB9E, 0xFFEB9E, 0x96938E, 0x2F7A3A, 0x808080, 0xFFFFFF, 0x2A5FB0, 0xF0E0A0, 0x4F94EB, 0x60504A, 0x6FAF55, 0x9FD680};
+            0xBEEB9E, 0xFFEB9E, 0x96938E, 0x2F7A3A, 0x808080, 0xFFFFFF, 0x2A5FB0, 0xF0E0A0, 0x4F94EB, 0x60504A, 0x6FAF55, 0x9FD680, 0xFF6A14};
     private static ResourceLocation texture;
 
     public MapScreen() { super(Component.literal("Carte de la Hautemarche")); }

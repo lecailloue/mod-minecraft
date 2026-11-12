@@ -21,10 +21,10 @@ public final class MapData {
     public static final int N = 2000, SIZE = 5000, HALF = SIZE / 2;
     public static final double SCALE = SIZE / (double) N;   // grille de 2000 cases de 2,5 blocs = 5000 x 5000 blocs
     public static final int SEA = 63;
-    public static final int B_MONTS_CENDRE = 9, B_CLAIR = 10, B_BOSQ = 11;
+    public static final int B_MONTS_CENDRE = 9, B_CLAIR = 10, B_BOSQ = 11, B_LAVE = 12;
     public static final int B_MER = 6, B_RIVAGE = 7, B_RIVIERE = 8, B_CIMES = 5, B_MONTS = 4, B_FORET = 3;
     public static final String[] BIOMES = {"plaines_vertes", "plaines_jaunes", "plaines_cendre", "grande_foret", "monts_rocheux",
-            "cimes_neigeuses", "mer_grise", "rivage", "riviere", "monts_de_cendre", "foret_clairsemee", "bosquets"};
+            "cimes_neigeuses", "mer_grise", "rivage", "riviere", "monts_de_cendre", "foret_clairsemee", "bosquets", "rivieres_de_lave"};
 
     private static short[] height;
     private static short[] water;
@@ -134,11 +134,11 @@ public final class MapData {
         if (!inside(x, z)) return B_MER;
         int gx = (int) Math.floor((x + HALF) / SCALE), gz = (int) Math.floor((z + HALF) / SCALE);
         int b0 = biome[cell(gx, gz)];
-        if (b0 == B_MER || b0 == B_RIVIERE || b0 == B_RIVAGE) return b0;
+        if (b0 == B_MER || b0 == B_RIVIERE || b0 == B_RIVAGE || b0 == B_LAVE) return b0;
         // frontieres irregulieres : on decale legerement le point lu
         double wx = x + (MapChunkGenerator.fbm(x * 0.02, z * 0.02, 51) - 0.5) * 70, wz = z + (MapChunkGenerator.fbm(x * 0.02 + 40, z * 0.02, 52) - 0.5) * 70;
         int b1 = biome[cell((int) Math.floor((wx + HALF) / SCALE), (int) Math.floor((wz + HALF) / SCALE))];
-        return b1 == B_MER || b1 == B_RIVIERE || b1 == B_RIVAGE ? b0 : b1;
+        return b1 == B_MER || b1 == B_RIVIERE || b1 == B_RIVAGE || b1 == B_LAVE ? b0 : b1;
     }
 
     /** Pente locale : plus grand ecart d'altitude avec les 4 voisins. */

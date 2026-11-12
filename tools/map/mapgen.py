@@ -171,7 +171,8 @@ bio[roc] = B_MONTS
 bio[(env_p + jit > .38) & ~ash_near] = B_CIMES
 bio[(roc & ash_near) | (volcano > 25)] = B_MONTS_CENDRE
 bio[carve] = B_RIVIERE
-beach = land & (d_sea < 16) & (h < SEA + 4) & ~roc & ~carve
+bio[carve & (zone == 2)] = 12                 # rivieres de lave dans les terres de cendre
+beach = land & (d_sea < 16) & (h < SEA + 4) & ~roc & ~carve & (zone != 2)
 bio[beach] = B_RIVAGE
 bio[sea] = B_MER
 
@@ -179,14 +180,14 @@ bio[sea] = B_MER
 GR = np.array([(190, 235, 158), (255, 235, 158), (150, 147, 142)], np.float32)
 prev = GR[zone].copy()
 for i, col in ((B_FORET, (40, 110, 50)), (B_CLAIR, (110, 170, 90)), (B_BOSQ, (150, 205, 120)), (B_MONTS, (125, 125, 125)),
-               (B_CIMES, (240, 245, 255)), (B_MONTS_CENDRE, (96, 80, 72)), (B_RIVIERE, (110, 170, 235)), (B_RIVAGE, (240, 225, 160)), (B_MER, (60, 120, 200))):
+               (B_CIMES, (240, 245, 255)), (B_MONTS_CENDRE, (96, 80, 72)), (B_RIVIERE, (110, 170, 235)), (12, (255, 110, 20)), (B_RIVAGE, (240, 225, 160)), (B_MER, (60, 120, 200))):
     prev[bio == i] = col
 shade = np.clip(.85 + (np.roll(h, 2, 0) - np.roll(h, -2, 0)) * 0.02, .4, 1.3)[..., None]
 prev = np.where(sea[..., None], prev * (0.75 + .25 * np.clip((h + 30) / 90, 0, 1)[..., None]), prev * shade)
 Image.fromarray(np.clip(prev, 0, 255).astype(np.uint8)).resize((1000, 1000), Image.LANCZOS).save(out + '/apercu_final.png')
 Image.fromarray((h + 64).astype(np.uint16)).save(out + '/relief.png')
 print('hauteurs', int(h.min()), int(h.max()), 'volcan', round(vx - 1000), round(vy - 1000),
-      {i: round(float((bio == i).mean() * 100), 1) for i in range(12)})
+      {i: round(float((bio == i).mean() * 100), 1) for i in range(13)})
 
 if bin_out:
     hh = np.clip(np.rint(h + 64), 0, 65535).astype('>u2')

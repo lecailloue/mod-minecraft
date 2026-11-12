@@ -140,7 +140,7 @@ def fid(x): return x if ':' in x else R(x)
 
 BIOMES = {}
 def biome(id, fr, temp, down, sky, fog, water='#3f76e4', wfog='#050533', grass=None, foliage=None, veg=(), ores=True, lunar=None,
-          lava_surface=False, snow=False, spawns=None, particle=None, precip=True, carvers=True, extra_steps=None):
+          lava_surface=False, snow=False, spawns=None, particle=None, precip=True, carvers=True, extra_steps=None, loop=None, additions=None):
     vset = set(veg)
     unknown = vset - set(VEG_ORDER)
     assert not unknown, unknown
@@ -155,6 +155,8 @@ def biome(id, fr, temp, down, sky, fog, water='#3f76e4', wfog='#050533', grass=N
     for k, v in (extra_steps or {}).items(): steps[k] = [f for f in v if id == 'volcan' or f != 'minecraft:ore_dirt']
     eff = {'fog_color': col(fog), 'sky_color': col(sky), 'water_color': col(water), 'water_fog_color': col(wfog),
            'mood_sound': {'sound': 'minecraft:ambient.cave', 'tick_delay': 6000, 'block_search_extent': 8, 'offset': 2.0}}
+    if loop: eff['ambient_sound'] = loop
+    if additions: eff['additions_sound'] = {'sound': additions, 'tick_chance': 0.0111}
     if grass: eff['grass_color'] = col(grass)
     if foliage: eff['foliage_color'] = col(foliage)
     if particle: eff['particle'] = {'options': {'type': particle[0]}, 'probability': particle[1]}
@@ -187,8 +189,8 @@ def biomes():
     biome('plaines_jaunes', 'Plaines Pâles', 0.6, 0.35, '#86b8f5', '#d2e2f2', grass='#FFEB9E', foliage='#d9c85a',
           veg=('trees_birch_sparse', 'trees_oak_sparse', 'bushes_birch_few', 'bushes_oak_few', 'fallen_birch_logs_few', 'minecraft:flower_default', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
           spawns={'creature': [('minecraft:horse', 10, 2, 6), ('minecraft:cow', 8, 4, 4), ('minecraft:sheep', 6, 4, 4), ('stag', 2, 1, 2)], 'ambient': BATS, 'monster': ORCS + [('warg', 20, 2, 4)]})
-    biome('plaines_cendre', 'Plaines de Cendre', 0.9, 0.1, '#8a8480', '#6a6460', water='#4a4a44', wfog='#1c1c18', grass='#96938E', foliage='#7d7a6a',
-          veg=('ashroot_patch',), precip=False, particle=('minecraft:ash', 0.02),
+    biome('plaines_cendre', 'Plaines de Cendre', 0.9, 0.1, '#5a3a34', '#33201c', water='#4a4a44', wfog='#1c1c18', grass='#96938E', foliage='#7d7a6a',
+          veg=('ashroot_patch',), precip=False, particle=('minecraft:ash', 0.045), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
           spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 60, 3, 5), ('war_orc', 35, 2, 3), ('warg', 25, 2, 4), ('cave_troll', 10, 1, 1), ('pale_rider', 5, 1, 2), ('goblin', 20, 3, 5)]})
     biome('grande_foret', 'Grande Forêt', 0.6, 0.9, '#6f9ed8', '#7f9a78', water='#3d6a55', wfog='#0c1f16', grass='#3f7a2e', foliage='#2f6a25',
           veg=('trees_oak_big', 'trees_birch_big', 'trees_spruce_big', 'fallen_oak_logs', 'fallen_spruce_logs', 'fallen_birch_logs_few', 'bushes_oak', 'bushes_spruce', 'moonbell_patch', 'minecraft:patch_grass_forest', 'minecraft:patch_large_fern',
@@ -205,9 +207,12 @@ def biomes():
     biome('bosquets', 'Bosquets', 0.65, 0.5, '#79b4ff', '#c4dcff', grass='#AEE08A', foliage='#82bf55',
           veg=('trees_oak_sparse', 'trees_birch_sparse', 'fallen_oak_logs_few', 'bushes_oak', 'bushes_birch', 'minecraft:flower_plains', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
           spawns={'creature': FARM + [('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS, 'monster': ORCS})
-    biome('monts_de_cendre', 'Monts de Cendre', 1.0, 0.0, '#5a2a22', '#3a201c', water='#4a3a36', wfog='#1c100c', grass='#57503f', foliage='#57503f',
-          veg=(), precip=False, particle=('minecraft:ash', 0.04),
+    biome('monts_de_cendre', 'Monts de Cendre', 1.0, 0.0, '#4a2420', '#2a1612', water='#4a3a36', wfog='#1c100c', grass='#57503f', foliage='#57503f',
+          veg=(), precip=False, particle=('minecraft:ash', 0.06), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
           spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 40, 2, 4), ('war_orc', 25, 2, 3), ('warg', 20, 2, 3), ('cave_troll', 14, 1, 1), ('stone_troll', 10, 1, 1), ('goblin', 40, 3, 6), ('pale_rider', 4, 1, 2)]})
+    biome('rivieres_de_lave', 'Rivières de Lave', 2.0, 0.0, '#4a2420', '#2a1612', water='#4a3a36', wfog='#1c100c', veg=(), precip=False,
+          particle=('minecraft:ash', 0.05), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
+          spawns={'monster': [('minecraft:magma_cube', 20, 1, 3)], 'ambient': BATS})
     biome('cimes_neigeuses', 'Cimes Neigeuses', -0.5, 0.6, '#9cc4ff', '#e6f0ff', grass='#8ab08a', foliage='#7aa07a', lunar='ore_lunargent_scarce',
           veg=('trees_spruce_sparse',),
           spawns={'creature': [('minecraft:goat', 10, 1, 3), ('eagle', 8, 1, 2)], 'ambient': BATS, 'monster': [('stone_troll', 20, 1, 1), ('warg', 20, 2, 3), ('goblin', 40, 3, 5), ('cave_troll', 8, 1, 1)]})
@@ -220,7 +225,7 @@ def biomes():
     for id, b in BIOMES.items(): wjson(f'{W}/biome/{id}.json', b)
 
 # ------------------------------------------------------------ source de biomes (carte predefinie)
-BIOME_ORDER = ['plaines_vertes', 'plaines_jaunes', 'plaines_cendre', 'grande_foret', 'monts_rocheux', 'cimes_neigeuses', 'mer_grise', 'rivage', 'riviere', 'monts_de_cendre', 'foret_clairsemee', 'bosquets']
+BIOME_ORDER = ['plaines_vertes', 'plaines_jaunes', 'plaines_cendre', 'grande_foret', 'monts_rocheux', 'cimes_neigeuses', 'mer_grise', 'rivage', 'riviere', 'monts_de_cendre', 'foret_clairsemee', 'bosquets', 'rivieres_de_lave']
 
 def biome_source():
     return {'type': R('map'), 'biomes': [R(b) for b in BIOME_ORDER]}

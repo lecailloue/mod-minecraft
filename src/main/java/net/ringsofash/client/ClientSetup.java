@@ -40,9 +40,30 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::layers);
         modBus.addListener(ClientSetup::renderers);
         modBus.addListener(ClientSetup::keys);
+        modBus.addListener(ClientSetup::gui);
         modBus.addListener(ClientSetup::setup);
         NeoForge.EVENT_BUS.addListener(ClientSetup::tick);
         if (System.getProperty("roa.clienttest") != null) ClientTest.init();
+    }
+
+    private static void gui(net.neoforged.neoforge.client.event.RegisterGuiLayersEvent e) {
+        e.registerAboveAll(RingsOfAsh.id("compass"), (g, dt) -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player == null || mc.options.hideGui) return;
+            int cx = g.guiWidth() / 2, y = 4;
+            float yaw = mc.player.getYRot();
+            g.fill(cx - 62, y - 2, cx + 62, y + 11, 0x66000000);
+            String[] names = {"S", "SO", "O", "NO", "N", "NE", "E", "SE"};
+            for (int i = 0; i < 8; i++) {
+                float d = net.minecraft.util.Mth.wrapDegrees(i * 45F - yaw);
+                if (Math.abs(d) > 55) continue;
+                int px = cx + Math.round(d * 1.05F);
+                boolean card = i % 2 == 0;
+                int col = i == 4 ? 0xFFFF4040 : card ? 0xFFFFFFFF : 0xFFAAAAAA;
+                g.drawString(mc.font, names[i], px - mc.font.width(names[i]) / 2, y, col, true);
+            }
+            g.fill(cx, y + 10, cx + 1, y + 13, 0xFFFFD070);
+        });
     }
 
     private static void keys(RegisterKeyMappingsEvent e) { e.register(REP_KEY); e.register(MAP_KEY); }

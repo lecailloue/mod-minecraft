@@ -151,23 +151,24 @@ public final class MapChunkGenerator extends ChunkGenerator {
 
     private static boolean rocky(int b, int slope) { return b == MapData.B_MONTS || b == MapData.B_CIMES || b == MapData.B_MONTS_CENDRE || slope >= 4; }
 
-    private static boolean landBiome(int b) { return b != MapData.B_MER && b != MapData.B_RIVAGE && b != MapData.B_RIVIERE; }
+    private static boolean landBiome(int b) { return b != MapData.B_MER && b != MapData.B_RIVAGE && b != MapData.B_RIVIERE && b != MapData.B_LAVE; }
 
     /** Bloc a l'altitude y pour la colonne decrite (h = dernier bloc solide, wt = surface de l'eau). */
     static BlockState block(int x, int y, int z, int h, int wt, int b, int slope) {
-        if (y > h) return y <= wt ? (wt > MapData.SEA ? LAVA : WATER) : AIR;
+        if (y > h) return y <= wt ? (wt > MapData.SEA || b == MapData.B_LAVE ? LAVA : WATER) : AIR;
         if (y <= -64) return BEDROCK;
         if (y < -59 && hash(x, y, z) < (-59 - y) / 5f) return BEDROCK;
         int depth = h - y;
         boolean under = wt > h;                       // sous l'eau
         BlockState top = null;
         int layers = 3;
-        if (landBiome(b) && h <= MapData.SEA + 1) {
+        if (landBiome(b) && b != 2 && b != MapData.B_MONTS_CENDRE && h <= MapData.SEA + 1) {
             // berges et plages : sable et gravier, en pente douce
             top = hash(x, 6, z) < 0.25f ? GRAVEL : SAND; layers = 3;
         } else switch (b) {
             case MapData.B_MER -> { top = h >= 42 ? (vnoise(x * 0.07, z * 0.07, 3) > 0.7f ? CLAY : SAND) : GRAVEL; layers = 3; }
             case MapData.B_RIVAGE -> { top = SAND; layers = 3; }
+            case MapData.B_LAVE -> { float q = vnoise(x * 0.12, z * 0.12, 27); top = q > 0.78f ? Blocks.MAGMA_BLOCK.defaultBlockState() : q > 0.4f ? Blocks.BLACKSTONE.defaultBlockState() : Blocks.BASALT.defaultBlockState(); layers = 3; }
             case MapData.B_RIVIERE -> {
                 float n = vnoise(x * 0.09, z * 0.09, 4);
                 top = n < 0.3f ? GRAVEL : n < 0.45f ? CLAY : SAND; layers = 3;
