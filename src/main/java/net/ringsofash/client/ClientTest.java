@@ -62,7 +62,6 @@ public final class ClientTest {
     private static int volcanoRim = 0;
 
     public static void init() {
-        scenes();
         NeoForge.EVENT_BUS.addListener(ClientTest::tick);
     }
 
@@ -91,6 +90,7 @@ public final class ClientTest {
                     } else if (++wait > 6000) throw new IllegalStateException("le monde ne s'est pas charge ; ecran=" + (mc.screen == null ? "aucun" : mc.screen.getClass().getName()));
                 }
                 case 2 -> {
+                    if (SCENES.isEmpty()) scenes();
                     if (index >= SCENES.size()) { state = 9; break; }
                     Scene s = SCENES.get(index);
                     MinecraftServer server = mc.getSingleplayerServer();
