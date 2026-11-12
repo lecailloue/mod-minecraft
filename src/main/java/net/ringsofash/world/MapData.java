@@ -13,12 +13,13 @@ import java.util.Map;
 import java.util.zip.InflaterInputStream;
 
 /**
- * La carte predefinie de la Hautemarche : 8000 x 8000 blocs (grille de 2000 cases, interpolee et detaillee par du bruit), centree sur (0, 0).
+ * La carte predefinie de la Hautemarche : 5000 x 5000 blocs (grille de 2000 cases, interpolee et detaillee par du bruit), centree sur (0, 0).
  * Lue depuis data/ringsofash/map/hautemarche.bin (hauteurs, niveau d'eau des rivieres, biome).
  * Elle est identique pour tous les mondes, quelle que soit la graine.
  */
 public final class MapData {
-    public static final int N = 2000, SCALE = 4, SIZE = N * SCALE, HALF = SIZE / 2;   // grille de 2000 cases de 4 blocs = 8000 x 8000 blocs
+    public static final int N = 2000, SIZE = 5000, HALF = SIZE / 2;
+    public static final double SCALE = SIZE / (double) N;   // grille de 2000 cases de 2,5 blocs = 5000 x 5000 blocs
     public static final int SEA = 63;
     public static final int B_MONTS_CENDRE = 9, B_CLAIR = 10, B_BOSQ = 11;
     public static final int B_MER = 6, B_RIVAGE = 7, B_RIVIERE = 8, B_CIMES = 5, B_MONTS = 4, B_FORET = 3;
@@ -100,13 +101,18 @@ public final class MapData {
     public static int height(int x, int z) {
         if (!loaded) load();
         if (!inside(x, z)) return 28;
-        double gx = (x + HALF) / (double) SCALE - 0.5, gz = (z + HALF) / (double) SCALE - 0.5;
+        double gx = (x + HALF) / SCALE - 0.5, gz = (z + HALF) / SCALE - 0.5;
         float g = grid(height, gx, gz) - 64;
-        double amp = 1.6 * Math.max(0, Math.min(1, (g - 65) / 5)) + 3 * Math.max(0, Math.min(1, (g - 85) / 40)) + 15 * Math.max(0, Math.min(1, (g - 110) / 140));
+        double amp = 1.4 * Math.max(0, Math.min(1, (g - 65) / 5)) + 3 * Math.max(0, Math.min(1, (g - 85) / 40)) + 26 * Math.max(0, Math.min(1, (g - 105) / 130));
         if (amp > 0) {
             float n1 = MapChunkGenerator.fbm(x * 0.03, z * 0.03, 41) - 0.5f;
             float rid = 1 - Math.abs(2 * MapChunkGenerator.fbm(x * 0.011, z * 0.011, 42) - 1);
             g += (float) (amp * (n1 * 1.5 + (rid - 0.45f) * 0.9));
+            if (g > 85) {                                      // crevasses, aretes et blocs de roche : relief anguleux
+                float rid2 = 1 - Math.abs(2 * MapChunkGenerator.fbm(x * 0.035, z * 0.035, 44) - 1);
+                float n3 = MapChunkGenerator.fbm(x * 0.11, z * 0.11, 43) - 0.5f;
+                g += (float) (amp * (0.5 * (rid2 - 0.5f) + 0.5 * n3));
+            }
         }
         return Math.round(g);
     }
@@ -126,12 +132,12 @@ public final class MapData {
     public static int biome(int x, int z) {
         if (!loaded) load();
         if (!inside(x, z)) return B_MER;
-        int gx = Math.floorDiv(x + HALF, SCALE), gz = Math.floorDiv(z + HALF, SCALE);
+        int gx = (int) Math.floor((x + HALF) / SCALE), gz = (int) Math.floor((z + HALF) / SCALE);
         int b0 = biome[cell(gx, gz)];
         if (b0 == B_MER || b0 == B_RIVIERE || b0 == B_RIVAGE) return b0;
         // frontieres irregulieres : on decale legerement le point lu
         double wx = x + (MapChunkGenerator.fbm(x * 0.02, z * 0.02, 51) - 0.5) * 70, wz = z + (MapChunkGenerator.fbm(x * 0.02 + 40, z * 0.02, 52) - 0.5) * 70;
-        int b1 = biome[cell(Math.floorDiv((int) Math.floor(wx) + HALF, SCALE), Math.floorDiv((int) Math.floor(wz) + HALF, SCALE))];
+        int b1 = biome[cell((int) Math.floor((wx + HALF) / SCALE), (int) Math.floor((wz + HALF) / SCALE))];
         return b1 == B_MER || b1 == B_RIVIERE || b1 == B_RIVAGE ? b0 : b1;
     }
 

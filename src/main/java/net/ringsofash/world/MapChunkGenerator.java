@@ -169,17 +169,15 @@ public final class MapChunkGenerator extends ChunkGenerator {
                 if (slope >= 4 && h >= 78) { top = rock(x, h, z); layers = 1; }
                 else {
                     top = GRASS;
-                    // texture de sol : taches de terre et de chemin melangees bloc par bloc (pas de trace lineaire)
-                    float n = fbm(x * 0.028, z * 0.028, 11);
-                    float k = Math.max(0f, Math.min(1f, (n - 0.55f) * 5f));
-                    float r = hash(x, 2, z);
-                    if (!under && k > 0) {
-                        if (r < k * 0.55f) top = PATH;
-                        else if (r < k * 0.85f) top = COARSE;
+                    // texture de sol : grandes taches continues de chemin / terre, bords adoucis (aucun bloc isole)
+                    float n = fbm(x * 0.022, z * 0.022, 11);
+                    if (!under && n > 0.54f) {
+                        float t = fbm(x * 0.09, z * 0.09, 17) + (hash(x, 2, z) - 0.5f) * 0.05f;
+                        float depth2 = n - 0.54f;                  // plus on s'enfonce dans la tache, plus elle est dense
+                        if (t > 0.62f - depth2 * 1.6f) top = PATH;
+                        else if (t > 0.5f - depth2 * 1.6f) top = COARSE;
                     }
-                    float m = fbm(x * 0.06, z * 0.06, 2);
-                    if (top == GRASS && m > 0.66f && hash(x, 4, z) < (m - 0.66f) * 6f) top = COARSE;
-                    if (top == GRASS && fbm(x * 0.09, z * 0.09, 16) > 0.72f && hash(x, 5, z) < 0.5f) top = DIRT;
+                    if (top == GRASS && fbm(x * 0.05, z * 0.05, 16) > 0.66f && fbm(x * 0.2, z * 0.2, 18) > 0.5f) top = COARSE;
                 }
             }
             case 2 -> {

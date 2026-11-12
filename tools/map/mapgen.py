@@ -68,7 +68,9 @@ orange = up(oz, 1.5, .3)
 orzd = binary_dilation(orange, iterations=10)
 rockf &= ~orzd; peak &= ~orzd            # la zone orange reste libre de montagnes : on y passe a pied
 rock = rockf | peak
-river = up(river0, 1.2, .3)
+river = up(binary_dilation(binary_closing(river0, iterations=2), iterations=1), 1.6, .35)
+riv_d = edt(~river)
+notch = np.clip((riv_d - 5) / 36.0, 0, 1)            # les montagnes s'ecartent pour laisser passer les rivieres
 
 # ------------------------------------------------------------------ relief
 def warped(f, amp=38):
@@ -90,9 +92,10 @@ R = .5 * warped(ridged(140)) + .3 * warped(ridged(60)) + .2 * warped(ridged(26))
 F = .32 + .95 * np.clip(R, 0, 1) ** 1.5
 env_h = np.clip(np.maximum(1.25 * bell(rockf, 18), .5 * bell(rock, 55)), 0, 1)
 env_p = np.clip(np.maximum(1.3 * bell(peak, 20), .5 * bell(peak, 58)), 0, 1)
+env_h = env_h * notch; env_p = env_p * notch
 Ah = np.where(ash_near, 150, 100); Ap = np.where(ash_near, 300, 175)
 mount = np.maximum(Ah * env_h ** 1.15 * F, Ap * env_p ** 1.15 * F)
-mount = mount + (octave(12) - .5) * 10 * np.clip(mount / 60, 0, 1)
+mount = mount + ((octave(12) - .5) * 12 + (ridged(9) - .55) * 22 + (ridged(20) - .55) * 16) * np.clip(mount / 50, 0, 1)
 h = h + mount * np.clip(d_sea / 45.0, 0, 1)
 
 # volcan final (tache rouge du croquis)
@@ -117,9 +120,9 @@ h = np.where(land, np.minimum(h, SEA + .8 + d_sea * .33 + (nrm(octave(60))) * 1.
 
 # ruisseaux (comme en vanilla) : lit au niveau de la mer, berges en pente douce, hors montagnes
 envm = np.maximum(env_h, env_p)
-river_ok = river & land & (envm < .3) & (h < 100) & (w < .5)
+river_ok = river & land
 dr = edt(~river_ok)
-valley = (dr < 44) & land & (h < 104) & (envm < .45)
+valley = (dr < 44) & land & (h < 120)
 h = np.where(valley, np.minimum(h, SEA + .6 + dr * .5 + nrm(octave(30)) * .6), h)
 carve = river_ok | ((dr <= 1.6) & valley)
 carve &= (dr <= 1.6)
@@ -171,7 +174,7 @@ if bin_out:
     print('carte', os.path.getsize(bin_out) // 1024, 'Ko')
 if places_out:
     os.makedirs(os.path.dirname(places_out), exist_ok=True)
-    SC = 4
+    SC = 2.5
     pl = json.load(open(places_src))
     walk = ~(sea | carve) & (volcano < 25)
     ids = np.where(walk)
@@ -181,9 +184,9 @@ if places_out:
         gx, gy = int(np.clip(v['x'] + 1000, 0, N - 1)), int(np.clip(v['z'] + 1000, 0, N - 1))
         if not walk[gy, gx]:
             dd = (ids[1] - gx) ** 2 + (ids[0] - gy) ** 2; j = dd.argmin(); gx, gy = int(ids[1][j]), int(ids[0][j])
-        out_pl[k] = {'x': (gx - 1000) * SC, 'z': (gy - 1000) * SC}
+        out_pl[k] = {'x': round((gx - 1000) * SC), 'z': round((gy - 1000) * SC)}
     rim = (int(vx + RC * 1.15), int(vy))
-    out_pl['mont_du_destin'] = {'x': (rim[0] - 1000) * SC, 'z': (rim[1] - 1000) * SC}
+    out_pl['mont_du_destin'] = {'x': round((rim[0] - 1000) * SC), 'z': round((rim[1] - 1000) * SC)}
     json.dump(out_pl, open(places_out, 'w'), indent=1)  # (mont_du_destin reste sur le bord du cratere)
     lava = int(h[int(vy), int(vx)]) + 30
     json.dump({'x': round((vx - 1000) * SC), 'z': round((vy - 1000) * SC), 'r': round(RC * SC * .98), 'level': lava},

@@ -158,7 +158,7 @@ public final class SelfTest {
         if (bad > n / 10) fail("le terrain ne suit pas la carte (" + bad + "/" + n + ")");
     }
 
-    private static final int HALF_COAST = 3000;
+    private static final int HALF_COAST = 1800;
 
     /** premier point (ou le plus haut) d'un biome sur la carte, pour les vues de test ; -1 = n'importe quel biome */
     private static int[] find(int biome, boolean highest) {
@@ -175,7 +175,7 @@ public final class SelfTest {
     }
 
     private static void biomeMap(ServerLevel lands) throws Exception {
-        int size = 384, step = 21;
+        int size = 384, step = 13;
         BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
         Map<String, Integer> counts = new TreeMap<>();
         for (int px = 0; px < size; px++) {

@@ -30,6 +30,7 @@ public final class ClientSetup {
     private ClientSetup() {}
 
     public static final KeyMapping REP_KEY = new KeyMapping("key.ringsofash.reputation", InputConstants.KEY_R, "key.categories.ringsofash");
+    public static final KeyMapping MAP_KEY = new KeyMapping("key.ringsofash.map", InputConstants.KEY_M, "key.categories.ringsofash");
     private static final String[] GEO = {"troll", "warg", "stag", "demon", "lurker", "treeman", "eagle", "dragon", "mammoth"};
     private static final String[] HUMAN = {"plain", "elf", "orc", "goblin", "dwarf"};
 
@@ -44,10 +45,13 @@ public final class ClientSetup {
         if (System.getProperty("roa.clienttest") != null) ClientTest.init();
     }
 
-    private static void keys(RegisterKeyMappingsEvent e) { e.register(REP_KEY); }
+    private static void keys(RegisterKeyMappingsEvent e) { e.register(REP_KEY); e.register(MAP_KEY); }
 
     private static void tick(ClientTickEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
+        while (MAP_KEY.consumeClick()) {
+            if (mc.player != null && mc.screen == null) mc.setScreen(new MapScreen());
+        }
         while (REP_KEY.consumeClick()) {
             if (mc.player != null && mc.screen == null) mc.setScreen(new RepScreen());
         }

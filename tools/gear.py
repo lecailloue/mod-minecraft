@@ -257,4 +257,5 @@ def build():
                           'ingredients': [{'item': 'minecraft:book'}, {'item': f'{MOD}:pipeweed'}],
                           'result': {'id': 'minecraft:written_book', 'count': 1, 'components': {'minecraft:custom_data': {'roa_guide': 1}}}})
     LANG['key.ringsofash.reputation'] = 'Menu de réputation'
+    LANG['key.ringsofash.map'] = 'Carte de la Hautemarche'
     LANG['key.categories.ringsofash'] = 'Les Anneaux de Cendre'
