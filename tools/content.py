@@ -55,7 +55,7 @@ def blocks():
     block('dwarven_chiseled', 'Pierre naine ciselée', copy='CHISELED_DEEPSLATE', tool='pickaxe', tint=True)
     dl, du, di = dwarf.d_door()
     btex('dwarven_door_bottom', dl); btex('dwarven_door_top', du); itex('dwarven_door', di)
-    block('dwarven_door', 'Porte naine', 'door', java='new DoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.STONE, copy(Blocks.IRON_DOOR).noOcclusion())', tool='pickaxe', tint=True)
+    block('dwarven_door', 'Porte naine', 'door', java='new DwarvenDoorBlock(copy(Blocks.IRON_DOOR).noOcclusion().strength(3.5F))', tool='pickaxe', tint=True)
     rune = framed('#474c57', 24)
     stamp(rune, ['..x..x..', '..x.xx..', '..xx.x..', '..x..x..', '.xxx.x..', '..x..xx.', '..x..x..', '..x..x..'],
           {'x': '#f2b23a'}, 4, 4)

@@ -50,7 +50,7 @@ public final class Reg {
     public static final DeferredBlock<Block> DWARVEN_BRICKS_WALL = BLOCKS.register("dwarven_bricks_wall", () -> new WallBlock(copy(DWARVEN_BRICKS.get()).forceSolidOn()));
     public static final DeferredBlock<Block> DWARVEN_PILLAR = BLOCKS.register("dwarven_pillar", () -> new RotatedPillarBlock(copy(Blocks.DEEPSLATE_BRICKS)));
     public static final DeferredBlock<Block> DWARVEN_CHISELED = BLOCKS.register("dwarven_chiseled", () -> new Block(copy(Blocks.CHISELED_DEEPSLATE)));
-    public static final DeferredBlock<Block> DWARVEN_DOOR = BLOCKS.register("dwarven_door", () -> new DoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.STONE, copy(Blocks.IRON_DOOR).noOcclusion()));
+    public static final DeferredBlock<Block> DWARVEN_DOOR = BLOCKS.register("dwarven_door", () -> new DwarvenDoorBlock(copy(Blocks.IRON_DOOR).noOcclusion().strength(3.5F)));
     public static final DeferredBlock<Block> DWARVEN_RUNES = BLOCKS.register("dwarven_runes", () -> new Block(copy(Blocks.DEEPSLATE_BRICKS).lightLevel(s -> 7)));
     public static final DeferredBlock<Block> DWARVEN_LAMP = BLOCKS.register("dwarven_lamp", () -> new Block(copy(Blocks.DEEPSLATE_BRICKS).lightLevel(s -> 15)));
     public static final DeferredBlock<Block> BLACK_BRICKS = BLOCKS.register("black_bricks", () -> new Block(copy(Blocks.POLISHED_BLACKSTONE_BRICKS)));

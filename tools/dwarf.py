@@ -31,15 +31,52 @@ def d_cobble(seed=102):
             im.putpixel((x, y), shade(rgb(G), f) + (255,))
     return im
 
-def d_bricks(seed=103): return bricks('#d6d6d6', '#8c8c8c', seed, var=0.09)
+def d_bricks(seed=103):
+    """grands blocs taillés irréguliers, joints profonds, biseaux marqués : très différent des briques vanilla"""
+    rnd = random.Random(seed)
+    rows = [(0, 5, [10, 6]), (5, 6, [6, 10]), (11, 5, [12, 4])]
+    im = new(16)
+    base = rgb('#d6d6d6')
+    for (y0, h, widths) in rows:
+        x0 = 0
+        for w in widths:
+            f = 0.9 + rnd.random() * 0.16
+            for yy in range(h):
+                for xx in range(w):
+                    x, y = x0 + xx, y0 + yy
+                    if yy == h - 1 or xx == w - 1: g = 0.38                      # joint profond
+                    elif yy == 0: g = f * 1.16                                  # biseau haut
+                    elif xx == 0: g = f * 1.08
+                    elif yy == h - 2 or xx == w - 2: g = f * 0.8                # ombre basse
+                    else: g = f * (1 + (rnd.random() - .5) * .10)
+                    im.putpixel((x % 16, y), shade(base, g) + (255,))
+            # éclats dans les coins
+            cx, cy = x0 + (w - 3), y0 + 1
+            im.putpixel((cx % 16, cy), shade(base, 0.62) + (255,))
+            x0 += w
+    return im
 
 def d_pillar(seed=104): return pillar_side('#d6d6d6', seed), framed('#d6d6d6', seed + 1)
 
 def d_chiseled(seed=105):
-    im = framed('#cfcfcf', seed)
-    pat = ['..oooooooo..', '.o........o.', 'o..oooooo..o', 'o.o......o.o', 'o.o.oooo.o.o', 'o.o.o..o.o.o',
-           'o.o.o..o.o.o', 'o.o.oooo.o.o', 'o.o......o.o', 'o..oooooo..o', '.o........o.', '..oooooooo..']
-    stamp(im, pat, {'o': gray(120)}, 2, 2)
+    """dalle biseautée avec un relief gravé : losanges emboîtés et noyau central"""
+    rnd = random.Random(seed)
+    im = new(16)
+    base = rgb('#d4d4d4')
+    for y in range(16):
+        for x in range(16):
+            d = min(x, y, 15 - x, 15 - y)
+            if d == 0: f = 1.15 if (x + y) < 16 else 0.62
+            elif d == 1: f = 0.78
+            elif d == 2: f = 1.1 if (x + y) < 16 else 0.86
+            else:
+                m = abs(x - 7.5) + abs(y - 7.5)
+                if 3.4 < m < 4.6 or 6.4 < m < 7.6: f = 0.6                       # rainures
+                elif 4.6 <= m < 5.4 or 7.6 <= m < 8.4: f = 1.14                  # lèvre éclairée
+                elif m < 2.2: f = 0.72 if m > 1.2 else 1.12                      # noyau gravé
+                else: f = 0.95
+            f *= 1 + (rnd.random() - .5) * .05
+            im.putpixel((x, y), shade(base, f) + (255,))
     return im
 
 def d_door():

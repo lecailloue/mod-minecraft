@@ -8,8 +8,8 @@ import net.minecraft.util.Mth;
  * Pour changer les couleurs, modifier COLOR_A et COLOR_B (format 0xRRGGBB).
  */
 public final class DwarvenTint {
-    public static final int COLOR_A = 0x4D5868;      // bleu-ardoise
-    public static final int COLOR_B = 0x6B5A4A;      // brun chaud
+    public static final int COLOR_A = 0x4D695E;      // vert-gris
+    public static final int COLOR_B = 0x4D5868;      // bleu-ardoise
     /** les textures grises ont une luminosite moyenne d'environ 0,82 : on compense pour retrouver les couleurs voulues */
     private static final float LUM = 0.82F;
 
