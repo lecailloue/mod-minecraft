@@ -80,7 +80,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
             }
             case MapData.B_CIMES -> {
                 double line = 300 + 28 * slow(x, z);
-                if (h >= line && (slope <= 5 || hash(x, 2, z) < 0.3f)) { top = SNOW; layers = slope <= 3 ? 3 : 1; }
+                if (h >= line && (slope <= 5 || hash(x >> 1, 2, z >> 1) < 0.5f)) { top = SNOW; layers = slope <= 3 ? 3 : 2; }
                 else if (slope <= 2 && h < 150) { top = GRASS; layers = 3; }
             }
             case MapData.B_FORET -> { top = under ? DIRT : hash(x, 3, z) < 0.18f ? PODZOL : GRASS; layers = 3; }
