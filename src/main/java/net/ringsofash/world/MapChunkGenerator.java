@@ -50,6 +50,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
     private static final BlockState ANDESITE = Blocks.ANDESITE.defaultBlockState();
     private static final BlockState POLISHED_ANDESITE = Blocks.POLISHED_ANDESITE.defaultBlockState();
     private static final BlockState COBBLE = Blocks.COBBLESTONE.defaultBlockState();
+    private static final BlockState LAVA = Blocks.LAVA.defaultBlockState();
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
 
     public MapChunkGenerator(BiomeSource source) { super(source); }
@@ -103,10 +104,21 @@ public final class MapChunkGenerator extends ChunkGenerator {
         return vnoise(x, z, seed) * 0.57f + vnoise(x * 2.1 + 17, z * 2.1 - 9, seed + 31) * 0.29f + vnoise(x * 4.3 - 5, z * 4.3 + 23, seed + 67) * 0.14f;
     }
 
-    /** texture de roche : pierre, andesite, andesite polie, cobblestone et gravier selon des bruits lisses */
-    static BlockState rock(int x, int z) {
-        float v = fbm(x * 0.04, z * 0.04, 14) + (hash(x, 11, z) - 0.5f) * 0.07f;
-        float w = fbm(x * 0.075, z * 0.075, 15) + (hash(x, 12, z) - 0.5f) * 0.07f;
+    /** bruit 3D lisse (0..1) */
+    static float vnoise3(double x, double y, double z, int seed) {
+        int iy = (int) Math.floor(y);
+        double fy = y - iy; fy = fy * fy * (3 - 2 * fy);
+        return (float) (vnoise(x + iy * 31.7, z - iy * 17.3, seed) * (1 - fy) + vnoise(x + (iy + 1) * 31.7, z - (iy + 1) * 17.3, seed) * fy);
+    }
+
+    static float fbm3(double x, double y, double z, int seed) {
+        return vnoise3(x, y, z, seed) * 0.62f + vnoise3(x * 2.2 + 11, y * 2.2, z * 2.2 - 7, seed + 29) * 0.38f;
+    }
+
+    /** texture de roche en volume : pierre, andesite, andesite polie, cobblestone et gravier, partout dans la montagne */
+    static BlockState rock(int x, int y, int z) {
+        float v = fbm3(x * 0.045, y * 0.06, z * 0.045, 14) + (hash(x, y + 11, z) - 0.5f) * 0.06f;
+        float w = fbm3(x * 0.08, y * 0.1, z * 0.08, 15) + (hash(x, y + 12, z) - 0.5f) * 0.06f;
         if (v > 0.64f) return POLISHED_ANDESITE;
         if (v > 0.52f && w > 0.5f) return ANDESITE;
         if (w < 0.36f && v > 0.35f) return COBBLE;
@@ -123,14 +135,16 @@ public final class MapChunkGenerator extends ChunkGenerator {
         float r = hash(x, 13, z);
         if (!under && r < p) return GRASS;
         if (!under && r < p + 0.1f && p > 0) return COARSE;
-        return rock(x, z);
+        return rock(x, h, z);
     }
+
+    private static boolean rocky(int b, int slope) { return b == MapData.B_MONTS || b == MapData.B_CIMES || b == MapData.B_MONTS_CENDRE || slope >= 4; }
 
     private static boolean landBiome(int b) { return b != MapData.B_MER && b != MapData.B_RIVAGE && b != MapData.B_RIVIERE; }
 
     /** Bloc a l'altitude y pour la colonne decrite (h = dernier bloc solide, wt = surface de l'eau). */
     static BlockState block(int x, int y, int z, int h, int wt, int b, int slope) {
-        if (y > h) return y <= wt ? WATER : AIR;
+        if (y > h) return y <= wt ? (wt > MapData.SEA ? LAVA : WATER) : AIR;
         if (y <= -64) return BEDROCK;
         if (y < -59 && hash(x, y, z) < (-59 - y) / 5f) return BEDROCK;
         int depth = h - y;
@@ -148,11 +162,11 @@ public final class MapChunkGenerator extends ChunkGenerator {
                 top = n < 0.3f ? GRAVEL : n < 0.45f ? CLAY : SAND; layers = 3;
             }
             case 0, MapData.B_BOSQ -> {
-                if (slope >= 4 && h >= 78) { top = rock(x, z); layers = 1; }
+                if (slope >= 4 && h >= 78) { top = rock(x, h, z); layers = 1; }
                 else { top = GRASS; layers = 3; }
             }
             case 1 -> {
-                if (slope >= 4 && h >= 78) { top = rock(x, z); layers = 1; }
+                if (slope >= 4 && h >= 78) { top = rock(x, h, z); layers = 1; }
                 else {
                     top = GRASS;
                     // texture de sol : taches de terre et de chemin melangees bloc par bloc (pas de trace lineaire)
@@ -174,7 +188,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
                 layers = 3;
             }
             case MapData.B_FORET, MapData.B_CLAIR -> {
-                if (slope >= 4 && h >= 78) { top = rock(x, z); layers = 1; }
+                if (slope >= 4 && h >= 78) { top = rock(x, h, z); layers = 1; }
                 else { top = under ? DIRT : fbm(x * 0.06, z * 0.06, 8) > (b == MapData.B_FORET ? 0.58f : 0.68f) ? PODZOL : GRASS; layers = 3; }
             }
             case MapData.B_MONTS -> {
@@ -183,13 +197,13 @@ public final class MapChunkGenerator extends ChunkGenerator {
             }
             case MapData.B_CIMES -> {
                 if (h >= snowLine(x, z)) {
-                    if (slope >= 7 && hash(x, 3, z) < 0.45f) top = rock(x, z);      // roche nue sur les parois
+                    if (slope >= 7 && hash(x, 3, z) < 0.45f) top = rock(x, h, z);      // roche nue sur les parois
                     else { top = SNOW; layers = 3; }
                 } else { top = mountainTop(x, z, h, slope, under); layers = top == GRASS || top == COARSE ? 3 : 1; }
             }
             case MapData.B_MONTS_CENDRE -> {
                 float v = fbm(x * 0.05, z * 0.05, 13);
-                top = slope <= 3 && v > 0.5f ? Reg.ASH_BLOCK.get().defaultBlockState() : rock(x, z);
+                top = slope <= 3 && v > 0.5f ? Reg.ASH_BLOCK.get().defaultBlockState() : rock(x, h, z);
                 layers = top == STONE ? 3 : 2;
             }
             default -> { top = under ? DIRT : GRASS; layers = 3; }
@@ -200,6 +214,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
             return top;
         }
         if (y < 0) return DEEPSLATE;
+        if (rocky(b, slope) && y > h - 60 && y >= 8) return rock(x, y, z);
         if (y < 8 && hash(x, y, z) < (8 - y) / 8f) return DEEPSLATE;
         return STONE;
     }

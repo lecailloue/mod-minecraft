@@ -131,8 +131,9 @@ public final class SelfTest {
     /** Verifie que le terrain genere suit la carte predefinie, et fait quelques vues du dessus. */
     private static void mapCheck(ServerLevel lands) throws Exception {
         Map<String, int[]> spots = new LinkedHashMap<>(MapData.places());
-        spots.put("foret", new int[]{250, -297});
-        spots.put("cote_ouest", new int[]{-720, 0});
+        int[] fo = find(MapData.B_FORET, false), cs = find(MapData.B_CIMES, true), hi = find(-1, true);
+        if (fo != null) spots.put("foret", fo);
+        spots.put("cote_ouest", new int[]{-HALF_COAST, 0});
         int bad = 0, n = 0;
         for (Map.Entry<String, int[]> e : spots.entrySet()) {
             int px = e.getValue()[0], pz = e.getValue()[1];
@@ -148,7 +149,7 @@ public final class SelfTest {
             topDown(lands, px - 40, pz - 40, px + 39, pz + 39, new File(OUT, "carte_" + e.getKey() + ".png"), 4);
             log("carte " + e.getKey() + " (" + px + "," + pz + ") relief " + MapData.height(px, pz) + " biome " + MapData.BIOMES[MapData.biome(px, pz)]);
         }
-        for (int[] pk : new int[][]{{-99, -706}, {755, 459}}) {
+        for (int[] pk : new int[][]{cs != null ? cs : new int[]{0, 0}, hi}) {
             for (int dx = -10; dx <= 10; dx++) lands.getChunk((pk[0] >> 4) + dx, pk[1] >> 4);
             section(lands, pk[0] - 160, pk[0] + 160, pk[1], 50, 447, new File(OUT, "sommet_coupe_" + pk[0] + ".png"), 2);
             topDown(lands, pk[0] - 90, pk[1] - 90, pk[0] + 89, pk[1] + 89, new File(OUT, "sommet_dessus_" + pk[0] + ".png"), 3);
@@ -157,8 +158,24 @@ public final class SelfTest {
         if (bad > n / 10) fail("le terrain ne suit pas la carte (" + bad + "/" + n + ")");
     }
 
+    private static final int HALF_COAST = 3000;
+
+    /** premier point (ou le plus haut) d'un biome sur la carte, pour les vues de test ; -1 = n'importe quel biome */
+    private static int[] find(int biome, boolean highest) {
+        int[] best = null; int bh = -999;
+        for (int x = -MapData.HALF + 64; x < MapData.HALF - 64; x += 40) {
+            for (int z = -MapData.HALF + 64; z < MapData.HALF - 64; z += 40) {
+                int h = MapData.height(x, z);
+                if (h <= MapData.SEA + 3 || (biome >= 0 && MapData.biome(x, z) != biome)) continue;
+                if (!highest) return new int[]{x, z};
+                if (h > bh) { bh = h; best = new int[]{x, z}; }
+            }
+        }
+        return best;
+    }
+
     private static void biomeMap(ServerLevel lands) throws Exception {
-        int size = 384, step = 6;
+        int size = 384, step = 21;
         BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
         Map<String, Integer> counts = new TreeMap<>();
         for (int px = 0; px < size; px++) {

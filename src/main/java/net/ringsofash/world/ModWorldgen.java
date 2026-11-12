@@ -31,6 +31,7 @@ public final class ModWorldgen {
 
     public static final DeferredHolder<Feature<?>, VolcanicSurfaceFeature> VOLCANIC_SURFACE = FEATURES.register("volcanic_surface", VolcanicSurfaceFeature::new);
     public static final DeferredHolder<Feature<?>, SpireFeature> SPIRE = FEATURES.register("spire", SpireFeature::new);
+    public static final DeferredHolder<Feature<?>, FallenLogFeature> FALLEN_LOG = FEATURES.register("fallen_log", FallenLogFeature::new);
     public static final DeferredHolder<Feature<?>, BigTreeFeature> BIG_TREE = FEATURES.register("big_tree", BigTreeFeature::new);
 
     public static final DeferredHolder<StructureType<?>, StructureType<VolcanoStructure>> VOLCANO =

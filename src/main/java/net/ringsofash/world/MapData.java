@@ -13,12 +13,12 @@ import java.util.Map;
 import java.util.zip.InflaterInputStream;
 
 /**
- * La carte predefinie de la Hautemarche : 2000 x 2000 blocs, centree sur (0, 0).
+ * La carte predefinie de la Hautemarche : 8000 x 8000 blocs (grille de 2000 cases, interpolee et detaillee par du bruit), centree sur (0, 0).
  * Lue depuis data/ringsofash/map/hautemarche.bin (hauteurs, niveau d'eau des rivieres, biome).
  * Elle est identique pour tous les mondes, quelle que soit la graine.
  */
 public final class MapData {
-    public static final int N = 2000, HALF = N / 2;
+    public static final int N = 2000, SCALE = 4, SIZE = N * SCALE, HALF = SIZE / 2;   // grille de 2000 cases de 4 blocs = 8000 x 8000 blocs
     public static final int SEA = 63;
     public static final int B_MONTS_CENDRE = 9, B_CLAIR = 10, B_BOSQ = 11;
     public static final int B_MER = 6, B_RIVAGE = 7, B_RIVIERE = 8, B_CIMES = 5, B_MONTS = 4, B_FORET = 3;
@@ -28,6 +28,7 @@ public final class MapData {
     private static short[] height;
     private static short[] water;
     private static byte[] biome;
+    private static int[] volcano;        // x, z, rayon, niveau de lave
     private static final Map<String, int[]> PLACES = new LinkedHashMap<>();
     private static boolean loaded;
 
@@ -61,6 +62,14 @@ public final class MapData {
             java.util.Arrays.fill(height, (short) (30 + 64));
             java.util.Arrays.fill(biome, (byte) B_MER);
         }
+        try (InputStream in = MapData.class.getResourceAsStream("/data/ringsofash/map/volcan.json")) {
+            if (in != null) {
+                JsonObject o = JsonParser.parseReader(new InputStreamReader(in)).getAsJsonObject();
+                volcano = new int[]{o.get("x").getAsInt(), o.get("z").getAsInt(), o.get("r").getAsInt(), o.get("level").getAsInt()};
+            }
+        } catch (Exception e) {
+            RingsOfAsh.LOGGER.error("Volcan illisible", e);
+        }
         try (InputStream in = MapData.class.getResourceAsStream("/data/ringsofash/map/places.json")) {
             if (in != null) {
                 JsonObject o = JsonParser.parseReader(new InputStreamReader(in)).getAsJsonObject();
@@ -74,34 +83,56 @@ public final class MapData {
         }
     }
 
-    private static int idx(int x, int z) {
-        int ix = Math.max(0, Math.min(N - 1, x + HALF)), iz = Math.max(0, Math.min(N - 1, z + HALF));
-        return iz * N + ix;
+    private static int cell(int gx, int gz) {
+        return Math.max(0, Math.min(N - 1, gz)) * N + Math.max(0, Math.min(N - 1, gx));
     }
 
     public static boolean inside(int x, int z) { return x >= -HALF && x < HALF && z >= -HALF && z < HALF; }
 
-    /** Altitude du dernier bloc solide. */
+    private static float grid(short[] a, double gx, double gz) {
+        int ix = (int) Math.floor(gx), iz = (int) Math.floor(gz);
+        float fx = (float) (gx - ix), fz = (float) (gz - iz);
+        float a0 = a[cell(ix, iz)] & 0xFFFF, a1 = a[cell(ix + 1, iz)] & 0xFFFF, b0 = a[cell(ix, iz + 1)] & 0xFFFF, b1 = a[cell(ix + 1, iz + 1)] & 0xFFFF;
+        return (a0 + (a1 - a0) * fx) * (1 - fz) + (b0 + (b1 - b0) * fx) * fz;
+    }
+
+    /** Altitude du dernier bloc solide : carte interpolee + relief fin (aretes, rochers) qui grandit avec l'altitude. */
     public static int height(int x, int z) {
         if (!loaded) load();
         if (!inside(x, z)) return 28;
-        return (height[idx(x, z)] & 0xFFFF) - 64;
+        double gx = (x + HALF) / (double) SCALE - 0.5, gz = (z + HALF) / (double) SCALE - 0.5;
+        float g = grid(height, gx, gz) - 64;
+        double amp = 1.6 * Math.max(0, Math.min(1, (g - 65) / 5)) + 3 * Math.max(0, Math.min(1, (g - 85) / 40)) + 15 * Math.max(0, Math.min(1, (g - 110) / 140));
+        if (amp > 0) {
+            float n1 = MapChunkGenerator.fbm(x * 0.03, z * 0.03, 41) - 0.5f;
+            float rid = 1 - Math.abs(2 * MapChunkGenerator.fbm(x * 0.011, z * 0.011, 42) - 1);
+            g += (float) (amp * (n1 * 1.5 + (rid - 0.45f) * 0.9));
+        }
+        return Math.round(g);
     }
 
-    /** Altitude de la surface de l'eau (riviere ou mer), ou Integer.MIN_VALUE s'il n'y a pas d'eau. */
+    /** Altitude de la surface du liquide : eau (mer, rivieres) ou lave dans le cratere du volcan ; MIN_VALUE s'il n'y en a pas. */
     public static int waterTop(int x, int z) {
         if (!loaded) load();
         if (!inside(x, z)) return SEA;
-        int i = idx(x, z);
-        int w = water[i] & 0xFFFF;
-        if (w > 0) return w - 64;
-        return (height[i] & 0xFFFF) - 64 < SEA ? SEA : Integer.MIN_VALUE;
+        int h = height(x, z);
+        if (volcano != null) {
+            long dx = x - volcano[0], dz = z - volcano[1];
+            if (dx * dx + dz * dz <= (long) volcano[2] * volcano[2] && h < volcano[3]) return volcano[3];
+        }
+        return h < SEA ? SEA : Integer.MIN_VALUE;
     }
 
     public static int biome(int x, int z) {
         if (!loaded) load();
         if (!inside(x, z)) return B_MER;
-        return biome[idx(x, z)];
+        int gx = Math.floorDiv(x + HALF, SCALE), gz = Math.floorDiv(z + HALF, SCALE);
+        int b0 = biome[cell(gx, gz)];
+        if (b0 == B_MER || b0 == B_RIVIERE || b0 == B_RIVAGE) return b0;
+        // frontieres irregulieres : on decale legerement le point lu
+        double wx = x + (MapChunkGenerator.fbm(x * 0.02, z * 0.02, 51) - 0.5) * 70, wz = z + (MapChunkGenerator.fbm(x * 0.02 + 40, z * 0.02, 52) - 0.5) * 70;
+        int b1 = biome[cell(Math.floorDiv((int) Math.floor(wx) + HALF, SCALE), Math.floorDiv((int) Math.floor(wz) + HALF, SCALE))];
+        return b1 == B_MER || b1 == B_RIVIERE || b1 == B_RIVAGE ? b0 : b1;
     }
 
     /** Pente locale : plus grand ecart d'altitude avec les 4 voisins. */
