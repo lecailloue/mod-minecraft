@@ -47,6 +47,9 @@ public final class MapChunkGenerator extends ChunkGenerator {
     private static final BlockState GRAVEL = Blocks.GRAVEL.defaultBlockState();
     private static final BlockState CLAY = Blocks.CLAY.defaultBlockState();
     private static final BlockState SNOW = Blocks.SNOW_BLOCK.defaultBlockState();
+    private static final BlockState ANDESITE = Blocks.ANDESITE.defaultBlockState();
+    private static final BlockState POLISHED_ANDESITE = Blocks.POLISHED_ANDESITE.defaultBlockState();
+    private static final BlockState COBBLE = Blocks.COBBLESTONE.defaultBlockState();
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
 
     public MapChunkGenerator(BiomeSource source) { super(source); }
@@ -95,6 +98,34 @@ public final class MapChunkGenerator extends ChunkGenerator {
         return 1 + (int) (hash(x, 9, z) * 3);
     }
 
+    /** bruit de Perlin-like fractal (0..1) : plusieurs octaves de bruit lisse */
+    static float fbm(double x, double z, int seed) {
+        return vnoise(x, z, seed) * 0.57f + vnoise(x * 2.1 + 17, z * 2.1 - 9, seed + 31) * 0.29f + vnoise(x * 4.3 - 5, z * 4.3 + 23, seed + 67) * 0.14f;
+    }
+
+    /** texture de roche : pierre, andesite, andesite polie, cobblestone et gravier selon des bruits lisses */
+    static BlockState rock(int x, int z) {
+        float v = fbm(x * 0.04, z * 0.04, 14) + (hash(x, 11, z) - 0.5f) * 0.07f;
+        float w = fbm(x * 0.075, z * 0.075, 15) + (hash(x, 12, z) - 0.5f) * 0.07f;
+        if (v > 0.64f) return POLISHED_ANDESITE;
+        if (v > 0.52f && w > 0.5f) return ANDESITE;
+        if (w < 0.36f && v > 0.35f) return COBBLE;
+        if (v < 0.30f && w > 0.55f) return GRAVEL;
+        if (w > 0.66f) return ANDESITE;
+        return STONE;
+    }
+
+    /** sol des montagnes : herbe en bas avec une limite irreguliere, roche texturee au-dessus */
+    static BlockState mountainTop(int x, int z, int h, int slope, boolean under) {
+        double line = 92 + 38 * fbm(x * 0.011, z * 0.011, 20) + 10 * (fbm(x * 0.05, z * 0.05, 21) - 0.5);
+        float p = (float) Math.max(0, Math.min(1, (line - h) / 14.0));
+        if (slope >= 4) p = 0; else if (slope == 3) p *= 0.4f; else if (slope == 2) p *= 0.8f;
+        float r = hash(x, 13, z);
+        if (!under && r < p) return GRASS;
+        if (!under && r < p + 0.1f && p > 0) return COARSE;
+        return rock(x, z);
+    }
+
     private static boolean landBiome(int b) { return b != MapData.B_MER && b != MapData.B_RIVAGE && b != MapData.B_RIVIERE; }
 
     /** Bloc a l'altitude y pour la colonne decrite (h = dernier bloc solide, wt = surface de l'eau). */
@@ -116,46 +147,50 @@ public final class MapChunkGenerator extends ChunkGenerator {
                 float n = vnoise(x * 0.09, z * 0.09, 4);
                 top = n < 0.3f ? GRAVEL : n < 0.45f ? CLAY : SAND; layers = 3;
             }
-            case 0 -> { top = slope >= 4 && h >= 78 ? STONE : GRASS; layers = slope >= 4 && h >= 78 ? 1 : 3; }
+            case 0, MapData.B_BOSQ -> {
+                if (slope >= 4 && h >= 78) { top = rock(x, z); layers = 1; }
+                else { top = GRASS; layers = 3; }
+            }
             case 1 -> {
-                if (slope >= 4 && h >= 78) { top = STONE; layers = 1; }
+                if (slope >= 4 && h >= 78) { top = rock(x, z); layers = 1; }
                 else {
                     top = GRASS;
-                    // chemins sinueux et plaques de terre pour casser l'uniformite
-                    double p = vnoise(x * 0.012, z * 0.012, 11);
-                    double g = Math.abs(vnoise((x + 1) * 0.012, z * 0.012, 11) - p) + Math.abs(vnoise(x * 0.012, (z + 1) * 0.012, 11) - p);
-                    if (Math.abs(p - 0.5) < Math.max(g * 1.1, 1e-9) && !under) top = PATH;
-                    else {
-                        float n = vnoise(x * 0.05, z * 0.05, 1);
-                        if (n > 0.64f) top = COARSE;
-                        else if (vnoise(x * 0.09, z * 0.09, 2) > 0.74f) top = DIRT;
+                    // texture de sol : taches de terre et de chemin melangees bloc par bloc (pas de trace lineaire)
+                    float n = fbm(x * 0.028, z * 0.028, 11);
+                    float k = Math.max(0f, Math.min(1f, (n - 0.55f) * 5f));
+                    float r = hash(x, 2, z);
+                    if (!under && k > 0) {
+                        if (r < k * 0.55f) top = PATH;
+                        else if (r < k * 0.85f) top = COARSE;
                     }
+                    float m = fbm(x * 0.06, z * 0.06, 2);
+                    if (top == GRASS && m > 0.66f && hash(x, 4, z) < (m - 0.66f) * 6f) top = COARSE;
+                    if (top == GRASS && fbm(x * 0.09, z * 0.09, 16) > 0.72f && hash(x, 5, z) < 0.5f) top = DIRT;
                 }
             }
             case 2 -> {
-                float v = vnoise(x * 0.06, z * 0.06, 7);
+                float v = fbm(x * 0.05, z * 0.05, 7);
                 top = v > 0.68f ? Reg.VOLCANIC_ROCK.get().defaultBlockState() : hash(x, 7, z) < 0.03f ? GRAVEL : Reg.ASH_BLOCK.get().defaultBlockState();
                 layers = 3;
             }
-            case MapData.B_FORET -> {
-                if (slope >= 4 && h >= 78) { top = STONE; layers = 1; }
-                else { top = under ? DIRT : vnoise(x * 0.07, z * 0.07, 8) > 0.6f ? PODZOL : GRASS; layers = 3; }
+            case MapData.B_FORET, MapData.B_CLAIR -> {
+                if (slope >= 4 && h >= 78) { top = rock(x, z); layers = 1; }
+                else { top = under ? DIRT : fbm(x * 0.06, z * 0.06, 8) > (b == MapData.B_FORET ? 0.58f : 0.68f) ? PODZOL : GRASS; layers = 3; }
             }
             case MapData.B_MONTS -> {
-                if (slope <= 2 && h < 150 && !under) { top = GRASS; layers = 3; }
-                else if (vnoise(x * 0.08, z * 0.08, 12) > 0.7f) { top = GRAVEL; layers = 1; }
+                top = mountainTop(x, z, h, slope, under);
+                layers = top == GRASS || top == COARSE ? 3 : 1;
             }
             case MapData.B_CIMES -> {
                 if (h >= snowLine(x, z)) {
-                    if (slope >= 7 && hash(x, 3, z) < 0.45f) top = null;      // roche nue sur les parois
+                    if (slope >= 7 && hash(x, 3, z) < 0.45f) top = rock(x, z);      // roche nue sur les parois
                     else { top = SNOW; layers = 3; }
-                } else if (slope <= 2 && h < 150) { top = GRASS; layers = 3; }
-                else if (vnoise(x * 0.08, z * 0.08, 12) > 0.7f) { top = GRAVEL; layers = 1; }
+                } else { top = mountainTop(x, z, h, slope, under); layers = top == GRASS || top == COARSE ? 3 : 1; }
             }
             case MapData.B_MONTS_CENDRE -> {
-                float v = vnoise(x * 0.05, z * 0.05, 13);
-                top = slope <= 3 && v > 0.5f ? Reg.ASH_BLOCK.get().defaultBlockState() : Reg.VOLCANIC_ROCK.get().defaultBlockState();
-                layers = 2;
+                float v = fbm(x * 0.05, z * 0.05, 13);
+                top = slope <= 3 && v > 0.5f ? Reg.ASH_BLOCK.get().defaultBlockState() : rock(x, z);
+                layers = top == STONE ? 3 : 2;
             }
             default -> { top = under ? DIRT : GRASS; layers = 3; }
         }

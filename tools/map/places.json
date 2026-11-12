@@ -1,0 +1,54 @@
+{
+ "comte": {
+  "x": -445,
+  "z": -210
+ },
+ "fondcombe": {
+  "x": -519,
+  "z": -118
+ },
+ "moria": {
+  "x": 74,
+  "z": -144
+ },
+ "montagne_solitaire": {
+  "x": 351,
+  "z": -461
+ },
+ "ortanc": {
+  "x": 82,
+  "z": 264
+ },
+ "argonath": {
+  "x": 205,
+  "z": 465
+ },
+ "edoras": {
+  "x": 77,
+  "z": 520
+ },
+ "gouffre_de_helm": {
+  "x": 18,
+  "z": 665
+ },
+ "minas_terith": {
+  "x": 192,
+  "z": 742
+ },
+ "morannon": {
+  "x": 458,
+  "z": 634
+ },
+ "minas_morgul": {
+  "x": 547,
+  "z": 643
+ },
+ "barad_dur": {
+  "x": 677,
+  "z": 625
+ },
+ "mont_du_destin": {
+  "x": 671,
+  "z": 855
+ }
+}
