@@ -41,7 +41,7 @@ public final class SelfTest {
     static {
         BIOME_COLORS.put("plaines_vertes", 0xBEEB9E); BIOME_COLORS.put("plaines_jaunes", 0xFFEB9E); BIOME_COLORS.put("plaines_cendre", 0x96938E);
         BIOME_COLORS.put("grande_foret", 0x1F6A2A); BIOME_COLORS.put("monts_rocheux", 0x808080); BIOME_COLORS.put("cimes_neigeuses", 0xFFFFFF);
-        BIOME_COLORS.put("mer_grise", 0x2040A0); BIOME_COLORS.put("rivage", 0xF0E0A0); BIOME_COLORS.put("riviere", 0x40A0F0);
+        BIOME_COLORS.put("mer_grise", 0x2040A0); BIOME_COLORS.put("rivage", 0xF0E0A0); BIOME_COLORS.put("riviere", 0x40A0F0); BIOME_COLORS.put("monts_de_cendre", 0x604038);
     }
 
     public static void run(MinecraftServer server) {
@@ -148,7 +148,7 @@ public final class SelfTest {
             topDown(lands, px - 40, pz - 40, px + 39, pz + 39, new File(OUT, "carte_" + e.getKey() + ".png"), 4);
             log("carte " + e.getKey() + " (" + px + "," + pz + ") relief " + MapData.height(px, pz) + " biome " + MapData.BIOMES[MapData.biome(px, pz)]);
         }
-        for (int[] pk : new int[][]{{-99, -706}, {621, -521}}) {
+        for (int[] pk : new int[][]{{-99, -706}, {755, 459}}) {
             for (int dx = -10; dx <= 10; dx++) lands.getChunk((pk[0] >> 4) + dx, pk[1] >> 4);
             section(lands, pk[0] - 160, pk[0] + 160, pk[1], 50, 447, new File(OUT, "sommet_coupe_" + pk[0] + ".png"), 2);
             topDown(lands, pk[0] - 90, pk[1] - 90, pk[0] + 89, pk[1] + 89, new File(OUT, "sommet_dessus_" + pk[0] + ".png"), 3);

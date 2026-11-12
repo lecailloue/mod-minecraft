@@ -20,9 +20,10 @@ import java.util.zip.InflaterInputStream;
 public final class MapData {
     public static final int N = 2000, HALF = N / 2;
     public static final int SEA = 63;
+    public static final int B_MONTS_CENDRE = 9;
     public static final int B_MER = 6, B_RIVAGE = 7, B_RIVIERE = 8, B_CIMES = 5, B_MONTS = 4, B_FORET = 3;
     public static final String[] BIOMES = {"plaines_vertes", "plaines_jaunes", "plaines_cendre", "grande_foret", "monts_rocheux",
-            "cimes_neigeuses", "mer_grise", "rivage", "riviere"};
+            "cimes_neigeuses", "mer_grise", "rivage", "riviere", "monts_de_cendre"};
 
     private static short[] height;
     private static short[] water;

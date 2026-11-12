@@ -46,7 +46,9 @@ red = binary_dilation((r > 170) & (g < 110) & (b < 110), iterations=5)     # tex
 grey = (abs(r-g) < 22) & (abs(g-b) < 28) & (r < 195) & (r > 70)
 violet = (b-g > 55) & (r-g > 15) & (b > 120)
 forest = (g > r+18) & (g > b+18)
-river = (b > g+12) & (b > r+30) & ~((b-r > 35) & (g >= r) & (b-g < 14))
+_o = np.asarray(Image.open(relief_src).convert('RGB')).astype(int)
+_rv = (abs(_o[..., 0]-169) < 26) & (abs(_o[..., 1]-180) < 26) & (abs(_o[..., 2]-202) < 26)
+river = np.asarray(Image.fromarray((_rv*255).astype(np.uint8)).resize((N, N), Image.BILINEAR)) > 30   # traits des ruisseaux
 ridx = edt(red, return_distances=False, return_indices=True)     # texte efface : valeur du voisin
 grey, violet, forest, river = (m[ridx[0], ridx[1]] for m in (grey, violet, forest, river))
 def clean(m, close=7, minsize=400):
@@ -65,46 +67,50 @@ c[forest] = 2; c[hill] = 3; c[peak] = 4; c[river & ~hill & ~peak] = 5; c[sea] = 
 Image.fromarray(c).save(out + '/classes.png')
 Image.fromarray(zone).save(out + '/zones.png')
 
-# ---------- hauteurs en blocs (le bord de chaque forme reste a sa place) ----------
-def smooth(t):
-    t = np.clip(t, 0, 1); return t*t*(3-2*t)
+# ---------- hauteurs en blocs ----------
 rng = np.random.default_rng(7)
 def octave(sz):
     return zoom(rng.random((N//sz+2, N//sz+2)).astype(np.float32), N/(N//sz+2), order=3)[:N, :N]
 nz = .5*octave(250) + .3*octave(90) + .15*octave(30) + .05*octave(10)
 ridge = 1 - abs(2*octave(55) - 1)
+fine = .6*octave(24) + .4*octave(9)
 
 h = 72 + (nz-.5)*12                                   # plaines douces
 h = np.where(forest, h + 3, h)
-d_sea = edt(land)                                     # distance a la mer (cote)
-h = np.where(land, np.minimum(h, SEA_LEVEL + 2 + d_sea*0.8), h)     # plages
-from scipy.ndimage import maximum_filter
-def mountain(mask, base_top, var):
-    """Sommets en pointe : la hauteur monte jusqu'a l'axe de la chaine (profil concave),
-    plusieurs sommets d'altitude differente le long de la chaine."""
-    d = edt(mask)
-    dloc = maximum_filter(d, size=90)                       # force locale de la crete
-    t = np.clip(d / np.maximum(dloc, 1), 0, 1)
-    summits = np.clip(octave(110)*2.2 - .35, .35, 1.0)      # quelques grands pics, le reste plus bas
-    top = 90 + (base_top - 90) * summits
-    prof = t ** 1.45                                         # pointe, pas de plateau
-    crest = ridge * t * var                                  # aretes
-    return 72 + (top - 72) * prof + crest, d
-hh, d_hill = mountain(hill, 250, 25)
-h = np.where(hill, np.maximum(h, hh), h)
-hp, d_peak = mountain(peak, TOP - 14, 40)
-hp = np.minimum(hp, TOP - 8)
-h = np.where(peak, np.maximum(h, hp), h)
-# la montagne grise sert de pied aux pics : lissage tres leger sans bouger les bords
-h = np.where(land, gaussian_filter(h, 1.0), h)
-# rivieres creusees dans les terres basses
-carve = river & land & (h < 100)
+
+# montagnes : base large, pente progressive, sommet en pointe (hauteurs reduites, sauf les montagnes de cendre)
+ash_near = edt(zone != 2) < 90
+rock = hill | peak
+def bell(m, sig): return gaussian_filter(m.astype(np.float32), sig)
+sh1, sh2 = bell(rock, 12), bell(rock, 42)
+sp1, sp2 = bell(peak, 14), bell(peak, 48)
+a_hill = np.where(ash_near, 170, 105)
+a_peak = np.where(ash_near, 540, 225)
+m_hill = a_hill * (.5 * sh1**1.3 + .5 * sh2**1.1)
+m_peak = a_peak * (.45 * sp1**1.6 + .55 * sp2**1.15)
+crest = ridge * np.maximum(sh1, sp1) * np.where(ash_near, 38, 24) + (fine-.5) * 14 * np.maximum(sh1, sp1)
+mount = np.maximum(m_hill, m_peak) + crest * (np.maximum(m_hill, m_peak) > 20)
+d_sea = edt(land)
+h = h + mount * np.clip(d_sea / 45.0, 0, 1)          # les montagnes s'effacent doucement pres de la mer
+
+# cote : descente progressive vers l'eau (plage douce), sans ecraser les montagnes
+h = np.where(land, np.minimum(h, SEA_LEVEL + .8 + d_sea * .33 + (nz-.5) * 3 + mount * np.clip(d_sea / 45.0, 0, 1)), h)
+
+# ruisseaux comme en vanilla : lit peu profond au niveau de la mer, berges en pente douce, jamais dans la montagne
+river_ok = river & land & ~rock & (h < 90) & ~binary_dilation(rock, iterations=6)
+dr = edt(~river_ok)
+valley = (dr < 42) & land & (h < 96) & ~rock
+h = np.where(valley, np.minimum(h, SEA_LEVEL + .6 + dr * .55 + (nz-.5) * 2), h)
+carve = river_ok | ((dr <= 2.5) & valley)
+carve &= (dr <= 2.5)
 wl = np.zeros((N, N), np.float32)
-wl[carve] = h[carve] - 1                 # niveau de l'eau de la riviere
-h = np.where(carve, h - 4, h)            # lit creuse
-# fonds marins
+wl[carve] = SEA_LEVEL                                    # eau au niveau de la mer
+h = np.where(carve, SEA_LEVEL - 4 + dr * .8, h)          # lit : 59 au centre, 61 au bord
+
+# fonds marins : pente douce
 d_land = edt(sea)
-h = np.where(sea, SEA_LEVEL - 4 - np.minimum(d_land/40, 1)*30 + (nz-.5)*6, h)
+h = np.where(sea, SEA_LEVEL - 3 - np.minimum(d_land * .38, 30) + (nz-.5) * 5, h)
+h = np.where(land, gaussian_filter(h, .8), h)
 h = np.clip(h, -30, TOP-8)
 Image.fromarray((h + 64).astype(np.uint16)).save(out + '/relief.png')
 
@@ -112,7 +118,7 @@ Image.fromarray((h + 64).astype(np.uint16)).save(out + '/relief.png')
 cols = np.array(list(GRASS.values()), np.float32)
 prev = cols[zone].copy()
 prev[forest] = (40, 110, 50); prev[hill] = (125, 125, 125); prev[peak] = (170, 90, 210)
-prev[river & ~hill & ~peak] = (110, 170, 235); prev[sea] = (60, 120, 200)
+prev[carve] = (110, 170, 235); prev[sea] = (60, 120, 200)
 shade = np.clip(.85 + (np.roll(h, 2, 0) - np.roll(h, -2, 0)) * 0.012, .45, 1.25)[..., None]
 prev = np.where(sea[..., None], prev * (0.75 + .25*np.clip((h+30)/90, 0, 1)[..., None]), prev * shade)
 Image.fromarray(np.clip(prev, 0, 255).astype(np.uint8)).resize((1000, 1000), Image.LANCZOS).save(out + '/apercu_final.png')
@@ -120,14 +126,15 @@ print('hauteurs min/max', int(h.min()), int(h.max()),
       {k: round(float((c == i).mean()*100), 1) for i, k in enumerate(['mer', 'plaine', 'foret', 'montagne', 'pics', 'riviere'])})
 
 # ---------- biomes finaux (indices lus par le mod) ----------
-B_FORET, B_MONTS, B_CIMES, B_MER, B_RIVAGE, B_RIVIERE = 3, 4, 5, 6, 7, 8
+B_FORET, B_MONTS, B_CIMES, B_MER, B_RIVAGE, B_RIVIERE, B_MONTS_CENDRE = 3, 4, 5, 6, 7, 8, 9
 bio = zone.astype(np.uint8).copy()                          # 0 vert, 1 jaune, 2 cendre
 bio[forest] = B_FORET; bio[hill] = B_MONTS; bio[peak] = B_CIMES
+bio[rock & ash_near] = B_MONTS_CENDRE                       # montagnes de cendre : pas de neige
 bio[carve] = B_RIVIERE
-beach = land & (edt(land) < 7) & (h < SEA_LEVEL + 6) & ~hill & ~peak & ~carve
+beach = land & (d_sea < 14) & (h < SEA_LEVEL + 4) & ~rock & ~carve
 bio[beach] = B_RIVAGE
 bio[sea] = B_MER
-print('biomes', {i: round(float((bio == i).mean()*100), 1) for i in range(9)})
+print('biomes', {i: round(float((bio == i).mean()*100), 1) for i in range(10)})
 
 # ---------- lieux (points rouges / bleus du croquis) ----------
 from scipy.ndimage import binary_erosion

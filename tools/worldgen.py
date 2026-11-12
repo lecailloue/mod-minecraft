@@ -174,22 +174,25 @@ def biomes():
                'minecraft:patch_grass_plain', 'minecraft:patch_sugar_cane', 'minecraft:patch_pumpkin', 'minecraft:patch_berry_common'),
           spawns={'creature': FARM + [('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS, 'monster': [('orc', 20, 1, 3), ('warg', 8, 1, 2), ('pale_rider', 2, 1, 1), ('goblin', 30, 3, 5), ('cave_thief', 3, 1, 1)]})
     biome('plaines_jaunes', 'Plaines Pâles', 0.6, 0.35, '#86b8f5', '#d2e2f2', grass='#FFEB9E', foliage='#d9c85a',
-          veg=('boulders', 'trees_birch_sparse', 'trees_oak_sparse', 'minecraft:flower_default', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
+          veg=('trees_birch_sparse', 'trees_oak_sparse', 'minecraft:flower_default', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
           spawns={'creature': [('minecraft:horse', 10, 2, 6), ('minecraft:cow', 8, 4, 4), ('minecraft:sheep', 6, 4, 4), ('stag', 2, 1, 2)], 'ambient': BATS, 'monster': ORCS + [('warg', 20, 2, 4)]})
     biome('plaines_cendre', 'Plaines de Cendre', 0.9, 0.1, '#8a8480', '#6a6460', water='#4a4a44', wfog='#1c1c18', grass='#96938E', foliage='#7d7a6a',
-          veg=('dead_trees', 'boulders', 'ashroot_patch', 'minecraft:patch_dead_bush_2', 'trees_spruce_sparse'), precip=False, particle=('minecraft:ash', 0.02),
+          veg=('ashroot_patch',), precip=False, particle=('minecraft:ash', 0.02),
           spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 60, 3, 5), ('war_orc', 35, 2, 3), ('warg', 25, 2, 4), ('cave_troll', 10, 1, 1), ('pale_rider', 5, 1, 2), ('goblin', 20, 3, 5)]})
     biome('grande_foret', 'Grande Forêt', 0.6, 0.9, '#6f9ed8', '#7f9a78', water='#3d6a55', wfog='#0c1f16', grass='#3f7a2e', foliage='#2f6a25',
-          veg=('boulders', 'trees_oak_big', 'trees_birch_big', 'trees_spruce_big', 'moonbell_patch', 'minecraft:patch_grass_forest', 'minecraft:patch_large_fern',
+          veg=('trees_oak_big', 'trees_birch_big', 'trees_spruce_big', 'moonbell_patch', 'minecraft:patch_grass_forest', 'minecraft:patch_large_fern',
                'minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal'),
           spawns={'creature': [('minecraft:fox', 4, 1, 2), ('minecraft:rabbit', 4, 2, 3), ('treeman', 5, 1, 1), ('stag', 6, 1, 3)], 'ambient': BATS,
                   'monster': ORCS + [('giant_spider', 10, 1, 1)]})
     biome('monts_rocheux', 'Monts Rocheux', 0.3, 0.4, '#7fa6e0', '#c0d0e0', grass='#7a9a64', foliage='#6a8a54', lunar='ore_lunargent',
-          veg=('boulders', 'trees_spruce_sparse', 'minecraft:patch_grass_plain', 'minecraft:patch_berry_common'),
+          veg=('trees_spruce_sparse', 'minecraft:patch_grass_plain', 'minecraft:patch_berry_common'),
           spawns={'creature': [('minecraft:goat', 10, 1, 3), ('minecraft:sheep', 4, 2, 3), ('eagle', 3, 1, 1)], 'ambient': BATS, 'monster': [('orc', 25, 2, 4), ('goblin', 60, 3, 6), ('cave_troll', 14, 1, 1), ('stone_troll', 12, 1, 1), ('warg', 10, 2, 3), ('cave_thief', 6, 1, 1), ('pale_rider', 2, 1, 1)]},
           extra_steps={6: ORES + [R('ore_lunargent'), R('ore_lunargent_rich')] + ORES_TAIL})
+    biome('monts_de_cendre', 'Monts de Cendre', 1.0, 0.0, '#5a2a22', '#3a201c', water='#4a3a36', wfog='#1c100c', grass='#57503f', foliage='#57503f',
+          veg=(), precip=False, particle=('minecraft:ash', 0.04),
+          spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 40, 2, 4), ('war_orc', 25, 2, 3), ('warg', 20, 2, 3), ('cave_troll', 14, 1, 1), ('stone_troll', 10, 1, 1), ('goblin', 40, 3, 6), ('pale_rider', 4, 1, 2)]})
     biome('cimes_neigeuses', 'Cimes Neigeuses', -0.5, 0.6, '#9cc4ff', '#e6f0ff', grass='#8ab08a', foliage='#7aa07a', lunar='ore_lunargent_scarce',
-          veg=('boulders', 'trees_spruce_sparse'),
+          veg=('trees_spruce_sparse',),
           spawns={'creature': [('minecraft:goat', 10, 1, 3), ('eagle', 8, 1, 2)], 'ambient': BATS, 'monster': [('stone_troll', 20, 1, 1), ('warg', 20, 2, 3), ('goblin', 40, 3, 5), ('cave_troll', 8, 1, 1)]})
     biome('mer_grise', 'Mer Grise', 0.5, 0.5, '#7fa6d8', '#b8c8d8', water='#3a6a8a', wfog='#061a2a',
           veg=('minecraft:seagrass_normal', 'minecraft:kelp_cold'),
@@ -200,7 +203,7 @@ def biomes():
     for id, b in BIOMES.items(): wjson(f'{W}/biome/{id}.json', b)
 
 # ------------------------------------------------------------ source de biomes (carte predefinie)
-BIOME_ORDER = ['plaines_vertes', 'plaines_jaunes', 'plaines_cendre', 'grande_foret', 'monts_rocheux', 'cimes_neigeuses', 'mer_grise', 'rivage', 'riviere']
+BIOME_ORDER = ['plaines_vertes', 'plaines_jaunes', 'plaines_cendre', 'grande_foret', 'monts_rocheux', 'cimes_neigeuses', 'mer_grise', 'rivage', 'riviere', 'monts_de_cendre']
 
 def biome_source():
     return {'type': R('map'), 'biomes': [R(b) for b in BIOME_ORDER]}
