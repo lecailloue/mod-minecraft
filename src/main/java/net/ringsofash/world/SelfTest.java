@@ -148,6 +148,11 @@ public final class SelfTest {
             topDown(lands, px - 40, pz - 40, px + 39, pz + 39, new File(OUT, "carte_" + e.getKey() + ".png"), 4);
             log("carte " + e.getKey() + " (" + px + "," + pz + ") relief " + MapData.height(px, pz) + " biome " + MapData.BIOMES[MapData.biome(px, pz)]);
         }
+        for (int[] pk : new int[][]{{-99, -706}, {621, -521}}) {
+            for (int dx = -10; dx <= 10; dx++) lands.getChunk((pk[0] >> 4) + dx, pk[1] >> 4);
+            section(lands, pk[0] - 160, pk[0] + 160, pk[1], 50, 447, new File(OUT, "sommet_coupe_" + pk[0] + ".png"), 2);
+            topDown(lands, pk[0] - 90, pk[1] - 90, pk[0] + 89, pk[1] + 89, new File(OUT, "sommet_dessus_" + pk[0] + ".png"), 3);
+        }
         log("carte : " + bad + " ecarts sur " + n + " points");
         if (bad > n / 10) fail("le terrain ne suit pas la carte (" + bad + "/" + n + ")");
     }
