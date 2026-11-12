@@ -56,6 +56,9 @@ yy, xx = np.mgrid[0:N, 0:N]
 dedge = np.minimum(np.minimum(xx, yy), np.minimum(N-1-xx, N-1-yy))
 sea = up(sea0 | (black0 & False), 3) | (dedge < (22 + 28 * octave(100)))
 sea = binary_fill_holes(~binary_fill_holes(~sea)) if False else sea
+_ys, _xs = np.where(red0)
+VX, VY = min(_xs.mean() / W0 * N, N - 1 - 80), min(_ys.mean() / H0 * N, N - 1 - 80)       # le volcan ne doit pas toucher le bord
+sea &= np.hypot(xx - VX, yy - VY) > 70
 land = ~sea
 forest = up(clean(forest0, 2), 3) & land
 rockf = up(clean(grey0, 3, 12), 2.5) & land
@@ -94,7 +97,7 @@ h = h + mount * np.clip(d_sea / 45.0, 0, 1)
 
 # volcan final (tache rouge du croquis)
 ys, xs = np.where(red0)
-vx, vy = xs.mean() / W0 * N, ys.mean() / H0 * N
+vx, vy = VX, VY
 dv = np.hypot(xx - vx, yy - vy)
 RC, CD = 30.0, 62.0                                                # rayon et profondeur du cratere (cases de 4 blocs)
 cone = 305 * np.clip(1 - np.maximum(dv, RC) / 150, 0, 1) ** 1.55 * (.93 + .14 * F)
