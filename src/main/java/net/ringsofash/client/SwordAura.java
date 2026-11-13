@@ -18,6 +18,31 @@ public final class SwordAura {
 
     public static void init() { NeoForge.EVENT_BUS.addListener(SwordAura::tick); }
 
+    private static int checkTick = -100;
+    private static boolean orcs, monsters, undead;
+
+    /** Detection (joueur local, une fois toutes les 10 ticks) : les lames "sentinelles" ne rayonnent que si leur cible est proche. */
+    private static void scan(Player p) {
+        if (Math.abs(p.tickCount - checkTick) < 10) return;
+        checkTick = p.tickCount;
+        var box = p.getBoundingBox().inflate(20);
+        orcs = !p.level().getEntitiesOfClass(net.ringsofash.entity.FoeEntity.class, box, SpecialSword::isOrc).isEmpty();
+        monsters = !p.level().getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, box, m -> m != p && m instanceof net.minecraft.world.entity.monster.Enemy).isEmpty();
+        undead = !p.level().getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, box, SpecialSword::isUndead).isEmpty();
+    }
+
+    /** Couleur de l'aura si la lame rayonne en ce moment, sinon null. */
+    private static float[] aura(Player p, ItemStack st, SpecialSword s) {
+        boolean local = p == Minecraft.getInstance().player;
+        if (local) scan(p);
+        var it = st.getItem();
+        if (it == net.ringsofash.gen.Reg.ELVEN_BLADE.get() || it == net.ringsofash.gen.Reg.ELVEN_GLAIVE.get())
+            return local && orcs ? new float[]{0.35F, 0.80F, 1.0F} : null;
+        if (s.kind == SpecialSword.Kind.SENTINEL) return local && monsters ? new float[]{1.0F, 0.60F, 0.20F} : null;
+        if (s.kind == SpecialSword.Kind.SUN) return local && undead ? color(s.kind) : null;
+        return color(s.kind);
+    }
+
     private static float[] color(SpecialSword.Kind k) {
         return switch (k) {
             case ROYAL -> new float[]{0.30F, 0.65F, 1.0F};
@@ -36,7 +61,7 @@ public final class SwordAura {
         for (Player p : mc.level.players()) {
             ItemStack st = p.getMainHandItem();
             if (!(st.getItem() instanceof SpecialSword s)) continue;
-            float[] c = color(s.kind);
+            float[] c = aura(p, st, s);
             if (c == null) continue;
             double yaw = Math.toRadians(p.yBodyRot == 0 ? p.getYRot() : p.getYRot());
             Vec3 fwd = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw)), right = new Vec3(-Math.cos(yaw), 0, -Math.sin(yaw));
