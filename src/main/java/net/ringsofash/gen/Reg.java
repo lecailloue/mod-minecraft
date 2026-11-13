@@ -76,6 +76,11 @@ public final class Reg {
     public static final DeferredBlock<Block> LUNARGENT_ORE = BLOCKS.register("lunargent_ore", () -> new DropExperienceBlock(UniformInt.of(3, 7), copy(Blocks.DEEPSLATE_DIAMOND_ORE)));
     public static final DeferredBlock<Block> LUNARGENT_BLOCK = BLOCKS.register("lunargent_block", () -> new Block(copy(Blocks.IRON_BLOCK)));
     public static final DeferredBlock<Block> GOLD_PILE = BLOCKS.register("gold_pile", () -> new CoinPileBlock(copy(Blocks.GOLD_BLOCK).noOcclusion().forceSolidOff().strength(1.2F).pushReaction(PushReaction.DESTROY).isViewBlocking((s, l, p) -> s.getValue(SnowLayerBlock.LAYERS) >= 8)));
+    public static final DeferredBlock<Block> SOMBREFER_ORE = BLOCKS.register("sombrefer_ore", () -> new DropExperienceBlock(UniformInt.of(3, 7), copy(Blocks.DEEPSLATE_DIAMOND_ORE)));
+    public static final DeferredBlock<Block> BRAISITE_ORE = BLOCKS.register("braisite_ore", () -> new DropExperienceBlock(UniformInt.of(3, 7), copy(Blocks.DEEPSLATE_DIAMOND_ORE)));
+    public static final DeferredBlock<Block> BRUMECRISTAL_ORE = BLOCKS.register("brumecristal_ore", () -> new DropExperienceBlock(UniformInt.of(3, 7), copy(Blocks.DEEPSLATE_DIAMOND_ORE)));
+    public static final DeferredBlock<Block> ORRUNE_ORE = BLOCKS.register("orrune_ore", () -> new DropExperienceBlock(UniformInt.of(3, 7), copy(Blocks.DEEPSLATE_DIAMOND_ORE)));
+    public static final DeferredBlock<Block> GOLD_CARPET = BLOCKS.register("gold_carpet", () -> new CarpetBlock(copy(Blocks.GOLD_BLOCK).noOcclusion().forceSolidOff().strength(0.6F).pushReaction(PushReaction.DESTROY)));
     public static final DeferredBlock<Block> SUNSTAR = BLOCKS.register("sunstar", () -> new FlowerBlock(MobEffects.REGENERATION, 6.0F, copy(Blocks.DANDELION)));
     public static final DeferredBlock<Block> MOONBELL = BLOCKS.register("moonbell", () -> new FlowerBlock(MobEffects.NIGHT_VISION, 8.0F, copy(Blocks.DANDELION)));
     public static final DeferredBlock<Block> ASHROOT = BLOCKS.register("ashroot", () -> new AshPlantBlock(copy(Blocks.DEAD_BUSH)));
@@ -131,6 +136,11 @@ public final class Reg {
     public static final DeferredItem<BlockItem> BI_LUNARGENT_ORE = ITEMS.registerSimpleBlockItem("lunargent_ore", LUNARGENT_ORE);
     public static final DeferredItem<BlockItem> BI_LUNARGENT_BLOCK = ITEMS.registerSimpleBlockItem("lunargent_block", LUNARGENT_BLOCK);
     public static final DeferredItem<BlockItem> BI_GOLD_PILE = ITEMS.registerSimpleBlockItem("gold_pile", GOLD_PILE);
+    public static final DeferredItem<BlockItem> BI_SOMBREFER_ORE = ITEMS.registerSimpleBlockItem("sombrefer_ore", SOMBREFER_ORE);
+    public static final DeferredItem<BlockItem> BI_BRAISITE_ORE = ITEMS.registerSimpleBlockItem("braisite_ore", BRAISITE_ORE);
+    public static final DeferredItem<BlockItem> BI_BRUMECRISTAL_ORE = ITEMS.registerSimpleBlockItem("brumecristal_ore", BRUMECRISTAL_ORE);
+    public static final DeferredItem<BlockItem> BI_ORRUNE_ORE = ITEMS.registerSimpleBlockItem("orrune_ore", ORRUNE_ORE);
+    public static final DeferredItem<BlockItem> BI_GOLD_CARPET = ITEMS.registerSimpleBlockItem("gold_carpet", GOLD_CARPET);
     public static final DeferredItem<BlockItem> BI_SUNSTAR = ITEMS.registerSimpleBlockItem("sunstar", SUNSTAR);
     public static final DeferredItem<BlockItem> BI_MOONBELL = ITEMS.registerSimpleBlockItem("moonbell", MOONBELL);
     public static final DeferredItem<BlockItem> BI_ASHROOT = ITEMS.registerSimpleBlockItem("ashroot", ASHROOT);
@@ -139,6 +149,10 @@ public final class Reg {
     public static final DeferredItem<BlockItem> BI_ALARM_PYRE = ITEMS.registerSimpleBlockItem("alarm_pyre", ALARM_PYRE);
 
     public static final DeferredItem<Item> RAW_LUNARGENT = ITEMS.register("raw_lunargent", () -> new Item(props()));
+    public static final DeferredItem<Item> RAW_SOMBREFER = ITEMS.register("raw_sombrefer", () -> new Item(props()));
+    public static final DeferredItem<Item> BRAISITE = ITEMS.register("braisite", () -> new Item(props()));
+    public static final DeferredItem<Item> BRUMECRISTAL = ITEMS.register("brumecristal", () -> new Item(props()));
+    public static final DeferredItem<Item> RAW_ORRUNE = ITEMS.register("raw_orrune", () -> new Item(props()));
     public static final DeferredItem<Item> LUNARGENT_INGOT = ITEMS.register("lunargent_ingot", () -> new Item(props()));
     public static final DeferredItem<Item> BLACK_STEEL_INGOT = ITEMS.register("black_steel_ingot", () -> new Item(props()));
     public static final DeferredItem<Item> SILVER_COIN = ITEMS.register("silver_coin", () -> new Item(props()));

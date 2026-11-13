@@ -130,6 +130,21 @@ def blocks():
     bstate('gold_pile', {'variants': {f'layers={n}': {'model': T(f'gold_pile_h{n}')} for n in range(1, 9)}})
     imodel('gold_pile', {'parent': T('gold_pile_h2')})
 
+    # --- quatre nouveaux minerais
+    base_ore = lambda seed: stone('#4e4e56', seed, var=0.6, cell=4, speck=0.4)
+    for oid, fr, seed, specks, drop in (
+            ('sombrefer', 'Minerai de sombrefer', 81, ['#8a7fa8', '#5d5270', '#b8aed0', '#463d5a'], 'raw_sombrefer'),
+            ('braisite', 'Minerai de braisite', 82, ['#ff7a2a', '#d8381a', '#ffb060', '#8a2010'], 'braisite'),
+            ('brumecristal', 'Minerai de brumecristal', 83, ['#e8fbff', '#b4e8f0', '#ffffff', '#86c8d8'], 'brumecristal'),
+            ('orrune', "Minerai d'orrune", 84, ['#f2c64a', '#fff0a0', '#c89a28', '#fff8d0'], 'raw_orrune')):
+        btex(f'{oid}_ore', ore(base_ore(seed), specks, seed + 10, 8))
+        block(f'{oid}_ore', fr, 'ore', copy='DEEPSLATE_DIAMOND_ORE', tool='pickaxe', level='iron', ore_drop=drop)
+    # tapis de pieces d'or (couche fine posee sur le sol, comme un tapis)
+    bmodel('gold_carpet', 'minecraft:block/carpet', {'wool': T('gold_pile')})
+    bstate('gold_carpet', {'variants': {'': {'model': T('gold_carpet')}}})
+    imodel('gold_carpet', {'parent': T('gold_carpet')})
+    block('gold_carpet', "Tapis de pièces d'or", 'custom', java='new CarpetBlock(copy(Blocks.GOLD_BLOCK).noOcclusion().forceSolidOff().strength(0.6F).pushReaction(PushReaction.DESTROY))', tool='pickaxe')
+
     # --- plantes
     fl = {'s': '#3f7a34', 'r': '#2d5a26', 'a': '#f2c21e', 'b': '#fff0a0', 'c': '#ffffff', 'x': '#8fb7ff', 'y': '#dfeaff', 'z': '#5d83d6',
           'k': '#3a3436', 'm': '#5a5053', 'e': '#c05a20', 'p': '#5c8a3a', 'q': '#86b25a'}
@@ -168,8 +183,15 @@ RING = ['................', '................', '......ghg.......', '.....oggho.
         '..obao...oaco...', '..oao.....oao...', '..oao.....oao...', '..oado...oaao...', '...odaoooaao....', '....oddaaao.....',
         '.....ooooo......', '................', '................', '................']
 
+GEM = ['................', '................', '................', '.....oooooo.....', '....obbbbcco....', '...obbaaaaaco...', '...obaaaaaaao...', '....obaaaaado...',
+       '.....obaaado....', '......obado.....', '.......oao......', '........o.......', '................', '................', '................', '................']
+
 def items():
     item('raw_lunargent', 'Lunargent brut', tex=sprite(RAW, matpal('#a9d3e6')))
+    item('raw_sombrefer', 'Sombrefer brut', tex=sprite(RAW, matpal('#5d5270')))
+    item('braisite', 'Braisite', tex=sprite(GEM, matpal('#e0502a')))
+    item('brumecristal', 'Brumecristal', tex=sprite(GEM, matpal('#b4e8f0')))
+    item('raw_orrune', 'Orrune brute', tex=sprite(RAW, matpal('#e0b43a')))
     item('lunargent_ingot', 'Lingot de lunargent', tex=sprite(INGOT, matpal('#cfe6f2')), tags=['beacon_payment_items'])
     item('black_steel_ingot', "Lingot d'acier noir", tex=sprite(INGOT, matpal('#3d3a42')))
     item('silver_coin', "Pièce d'argent", tex=sprite(COIN, matpal('#c9ccd4', trim='#8e929c')))

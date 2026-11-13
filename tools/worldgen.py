@@ -111,6 +111,12 @@ def features():
     cf('ore_lunargent_rich', 'ore', {'size': 8, 'discard_chance_on_air_exposure': 0.6, 'targets': targets})
     pf('ore_lunargent', 'ore_lunargent', [COUNT(5), SQ, yrange(-60, 24, 'trapezoid'), BIOME])
     pf('ore_lunargent_rich', 'ore_lunargent_rich', [COUNT(2), SQ, yrange(-62, -20), BIOME])
+    for nm, sz, cnt, rng in (('sombrefer', 7, 6, yrange(-40, 90, 'trapezoid')), ('braisite', 5, 3, yrange(-62, 20)),
+                             ('brumecristal', 5, 4, yrange(30, 220, 'trapezoid')), ('orrune', 6, 3, yrange(-62, 40, 'trapezoid'))):
+        tg = [{'target': {'predicate_type': 'minecraft:tag_match', 'tag': 'minecraft:stone_ore_replaceables'}, 'state': st(f'{nm}_ore')},
+              {'target': {'predicate_type': 'minecraft:tag_match', 'tag': 'minecraft:deepslate_ore_replaceables'}, 'state': st(f'{nm}_ore')}]
+        cf(f'ore_{nm}', 'ore', {'size': sz, 'discard_chance_on_air_exposure': 0.2, 'targets': tg})
+        pf(f'ore_{nm}', f'ore_{nm}', [COUNT(cnt), SQ, rng, BIOME])
     pf('ore_lunargent_scarce', 'ore_lunargent', [COUNT(1), SQ, yrange(-60, -10), BIOME])
 
 # ------------------------------------------------------------ biomes
@@ -119,7 +125,7 @@ ORES = ['minecraft:ore_dirt', 'minecraft:ore_gravel', 'minecraft:ore_granite_upp
         'minecraft:ore_coal_lower', 'minecraft:ore_iron_upper', 'minecraft:ore_iron_middle', 'minecraft:ore_iron_small', 'minecraft:ore_gold',
         'minecraft:ore_gold_lower', 'minecraft:ore_redstone', 'minecraft:ore_redstone_lower', 'minecraft:ore_diamond', 'minecraft:ore_diamond_medium',
         'minecraft:ore_diamond_large', 'minecraft:ore_diamond_buried', 'minecraft:ore_lapis', 'minecraft:ore_lapis_buried', 'minecraft:ore_copper']
-ORES_TAIL = ['minecraft:underwater_magma', 'minecraft:disk_sand', 'minecraft:disk_clay', 'minecraft:disk_gravel']
+ORES_TAIL = ['ringsofash:ore_sombrefer', 'ringsofash:ore_braisite', 'ringsofash:ore_brumecristal', 'ringsofash:ore_orrune', 'minecraft:underwater_magma', 'minecraft:disk_sand', 'minecraft:disk_clay', 'minecraft:disk_gravel']
 # ordre global de la vegetation (toujours respecter cet ordre relatif)
 VEG_ORDER = ['minecraft:glow_lichen', 'ash_spires', 'dead_trees', 'dead_trees_marsh', 'boulders', 'standing_stones',
              'trees_golden_big', 'trees_golden_small', 'trees_golden_sparse', 'trees_ancient_big', 'trees_ancient_small',
