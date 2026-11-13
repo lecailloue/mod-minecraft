@@ -31,11 +31,27 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
     @Override
     public ModelPart root() { return root; }
 
+    public ModelPart part(String n) { return parts.get(n); }
+
+    /** Teinte multipliee a la texture (variations d'un individu a l'autre), -1 = aucune. */
+    private int tint = -1;
+
+    @Override
+    public void renderToBuffer(com.mojang.blaze3d.vertex.PoseStack ps, com.mojang.blaze3d.vertex.VertexConsumer vc, int light, int overlay, int color) {
+        super.renderToBuffer(ps, vc, light, overlay, tint == -1 ? color : net.minecraft.util.FastColor.ARGB32.multiply(color, tint));
+    }
+
     private ModelPart p(String n) { return parts.get(n); }
 
     @Override
     public void setupAnim(T e, float swing, float amount, float age, float yaw, float pitch) {
         root.getAllParts().forEach(ModelPart::resetPose);
+        tint = -1;
+        if (e instanceof net.ringsofash.entity.TreemanEntity) {             // chaque Sylvgarde a une ecorce tres legerement differente
+            long h = e.getUUID().getMostSignificantBits() ^ e.getUUID().getLeastSignificantBits();
+            int r = 232 + (int) ((h & 0xFF) % 24), g = 232 + (int) (((h >> 8) & 0xFF) % 24), b = 226 + (int) (((h >> 16) & 0xFF) % 30);
+            tint = net.minecraft.util.FastColor.ARGB32.color(255, Math.min(255, r), Math.min(255, g), Math.min(255, b));
+        }
         float atk = Mth.sin(this.attackTime * Mth.PI);
         ModelPart head = p("head"), neck = p("neck");
         if (head != null) {

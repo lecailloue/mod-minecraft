@@ -79,6 +79,22 @@ public final class GameEvents {
 
     public static void init(IEventBus modBus) {
         modBus.addListener(Net::register);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.StartTracking ev) -> {
+            if (ev.getEntity() instanceof ServerPlayer viewer && ev.getTarget() instanceof ServerPlayer target) net.ringsofash.item.SylvanHeart.sendTo(viewer, target);
+        });
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.MobEffectEvent.Remove ev) -> {
+            if (ev.getEntity() instanceof ServerPlayer sp && ev.getEffect() != null && ev.getEffect().is(net.ringsofash.effect.ModEffects.SYLVAN_FORM)) net.ringsofash.item.SylvanHeart.broadcast(sp, 0);
+        });
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.MobEffectEvent.Expired ev) -> {
+            if (ev.getEntity() instanceof ServerPlayer sp && ev.getEffectInstance() != null && ev.getEffectInstance().getEffect().is(net.ringsofash.effect.ModEffects.SYLVAN_FORM)) net.ringsofash.item.SylvanHeart.broadcast(sp, 0);
+        });
+        // sous forme de Sylvgarde, le clic droit ne pose ni n'utilise rien (il lance les racines)
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock ev) -> {
+            if (ev.getEntity().hasEffect(net.ringsofash.effect.ModEffects.SYLVAN_FORM)) ev.setCanceled(true);
+        });
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem ev) -> {
+            if (ev.getEntity().hasEffect(net.ringsofash.effect.ModEffects.SYLVAN_FORM)) ev.setCanceled(true);
+        });
         var bus = NeoForge.EVENT_BUS;
         bus.addListener(GameEvents::onEntityTick);
         bus.addListener(GameEvents::onSleepFinished);
@@ -314,6 +330,7 @@ public final class GameEvents {
     }
 
     private static void onDamage(LivingIncomingDamageEvent e) {
+        if (e.getSource().is(net.minecraft.tags.DamageTypeTags.IS_FIRE) && e.getEntity().hasEffect(net.ringsofash.effect.ModEffects.SYLVAN_FORM)) e.setAmount(e.getAmount() * 3.0F);
         if (e.getEntity() instanceof Player pl && e.getSource().is(net.minecraft.tags.DamageTypeTags.IS_FALL)
                 && pl.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.FEET).is(Reg.HALFLING_BOOTS.get())) e.setAmount(e.getAmount() * 0.4F);
         if (e.getEntity() instanceof PeopleEntity pe && e.getSource().getEntity() instanceof ServerPlayer p && !p.isCreative() && pe.invulnerableTime <= 10) {

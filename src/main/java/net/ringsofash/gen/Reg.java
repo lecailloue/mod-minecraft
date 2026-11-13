@@ -244,6 +244,7 @@ public final class Reg {
     public static final DeferredItem<Item> MINER_HELMET = ITEMS.register("miner_helmet", () -> ModGear.armor(ModGear.MINER, ArmorItem.Type.HELMET, 20, props()));
     public static final DeferredItem<Item> VALMOIRE_CROWN = ITEMS.register("valmoire_crown", () -> ModGear.armor(ModGear.ROYAL, ArmorItem.Type.HELMET, 40, props().rarity(Rarity.EPIC)));
     public static final DeferredItem<Item> VALMOIRE_BLADE = ITEMS.register("valmoire_blade", () -> ModGear.special(SpecialSword.Kind.ROYAL, ModGear.T_LEGEND, 6, -2.2F, 0, props().rarity(Rarity.EPIC)));
+    public static final DeferredItem<Item> SYLVAN_HEART = ITEMS.register("sylvan_heart", () -> new SylvanHeart(props().stacksTo(16).rarity(Rarity.RARE)));
     public static final DeferredItem<Item> ASH_RING = ITEMS.register("ash_ring", () -> new RingItem(RingItem.Kind.ASH, props().stacksTo(1).fireResistant().rarity(Rarity.EPIC)));
     public static final DeferredItem<Item> RING_WATERS = ITEMS.register("ring_waters", () -> new RingItem(RingItem.Kind.WATERS, props().stacksTo(1).fireResistant().rarity(Rarity.RARE)));
     public static final DeferredItem<Item> RING_WINDS = ITEMS.register("ring_winds", () -> new RingItem(RingItem.Kind.WINDS, props().stacksTo(1).fireResistant().rarity(Rarity.RARE)));

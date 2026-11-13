@@ -302,6 +302,10 @@ def build():
     for i, fr in enumerate(frames): strip.paste(fr, (0, 16 * i))
     save(strip, f'{A}/textures/item/valmoire_blade.png')
     wjson(f'{A}/textures/item/valmoire_blade.png.mcmeta', {'animation': {'frametime': 6, 'interpolate': True}})
+    # ---- coeur de Sylvgarde (5 % sur un Sylvgarde tue)
+    item('sylvan_heart', 'Cœur de Sylvgarde', java='new SylvanHeart(props().stacksTo(16).rarity(Rarity.RARE))', tex=sprite(GEM, matpal('#6a8a3a', trim='#4b3b2b', gem='#a8e070')))
+    LANG['effect.ringsofash.sylvan_form'] = 'Forme de Sylvgarde'
+    LANG['effect.ringsofash.rooted'] = 'Enraciné'
     shaped('valmoire_crown', ['GDG', 'LLL'], {'G': 'minecraft:gold_ingot', 'D': 'minecraft:diamond', 'L': 'lunargent_ingot'}, 'valmoire_crown')
     shaped('valmoire_blade', [' L ', 'LDL', ' s '], {'L': 'lunargent_ingot', 'D': 'minecraft:diamond', 's': 'minecraft:gold_ingot'}, 'valmoire_blade')
     # ---- bouche de fumee : bloc invisible, intangible, incassable

@@ -47,45 +47,115 @@ public class MapScreen extends Screen {
         Minecraft.getInstance().getTextureManager().register(texture, new DynamicTexture(img));
     }
 
+    private double zoom = 1, cx = 0, cz = 0;          // vue : facteur de zoom et centre (coordonnees monde)
+    private int x0, y0, size;
+
+    private double span() { return MapData.SIZE / zoom; }
+    private double toScreenX(double wx) { return x0 + (wx - (cx - span() / 2)) * size / span(); }
+    private double toScreenY(double wz) { return y0 + (wz - (cz - span() / 2)) * size / span(); }
+    private double toWorldX(double sx) { return cx - span() / 2 + (sx - x0) * span() / size; }
+    private double toWorldZ(double sy) { return cz - span() / 2 + (sy - y0) * span() / size; }
+
+    private void clampView() {
+        double h = span() / 2;
+        cx = Math.max(-MapData.HALF + h, Math.min(MapData.HALF - h, cx));
+        cz = Math.max(-MapData.HALF + h, Math.min(MapData.HALF - h, cz));
+    }
+
+    @Override
+    public boolean mouseScrolled(double mx, double my, double sx, double sy) {
+        double wx = toWorldX(mx), wz = toWorldZ(my);
+        double nz = Math.max(1, Math.min(16, zoom * (sy > 0 ? 1.4 : 1 / 1.4)));
+        if (nz == zoom) return true;
+        boolean inside = mx >= x0 && mx < x0 + size && my >= y0 && my < y0 + size;
+        zoom = nz;
+        if (inside) {                                        // zoom centre sur le curseur
+            cx = wx - (mx - x0 - size / 2.0) * span() / size;
+            cz = wz - (my - y0 - size / 2.0) * span() / size;
+        }
+        clampView();
+        return true;
+    }
+
+    @Override
+    public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
+        if (button == 0) { cx -= dx * span() / size; cz -= dy * span() / size; clampView(); return true; }
+        return super.mouseDragged(mx, my, button, dx, dy);
+    }
+
+    private Map.Entry<String, int[]> placeAt(double mx, double my) {
+        Map.Entry<String, int[]> best = null;
+        double bd = 8 * 8;
+        for (Map.Entry<String, int[]> e : MapData.places().entrySet()) {
+            double dx = toScreenX(e.getValue()[0]) - mx, dy = toScreenY(e.getValue()[1]) - my;
+            if (dx * dx + dy * dy < bd) { bd = dx * dx + dy * dy; best = e; }
+        }
+        return best;
+    }
+
+    @Override
+    public boolean mouseClicked(double mx, double my, int button) {
+        if (button == 1) {
+            Map.Entry<String, int[]> e = placeAt(mx, my);
+            if (e != null) {
+                net.neoforged.neoforge.network.PacketDistributor.sendToServer(new net.ringsofash.data.Net.MapTeleport(e.getValue()[0], e.getValue()[1]));
+                onClose();
+                return true;
+            }
+        }
+        return super.mouseClicked(mx, my, button);
+    }
+
+    private static String pretty(String key) {
+        String name = key.replace('_', ' ');
+        return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+    }
+
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
         if (texture == null) build();
         this.renderBackground(g, mx, my, pt);
         int s = Math.min(this.width, this.height) - 30;
-        int x0 = (this.width - s) / 2, y0 = (this.height - s) / 2 + 6;
+        x0 = (this.width - s) / 2; y0 = (this.height - s) / 2 + 6; size = s;
         g.fill(x0 - 3, y0 - 3, x0 + s + 3, y0 + s + 3, 0xFF6B5330);
-        g.blit(texture, x0, y0, s, s, 0f, 0f, TEX, TEX, TEX, TEX);
+        double u = (cx - span() / 2 + MapData.HALF) / MapData.SIZE * TEX, v = (cz - span() / 2 + MapData.HALF) / MapData.SIZE * TEX;
+        int uw = Math.max(1, (int) Math.round(span() / MapData.SIZE * TEX));
+        g.blit(texture, x0, y0, s, s, (float) u, (float) v, uw, uw, TEX, TEX);
         g.drawCenteredString(this.font, "§6§lCarte de la Hautemarche", this.width / 2, y0 - 12, 0xFFFFFF);
-        // nord : le haut de la carte (rose des vents en haut a droite)
-        int cx = x0 + s - 22, cy = y0 + 28;
-        g.fill(cx - 15, cy - 20, cx + 16, cy + 21, 0xB0201A14);
-        g.fill(cx, cy - 15, cx + 1, cy + 14, 0xFFE8D9A8);
-        g.fill(cx - 14, cy, cx + 15, cy + 1, 0xFF8A7A50);
-        g.fill(cx - 2, cy - 13, cx + 3, cy - 11, 0xFFE02020);
-        g.fill(cx - 1, cy - 15, cx + 2, cy - 13, 0xFFE02020);
-        g.drawCenteredString(this.font, "§c§lN", cx, cy - 31, 0xFFFFFF);
-        g.drawString(this.font, "S", cx - 2, cy + 12, 0xFFCCBB99, false);
-        g.drawString(this.font, "O", cx - 14, cy - 3, 0xFFCCBB99, false);
-        g.drawString(this.font, "E", cx + 8, cy - 3, 0xFFCCBB99, false);
-        g.drawCenteredString(this.font, "§7Nord en haut", this.width / 2, y0 + s + 20, 0xFFFFFF);
-        double k = s / (double) MapData.SIZE;
+        g.enableScissor(x0, y0, x0 + s, y0 + s);
         // lieux connus
+        Map.Entry<String, int[]> hover = placeAt(mx, my);
         for (Map.Entry<String, int[]> e : MapData.places().entrySet()) {
-            int px = x0 + (int) ((e.getValue()[0] + MapData.HALF) * k), py = y0 + (int) ((e.getValue()[1] + MapData.HALF) * k);
-            g.fill(px - 1, py - 1, px + 2, py + 2, 0xFFFFD070);
-            String name = e.getKey().replace('_', ' ');
-            name = Character.toUpperCase(name.charAt(0)) + name.substring(1);
-            g.drawString(this.font, name, px + 4, py - 4, 0xFFF0E0B0, true);
+            int px = (int) toScreenX(e.getValue()[0]), py = (int) toScreenY(e.getValue()[1]);
+            if (px < x0 - 40 || px > x0 + s + 40 || py < y0 - 10 || py > y0 + s + 10) continue;
+            boolean h = e == hover;
+            g.fill(px - (h ? 2 : 1), py - (h ? 2 : 1), px + (h ? 3 : 2), py + (h ? 3 : 2), h ? 0xFFFFFFFF : 0xFFFFD070);
+            g.drawString(this.font, pretty(e.getKey()), px + 4, py - 4, h ? 0xFFFFFFFF : 0xFFF0E0B0, true);
         }
         // joueur
         var mc = Minecraft.getInstance();
+        boolean here = mc.player != null && mc.level != null && mc.level.dimension().location().getPath().equals("hautemarche");
+        if (here) {
+            int px = (int) toScreenX(mc.player.getX()), py = (int) toScreenY(mc.player.getZ());
+            g.fill(px - 3, py - 3, px + 4, py + 4, 0xFFFFFFFF);
+            g.fill(px - 2, py - 2, px + 3, py + 3, 0xFFE02020);
+        }
+        g.disableScissor();
+        // nord : le haut de la carte (rose des vents en haut a droite)
+        int rx = x0 + s - 22, ry = y0 + 28;
+        g.fill(rx - 15, ry - 20, rx + 16, ry + 21, 0xB0201A14);
+        g.fill(rx, ry - 15, rx + 1, ry + 14, 0xFFE8D9A8);
+        g.fill(rx - 14, ry, rx + 15, ry + 1, 0xFF8A7A50);
+        g.fill(rx - 2, ry - 13, rx + 3, ry - 11, 0xFFE02020);
+        g.fill(rx - 1, ry - 15, rx + 2, ry - 13, 0xFFE02020);
+        g.drawCenteredString(this.font, "§c§lN", rx, ry - 31, 0xFFFFFF);
+        g.drawString(this.font, "S", rx - 2, ry + 12, 0xFFCCBB99, false);
+        g.drawString(this.font, "O", rx - 14, ry - 3, 0xFFCCBB99, false);
+        g.drawString(this.font, "E", rx + 8, ry - 3, 0xFFCCBB99, false);
+        g.drawCenteredString(this.font, "§7Molette : zoom (x" + String.format("%.1f", zoom) + ")  —  glisser : déplacer  —  clic droit sur un lieu : s'y téléporter", this.width / 2, y0 + s + 20, 0xFFFFFF);
         if (mc.player != null) {
-            boolean here = mc.level != null && mc.level.dimension().location().getPath().equals("hautemarche");
             int bx = (int) mc.player.getX(), bz = (int) mc.player.getZ();
             if (here) {
-                int px = x0 + (int) ((bx + MapData.HALF) * k), py = y0 + (int) ((bz + MapData.HALF) * k);
-                g.fill(px - 3, py - 3, px + 4, py + 4, 0xFFFFFFFF);
-                g.fill(px - 2, py - 2, px + 3, py + 3, 0xFFE02020);
                 String bn = Component.translatable("biome.ringsofash." + MapData.BIOMES[MapData.biome(bx, bz)]).getString();
                 g.drawCenteredString(this.font, "Vous êtes ici : X " + bx + "  Z " + bz + "  —  " + bn, this.width / 2, y0 + s + 8, 0xFFFFFF);
             } else {
@@ -94,9 +164,10 @@ public class MapScreen extends Screen {
         }
         // survol
         if (mx >= x0 && mx < x0 + s && my >= y0 && my < y0 + s) {
-            int wx = (int) ((mx - x0) / k) - MapData.HALF, wz = (int) ((my - y0) / k) - MapData.HALF;
+            int wx = (int) toWorldX(mx), wz = (int) toWorldZ(my);
             String bn = Component.translatable("biome.ringsofash." + MapData.BIOMES[MapData.biome(wx, wz)]).getString();
-            g.drawString(this.font, "X " + wx + "  Z " + wz + "  " + bn, mx + 10, my + 10, 0xFFFFFF, true);
+            String txt = hover != null ? "§e" + pretty(hover.getKey()) + " §7— clic droit pour s'y rendre" : "X " + wx + "  Z " + wz + "  " + bn;
+            g.drawString(this.font, txt, mx + 10, my + 10, 0xFFFFFF, true);
         }
     }
 }

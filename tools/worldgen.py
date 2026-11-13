@@ -214,7 +214,7 @@ def biomes():
           extra_steps={6: ORES + [R('ore_lunargent'), R('ore_lunargent_rich')] + ORES_TAIL})
     biome('foret_clairsemee', 'Forêt Clairsemée', 0.65, 0.7, '#74a6e0', '#a8c4a0', water='#3d6a55', wfog='#0c1f16', grass='#8fc56f', foliage='#5f9a3f',
           veg=('trees_oak_sparse', 'trees_birch_sparse', 'trees_spruce_sparse', 'fallen_oak_logs', 'fallen_birch_logs_few', 'bushes_oak', 'bushes_birch_few', 'minecraft:patch_grass_forest', 'minecraft:flower_default'),
-          spawns={'creature': [('minecraft:fox', 3, 1, 2), ('minecraft:rabbit', 5, 2, 3), ('stag', 5, 1, 3)], 'ambient': BATS, 'monster': ORCS})
+          spawns={'creature': [('minecraft:fox', 3, 1, 2), ('minecraft:rabbit', 5, 2, 3), ('stag', 5, 1, 3), ('treeman', 2, 1, 1)], 'ambient': BATS, 'monster': ORCS})
     biome('bosquets', 'Bosquets', 0.65, 0.5, '#79b4ff', '#c4dcff', grass='#AEE08A', foliage='#82bf55',
           veg=('trees_oak_sparse', 'trees_birch_sparse', 'fallen_oak_logs_few', 'bushes_oak', 'bushes_birch', 'minecraft:flower_plains', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
           spawns={'creature': FARM + [('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS, 'monster': ORCS})
