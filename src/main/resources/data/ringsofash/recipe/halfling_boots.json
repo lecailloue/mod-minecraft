@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","category":"misc","pattern":["S S","L L"],"key":{"S":{"item":"ringsofash:spider_silk"},"L":{"item":"minecraft:leather"}},"result":{"id":"ringsofash:halfling_boots","count":1}}

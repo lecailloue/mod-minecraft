@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","category":"misc","pattern":["###","#l#"],"key":{"#":{"item":"minecraft:iron_ingot"},"l":{"item":"minecraft:lantern"}},"result":{"id":"ringsofash:miner_helmet","count":1}}

@@ -39,6 +39,7 @@ public final class ClientSetup {
     public static void init(IEventBus modBus) {
         modBus.addListener(ClientSetup::layers);
         modBus.addListener(ClientSetup::renderers);
+        modBus.addListener(ClientSetup::addLayers);
         modBus.addListener(ClientSetup::keys);
         modBus.addListener(ClientSetup::gui);
         modBus.addListener(ClientSetup::screens);
@@ -160,7 +161,18 @@ public final class ClientSetup {
         return LayerDefinition.create(mesh, 128, 64);
     }
 
+    private static final ModelLayerLocation CLOAK = new ModelLayerLocation(RingsOfAsh.id("cloak"), "main");
+
+    @SuppressWarnings("unchecked")
+    private static void addLayers(EntityRenderersEvent.AddLayers e) {
+        for (net.minecraft.world.entity.player.PlayerSkin.Model m : new net.minecraft.world.entity.player.PlayerSkin.Model[]{net.minecraft.world.entity.player.PlayerSkin.Model.WIDE, net.minecraft.world.entity.player.PlayerSkin.Model.SLIM}) {
+            var r = e.getSkin(m);
+            if (r instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer pr) pr.addLayer(new CloakLayer(pr, e.getEntityModels().bakeLayer(CLOAK)));
+        }
+    }
+
     private static void layers(EntityRenderersEvent.RegisterLayerDefinitions e) {
+        e.registerLayerDefinition(CLOAK, CloakLayer::definition);
         for (String g : GEO) e.registerLayerDefinition(layer("geo_" + g), () -> GeoDef.layer(g));
         for (String h : HUMAN) e.registerLayerDefinition(layer("human_" + h), () -> human(h));
     }

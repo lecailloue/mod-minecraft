@@ -209,6 +209,12 @@ public final class GameEvents {
         } else if (lore.eye == 60 || lore.eye == 90) {
             p.displayClientMessage(Component.literal("Vous sentez un regard brûlant se tourner vers vous...").withStyle(ChatFormatting.DARK_RED), true);
         }
+        // equipements du lore : casque de mineur, bottes de semi-homme, cape de cendre
+        if (p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).is(Reg.MINER_HELMET.get()) && p.getY() < 60 && !p.level().canSeeSky(p.blockPosition())) {
+            eff(p, MobEffects.NIGHT_VISION, 0); eff(p, MobEffects.DIG_SPEED, 0);
+        }
+        if (p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.FEET).is(Reg.HALFLING_BOOTS.get())) eff(p, MobEffects.MOVEMENT_SPEED, 0);
+        if (p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).is(Reg.ASH_CLOAK.get())) eff(p, MobEffects.FIRE_RESISTANCE, 0);
         // ensembles d'armure
         if (ModGear.fullSet(p, ModGear.LUNARGENT)) eff(p, MobEffects.DAMAGE_RESISTANCE, 0);
         else if (ModGear.fullSet(p, ModGear.ELVEN)) eff(p, MobEffects.MOVEMENT_SPEED, 0);
@@ -274,7 +280,9 @@ public final class GameEvents {
         RingItem.Kind ring = RingItem.worn(p);
         if (ring == RingItem.Kind.ASH) e.modifyVisibility(0.0);
         else if (ring == RingItem.Kind.SHADOWS) e.modifyVisibility(0.4);
-        if (p.isShiftKeyDown() && p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).is(Reg.ELVEN_CLOAK.get())) e.modifyVisibility(0.3);
+        ItemStack cloak = p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST);
+        if (cloak.is(Reg.ELVEN_CLOAK.get())) e.modifyVisibility(p.isShiftKeyDown() ? 0.3 : 0.75);
+        else if (cloak.is(Reg.RANGER_CLOAK.get())) e.modifyVisibility(p.isShiftKeyDown() ? 0.2 : 0.55);
     }
 
     // ------------------------------------------------------------------ reputation, bestiaire
@@ -299,6 +307,8 @@ public final class GameEvents {
     }
 
     private static void onDamage(LivingIncomingDamageEvent e) {
+        if (e.getEntity() instanceof Player pl && e.getSource().is(net.minecraft.tags.DamageTypeTags.IS_FALL)
+                && pl.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.FEET).is(Reg.HALFLING_BOOTS.get())) e.setAmount(e.getAmount() * 0.4F);
         if (e.getEntity() instanceof PeopleEntity pe && e.getSource().getEntity() instanceof ServerPlayer p && !p.isCreative() && pe.invulnerableTime <= 10) {
             Rep.add(p, pe.people(), -4, "agression");
         }

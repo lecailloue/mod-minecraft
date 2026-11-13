@@ -242,7 +242,39 @@ def build():
     armor_set('ashlord', 'du Seigneur de Cendre', 'ASHLORD', 40, '#1c1a20', '#c02a10', '#ff5a18', crown='#2a2830', props='props().fireResistant().rarity(Rarity.EPIC)')
     armor_set('elfking', 'du roi elfe', 'ELFKING', 40, '#e6e2d0', '#d8b040', '#3090e0', crown='#e0c060', props='props().fireResistant().rarity(Rarity.EPIC)')
     item('elven_cloak', 'Cape elfique', java='ModGear.armor(ModGear.CLOAK, ArmorItem.Type.CHESTPLATE, 12, props())', tex=sprite(FOODS['cloak'], mat('#4a6a4a', trim='#c9c070')), tags=['chest_armor'])
-    armor_layer('cloak', '#4a6a4a', '#3a5a3a', '#c9c070')
+    # la cape est dessinee par un calque 3D cote client : le calque d'armure du plastron reste invisible
+    for lay in (1, 2): save(Image.new('RGBA', (64, 32), (0, 0, 0, 0)), f'{A}/textures/models/armor/cloak_layer_{lay}.png')
+    def cloak_tex(name, base, trim, gem, seed):
+        rnd = random.Random(seed)
+        b = rgb(base); t = rgb(trim); g = rgb(gem)
+        im = Image.new('RGBA', (64, 64))
+        for y in range(64):
+            for x in range(64):
+                f = 1.0 + ((x + y) % 2) * 0.05 - 0.03 + rnd.uniform(-0.05, 0.05) + (0.06 if y % 4 == 0 else 0)
+                im.putpixel((x, y), shade(b, f) + (255,))
+        for x in range(14, 26):                           # ourlet de la cape (face exterieure du palier bas)
+            im.putpixel((x, 20), shade(t, 0.8) + (255,)); im.putpixel((x, 21), t + (255,))
+        for x in range(0, 34): im.putpixel((x, 32), t + (255,))      # bord de la collerette
+        for x in range(0, 36): im.putpixel((x, 34), shade(t, 0.9) + (255,))   # visiere
+        for y in range(45, 56):
+            for x in (20, 21): im.putpixel((x, y), shade(t, 0.7) + (255,))
+        for y in range(45, 48):                           # fermoir
+            for x in range(46, 52): im.putpixel((x, y), g + (255,))
+        save(im, f'{A}/textures/entity/cloak_{name}.png')
+    cloak_tex('elven', '#4f6f50', '#c9c070', '#58e0a0', 11)
+    cloak_tex('ranger', '#3a3e2c', '#6b4a2a', '#b08a40', 12)
+    cloak_tex('ash', '#2a282e', '#e0501a', '#ff9a30', 13)
+    item('ranger_cloak', 'Cape de rôdeur', java='ModGear.armor(ModGear.CLOAK, ArmorItem.Type.CHESTPLATE, 14, props())', tex=sprite(FOODS['cloak'], mat('#3a3e2c', trim='#6b4a2a')), tags=['chest_armor'])
+    item('ash_cloak', 'Cape de cendre', java='ModGear.armor(ModGear.CLOAK, ArmorItem.Type.CHESTPLATE, 20, props().fireResistant().rarity(Rarity.EPIC))', tex=sprite(FOODS['cloak'], mat('#2a282e', trim='#e0501a')), tags=['chest_armor'])
+    # ---- equipements du lore : bottes de semi-homme, casque de mineur nain
+    item('halfling_boots', 'Bottes de semi-homme', java='ModGear.armor(ModGear.HALFLING, ArmorItem.Type.BOOTS, 18, props())', tex=sprite(BOOTS, matpal('#8a6a44', trim='#5a4020')), tags=['foot_armor'])
+    armor_layer('halfling', '#8a6a44', '#5a4020', '#c9a23a')
+    item('miner_helmet', 'Casque de mineur nain', java='ModGear.armor(ModGear.MINER, ArmorItem.Type.HELMET, 20, props())', tex=sprite(HELMET, matpal('#8a8f98', trim='#c9a23a', gem='#ffd040')), tags=['head_armor'])
+    armor_layer('miner', '#8a8f98', '#c9a23a', '#ffd040', crown='#c9a23a')
+    shaped('ranger_cloak', ['PPP', 'LLL', 'L L'], {'P': 'warg_pelt', 'L': 'minecraft:leather'}, 'ranger_cloak')
+    shaped('ash_cloak', ['DDD', '#H#', '# #'], {'D': 'dragon_scale', 'H': 'demon_heart', '#': 'black_steel_ingot'}, 'ash_cloak')
+    shaped('halfling_boots', ['S S', 'L L'], {'S': 'spider_silk', 'L': 'minecraft:leather'}, 'halfling_boots')
+    shaped('miner_helmet', ['###', '#l#'], {'#': 'minecraft:iron_ingot', 'l': 'minecraft:lantern'}, 'miner_helmet')
     # ---- anneaux
     rings = (('ash_ring', "Anneau de Cendre", 'ASH', '#e8c040', '#ff5a18', 'EPIC'), ('ring_waters', 'Anneau des Eaux', 'WATERS', '#d8dce4', '#40a0f0', 'RARE'),
              ('ring_winds', 'Anneau des Vents', 'WINDS', '#d8dce4', '#f0f0ff', 'RARE'), ('ring_embers', 'Anneau des Braises', 'EMBERS', '#e0b050', '#f04020', 'RARE'),

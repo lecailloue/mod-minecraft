@@ -51,6 +51,8 @@ public final class ModGear {
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> ASHLORD = mat("ashlord", 4, 7, 9, 4, 15, SoundEvents.ARMOR_EQUIP_NETHERITE, 4.0F, 0.2F, () -> Ingredient.of(Reg.BLACK_STEEL_INGOT.get()));
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> ELFKING = mat("elfking", 4, 7, 9, 4, 25, SoundEvents.ARMOR_EQUIP_DIAMOND, 3.5F, 0.0F, () -> Ingredient.of(Reg.LUNARGENT_INGOT.get()));
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> CLOAK = mat("cloak", 0, 0, 2, 0, 20, SoundEvents.ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, () -> Ingredient.of(Items.LEATHER));
+    public static final DeferredHolder<ArmorMaterial, ArmorMaterial> HALFLING = mat("halfling", 1, 0, 0, 0, 15, SoundEvents.ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, () -> Ingredient.of(Items.LEATHER));
+    public static final DeferredHolder<ArmorMaterial, ArmorMaterial> MINER = mat("miner", 0, 0, 0, 2, 10, SoundEvents.ARMOR_EQUIP_IRON, 0.5F, 0.0F, () -> Ingredient.of(Items.IRON_INGOT));
 
     public static final Tier T_LUNARGENT = new SimpleTier(BlockTags.INCORRECT_FOR_DIAMOND_TOOL, 1800, 9.0F, 4.0F, 18, () -> Ingredient.of(Reg.LUNARGENT_INGOT.get()));
     public static final Tier T_ELVEN = new SimpleTier(BlockTags.INCORRECT_FOR_IRON_TOOL, 900, 7.0F, 3.0F, 22, () -> Ingredient.of(Reg.SUNSTAR.get()));

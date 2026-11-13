@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","category":"misc","pattern":["DDD","#H#","# #"],"key":{"D":{"item":"ringsofash:dragon_scale"},"H":{"item":"ringsofash:demon_heart"},"#":{"item":"ringsofash:black_steel_ingot"}},"result":{"id":"ringsofash:ash_cloak","count":1}}

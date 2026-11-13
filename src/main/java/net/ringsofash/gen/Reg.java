@@ -230,6 +230,10 @@ public final class Reg {
     public static final DeferredItem<Item> ELFKING_LEGGINGS = ITEMS.register("elfking_leggings", () -> ModGear.armor(ModGear.ELFKING, ArmorItem.Type.LEGGINGS, 40, props().fireResistant().rarity(Rarity.EPIC)));
     public static final DeferredItem<Item> ELFKING_BOOTS = ITEMS.register("elfking_boots", () -> ModGear.armor(ModGear.ELFKING, ArmorItem.Type.BOOTS, 40, props().fireResistant().rarity(Rarity.EPIC)));
     public static final DeferredItem<Item> ELVEN_CLOAK = ITEMS.register("elven_cloak", () -> ModGear.armor(ModGear.CLOAK, ArmorItem.Type.CHESTPLATE, 12, props()));
+    public static final DeferredItem<Item> RANGER_CLOAK = ITEMS.register("ranger_cloak", () -> ModGear.armor(ModGear.CLOAK, ArmorItem.Type.CHESTPLATE, 14, props()));
+    public static final DeferredItem<Item> ASH_CLOAK = ITEMS.register("ash_cloak", () -> ModGear.armor(ModGear.CLOAK, ArmorItem.Type.CHESTPLATE, 20, props().fireResistant().rarity(Rarity.EPIC)));
+    public static final DeferredItem<Item> HALFLING_BOOTS = ITEMS.register("halfling_boots", () -> ModGear.armor(ModGear.HALFLING, ArmorItem.Type.BOOTS, 18, props()));
+    public static final DeferredItem<Item> MINER_HELMET = ITEMS.register("miner_helmet", () -> ModGear.armor(ModGear.MINER, ArmorItem.Type.HELMET, 20, props()));
     public static final DeferredItem<Item> ASH_RING = ITEMS.register("ash_ring", () -> new RingItem(RingItem.Kind.ASH, props().stacksTo(1).fireResistant().rarity(Rarity.EPIC)));
     public static final DeferredItem<Item> RING_WATERS = ITEMS.register("ring_waters", () -> new RingItem(RingItem.Kind.WATERS, props().stacksTo(1).fireResistant().rarity(Rarity.RARE)));
     public static final DeferredItem<Item> RING_WINDS = ITEMS.register("ring_winds", () -> new RingItem(RingItem.Kind.WINDS, props().stacksTo(1).fireResistant().rarity(Rarity.RARE)));
