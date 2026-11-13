@@ -145,6 +145,36 @@ def build():
          tex=sprite(FOODS['mug'], mat('#8a6a44', trim='#d8a030') | {'w': (245, 240, 225)}))
     item('living_sap', 'Sève vive', java='new MiscItems.Drink(true, props().stacksTo(8).rarity(Rarity.UNCOMMON).food(new FoodProperties.Builder().nutrition(2).saturationModifier(0.5F).alwaysEdible().build()))',
          tex=sprite(FOODS['phial'], mat('#7a5a34', gem='#58c040', trim='#5a4020')))
+    # ---- potions, runes et objets utilitaires (effets reels)
+    fx = lambda n, t, a=0: f'new Elixirs.Fx(net.minecraft.world.effect.MobEffects.{n}, {t}, {a})'
+    pot = lambda txt, heal, cure, *fxs, n=16: f'new Elixirs.Potion("{txt}", {heal}F, {str(cure).lower()}, props().stacksTo({n}), {", ".join(fxs) if fxs else "new Elixirs.Fx[0]"})'
+    def phial(id, fr, gem, java, base='#7a5a34', trim='#5a4020'):
+        item(id, fr, java=java, tex=sprite(FOODS['phial'], mat(base, gem=gem, trim=trim)))
+    phial('ember_phial', 'Fiole de braise', '#ff7a1a', pot("Résistance au feu pendant 4 minutes.", 0, False, fx('FIRE_RESISTANCE', 4800)))
+    phial('stone_phial', 'Élixir de pierre', '#9aa0a8', pot("Résistance II pendant 90 s, mais vous ralentit.", 0, False, fx('DAMAGE_RESISTANCE', 1800, 1), fx('MOVEMENT_SLOWDOWN', 1800, 0)))
+    phial('night_phial', 'Philtre nocturne', '#3a50c8', pot("Vision nocturne pendant 5 minutes.", 0, False, fx('NIGHT_VISION', 6000)))
+    phial('swift_phial', 'Philtre du vent', '#e8f0a0', pot("Vitesse II et Saut II pendant 2 minutes.", 0, False, fx('MOVEMENT_SPEED', 2400, 1), fx('JUMP', 2400, 1)))
+    phial('healing_balm', 'Baume de guérison', '#e04a6a', pot("Soigne 4 cœurs et régénère II pendant 10 s.", 8, False, fx('REGENERATION', 200, 1)))
+    phial('antidote', 'Antidote', '#58d890', pot("Purge poisons, malédictions et autres effets néfastes.", 0, True, fx('REGENERATION', 60, 0)))
+    item('wind_feather', 'Plume de vent', java='new Elixirs.Feather(props().durability(24))', tex=sprite([
+        '................', '..........ooooo.', '........ooabbbo.', '.......oabbbcbo.', '......oabbbbbo..', '.....oabbbbbo...', '....oaabbbbo....',
+        '...oaaabbbo.....', '..oaaaabbo......', '..oaaaaoo.......', '.oddaaoo........', '.oddoo..........', 'oddo............', 'oo..............',
+        '................', '................'], matpal('#dfe8f0')))
+    item('recall_shard', 'Éclat de rappel', java='new Elixirs.Recall(props().stacksTo(8).rarity(Rarity.UNCOMMON))', tex=sprite(GEM, matpal('#9a6ae0')))
+    item('smoke_powder', 'Poudre de fumée', java='new Elixirs.Smoke(props().stacksTo(16))', tex=sprite(FOODS['dust'], mat('#6a6a72')))
+    item('haste_rune', 'Rune de hâte', java=f'new Elixirs.Rune("Hâte II pendant 4 minutes : creuse bien plus vite.", props().stacksTo(16), {fx("DIG_SPEED", 4800, 1)})',
+         tex=sprite(COIN, matpal('#7a7f88', trim='#ffd040')))
+    for rid, parts, n in (('ember_phial', ['minecraft:glass_bottle', 'braisite', 'minecraft:blaze_powder'], 1),
+                          ('stone_phial', ['minecraft:glass_bottle', 'minecraft:deepslate', 'raw_sombrefer'], 1),
+                          ('night_phial', ['minecraft:glass_bottle', 'minecraft:golden_carrot', 'brumecristal'], 1),
+                          ('swift_phial', ['minecraft:glass_bottle', 'minecraft:sugar', 'minecraft:feather'], 1),
+                          ('healing_balm', ['minecraft:glass_bottle', 'minecraft:glistering_melon_slice', 'minecraft:honey_bottle'], 1),
+                          ('antidote', ['minecraft:glass_bottle', 'minecraft:sweet_berries', 'minecraft:kelp'], 1),
+                          ('wind_feather', ['minecraft:feather', 'minecraft:feather', 'lunargent_ingot'], 1),
+                          ('recall_shard', ['brumecristal', 'minecraft:ender_pearl', 'lunargent_ingot'], 1),
+                          ('smoke_powder', ['minecraft:gunpowder', 'minecraft:charcoal'], 2),
+                          ('haste_rune', ['raw_orrune', 'minecraft:redstone', 'minecraft:glowstone_dust'], 1)):
+        shapeless(rid, parts, rid, n)
     # ---- armes
     sw = lambda kind, tier, dmg, spd, reach=0, p=P: f'ModGear.special(SpecialSword.Kind.{kind}, ModGear.{tier}, {dmg}, {spd}F, {reach}, {p})'
     def weapon(id, fr, java, tex_im, tags=('swords',)):

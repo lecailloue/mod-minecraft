@@ -1,1 +1,0 @@
-{"type":"ringsofash:big_tree","config":{"log":{"Name":"ringsofash:ancient_log","Properties":{"axis":"y"}},"leaves":{"Name":"ringsofash:ancient_leaves","Properties":{"distance":"1","persistent":"false","waterlogged":"false"}},"min_height":14,"max_height":26,"trunk":2,"canopy":9,"style":"gnarled"}}

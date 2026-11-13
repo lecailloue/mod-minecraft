@@ -1,1 +1,0 @@
-{"type":"minecraft:crafting_shaped","category":"misc","pattern":["###","#l#","###"],"key":{"#":{"item":"ringsofash:dwarven_bricks"},"l":{"item":"minecraft:lava_bucket"}},"result":{"id":"ringsofash:dwarven_forge","count":1}}
