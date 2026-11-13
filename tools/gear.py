@@ -1,7 +1,7 @@
 """Objets : armes, armures, anneaux, batons, nourriture, divers (textures + enregistrement)."""
 from genlib import *
 from tex import *
-from content import INGOT, RING
+from content import INGOT, RING, GEM, COIN
 from PIL import Image
 import random
 
