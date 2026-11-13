@@ -34,6 +34,7 @@ public class RingsOfAsh {
         Reg.BLOCKS.register(modBus);
         Reg.ITEMS.register(modBus);
         TABS.register(modBus);
+        net.ringsofash.menu.ModMenus.MENUS.register(modBus);
         ModWorldgen.register(modBus);
         ModData.ATTACHMENTS.register(modBus);
         net.ringsofash.entity.ModEntities.register(modBus);

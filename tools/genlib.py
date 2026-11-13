@@ -74,15 +74,33 @@ def _face_uv(face, f, t, mirror=False):
     if mirror and face in ('east', 'west', 'north', 'south'): uv = [uv[2], uv[1], uv[0], uv[3]]
     return uv
 
-def box(f, t, tex='#all', per=None, cull=True, mirror_faces=()):
+def box(f, t, tex='#all', per=None, cull=True, mirror_faces=(), tint=True, uvshift=(0, 0, 0)):
     faces = {}
     x1, y1, z1 = f; x2, y2, z2 = t
     edge = {'down': y1 == 0, 'up': y2 == 16, 'north': z1 == 0, 'south': z2 == 16, 'west': x1 == 0, 'east': x2 == 16}
     for fc in ('down', 'up', 'north', 'south', 'west', 'east'):
-        face = {'uv': _face_uv(fc, f, t, fc in mirror_faces), 'texture': (per or {}).get(fc, tex), 'tintindex': 0}
+        uf = tuple(a - b for a, b in zip(f, uvshift)); ut = tuple(a - b for a, b in zip(t, uvshift))
+        face = {'uv': _face_uv(fc, uf, ut, fc in mirror_faces), 'texture': (per or {}).get(fc, tex)}
+        if tint: face['tintindex'] = 0
         if cull and edge[fc]: face['cullface'] = fc
         faces[fc] = face
     return {'from': list(f), 'to': list(t), 'faces': faces}
+
+def _splits(a, b):
+    import math
+    pts = [a] + [16 * k for k in range(math.floor(a / 16) + 1, math.ceil(b / 16)) if a < 16 * k < b] + [b]
+    return list(zip(pts[:-1], pts[1:]))
+
+def tbox(f, t, tex='#all', per=None, tint=True):
+    """boite de grande taille decoupee en tuiles de 16 pour que la texture se repete sans etirement"""
+    import math
+    out = []
+    for (x1, x2) in _splits(f[0], t[0]):
+        for (y1, y2) in _splits(f[1], t[1]):
+            for (z1, z2) in _splits(f[2], t[2]):
+                sh = (16 * math.floor(x1 / 16), 16 * math.floor(y1 / 16), 16 * math.floor(z1 / 16))
+                out.append(box((x1, y1, z1), (x2, y2, z2), tex, per, cull=False, tint=tint, uvshift=sh))
+    return out
 
 def tmodel(name, elements, textures, particle):
     wjson(f'{A}/models/block/{name}.json', {'parent': 'minecraft:block/block', 'textures': dict(textures, particle=particle), 'elements': elements})
@@ -360,14 +378,16 @@ def write_java():
         L.append(f'    public static final DeferredBlock<Block> {b["id"].upper()} = BLOCKS.register("{b["id"]}", () -> {block_java(b)});')
     L.append('')
     for b in BLOCKS:
-        if b.get('item', True):
+        if b.get('item_java'):
+            L.append(f'    public static final DeferredItem<Item> BI_{b["id"].upper()} = ITEMS.register("{b["id"]}", () -> {b["item_java"]});')
+        elif b.get('item', True):
             L.append(f'    public static final DeferredItem<BlockItem> BI_{b["id"].upper()} = ITEMS.registerSimpleBlockItem("{b["id"]}", {b["id"].upper()});')
     L.append('')
     for it in ITEMS:
         L.append(f'    public static final DeferredItem<Item> {it["id"].upper()} = ITEMS.register("{it["id"]}", () -> {it["java"]});')
     L += ['    private Reg() {}', '}', '']
     with open(os.path.join(JAVA_GEN, 'Reg.java'), 'w', encoding='utf-8') as f: f.write('\n'.join(L))
-    tb = [b['id'] for b in BLOCKS if b.get('tint')]
+    tb = [b['id'] for b in BLOCKS if b.get('tint') or b.get('tintlist')]
     T_ = ['// FICHIER GENERE - blocs dont la teinte varie (pierre naine)', 'package net.ringsofash.gen;', '', 'import net.minecraft.world.item.Item;',
           'import net.minecraft.world.level.block.Block;', '', 'public final class Tinted {',
           '    public static Block[] blocks() { return new Block[]{' + ', '.join(f'Reg.{i.upper()}.get()' for i in tb) + '}; }',

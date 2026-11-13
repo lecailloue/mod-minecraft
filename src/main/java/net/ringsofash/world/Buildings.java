@@ -428,7 +428,7 @@ public final class Buildings {
         b.s(18, 2, 25, Reg.DWARVEN_RUNES.get());
         // forge (cote gauche)
         b.fill(1, 1, 3, 1, 1, 9, Blocks.BLAST_FURNACE.defaultBlockState().setValue(net.minecraft.world.level.block.BlastFurnaceBlock.FACING, E));
-        b.s(3, 1, 4, Blocks.ANVIL); b.s(3, 1, 8, Blocks.ANVIL); b.s(3, 1, 6, Reg.DWARVEN_FORGE.get());
+        b.s(3, 1, 4, Blocks.ANVIL); b.s(3, 1, 8, Blocks.ANVIL); for (int fx = 0; fx < 3; fx++) for (int fy = 0; fy < 3; fy++) for (int fz = 0; fz < 3; fz++) b.s(2 + fx, 1 + fy, 5 + fz, Reg.DWARVEN_FORGE.get().defaultBlockState().setValue(net.ringsofash.block.ForgeBlock.OX, fx).setValue(net.ringsofash.block.ForgeBlock.OY, fy).setValue(net.ringsofash.block.ForgeBlock.OZ, fz));
         b.fill(1, 0, 11, 3, 0, 13, Blocks.LAVA); b.fill(1, 1, 11, 3, 1, 13, Blocks.IRON_BARS); b.fill(4, 1, 11, 4, 1, 13, Reg.DWARVEN_BRICKS_WALL.get());
         // taverne (cote droit)
         b.fill(31, 1, 3, 31, 2, 9, Blocks.BARREL);

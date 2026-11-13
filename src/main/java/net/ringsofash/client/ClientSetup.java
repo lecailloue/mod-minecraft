@@ -41,6 +41,7 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::renderers);
         modBus.addListener(ClientSetup::keys);
         modBus.addListener(ClientSetup::gui);
+        modBus.addListener(ClientSetup::screens);
         modBus.addListener(ClientSetup::blockColors);
         modBus.addListener(ClientSetup::itemColors);
         modBus.addListener(ClientSetup::setup);
@@ -54,6 +55,10 @@ public final class ClientSetup {
 
     private static void itemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item e) {
         e.register((stack, idx) -> 0xFF000000 | DwarvenTint.item(), net.ringsofash.gen.Tinted.items());
+    }
+
+    private static void screens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent e) {
+        e.register(net.ringsofash.menu.ModMenus.FORGE.get(), ForgeScreen::new);
     }
 
     private static void gui(net.neoforged.neoforge.client.event.RegisterGuiLayersEvent e) {

@@ -225,8 +225,50 @@ def build():
     for y in range(4, 12):
         for x in range(4, 12): ft.putpixel((x, y), mix(rgb('#ffb030'), rgb('#c03010'), ((x * 7 + y * 3) % 5) / 5) + (255,))
     btex('dwarven_forge_top', ft)
-    block('dwarven_forge', 'Forge naine', 'custom_cube', java='new ForgeBlock(copy(Blocks.DEEPSLATE_BRICKS).lightLevel(s -> 10))', tool='pickaxe',
-          faces={'top': 'dwarven_forge_top', 'bottom': 'dwarven_bricks_plain', 'side': 'dwarven_forge_side'})
+    block('dwarven_forge', 'Forge naine', 'custom', java='new ForgeBlock(copy(Blocks.DEEPSLATE_BRICKS).noOcclusion().strength(5.0F, 8.0F).lightLevel(s -> ForgeBlock.isCenter(s) ? 13 : 0))',
+          tool='pickaxe', drop='none', tintlist=True, item_java='new ForgeItem(DWARVEN_FORGE.get(), props())')
+    FT = {'stone': T('dwarven_stone'), 'bricks': T('dwarven_bricks'), 'pillar': T('dwarven_pillar'), 'pillar_top': T('dwarven_pillar_top'),
+          'lava': 'minecraft:block/lava_still', 'front': T('dwarven_forge_side')}
+    pil = {'up': '#pillar_top', 'down': '#pillar_top', 'north': '#pillar', 'south': '#pillar', 'west': '#pillar', 'east': '#pillar'}
+    els = []
+    els += tbox((-16, -16, -16), (32, -4, 32), '#stone')                       # socle
+    els += tbox((-12, -4, -12), (28, 16, 28), '#bricks')                       # corps
+    for (f_, t_) in (((-12, 16, -12), (28, 24, -8)), ((-12, 16, 24), (28, 24, 28)), ((-12, 16, -8), (-8, 24, 24)), ((24, 16, -8), (28, 24, 24))):
+        els += tbox(f_, t_, '#stone')                                          # rebord du foyer
+    els += tbox((-8, 16, -8), (24, 21, 24), '#lava', tint=False)               # bain de lave
+    for cx in (-16, 24):
+        for cz in (-16, 24):
+            els += tbox((cx, -4, cz), (cx + 8, 22, cz + 8), '#pillar', per=pil)  # piliers d'angle
+    els += tbox((-8, 24, 20), (24, 32, 28), '#bricks')                         # dosseret
+    els += tbox((-4, 24, 12), (20, 32, 28), '#bricks')                         # cheminee
+    els += tbox((0, 0, -12.5), (16, 12, -12), '#front', tint=False)            # bouche du foyer
+    tmodel('dwarven_forge', els, FT, T('dwarven_stone'))
+    tmodel('dwarven_forge_part', [], {}, T('dwarven_stone'))
+    sv = {}
+    for ox in range(3):
+        for oy in range(3):
+            for oz in range(3):
+                sv[f'ox={ox},oy={oy},oz={oz}'] = {'model': T('dwarven_forge' if (ox, oy, oz) == (1, 1, 1) else 'dwarven_forge_part')}
+    bstate('dwarven_forge', {'variants': sv})
+    imodel('dwarven_forge', {'parent': T('dwarven_forge'), 'display': {
+        'gui': {'rotation': [30, 225, 0], 'translation': [0, -1, 0], 'scale': [0.2, 0.2, 0.2]},
+        'ground': {'translation': [0, 2, 0], 'scale': [0.1, 0.1, 0.1]},
+        'fixed': {'scale': [0.18, 0.18, 0.18]},
+        'thirdperson_righthand': {'rotation': [75, 45, 0], 'translation': [0, 2.5, 0], 'scale': [0.08, 0.08, 0.08]},
+        'firstperson_righthand': {'rotation': [0, 45, 0], 'scale': [0.1, 0.1, 0.1]}}})
+    # trempe naine : enchantement a part, ajoute par la forge (6 niveaux)
+    wjson(f'{D}/enchantment/dwarven_temper.json', {
+        'description': {'translate': 'enchantment.ringsofash.dwarven_temper'},
+        'supported_items': '#ringsofash:forgeable', 'weight': 1, 'max_level': 6,
+        'min_cost': {'base': 1, 'per_level_above_first': 10}, 'max_cost': {'base': 21, 'per_level_above_first': 10}, 'anvil_cost': 8,
+        'slots': ['mainhand'],
+        'effects': {'minecraft:attributes': [
+            {'attribute': 'minecraft:generic.attack_damage', 'id': 'ringsofash:dwarven_temper_damage', 'operation': 'add_value',
+             'amount': {'type': 'minecraft:linear', 'base': 1.5, 'per_level_above_first': 1.5}},
+            {'attribute': 'minecraft:player.mining_efficiency', 'id': 'ringsofash:dwarven_temper_mining', 'operation': 'add_value',
+             'amount': {'type': 'minecraft:linear', 'base': 2.0, 'per_level_above_first': 2.0}}]}})
+    LANG['enchantment.ringsofash.dwarven_temper'] = 'Trempe naine'
+    tag('item', 'forgeable', '#minecraft:swords', '#minecraft:axes', '#minecraft:pickaxes', '#minecraft:shovels', '#minecraft:hoes', ns='ringsofash')
     shaped('dwarven_forge', ['###', '#l#', '###'], {'#': 'dwarven_bricks', 'l': 'minecraft:lava_bucket'}, 'dwarven_forge')
     ps = log_side('#6b4a2a', 83).rotate(90)
     btex('alarm_pyre_side', ps)
