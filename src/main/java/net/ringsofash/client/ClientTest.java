@@ -222,6 +222,14 @@ public final class ClientTest {
         lineup("03_divers", 7.0, 2F, 2.2, List.of(ModEntities.CAVE_THIEF.get(), ModEntities.SORCERER.get(), ModEntities.DEAD_SOLDIER.get(), ModEntities.CROW.get(), ModEntities.STAG.get(), ModEntities.WARG.get()));
         lineup("04_betes", 12.0, -4F, 5.5, List.of(ModEntities.CAVE_TROLL.get(), ModEntities.STONE_TROLL.get(), ModEntities.GIANT_SPIDER.get(), ModEntities.EAGLE.get(), ModEntities.LURKER.get()));
         lineup("05_geants", 15.0, -8F, 7.0, List.of(ModEntities.MAMMOTH.get(), ModEntities.TREEMAN.get(), ModEntities.FIRE_DEMON.get(), ModEntities.ASH_LORD.get()));
+        for (float[] v : new float[][]{{0, 155F}, {1, -25F}, {2, 90F}}) {
+            SCENES.add(new Scene("05" + "bcd".charAt((int) v[0]) + "_fleau", 70, p -> {
+                ServerLevel ow = p.server.overworld();
+                clear(ow);
+                actor(ow, ModEntities.FIRE_DEMON.get(), SX, SZ + 14, m -> { m.setYRot(v[1]); m.setYHeadRot(v[1]); m.setYBodyRot(v[1]); });
+                view(p, ow, SX + 0.5, SY + 3.5, SZ, 0F, 0F);
+            }));
+        }
         SCENES.add(new Scene("06_dragon", 70, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);

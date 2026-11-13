@@ -62,31 +62,8 @@ def stag():
     m.export(); m.preview(f'{PREVIEW}/stag.png')
 
 def demon():
-    m = Model('demon', 256, 128, 11)
-    c = '#1f1717'; ember = '#2a1a16'; bone = '#3a2c26'; fire = '#ff7a18'
-    cracks = ['......................', '...c..........c.......', '..cc....c....cc...c...', '...c...cc.....c..cc...', '..c....c.c...c....c...', '.cc...c...c.cc...c....',
-              '..c..cc....cc...cc....', '...c..c...c..c...c....', '..c...c..c....c...c...', '.c...cc.c......c..cc..', '..c...cc........c..c..', '...c...c.......c...c..']
-    b = m.part('body', (0, 44, 0))
-    b.box((-11, 34, -6), (22, 22, 12), c, art={'front': cracks, 'back': cracks}, pal=EYE, noise=0.2)
-    b.box((-8, 26, -5), (16, 8, 10), ember, noise=0.2)
-    b.box((-3, 50, 6), (6, 14, 3), fire, noise=0.3)
-    h = m.part('head', (0, 56, -1))
-    h.box((-6, 56, -8), (12, 11, 11), c, noise=0.2, art={'front': ['............', '............', '............', '.yc......cy.', '.cy......yc.', '............', '....c..c....', '..cyccccyc..', '..yccyyccy..', '...c.cc.c...', '............']}, pal=EYE)
-    for sx in (-1, 1):
-        x = -10 if sx < 0 else 6
-        h.box((x, 62, -3), (4, 3, 3), bone); h.box((-12 if sx < 0 else 9, 64, -3), (3, 9, 3), bone)
-        h.box((-12 if sx < 0 else 9, 73, -5), (3, 3, 4), bone)
-    ar = m.part('arm_r', (-13, 54, 0), 'body'); ar.box((-21, 26, -4), (8, 30, 8), c, noise=0.2, art={'front': cracks[2:10]}, pal=EYE)
-    ar.box((-18, 22, -30), (2, 6, 26), fire, noise=0.35)
-    al = m.part('arm_l', (13, 54, 0), 'body'); al.box((13, 26, -4), (8, 30, 8), c, noise=0.2, mirror=True, art={'front': cracks[2:10]}, pal=EYE)
-    m.part('leg_r', (-6, 26, 0)).box((-11, 0, -5), (9, 26, 9), ember, noise=0.2)
-    m.part('leg_l', (6, 26, 0)).box((2, 0, -5), (9, 26, 9), ember, noise=0.2, mirror=True)
-    wr = m.part('wing_r', (-6, 52, 6), 'body'); wr.box((-42, 28, 7), (36, 30, 1), '#4a1612', noise=0.25); wr.box((-42, 58, 6), (36, 2, 2), bone)
-    wl = m.part('wing_l', (6, 52, 6), 'body'); wl.box((6, 28, 7), (36, 30, 1), '#4a1612', noise=0.25, mirror=True); wl.box((6, 58, 6), (36, 2, 2), bone, mirror=True)
-    t = m.part('tail', (0, 30, 6), 'body'); t.box((-2, 26, 6), (4, 4, 14), c)
-    m.part('tail2', (0, 28, 20), 'tail').box((-1, 27, 20), (3, 3, 12), ember)
-    m.export(); m.preview(f'{PREVIEW}/demon.png')
-    glow(m, 'demon_glow', 'cy')
+    import demon as fleau
+    fleau.demon(f'{PREVIEW}/demon.png')
 
 def glow(m, name, chars):
     """texture lumineuse : uniquement les pixels d'art dont le caractere est dans chars (+ boites tres vives)"""

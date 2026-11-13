@@ -53,7 +53,7 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<GiantSpiderEntity>> GIANT_SPIDER = reg("giant_spider", GiantSpiderEntity::new, MobCategory.MONSTER, 3.0F, 2.3F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<LurkerEntity>> LURKER = reg("lurker", LurkerEntity::new, MobCategory.MONSTER, 2.4F, 2.0F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<ThiefEntity>> CAVE_THIEF = reg("cave_thief", ThiefEntity::new, MobCategory.MONSTER, 0.5F, 1.3F, false);
-    public static final DeferredHolder<EntityType<?>, EntityType<BossEntity>> FIRE_DEMON = boss("fire_demon", 1.8F, 4.6F, true);
+    public static final DeferredHolder<EntityType<?>, EntityType<BossEntity>> FIRE_DEMON = boss("fire_demon", 2.2F, 6.4F, true);
     public static final DeferredHolder<EntityType<?>, EntityType<BossEntity>> ASH_LORD = boss("ash_lord", 1.3F, 3.9F, true);
     public static final DeferredHolder<EntityType<?>, EntityType<BossEntity>> DRAGON = boss("dragon", 3.4F, 2.6F, true);
     public static final DeferredHolder<EntityType<?>, EntityType<BossEntity>> SORCERER = boss("sorcerer", 0.6F, 2.1F, false);

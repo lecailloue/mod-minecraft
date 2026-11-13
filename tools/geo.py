@@ -5,9 +5,11 @@ from tex import rgb, shade, mix, vnoise
 from genlib import A, wjson, save
 
 class Box:
-    def __init__(self, o, s, color, inflate=0.0, art=None, pal=None, mirror=False, noise=0.10, faces=None):
+    def __init__(self, o, s, color, inflate=0.0, art=None, pal=None, mirror=False, noise=0.10, faces=None, grad=None, glow=False):
         self.o, self.s, self.color, self.inflate = o, s, rgb(color) if isinstance(color, str) else color, inflate
         self.art, self.pal, self.mirror, self.noise, self.faces = art or {}, pal or {}, mirror, noise, faces or {}
+        self.grad = rgb(grad) if isinstance(grad, str) else grad   # degrade vertical : color (bas) -> grad (haut)
+        self.glow = glow                                           # boite lumineuse (copiee dans la texture _glow)
         self.uv = None
 
 class Part:
@@ -58,8 +60,11 @@ class Model:
                 for face, (x0, y0, fw, fh) in self.face_rects(b).items():
                     base = b.faces.get(face, b.color)
                     if isinstance(base, str): base = rgb(base)
+                    base0 = base
+                    if b.grad and face == 'top': base = b.grad
                     lum = {'top': 1.12, 'bottom': 0.72, 'front': 1.0, 'back': 0.9, 'left': 0.94, 'right': 0.94}[face]
                     for yy in range(fh):
+                        if b.grad and face not in ('top', 'bottom'): base = mix(b.grad, base0, yy / max(1, fh - 1))
                         for xx in range(fw):
                             f = lum * (1 + (n[(y0 + yy) % len(n)][(x0 + xx) % len(n)] - 0.5) * 2 * b.noise + (rnd.random() - 0.5) * b.noise)
                             if face not in ('top', 'bottom') and fh > 3: f *= 1.06 - 0.14 * yy / fh

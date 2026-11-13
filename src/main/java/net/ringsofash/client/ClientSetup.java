@@ -202,7 +202,7 @@ public final class ClientSetup {
         e.registerEntityRenderer(ModEntities.GIANT_SPIDER.get(), Renderers.GiantSpider::new);
         e.registerEntityRenderer(ModEntities.LURKER.get(), c -> new Renderers.Geo<>(c, layer("geo_lurker"), "lurker", 1.5F, 1.6F, f -> "lurker", "lurker_glow"));
         e.registerEntityRenderer(ModEntities.CAVE_THIEF.get(), c -> new Renderers.Human<>(c, goblin, 0.68F, 0.66F, f -> "cave_thief", false));
-        e.registerEntityRenderer(ModEntities.FIRE_DEMON.get(), c -> new Renderers.Geo<>(c, layer("geo_demon"), "demon", 1.6F, 1.0F, f -> "demon", "demon_glow"));
+        e.registerEntityRenderer(ModEntities.FIRE_DEMON.get(), c -> new Renderers.Geo<>(c, layer("geo_demon"), "demon", 2.2F, 1.2F, f -> "demon", "demon_glow"));
         e.registerEntityRenderer(ModEntities.ASH_LORD.get(), c -> new Renderers.Human<>(c, plain, 1.95F, 2.0F, f -> "ash_lord", false));
         e.registerEntityRenderer(ModEntities.DRAGON.get(), c -> new Renderers.Geo<>(c, layer("geo_dragon"), "dragon", 2.5F, 1.0F, f -> "dragon", null));
         e.registerEntityRenderer(ModEntities.SORCERER.get(), c -> new Renderers.Human<>(c, plain, 1.05F, 1.08F, f -> "sorcerer", false));
