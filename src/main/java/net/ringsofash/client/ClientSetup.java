@@ -165,7 +165,7 @@ public final class ClientSetup {
 
     @SuppressWarnings("unchecked")
     private static void addLayers(EntityRenderersEvent.AddLayers e) {
-        for (net.minecraft.world.entity.player.PlayerSkin.Model m : new net.minecraft.world.entity.player.PlayerSkin.Model[]{net.minecraft.world.entity.player.PlayerSkin.Model.WIDE, net.minecraft.world.entity.player.PlayerSkin.Model.SLIM}) {
+        for (net.minecraft.client.resources.PlayerSkin.Model m : new net.minecraft.client.resources.PlayerSkin.Model[]{net.minecraft.client.resources.PlayerSkin.Model.WIDE, net.minecraft.client.resources.PlayerSkin.Model.SLIM}) {
             var r = e.getSkin(m);
             if (r instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer pr) pr.addLayer(new CloakLayer(pr, e.getEntityModels().bakeLayer(CLOAK)));
         }
