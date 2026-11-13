@@ -48,7 +48,6 @@ public class SpecialSword extends SwordItem {
             case VIPER -> target.addEffect(new MobEffectInstance(MobEffects.POISON, 120, 1), attacker);
             case SUN -> { if (isUndead(target)) { target.igniteForSeconds(6); target.hurt(attacker.damageSources().magic(), 5F); } }
             case SENTINEL -> target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 160, 0), attacker);
-            case ROYAL -> "Lame des rois de Valmoire : frappe orques et morts-vivants. Clic droit : appel du roi (force et vitesse aux alliés, 60 s).";
             case STORM -> {
                 if (attacker.getRandom().nextFloat() < 0.25F && target.level() instanceof ServerLevel sl) {
                     LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(sl);
@@ -107,6 +106,7 @@ public class SpecialSword extends SwordItem {
             case VIPER -> "Empoisonne l'ennemi (poison II). Très rapide.";
             case SUN -> "Luit près des morts-vivants. Les embrase et les brûle de lumière.";
             case SENTINEL -> "Luit quand un monstre approche. Les frappés brillent à travers les murs.";
+            case ROYAL -> "Lame des rois de Valmoire : frappe orques et morts-vivants. Clic droit : appel du roi (force et vitesse aux alliés, 60 s).";
             case STORM -> "25 % de chance de déchaîner la foudre sur les monstres proches de la cible.";
             default -> null;
         };
