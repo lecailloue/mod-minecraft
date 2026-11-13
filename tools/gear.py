@@ -296,6 +296,12 @@ def build():
                     if k in (8, 15): im.putpixel((k, y), gold + (255,))
         save(im, f'{A}/textures/models/armor/royal_layer_{lay}.png')
     weapon('valmoire_blade', 'Aubelame', sw('ROYAL', 'T_LEGEND', 6, -2.2, 0, 'props().rarity(Rarity.EPIC)'), sword('#eef2f8', '#e0c050', grip='#2a3a6a', length=11, gem='#4aa0ff'))
+    # Aubelame : texture animee (pulsation bleue le long de la lame)
+    frames = [sword(bl, '#e0c050', grip='#2a3a6a', length=11, gem=gm) for bl, gm in (('#eef2f8', '#4aa0ff'), ('#d8e8ff', '#7ac0ff'), ('#bcd8ff', '#b0e0ff'), ('#d8e8ff', '#7ac0ff'))]
+    strip = Image.new('RGBA', (16, 16 * len(frames)))
+    for i, fr in enumerate(frames): strip.paste(fr, (0, 16 * i))
+    save(strip, f'{A}/textures/item/valmoire_blade.png')
+    wjson(f'{A}/textures/item/valmoire_blade.png.mcmeta', {'animation': {'frametime': 6, 'interpolate': True}})
     shaped('valmoire_crown', ['GDG', 'LLL'], {'G': 'minecraft:gold_ingot', 'D': 'minecraft:diamond', 'L': 'lunargent_ingot'}, 'valmoire_crown')
     shaped('valmoire_blade', [' L ', 'LDL', ' s '], {'L': 'lunargent_ingot', 'D': 'minecraft:diamond', 's': 'minecraft:gold_ingot'}, 'valmoire_blade')
     # ---- bouche de fumee : bloc invisible, intangible, incassable

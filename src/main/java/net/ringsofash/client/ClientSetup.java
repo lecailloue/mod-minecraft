@@ -40,6 +40,7 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::layers);
         modBus.addListener(ClientSetup::renderers);
         Atmosphere.init(modBus);
+        SwordAura.init();
         modBus.addListener(ClientSetup::addLayers);
         modBus.addListener(ClientSetup::keys);
         modBus.addListener(ClientSetup::gui);

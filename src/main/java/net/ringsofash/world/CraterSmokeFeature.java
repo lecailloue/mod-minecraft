@@ -31,7 +31,7 @@ public class CraterSmokeFeature extends Feature<NoneFeatureConfiguration> {
                 if (d2 > reach * reach) continue;
                 long h = (x * 73856093L) ^ (z * 19349663L) ^ 0x5A0CE5L;
                 h = (h ^ (h >>> 13)) * 1274126177L; h ^= h >>> 16;
-                int chance = d2 <= (long) v[2] * v[2] ? 28 : 140;       // dense dans le cratere, plus clairseme autour
+                int chance = d2 <= (long) v[2] * v[2] ? 16 : 80;       // dense dans le cratere, plus clairseme autour
                 if (Math.floorMod(h, chance) != 0) continue;
                 int top = level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z);
                 p.set(x, Math.max(top, v[3] + 1), z);

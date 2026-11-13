@@ -32,49 +32,56 @@ def d_cobble(seed=102):
     return im
 
 def d_bricks(seed=103):
-    """grands blocs taillés irréguliers, joints profonds, biseaux marqués : très différent des briques vanilla"""
+    """grands blocs taillés irréguliers, SANS cadre : les joints ne tombent jamais sur le bord du bloc (les briques se prolongent d'un bloc a l'autre)"""
     rnd = random.Random(seed)
-    rows = [(0, 5, [10, 6]), (5, 6, [6, 10]), (11, 5, [12, 4])]
-    im = new(16)
+    courses = [(0, 5, [2, 10]), (5, 6, [6, 12]), (11, 5, [1, 8])]      # (y, hauteur, departs de briques ; elles se referment en boucle)
     base = rgb('#d6d6d6')
-    for (y0, h, widths) in rows:
-        x0 = 0
-        for w in widths:
-            f = 0.9 + rnd.random() * 0.16
-            for yy in range(h):
-                for xx in range(w):
-                    x, y = x0 + xx, y0 + yy
-                    if yy == h - 1 or xx == w - 1: g = 0.38                      # joint profond
-                    elif yy == 0: g = f * 1.16                                  # biseau haut
-                    elif xx == 0: g = f * 1.08
-                    elif yy == h - 2 or xx == w - 2: g = f * 0.8                # ombre basse
-                    else: g = f * (1 + (rnd.random() - .5) * .10)
-                    im.putpixel((x % 16, y), shade(base, g) + (255,))
-            # éclats dans les coins
-            cx, cy = x0 + (w - 3), y0 + 1
-            im.putpixel((cx % 16, cy), shade(base, 0.62) + (255,))
-            x0 += w
+    im = new(16)
+    for (y0, h, starts) in courses:
+        bricks = []
+        for i, st in enumerate(starts):
+            nxt = starts[(i + 1) % len(starts)]
+            bricks.append((st, (nxt - st) % 16 or 16, 0.9 + rnd.random() * 0.16))
+        for yy in range(h):
+            for x in range(16):
+                for (st, w, f) in bricks:
+                    xx = (x - st) % 16
+                    if xx < w: break
+                if yy == h - 1 or xx == w - 1: g = 0.4                       # joint
+                elif yy == 0: g = f * 1.14                                   # biseau haut
+                elif xx == 0: g = f * 1.07
+                elif yy == h - 2 or xx == w - 2: g = f * 0.82               # ombre basse
+                else: g = f * (1 + (rnd.random() - .5) * .10)
+                im.putpixel((x, y0 + yy), shade(base, g) + (255,))
     return im
 
-def d_pillar(seed=104): return pillar_side('#d6d6d6', seed), framed('#d6d6d6', seed + 1)
+def d_pillar(seed=104):
+    """fut cannele : un bloc empile sur un autre se prolonge sans coupure ; seul le dessus est encadre"""
+    rnd = random.Random(seed); base = rgb('#d6d6d6')
+    side = new(16)
+    for x in range(16):
+        f = 0.62 if x in (0, 15) else [0.78, 1.08, 1.0, 0.9][x % 4]
+        for y in range(16):
+            ff = f * (1 + (rnd.random() - 0.5) * 0.05)
+            if y in (7, 8): ff = (1.18 if y == 7 else 0.78) if x not in (0, 15) else ff    # bague mediane (se repete a chaque bloc)
+            side.putpixel((x, y), shade(base, ff) + (255,))
+    return side, framed('#d6d6d6', seed + 1)
 
 def d_chiseled(seed=105):
-    """dalle biseautée avec un relief gravé : losanges emboîtés et noyau central"""
+    """motif de losanges emboîtés SANS cadre : se raccorde parfaitement d'un bloc a l'autre"""
     rnd = random.Random(seed)
     im = new(16)
     base = rgb('#d4d4d4')
     for y in range(16):
         for x in range(16):
-            d = min(x, y, 15 - x, 15 - y)
-            if d == 0: f = 1.15 if (x + y) < 16 else 0.62
-            elif d == 1: f = 0.78
-            elif d == 2: f = 1.1 if (x + y) < 16 else 0.86
-            else:
-                m = abs(x - 7.5) + abs(y - 7.5)
-                if 3.4 < m < 4.6 or 6.4 < m < 7.6: f = 0.6                       # rainures
-                elif 4.6 <= m < 5.4 or 7.6 <= m < 8.4: f = 1.14                  # lèvre éclairée
-                elif m < 2.2: f = 0.72 if m > 1.2 else 1.12                      # noyau gravé
-                else: f = 0.95
+            m = abs(x - 7.5) + abs(y - 7.5)
+            r = m % 7.5 if False else m
+            if m < 1.6: f = 1.14
+            elif m < 2.6: f = 0.72
+            elif 3.4 < m < 4.6 or 9.4 < m < 10.6: f = 0.6                    # rainures
+            elif 4.6 <= m < 5.4 or 10.6 <= m < 11.4: f = 1.14                # levre eclairee
+            elif 7.0 <= m < 8.0: f = 0.8
+            else: f = 0.96
             f *= 1 + (rnd.random() - .5) * .05
             im.putpixel((x, y), shade(base, f) + (255,))
     return im

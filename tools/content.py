@@ -42,6 +42,7 @@ def blocks():
     btex('dwarven_bricks_plain', bricks('#4b505b', '#2a2d34', 21, var=0.09))
     btex('dwarven_stone', dwarf.d_stone())
     block('dwarven_stone', 'Pierre naine', copy='DEEPSLATE', tool='pickaxe', tint=True)
+    family('dwarven_stone', 'dwarven', 'pierre naine', tint=True)
     btex('dwarven_cobblestone', dwarf.d_cobble())
     block('dwarven_cobblestone', 'Pavés nains', copy='COBBLED_DEEPSLATE', tool='pickaxe', tint=True)
     family('dwarven_cobblestone', 'dwarven', 'pavés nains', tint=True)

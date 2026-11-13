@@ -46,9 +46,9 @@ def features():
     pf('basalt_spires', 'basalt_spire', [COUNT(2), SQ, HM('WORLD_SURFACE_WG'), BIOME])
     patch('ashroot_patch', st('ashroot'), 20, 5, 2)
     pf('ashroot_patch', 'ashroot_patch', [RARE(2), SQ, HM(), BIOME])
-    patch('smoke_vent_patch', st('smoke_vent'), 5, 14, 3)
-    pf('smoke_vents', 'smoke_vent_patch', [COUNT(1), SQ, HM(), BIOME])
-    pf('smoke_vents_dense', 'smoke_vent_patch', [COUNT(3), SQ, HM(), BIOME])
+    patch('smoke_vent_patch', st('smoke_vent'), 8, 16, 3)
+    pf('smoke_vents', 'smoke_vent_patch', [COUNT(3), SQ, HM(), BIOME])
+    pf('smoke_vents_dense', 'smoke_vent_patch', [COUNT(6), SQ, HM(), BIOME])
     cf('crater_smoke', R('crater_smoke'), {})
     pf('crater_smoke', 'crater_smoke', [])
     # terres de cendre

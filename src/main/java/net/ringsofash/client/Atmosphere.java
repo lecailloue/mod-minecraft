@@ -42,25 +42,27 @@ public final class Atmosphere {
     private static void fog(ViewportEvent.RenderFog e) {
         float a = amount((float) e.getPartialTick());
         if (a <= 0.001F || e.getCamera().getFluidInCamera() != FogType.NONE) return;
-        e.setNearPlaneDistance(Mth.lerp(a, e.getNearPlaneDistance(), 0F));
-        e.setFarPlaneDistance(Mth.lerp(a, e.getFarPlaneDistance(), 64F));
+        e.setNearPlaneDistance(Mth.lerp(a, e.getNearPlaneDistance(), 40F));
+        e.setFarPlaneDistance(Mth.lerp(a, e.getFarPlaneDistance(), 170F));
         e.setCanceled(true);
     }
 
     private static void fogColor(ViewportEvent.ComputeFogColor e) {
         float a = amount((float) e.getPartialTick());
         if (a <= 0.001F) return;
-        e.setRed(Mth.lerp(a, e.getRed(), 0.24F));
-        e.setGreen(Mth.lerp(a, e.getGreen(), 0.08F));
-        e.setBlue(Mth.lerp(a, e.getBlue(), 0.045F));
+        e.setRed(Mth.lerp(a, e.getRed(), 0.34F));
+        e.setGreen(Mth.lerp(a, e.getGreen(), 0.12F));
+        e.setBlue(Mth.lerp(a, e.getBlue(), 0.05F));
     }
 
     private static void gui(RegisterGuiLayersEvent e) {
         e.registerBelowAll(RingsOfAsh.id("ash_dusk"), (g, dt) -> {
             float a = amount(dt.getGameTimeDeltaPartialTick(false));
             if (a <= 0.01F) return;
-            int alpha = Mth.clamp(Math.round(a * 0.34F * 255F), 0, 255);
+            int alpha = Mth.clamp(Math.round(a * 0.30F * 255F), 0, 255);
             g.fill(0, 0, g.guiWidth(), g.guiHeight(), alpha << 24 | 0x1A0502);
+            int glow = Mth.clamp(Math.round(a * 0.07F * 255F), 0, 255);          // legere lueur orangee
+            g.fill(0, 0, g.guiWidth(), g.guiHeight(), glow << 24 | 0xFF6A1E);
         });
     }
 }
