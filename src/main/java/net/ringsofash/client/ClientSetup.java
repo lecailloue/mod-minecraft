@@ -98,6 +98,8 @@ public final class ClientSetup {
             // la lame elfique luit quand des orques sont proches
             ItemProperties.register(Reg.ELVEN_BLADE.get(), RingsOfAsh.id("glow"), (stack, level, entity, seed) -> orcNear(entity) ? 1.0F : 0.0F);
             ItemProperties.register(Reg.ELVEN_GLAIVE.get(), RingsOfAsh.id("glow"), (stack, level, entity, seed) -> orcNear(entity) ? 1.0F : 0.0F);
+            ItemProperties.register(Reg.SENTINEL_BLADE.get(), RingsOfAsh.id("glow"), (stack, level, entity, seed) -> near(1, entity, e -> e instanceof net.minecraft.world.entity.monster.Enemy) ? 1.0F : 0.0F);
+            ItemProperties.register(Reg.SUN_BLADE.get(), RingsOfAsh.id("glow"), (stack, level, entity, seed) -> near(2, entity, SpecialSword::isUndead) ? 1.0F : 0.0F);
             ItemProperties.register(Reg.ELVEN_BOW.get(), RingsOfAsh.id("pull"), (stack, level, entity, seed) ->
                     entity == null || entity.getUseItem() != stack ? 0.0F : (stack.getUseDuration(entity) - entity.getUseItemRemainingTicks()) / 20.0F);
             ItemProperties.register(Reg.ELVEN_BOW.get(), RingsOfAsh.id("pulling"), (stack, level, entity, seed) ->
@@ -117,6 +119,21 @@ public final class ClientSetup {
             glowCached = !holder.level().getEntitiesOfClass(FoeEntity.class, holder.getBoundingBox().inflate(20), SpecialSword::isOrc).isEmpty();
         }
         return glowCached;
+    }
+
+    private static final int[] nearTick = {-100, -100, -100};
+    private static final boolean[] nearCache = new boolean[3];
+
+    /** Un monstre repondant au filtre est-il a moins de 16 blocs du joueur ? (verifie une fois par seconde) */
+    private static boolean near(int id, LivingEntity holder, java.util.function.Predicate<LivingEntity> filter) {
+        if (holder == null) return false;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || holder != mc.player) return false;
+        if (Math.abs(holder.tickCount - nearTick[id]) >= 20) {
+            nearTick[id] = holder.tickCount;
+            nearCache[id] = !holder.level().getEntitiesOfClass(LivingEntity.class, holder.getBoundingBox().inflate(16), e -> e != holder && filter.test(e)).isEmpty();
+        }
+        return nearCache[id];
     }
 
     private static LayerDefinition human(String kind) {

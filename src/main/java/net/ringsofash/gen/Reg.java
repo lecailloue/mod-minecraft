@@ -182,6 +182,12 @@ public final class Reg {
     public static final DeferredItem<Item> LUNARGENT_SWORD = ITEMS.register("lunargent_sword", () -> ModGear.special(SpecialSword.Kind.NONE, ModGear.T_LUNARGENT, 3, -2.4F, 0, props()));
     public static final DeferredItem<Item> ELVEN_BLADE = ITEMS.register("elven_blade", () -> ModGear.special(SpecialSword.Kind.ELVEN, ModGear.T_ELVEN, 3, -2.2F, 0, props()));
     public static final DeferredItem<Item> ELVEN_GLAIVE = ITEMS.register("elven_glaive", () -> ModGear.special(SpecialSword.Kind.ELVEN, ModGear.T_ELVEN, 5, -2.8F, 1.0, props()));
+    public static final DeferredItem<Item> FROST_BLADE = ITEMS.register("frost_blade", () -> ModGear.special(SpecialSword.Kind.FROST, ModGear.T_STEEL, 3, -2.4F, 0, props()));
+    public static final DeferredItem<Item> BLOOD_BLADE = ITEMS.register("blood_blade", () -> ModGear.special(SpecialSword.Kind.BLOOD, ModGear.T_STEEL, 3, -2.4F, 0, props()));
+    public static final DeferredItem<Item> VIPER_DAGGER = ITEMS.register("viper_dagger", () -> ModGear.special(SpecialSword.Kind.VIPER, ModGear.T_STEEL, 1, -1.6F, 0, props()));
+    public static final DeferredItem<Item> STORM_BLADE = ITEMS.register("storm_blade", () -> ModGear.special(SpecialSword.Kind.STORM, ModGear.T_LEGEND, 5, -2.4F, 0, props().rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> SENTINEL_BLADE = ITEMS.register("sentinel_blade", () -> ModGear.special(SpecialSword.Kind.SENTINEL, ModGear.T_STEEL, 3, -2.4F, 0, props()));
+    public static final DeferredItem<Item> SUN_BLADE = ITEMS.register("sun_blade", () -> ModGear.special(SpecialSword.Kind.SUN, ModGear.T_STEEL, 3, -2.4F, 0, props()));
     public static final DeferredItem<Item> DWARVEN_AXE = ITEMS.register("dwarven_axe", () -> ModGear.axe(ModGear.T_DWARVEN, 6.0F, -3.0F, props()));
     public static final DeferredItem<Item> DWARVEN_HAMMER = ITEMS.register("dwarven_hammer", () -> ModGear.special(SpecialSword.Kind.HAMMER, ModGear.T_DWARVEN, 7, -3.3F, 0, props()));
     public static final DeferredItem<Item> ORC_SCIMITAR = ITEMS.register("orc_scimitar", () -> ModGear.special(SpecialSword.Kind.NONE, ModGear.T_ORC, 3, -2.4F, 0, props()));

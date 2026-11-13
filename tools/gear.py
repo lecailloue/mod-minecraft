@@ -190,6 +190,24 @@ def build():
         imodel(wid, {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/{wid}'},
                      'overrides': [{'predicate': {f'{MOD}:glow': 1}, 'model': f'{MOD}:item/{wid}_glow'}]})
         imodel(wid + '_glow', {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/{wid}_glow'}})
+    # ---- armes a effet : givre, sang, vipere, soleil, sentinelle, tempete
+    weapon('frost_blade', 'Lame de givre', sw('FROST', 'T_STEEL', 3, -2.4), sword('#bfeaff', '#6a9ac0', grip='#2a3a5a', length=11, gem='#ffffff'))
+    weapon('blood_blade', 'Lame sanguine', sw('BLOOD', 'T_STEEL', 3, -2.4), sword('#a01820', '#3a1015', grip='#2a1015', length=11, gem='#ff4040'))
+    weapon('viper_dagger', 'Dague de vipère', sw('VIPER', 'T_STEEL', 1, -1.6), sword('#7ad04a', '#3a5a20', grip='#2a3a1a', length=6, gem='#d8ff60'))
+    weapon('storm_blade', 'Lame de tempête', sw('STORM', 'T_LEGEND', 5, -2.4, 0, 'props().rarity(Rarity.RARE)'), sword('#8a9ab8', '#d8d040', grip='#2a2a3a', length=11, curved=True, gem='#f8f060'))
+    for wid, blade, guard, grip, glowc in (('sentinel_blade', '#8a8f98', '#c9a23a', '#3a2a1a', '#ffb040'), ('sun_blade', '#f2d070', '#c98a20', '#5a3a1a', '#fff8c0')):
+        weapon(wid, {'sentinel_blade': 'Lame sentinelle', 'sun_blade': 'Lame solaire'}[wid], sw('SENTINEL' if wid == 'sentinel_blade' else 'SUN', 'T_STEEL', 3, -2.4), sword(blade, guard, grip=grip, length=11))
+        itex(wid + '_glow', sword(glowc, guard, grip=grip, length=11, gem='#ffffff'))
+        imodel(wid, {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/{wid}'},
+                     'overrides': [{'predicate': {f'{MOD}:glow': 1}, 'model': f'{MOD}:item/{wid}_glow'}]})
+        imodel(wid + '_glow', {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/{wid}_glow'}})
+    for rid, parts in (('frost_blade', ['lunargent_ingot', 'minecraft:blue_ice', 'minecraft:iron_sword']),
+                       ('blood_blade', ['minecraft:iron_sword', 'minecraft:redstone_block', 'braisite']),
+                       ('viper_dagger', ['minecraft:iron_sword', 'minecraft:spider_eye', 'spider_silk']),
+                       ('sentinel_blade', ['minecraft:iron_sword', 'brumecristal', 'minecraft:glowstone_dust']),
+                       ('sun_blade', ['minecraft:iron_sword', 'minecraft:glowstone', 'raw_orrune']),
+                       ('storm_blade', ['lunargent_sword', 'minecraft:lightning_rod', 'brumecristal'])):
+        shapeless(rid, parts, rid)
     weapon('dwarven_axe', 'Hache de guerre naine', 'ModGear.axe(ModGear.T_DWARVEN, 6.0F, -3.0F, props())', axe_icon('#8a8f98', double=True), tags=('axes',))
     weapon('dwarven_hammer', 'Marteau de guerre nain', sw('HAMMER', 'T_DWARVEN', 7, -3.3), hammer_icon('#7a7f88'))
     weapon('orc_scimitar', 'Cimeterre orque', sw('NONE', 'T_ORC', 3, -2.4), sword('#4a474e', '#2a2428', grip='#3a2a20', length=10, curved=True))
