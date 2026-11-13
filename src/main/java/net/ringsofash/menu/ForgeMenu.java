@@ -50,7 +50,7 @@ public class ForgeMenu extends AbstractContainerMenu {
     public boolean clickMenuButton(Player player, int id) {
         if (id != 0 || !(player instanceof ServerPlayer sp)) return false;
         ItemStack tool = tool(), ing = ingots();
-        if (!ForgeUpgrade.canForge(tool)) { msg(sp, "Placez une arme ou un outil dans la forge.", ChatFormatting.RED); return false; }
+        if (!ForgeUpgrade.canForge(tool)) { msg(sp, "Placez une arme, un outil ou une armure dans la forge.", ChatFormatting.RED); return false; }
         int lvl = ForgeUpgrade.level(tool, sp.level().registryAccess());
         if (lvl >= ForgeUpgrade.MAX) { msg(sp, "Cet objet est déjà au sommet de l'art nain.", ChatFormatting.GRAY); return false; }
         int need = ForgeUpgrade.COSTS[lvl];
@@ -67,9 +67,15 @@ public class ForgeMenu extends AbstractContainerMenu {
         if (fail) {
             msg(sp, "La trempe a échoué... les lingots sont perdus.", ChatFormatting.RED);
         } else {
-            Holder<Enchantment> h = ForgeUpgrade.holder(sp.level().registryAccess());
-            EnchantmentHelper.updateEnchantments(tool, m -> m.set(h, lvl + 1));
-            msg(sp, "Trempe réussie ! Niveau " + (lvl + 1) + " / " + ForgeUpgrade.MAX, ChatFormatting.GOLD);
+            if (sp.getRandom().nextFloat() < ForgeUpgrade.MEGA_CHANCE) {
+                ForgeUpgrade.applyMega(tool, sp.level().registryAccess());
+                access.execute((level, pos) -> level.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.0F, 1.0F));
+                msg(sp, "TREMPE ANCESTRALE ! L'objet vibre d'une puissance oubliée (durabilité -20 %).", ChatFormatting.LIGHT_PURPLE);
+            } else {
+                Holder<Enchantment> h = ForgeUpgrade.holder(sp.level().registryAccess(), tool);
+                EnchantmentHelper.updateEnchantments(tool, m -> m.set(h, lvl + 1));
+                msg(sp, "Trempe réussie ! Niveau " + (lvl + 1) + " / " + ForgeUpgrade.MAX, ChatFormatting.GOLD);
+            }
         }
         inv.setChanged();
         broadcastChanges();

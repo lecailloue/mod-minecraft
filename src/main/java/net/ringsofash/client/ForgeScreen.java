@@ -48,13 +48,13 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
         g.fill(x + 3, y + 3, x + imageWidth - 3, y + 5, 0xFF6A645C);
         for (Slot s : menu.slots) g.fill(x + s.x - 1, y + s.y - 1, x + s.x + 17, y + s.y + 17, 0xFF1C1A18);
         for (Slot s : menu.slots) g.fill(x + s.x, y + s.y, x + s.x + 16, y + s.y + 16, 0xFF5B5651);
-        g.drawString(font, "Arme / outil", x + 58, y + 40, 0xFFD8C8A8, false);
+        g.drawString(font, "Arme / armure", x + 58, y + 40, 0xFFD8C8A8, false);
         g.drawString(font, "Lingots", x + 58, y + 66, 0xFFD8C8A8, false);
         int lvl = level();
         if (!ForgeUpgrade.canForge(menu.tool())) {
-            g.drawString(font, "Posez une arme ou un outil", x + 88, y + 20, 0xFFB0A090, false);
+            g.drawString(font, "Posez une arme ou armure", x + 88, y + 20, 0xFFB0A090, false);
         } else if (lvl >= ForgeUpgrade.MAX) {
-            g.drawString(font, "Niveau maximal !", x + 88, y + 22, 0xFFFFD070, false);
+            g.drawString(font, (minecraft != null && minecraft.level != null && ForgeUpgrade.isMega(menu.tool(), minecraft.level.registryAccess())) ? "Trempe ancestrale !" : "Niveau maximal !", x + 88, y + 22, 0xFFFFD070, false);
         } else {
             g.drawString(font, "Trempe : " + lvl + " / " + ForgeUpgrade.MAX, x + 88, y + 16, 0xFFFFD070, false);
             g.drawString(font, "Coût : " + ForgeUpgrade.COSTS[lvl] + " lingot" + (ForgeUpgrade.COSTS[lvl] > 1 ? "s" : ""), x + 88, y + 28, 0xFFE8E0D0, false);

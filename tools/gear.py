@@ -257,17 +257,29 @@ def build():
         'thirdperson_righthand': {'rotation': [75, 45, 0], 'translation': [0, 2.5, 0], 'scale': [0.08, 0.08, 0.08]},
         'firstperson_righthand': {'rotation': [0, 45, 0], 'scale': [0.1, 0.1, 0.1]}}})
     # trempe naine : enchantement a part, ajoute par la forge (6 niveaux)
-    wjson(f'{D}/enchantment/dwarven_temper.json', {
-        'description': {'translate': 'enchantment.ringsofash.dwarven_temper'},
-        'supported_items': '#ringsofash:forgeable', 'weight': 1, 'max_level': 6,
-        'min_cost': {'base': 1, 'per_level_above_first': 10}, 'max_cost': {'base': 21, 'per_level_above_first': 10}, 'anvil_cost': 8,
-        'slots': ['mainhand'],
-        'effects': {'minecraft:attributes': [
-            {'attribute': 'minecraft:generic.attack_damage', 'id': 'ringsofash:dwarven_temper_damage', 'operation': 'add_value',
-             'amount': {'type': 'minecraft:linear', 'base': 1.5, 'per_level_above_first': 1.5}},
-            {'attribute': 'minecraft:player.mining_efficiency', 'id': 'ringsofash:dwarven_temper_mining', 'operation': 'add_value',
-             'amount': {'type': 'minecraft:linear', 'base': 2.0, 'per_level_above_first': 2.0}}]}})
-    LANG['enchantment.ringsofash.dwarven_temper'] = 'Trempe naine'
+    def temper(name, items, slots, effects, maxl, lang):
+        wjson(f'{D}/enchantment/{name}.json', {
+            'description': {'translate': f'enchantment.ringsofash.{name}'},
+            'supported_items': items, 'weight': 1, 'max_level': maxl,
+            'min_cost': {'base': 1, 'per_level_above_first': 10}, 'max_cost': {'base': 21, 'per_level_above_first': 10}, 'anvil_cost': 8,
+            'slots': slots, 'effects': {'minecraft:attributes': effects}})
+        LANG[f'enchantment.ringsofash.{name}'] = lang
+    def lin(per):
+        return {'type': 'minecraft:linear', 'base': per, 'per_level_above_first': per}
+    def fix(per, mult):
+        return {'type': 'minecraft:linear', 'base': per * mult, 'per_level_above_first': 0}
+    def tool_fx(n, amt):
+        return [{'attribute': 'minecraft:generic.attack_damage', 'id': f'ringsofash:{n}_damage', 'operation': 'add_value', 'amount': amt(1.5)},
+                {'attribute': 'minecraft:player.mining_efficiency', 'id': f'ringsofash:{n}_mining', 'operation': 'add_value', 'amount': amt(2.0)}]
+    def armor_fx(n, amt):
+        return [{'attribute': 'minecraft:generic.armor', 'id': f'ringsofash:{n}', 'operation': 'add_value', 'amount': amt(1.5)}]
+    # trempe naine : 6 niveaux (outils : degats/efficacite ; armures : +1,5 armure par niveau)
+    temper('dwarven_temper', '#ringsofash:forgeable', ['mainhand'], tool_fx('dwarven_temper', lin), 6, 'Trempe naine')
+    temper('dwarven_temper_armor', '#ringsofash:forge_armor', ['armor'], armor_fx('dwarven_temper_armor', lin), 6, 'Trempe naine')
+    # trempe ancestrale : 1 % par trempe reussie, effet d'un niveau 7, durabilite -20 % (geree par la forge)
+    temper('ancestral_temper', '#ringsofash:forgeable', ['mainhand'], tool_fx('ancestral_temper', lambda p: fix(p, 7)), 1, 'Trempe ancestrale')
+    temper('ancestral_temper_armor', '#ringsofash:forge_armor', ['armor'], armor_fx('ancestral_temper_armor', lambda p: fix(p, 7)), 1, 'Trempe ancestrale')
+    tag('item', 'forge_armor', '#minecraft:head_armor', '#minecraft:chest_armor', '#minecraft:leg_armor', '#minecraft:foot_armor', ns='ringsofash')
     tag('item', 'forgeable', '#minecraft:swords', '#minecraft:axes', '#minecraft:pickaxes', '#minecraft:shovels', '#minecraft:hoes', ns='ringsofash')
     shaped('dwarven_forge', ['###', '#l#', '###'], {'#': 'dwarven_bricks', 'l': 'minecraft:lava_bucket'}, 'dwarven_forge')
     ps = log_side('#6b4a2a', 83).rotate(90)
