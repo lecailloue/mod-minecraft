@@ -98,7 +98,7 @@ public final class ClientSetup {
             // la lame elfique luit quand des orques sont proches
             ItemProperties.register(Reg.ELVEN_BLADE.get(), RingsOfAsh.id("glow"), (stack, level, entity, seed) -> orcNear(entity) ? 1.0F : 0.0F);
             ItemProperties.register(Reg.ELVEN_GLAIVE.get(), RingsOfAsh.id("glow"), (stack, level, entity, seed) -> orcNear(entity) ? 1.0F : 0.0F);
-            ItemProperties.register(Reg.SENTINEL_BLADE.get(), RingsOfAsh.id("glow"), (stack, level, entity, seed) -> near(1, entity, e -> e instanceof net.minecraft.world.entity.monster.Enemy) ? 1.0F : 0.0F);
+            ItemProperties.register(Reg.SENTINEL_BLADE.get(), RingsOfAsh.id("glow"), (stack, level, entity, seed) -> near(1, entity, m -> m instanceof net.minecraft.world.entity.monster.Enemy) ? 1.0F : 0.0F);
             ItemProperties.register(Reg.SUN_BLADE.get(), RingsOfAsh.id("glow"), (stack, level, entity, seed) -> near(2, entity, SpecialSword::isUndead) ? 1.0F : 0.0F);
             ItemProperties.register(Reg.ELVEN_BOW.get(), RingsOfAsh.id("pull"), (stack, level, entity, seed) ->
                     entity == null || entity.getUseItem() != stack ? 0.0F : (stack.getUseDuration(entity) - entity.getUseItemRemainingTicks()) / 20.0F);
