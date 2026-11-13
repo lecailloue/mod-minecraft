@@ -298,6 +298,13 @@ def build():
     weapon('valmoire_blade', 'Aubelame', sw('ROYAL', 'T_LEGEND', 6, -2.2, 0, 'props().rarity(Rarity.EPIC)'), sword('#eef2f8', '#e0c050', grip='#2a3a6a', length=11, gem='#4aa0ff'))
     shaped('valmoire_crown', ['GDG', 'LLL'], {'G': 'minecraft:gold_ingot', 'D': 'minecraft:diamond', 'L': 'lunargent_ingot'}, 'valmoire_crown')
     shaped('valmoire_blade', [' L ', 'LDL', ' s '], {'L': 'lunargent_ingot', 'D': 'minecraft:diamond', 's': 'minecraft:gold_ingot'}, 'valmoire_blade')
+    # ---- bouche de fumee : bloc invisible, intangible, incassable
+    block('smoke_vent', 'Bouche de fumée', 'custom', drop='none',
+          java='new SmokeVentBlock(BlockBehaviour.Properties.of().noCollission().noOcclusion().strength(-1.0F, 3600000.0F).noLootTable().pushReaction(PushReaction.BLOCK))')
+    bstate('smoke_vent', {'variants': {'': {'model': 'minecraft:block/air'}}})
+    item_img = sprite(FOODS['dust'], mat('#6a6a72'))
+    itex('smoke_vent', item_img)
+    imodel('smoke_vent', {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/smoke_vent'}})
     shaped('ranger_cloak', ['PPP', 'LLL', 'L L'], {'P': 'warg_pelt', 'L': 'minecraft:leather'}, 'ranger_cloak')
     shaped('ash_cloak', ['DDD', '#H#', '# #'], {'D': 'dragon_scale', 'H': 'demon_heart', '#': 'black_steel_ingot'}, 'ash_cloak')
     shaped('halfling_boots', ['S S', 'L L'], {'S': 'spider_silk', 'L': 'minecraft:leather'}, 'halfling_boots')

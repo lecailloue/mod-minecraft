@@ -88,6 +88,7 @@ public final class MapData {
         return Math.max(0, Math.min(N - 1, gz)) * N + Math.max(0, Math.min(N - 1, gx));
     }
 
+    public static int[] volcano() { return volcano; }
     public static boolean inside(int x, int z) { return x >= -HALF && x < HALF && z >= -HALF && z < HALF; }
 
     private static float grid(short[] a, double gx, double gz) {

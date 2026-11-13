@@ -39,6 +39,7 @@ public final class ClientSetup {
     public static void init(IEventBus modBus) {
         modBus.addListener(ClientSetup::layers);
         modBus.addListener(ClientSetup::renderers);
+        Atmosphere.init(modBus);
         modBus.addListener(ClientSetup::addLayers);
         modBus.addListener(ClientSetup::keys);
         modBus.addListener(ClientSetup::gui);
