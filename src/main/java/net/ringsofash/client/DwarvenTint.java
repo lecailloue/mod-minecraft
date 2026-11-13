@@ -42,10 +42,12 @@ public final class DwarvenTint {
 
     /** couleur de teinte d'un bloc : degrade continu en fonction de la position */
     public static int at(BlockPos p) {
-        float n = noise(p.getX() * 0.05, p.getY() * 0.07, p.getZ() * 0.05) * 0.65f + noise(p.getX() * 0.17 + 9, p.getY() * 0.2, p.getZ() * 0.17) * 0.35f;
-        float t = (n - 0.25f) / 0.5f;
+        float n = noise(p.getX() * 0.07, p.getY() * 0.09, p.getZ() * 0.07) * 0.5f + noise(p.getX() * 0.31 + 9, p.getY() * 0.35, p.getZ() * 0.31) * 0.5f;
+        float t = (n - 0.38f) / 0.24f;                      // bande etroite : les deux teintes ressortent nettement
         float c = Mth.clamp(t, 0f, 1f);
-        return mix(c * c * (3 - 2 * c));
+        c = c * c * (3 - 2 * c);
+        c = c * c * (3 - 2 * c);                            // second lissage : transitions plus franches
+        return mix(c);
     }
 
     /** teinte d'un objet (inventaire) : milieu du degrade */
