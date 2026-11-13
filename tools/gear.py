@@ -271,6 +271,33 @@ def build():
     armor_layer('halfling', '#8a6a44', '#5a4020', '#c9a23a')
     item('miner_helmet', 'Casque de mineur nain', java='ModGear.armor(ModGear.MINER, ArmorItem.Type.HELMET, 20, props())', tex=sprite(HELMET, matpal('#8a8f98', trim='#c9a23a', gem='#ffd040')), tags=['head_armor'])
     armor_layer('miner', '#8a8f98', '#c9a23a', '#ffd040', crown='#c9a23a')
+    # ---- couronne et epee des rois de Valmoire (royaume des Hommes)
+    gold = rgb('#e0c050'); pal = matpal('#e0c050', trim='#f4ecc8', gem='#3a8ae0')
+    cr = new()
+    for x in range(2, 14):
+        for y in range(9, 12): cr.putpixel((x, y), pal['a'] + (255,))
+    for x in (2, 5, 8, 11, 13):
+        for y in range(5 if x in (5, 8, 11) else 6, 9): cr.putpixel((x, y), pal['b'] + (255,))
+        cr.putpixel((x, 4 if x in (5, 8, 11) else 5), pal['h'] + (255,))
+    for x in range(2, 14): cr.putpixel((x, 9), pal['c'] + (255,)); cr.putpixel((x, 11), pal['d'] + (255,))
+    for x in (5, 8, 10): cr.putpixel((x, 10), pal['g'] + (255,))
+    item('valmoire_crown', 'Couronne de Valmoire', java='ModGear.armor(ModGear.ROYAL, ArmorItem.Type.HELMET, 40, props().rarity(Rarity.EPIC))', tex=outline(cr, (60, 44, 16)), tags=['head_armor'])
+    for lay in (1, 2):
+        im = Image.new('RGBA', (64, 32), (0, 0, 0, 0))
+        if lay == 1:
+            for x in range(0, 32):
+                for y in (8, 9): im.putpixel((x, y), gold + (255,))
+                if x % 2 == 0: im.putpixel((x, 10), rgb('#f4ecc8') + (255,))
+            for x in (10, 11, 12, 13): im.putpixel((x, 9), rgb('#3a8ae0') + (255,)); im.putpixel((x, 8), rgb('#8ac0ff') + (255,))
+            for k in range(8, 16):
+                for y in (0, 7):
+                    im.putpixel((k, y), gold + (255,))
+                for y in range(0, 8):
+                    if k in (8, 15): im.putpixel((k, y), gold + (255,))
+        save(im, f'{A}/textures/models/armor/royal_layer_{lay}.png')
+    weapon('valmoire_blade', 'Aubelame', sw('ROYAL', 'T_LEGEND', 6, -2.2, 0, 'props().rarity(Rarity.EPIC)'), sword('#eef2f8', '#e0c050', grip='#2a3a6a', length=11, gem='#4aa0ff'))
+    shaped('valmoire_crown', ['GDG', 'LLL'], {'G': 'minecraft:gold_ingot', 'D': 'minecraft:diamond', 'L': 'lunargent_ingot'}, 'valmoire_crown')
+    shaped('valmoire_blade', [' L ', 'LDL', ' s '], {'L': 'lunargent_ingot', 'D': 'minecraft:diamond', 's': 'minecraft:gold_ingot'}, 'valmoire_blade')
     shaped('ranger_cloak', ['PPP', 'LLL', 'L L'], {'P': 'warg_pelt', 'L': 'minecraft:leather'}, 'ranger_cloak')
     shaped('ash_cloak', ['DDD', '#H#', '# #'], {'D': 'dragon_scale', 'H': 'demon_heart', '#': 'black_steel_ingot'}, 'ash_cloak')
     shaped('halfling_boots', ['S S', 'L L'], {'S': 'spider_silk', 'L': 'minecraft:leather'}, 'halfling_boots')

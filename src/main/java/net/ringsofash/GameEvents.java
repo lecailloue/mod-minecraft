@@ -215,6 +215,13 @@ public final class GameEvents {
         }
         if (p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.FEET).is(Reg.HALFLING_BOOTS.get())) eff(p, MobEffects.MOVEMENT_SPEED, 0);
         if (p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).is(Reg.ASH_CLOAK.get())) eff(p, MobEffects.FIRE_RESISTANCE, 0);
+        // couronne de Valmoire : les Hommes proches se sentent soutenus
+        if (p.tickCount % 40 == 0 && p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).is(Reg.VALMOIRE_CROWN.get())) {
+            for (PeopleEntity pe : p.level().getEntitiesOfClass(PeopleEntity.class, p.getBoundingBox().inflate(24), q -> q.people() == People.HUMAN)) {
+                pe.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 100, 0));
+                pe.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 100, 0));
+            }
+        }
         // ensembles d'armure
         if (ModGear.fullSet(p, ModGear.LUNARGENT)) eff(p, MobEffects.DAMAGE_RESISTANCE, 0);
         else if (ModGear.fullSet(p, ModGear.ELVEN)) eff(p, MobEffects.MOVEMENT_SPEED, 0);

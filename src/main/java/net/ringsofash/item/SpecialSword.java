@@ -2,6 +2,13 @@ package net.ringsofash.item;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.ringsofash.entity.PeopleEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.EntityType;
@@ -23,7 +30,7 @@ import java.util.List;
 
 /** Armes avec un effet a l'impact. */
 public class SpecialSword extends SwordItem {
-    public enum Kind { NONE, ELVEN, WIGHT, HAMMER, CLUB, MACE, KING, DAGGER, SPEAR, FROST, BLOOD, VIPER, SUN, SENTINEL, STORM }
+    public enum Kind { NONE, ELVEN, WIGHT, HAMMER, CLUB, MACE, KING, DAGGER, SPEAR, FROST, BLOOD, VIPER, SUN, SENTINEL, STORM, ROYAL }
     public final Kind kind;
 
     public SpecialSword(Kind kind, Tier tier, Item.Properties p) { super(tier, p); this.kind = kind; }
@@ -41,6 +48,7 @@ public class SpecialSword extends SwordItem {
             case VIPER -> target.addEffect(new MobEffectInstance(MobEffects.POISON, 120, 1), attacker);
             case SUN -> { if (isUndead(target)) { target.igniteForSeconds(6); target.hurt(attacker.damageSources().magic(), 5F); } }
             case SENTINEL -> target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 160, 0), attacker);
+            case ROYAL -> "Lame des rois de Valmoire : frappe orques et morts-vivants. Clic droit : appel du roi (force et vitesse aux alliés, 60 s).";
             case STORM -> {
                 if (attacker.getRandom().nextFloat() < 0.25F && target.level() instanceof ServerLevel sl) {
                     LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(sl);
@@ -49,9 +57,27 @@ public class SpecialSword extends SwordItem {
                         e.hurt(attacker.damageSources().lightningBolt(), 5F);
                 }
             }
+            case ROYAL -> { if (target instanceof Monster || target instanceof FoeEntity) target.hurt(attacker.damageSources().magic(), (isUndead(target) || (target instanceof FoeEntity f && isOrc(f))) ? 5F : 2F); }
             default -> { }
         }
         return super.hurtEnemy(stack, target, attacker);
+    }
+
+    /** Appel du roi : renforce allies et joueurs proches. */
+    @Override
+    public InteractionResultHolder<ItemStack> use(Level level, Player p, InteractionHand h) {
+        if (kind != Kind.ROYAL) return super.use(level, p, h);
+        ItemStack st = p.getItemInHand(h);
+        if (p.getCooldowns().isOnCooldown(this)) return InteractionResultHolder.pass(st);
+        if (!level.isClientSide) {
+            for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(16), e -> e instanceof Player || e instanceof PeopleEntity)) {
+                e.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 400, 0));
+                e.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 400, 0));
+            }
+            level.playSound(null, p.blockPosition(), SoundEvents.RAID_HORN.value(), SoundSource.PLAYERS, 3.0F, 1.3F);
+        }
+        p.getCooldowns().addCooldown(this, 1200);
+        return InteractionResultHolder.sidedSuccess(st, level.isClientSide);
     }
 
     public static boolean isUndead(LivingEntity e) {
@@ -64,7 +90,7 @@ public class SpecialSword extends SwordItem {
     }
 
     @Override
-    public boolean isFoil(ItemStack stack) { return kind == Kind.KING || kind == Kind.MACE || kind == Kind.STORM || super.isFoil(stack); }
+    public boolean isFoil(ItemStack stack) { return kind == Kind.KING || kind == Kind.ROYAL || kind == Kind.MACE || kind == Kind.STORM || super.isFoil(stack); }
 
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext ctx, List<Component> tip, TooltipFlag flag) {
