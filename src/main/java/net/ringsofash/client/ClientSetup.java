@@ -212,7 +212,7 @@ public final class ClientSetup {
         e.registerEntityRenderer(ModEntities.HALFLING.get(), c -> new Renderers.Human<PeopleEntity>(c, plain, 0.66F, 0.6F, f -> peopleTex(f, "halfling", 3), false));
         e.registerEntityRenderer(ModEntities.RANGER.get(), c -> new Renderers.Human<PeopleEntity>(c, plain, 0.9375F, 0.9375F, f -> "ranger", false));
         e.registerEntityRenderer(ModEntities.MAGE.get(), c -> new Renderers.Human<PeopleEntity>(c, plain, 0.9375F, 0.97F, f -> "mage", false));
-        e.registerEntityRenderer(ModEntities.TREEMAN.get(), c -> new Renderers.Geo<>(c, layer("geo_treeman"), "treeman", 1.2F, 1.0F, f -> "treeman", null));
+        e.registerEntityRenderer(ModEntities.TREEMAN.get(), c -> new Renderers.Geo<>(c, layer("geo_treeman"), "treeman", 1.4F, 0.52F, f -> "treeman", null));
         e.registerEntityRenderer(ModEntities.EAGLE.get(), c -> new Renderers.Geo<>(c, layer("geo_eagle"), "eagle", 1.0F, 1.3F, f -> "eagle", null));
         e.registerEntityRenderer(ModEntities.STAG.get(), c -> new Renderers.Geo<>(c, layer("geo_stag"), "stag", 0.6F, 1.0F, f -> "stag", null));
         e.registerEntityRenderer(ModEntities.CROW.get(), c -> new Renderers.Geo<>(c, layer("geo_eagle"), "eagle", 0.25F, 0.35F, f -> "crow", null));

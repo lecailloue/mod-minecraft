@@ -16,6 +16,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
     private final ModelPart root;
     private final Map<String, ModelPart> parts = new HashMap<>();
     private final List<ModelPart> flames = new ArrayList<>();
+    private final List<ModelPart> branches = new ArrayList<>();
 
     public GeoModel(ModelPart root, String geo) {
         this.root = root;
@@ -23,6 +24,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
             ModelPart parent = p.parent == null ? root : parts.get(p.parent);
             parts.put(p.name, parent.getChild(p.name));
             if (p.name.startsWith("flame")) flames.add(parts.get(p.name));
+            if (p.name.startsWith("couronne") || p.name.contains("branche")) branches.add(parts.get(p.name));
         }
     }
 
@@ -76,6 +78,12 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
             f.yScale = 1.0F + s * 0.14F + Mth.sin(age * 1.3F + ph * 2.1F) * 0.06F;
             f.xScale = f.zScale = 1.0F - s * 0.05F;
             f.xRot += Mth.sin(age * 0.23F + ph) * 0.07F; f.zRot += Mth.cos(age * 0.19F + ph) * 0.07F;
+        }
+        // branches : leger balancement dans le vent
+        for (int i = 0; i < branches.size(); i++) {
+            ModelPart b = branches.get(i);
+            b.zRot += Mth.sin(age * 0.045F + i * 0.9F) * 0.035F;
+            b.xRot += Mth.cos(age * 0.038F + i * 1.3F) * 0.025F;
         }
         // fouet : une onde parcourt la chaine de segments, et il claque vers le haut a l'attaque
         for (int i = 1; i <= 12; i++) {

@@ -75,6 +75,15 @@ def ash_lord():
     wjson(f'{A}/geo/ash_lord.json', geo)
     save(bbimport.texture(src), f'{A}/textures/entity/ash_lord_geo.png')
 
+def treeman_bb():
+    """Sylvestre : modele Blockbench fourni (tools/assets/treeman.bbmodel)"""
+    import bbimport, os
+    from genlib import wjson, save
+    src = os.path.join(os.path.dirname(__file__), 'assets', 'treeman.bbmodel')
+    geo = bbimport.convert(src, rename={'torse': 'body', 'tete': 'head', 'jambe_G': 'leg_l', 'jambe_D': 'leg_r', 'bras_G': 'arm_l', 'bras_D': 'arm_r'})
+    wjson(f'{A}/geo/treeman.json', geo)
+    save(bbimport.texture(src), f'{A}/textures/entity/treeman.png')
+
 def glow(m, name, chars):
     """texture lumineuse : uniquement les pixels d'art dont le caractere est dans chars (+ boites tres vives)"""
     from PIL import Image
@@ -231,4 +240,4 @@ def skins():
     skin('cave_thief', 'goblin', skin='#b8b8a8', hair='#b8b8a8', hair_style='bald', eyes='#d8f0ff', top='#b0b0a0', legs='#6a6050', boots='#b8b8a8', sleeves=False, seed=55)
 
 def build():
-    troll(); warg(); stag(); demon(); ash_lord(); lurker(); treeman(); eagle(); dragon(); mammoth(); skins()
+    troll(); warg(); stag(); demon(); ash_lord(); lurker(); treeman_bb(); eagle(); dragon(); mammoth(); skins()
