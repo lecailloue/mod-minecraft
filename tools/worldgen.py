@@ -187,7 +187,7 @@ SQUID = [('minecraft:squid', 4, 1, 4)]
 
 def biomes():
     # monde normal
-    biome('volcan', 'Terres volcaniques', 2.0, 0.0, '#7a2c14', '#3a1810', water='#5a4a44', wfog='#2a1c18', grass='#5b5a4c', foliage='#5b5a4c',
+    biome('volcan', 'Terres volcaniques', 2.0, 0.0, '#55200e', '#30140c', water='#5a4a44', wfog='#2a1c18', grass='#5b5a4c', foliage='#5b5a4c',
           veg=('ashroot_patch', 'smoke_vents_dense'), precip=False, particle=('minecraft:white_ash', 0.04),
           spawns={'monster': [('minecraft:magma_cube', 10, 1, 3)], 'ambient': BATS},
           extra_steps={1: ['minecraft:lake_lava_underground', 'minecraft:lake_lava_surface'], 2: ['minecraft:amethyst_geode', R('basalt_spires')],
@@ -200,7 +200,7 @@ def biomes():
     biome('plaines_jaunes', 'Plaines Pâles', 0.6, 0.35, '#86b8f5', '#d2e2f2', grass='#FFEB9E', foliage='#d9c85a',
           veg=('trees_birch_sparse', 'trees_oak_sparse', 'bushes_birch_few', 'bushes_oak_few', 'fallen_birch_logs_few', 'minecraft:flower_default', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
           spawns={'creature': [('minecraft:horse', 10, 2, 6), ('minecraft:cow', 8, 4, 4), ('minecraft:sheep', 6, 4, 4), ('stag', 2, 1, 2)], 'ambient': BATS, 'monster': ORCS + [('warg', 20, 2, 4)]})
-    biome('plaines_cendre', 'Plaines de Cendre', 0.9, 0.1, '#7a2c14', '#3a1810', water='#4a4a44', wfog='#1c1c18', grass='#96938E', foliage='#7d7a6a',
+    biome('plaines_cendre', 'Plaines de Cendre', 0.9, 0.1, '#55200e', '#30140c', water='#4a4a44', wfog='#1c1c18', grass='#96938E', foliage='#7d7a6a',
           veg=('ashroot_patch', 'smoke_vents'), precip=False, particle=('minecraft:ash', 0.06), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
           spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 60, 3, 5), ('war_orc', 35, 2, 3), ('warg', 25, 2, 4), ('cave_troll', 10, 1, 1), ('pale_rider', 5, 1, 2), ('goblin', 20, 3, 5)]})
     biome('grande_foret', 'Grande Forêt', 0.6, 0.9, '#6f9ed8', '#7f9a78', water='#3d6a55', wfog='#0c1f16', grass='#3f7a2e', foliage='#2f6a25',
@@ -218,10 +218,10 @@ def biomes():
     biome('bosquets', 'Bosquets', 0.65, 0.5, '#79b4ff', '#c4dcff', grass='#AEE08A', foliage='#82bf55',
           veg=('trees_oak_sparse', 'trees_birch_sparse', 'fallen_oak_logs_few', 'bushes_oak', 'bushes_birch', 'minecraft:flower_plains', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
           spawns={'creature': FARM + [('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS, 'monster': ORCS})
-    biome('monts_de_cendre', 'Monts de Cendre', 1.0, 0.0, '#6a2410', '#2e130c', water='#4a3a36', wfog='#1c100c', grass='#57503f', foliage='#57503f',
+    biome('monts_de_cendre', 'Monts de Cendre', 1.0, 0.0, '#4a1a0c', '#28100a', water='#4a3a36', wfog='#1c100c', grass='#57503f', foliage='#57503f',
           veg=('smoke_vents_dense',), precip=False, particle=('minecraft:ash', 0.06), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
           spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 40, 2, 4), ('war_orc', 25, 2, 3), ('warg', 20, 2, 3), ('cave_troll', 14, 1, 1), ('stone_troll', 10, 1, 1), ('goblin', 40, 3, 6), ('pale_rider', 4, 1, 2)]})
-    biome('rivieres_de_lave', 'Rivières de Lave', 2.0, 0.0, '#6a2410', '#2e130c', water='#4a3a36', wfog='#1c100c', veg=('smoke_vents',), precip=False,
+    biome('rivieres_de_lave', 'Rivières de Lave', 2.0, 0.0, '#4a1a0c', '#28100a', water='#4a3a36', wfog='#1c100c', veg=('smoke_vents',), precip=False,
           particle=('minecraft:ash', 0.05), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
           spawns={'monster': [('minecraft:magma_cube', 20, 1, 3)], 'ambient': BATS})
     biome('cimes_neigeuses', 'Cimes Neigeuses', -0.5, 0.6, '#9cc4ff', '#e6f0ff', grass='#8ab08a', foliage='#7aa07a', lunar='ore_lunargent_scarce',

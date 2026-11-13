@@ -31,7 +31,7 @@ public final class ClientSetup {
 
     public static final KeyMapping REP_KEY = new KeyMapping("key.ringsofash.reputation", InputConstants.KEY_R, "key.categories.ringsofash");
     public static final KeyMapping MAP_KEY = new KeyMapping("key.ringsofash.map", InputConstants.KEY_M, "key.categories.ringsofash");
-    private static final String[] GEO = {"troll", "warg", "stag", "demon", "lurker", "treeman", "eagle", "dragon", "mammoth"};
+    private static final String[] GEO = {"troll", "warg", "stag", "demon", "lurker", "treeman", "eagle", "dragon", "mammoth", "ash_lord"};
     private static final String[] HUMAN = {"plain", "elf", "orc", "goblin", "dwarf"};
 
     private static ModelLayerLocation layer(String name) { return new ModelLayerLocation(RingsOfAsh.id(name), "main"); }
@@ -203,7 +203,7 @@ public final class ClientSetup {
         e.registerEntityRenderer(ModEntities.LURKER.get(), c -> new Renderers.Geo<>(c, layer("geo_lurker"), "lurker", 1.5F, 1.6F, f -> "lurker", "lurker_glow"));
         e.registerEntityRenderer(ModEntities.CAVE_THIEF.get(), c -> new Renderers.Human<>(c, goblin, 0.68F, 0.66F, f -> "cave_thief", false));
         e.registerEntityRenderer(ModEntities.FIRE_DEMON.get(), c -> new Renderers.Geo<>(c, layer("geo_demon"), "demon", 2.2F, 1.2F, f -> "demon", "demon_glow"));
-        e.registerEntityRenderer(ModEntities.ASH_LORD.get(), c -> new Renderers.Human<>(c, plain, 1.95F, 2.0F, f -> "ash_lord", false));
+        e.registerEntityRenderer(ModEntities.ASH_LORD.get(), c -> new Renderers.Geo<>(c, layer("geo_ash_lord"), "ash_lord", 1.6F, 0.62F, f -> "ash_lord_geo", null));
         e.registerEntityRenderer(ModEntities.DRAGON.get(), c -> new Renderers.Geo<>(c, layer("geo_dragon"), "dragon", 2.5F, 1.0F, f -> "dragon", null));
         e.registerEntityRenderer(ModEntities.SORCERER.get(), c -> new Renderers.Human<>(c, plain, 1.05F, 1.08F, f -> "sorcerer", false));
         e.registerEntityRenderer(ModEntities.HUMAN.get(), c -> new Renderers.Human<PeopleEntity>(c, plain, 0.9375F, 0.9375F, f -> peopleTex(f, "human", 4), false));

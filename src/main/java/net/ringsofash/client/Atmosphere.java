@@ -50,8 +50,8 @@ public final class Atmosphere {
     private static void fogColor(ViewportEvent.ComputeFogColor e) {
         float a = amount((float) e.getPartialTick());
         if (a <= 0.001F) return;
-        e.setRed(Mth.lerp(a, e.getRed(), 0.55F));
-        e.setGreen(Mth.lerp(a, e.getGreen(), 0.20F));
+        e.setRed(Mth.lerp(a, e.getRed(), 0.42F));
+        e.setGreen(Mth.lerp(a, e.getGreen(), 0.15F));
         e.setBlue(Mth.lerp(a, e.getBlue(), 0.06F));
     }
 
@@ -59,23 +59,8 @@ public final class Atmosphere {
         e.registerBelowAll(RingsOfAsh.id("ash_dusk"), (g, dt) -> {
             float a = amount(dt.getGameTimeDeltaPartialTick(false));
             if (a <= 0.01F) return;
-            int alpha = Mth.clamp(Math.round(a * 0.30F * 255F), 0, 255);
+            int alpha = Mth.clamp(Math.round(a * 0.36F * 255F), 0, 255);
             g.fill(0, 0, g.guiWidth(), g.guiHeight(), alpha << 24 | 0x1A0502);
-            // ciel noir -> orange a l'horizon, dessine a l'ecran : fonctionne aussi avec les shaders
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) {
-                double fov = Math.toRadians(mc.options.fov().get());
-                double pitch = Math.toRadians(mc.player.getViewXRot(dt.getGameTimeDeltaPartialTick(false)));
-                int h = g.guiHeight();
-                int hy = (int) Mth.clamp(h / 2.0 * (1 + Math.tan(pitch) / Math.tan(fov / 2)), 0, h);
-                if (hy > 2) {
-                    int top = Mth.clamp(Math.round(a * 0.62F * 255F), 0, 255);
-                    int bot = Mth.clamp(Math.round(a * 0.34F * 255F), 0, 255);
-                    g.fillGradient(0, 0, g.guiWidth(), hy, top << 24 | 0x080201, bot << 24 | 0xFF5A14);
-                }
-            }
-            int glow = Mth.clamp(Math.round(a * 0.07F * 255F), 0, 255);          // legere lueur orangee
-            g.fill(0, 0, g.guiWidth(), g.guiHeight(), glow << 24 | 0xFF6A1E);
         });
     }
 }

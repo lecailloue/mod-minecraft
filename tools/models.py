@@ -65,6 +65,16 @@ def demon():
     import demon as fleau
     fleau.demon(f'{PREVIEW}/demon.png')
 
+def ash_lord():
+    """Seigneur de Cendre : modele Blockbench fourni (tools/assets/ash_lord.bbmodel)"""
+    import bbimport, os
+    from genlib import wjson, save
+    src = os.path.join(os.path.dirname(__file__), 'assets', 'ash_lord.bbmodel')
+    geo = bbimport.convert(src, rename={'left_leg': 'leg_l', 'right_leg': 'leg_r', 'left_shoulder': 'shoulder_l', 'right_shoulder': 'shoulder_r'},
+                           reparent={'left_shoulder': 'body', 'right_shoulder': 'body', 'mace': 'body', 'head': 'body'})
+    wjson(f'{A}/geo/ash_lord.json', geo)
+    save(bbimport.texture(src), f'{A}/textures/entity/ash_lord_geo.png')
+
 def glow(m, name, chars):
     """texture lumineuse : uniquement les pixels d'art dont le caractere est dans chars (+ boites tres vives)"""
     from PIL import Image
@@ -221,4 +231,4 @@ def skins():
     skin('cave_thief', 'goblin', skin='#b8b8a8', hair='#b8b8a8', hair_style='bald', eyes='#d8f0ff', top='#b0b0a0', legs='#6a6050', boots='#b8b8a8', sleeves=False, seed=55)
 
 def build():
-    troll(); warg(); stag(); demon(); lurker(); treeman(); eagle(); dragon(); mammoth(); skins()
+    troll(); warg(); stag(); demon(); ash_lord(); lurker(); treeman(); eagle(); dragon(); mammoth(); skins()

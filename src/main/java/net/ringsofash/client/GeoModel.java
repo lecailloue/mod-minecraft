@@ -88,6 +88,11 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
         if (jaw != null) jaw.xRot += 0.08F + Math.abs(Mth.sin(age * 0.05F)) * 0.08F + atk * 0.6F;
         ModelPart body = p("body");
         if (body != null && ar != null) body.xRot += atk * 0.15F;
+        // masse a deux mains (bras et masse rattaches au corps) : balancement lourd, coup de masse en abattant le buste
+        if (body != null && p("mace") != null) {
+            body.xRot += atk * 0.55F + Mth.sin(age * 0.05F) * 0.02F;
+            body.zRot += Mth.cos(swing * 0.6662F) * 0.04F * amount;
+        }
     }
 
     private void leg(String n, float rot) {
