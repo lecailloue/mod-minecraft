@@ -426,6 +426,42 @@ public final class ClientTest {
             c.moveTo(SX, SY, SZ + 8, 90F, 0F); c.setYBodyRot(90F); c.setYHeadRot(90F);
             view(p, ow, SX + 0.5, SY + 2.2, SZ, 0F, 8F);
         }));
+        // dragon des ombres : profil a deux instants (le cou ondule, les ailes battent), vue de face, puis vrai vol avec IA (on mesure qu'il rejoint et mord sa cible)
+        for (int[] d : new int[][]{{60, 0}, {81, 1}}) {
+            final int dd = d[1];
+            SCENES.add(new Scene("14" + "ab".charAt(dd) + "_dragon_profil", d[0], p -> {
+                ServerLevel ow = p.server.overworld();
+                clear(ow);
+                var dr = actor(ow, ModEntities.SHADOW_DRAGON.get(), SX, SZ + 20, o -> { o.setYRot(90F); o.setYHeadRot(90F); o.setYBodyRot(90F); });
+                dr.setNoGravity(true); dr.moveTo(SX, SY + 2.0, SZ + 20, 90F, 0F); dr.setYBodyRot(90F); dr.setYHeadRot(90F);
+                view(p, ow, SX + 0.5, SY + 5.5, SZ - 2, 0F, 8F);
+            }));
+        }
+        SCENES.add(new Scene("14c_dragon_face", 60, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            var dr = actor(ow, ModEntities.SHADOW_DRAGON.get(), SX, SZ + 18, o -> { });
+            dr.setNoGravity(true); dr.moveTo(SX, SY + 2.0, SZ + 18, 180F, 0F);
+            view(p, ow, SX + 0.5, SY + 5.0, SZ, 0F, 8F);
+        }));
+        SCENES.add(new Scene("14d_dragon_vol", 160, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            var dr = net.ringsofash.entity.ModEntities.SHADOW_DRAGON.get().create(ow);
+            dr.moveTo(SX, SY + 8, SZ + 26, 180F, 0F);
+            dr.finalizeSpawn(ow, ow.getCurrentDifficultyAt(dr.blockPosition()), MobSpawnType.COMMAND, null);
+            dr.setPersistenceRequired();
+            ow.addFreshEntity(dr);
+            net.minecraft.world.entity.monster.Spider bait = EntityType.SPIDER.create(ow);
+            bait.moveTo(SX + 2, SY, SZ + 6, 0F, 0F);
+            bait.setNoAi(true); bait.setPersistenceRequired();
+            ow.addFreshEntity(bait);
+            dr.setTarget(bait);
+            final double x0 = dr.getX(), y0 = dr.getY(), z0 = dr.getZ();
+            view(p, ow, SX + 0.5, SY + 6.0, SZ - 8, 0F, 10F);
+            hook = () -> log("DRAGON_VOL avance=" + String.format("%.2f", z0 - dr.getZ()) + " dy=" + String.format("%.2f", dr.getY() - y0) + " distCible=" + String.format("%.2f", dr.distanceTo(bait))
+                    + " pvCible=" + bait.getHealth() + " vivant=" + dr.isAlive() + " cible=" + dr.getTarget() + " auSol=" + dr.onGround());
+        }));
         spectreLine("03b_spectres", 9.0, 3F, 2.2);
         spectreLine("03c_roi_proche", 4.2, 6F, 2.2);
         orcLine("01b_orques_modeles", 11.0, 3F, 2.3, new int[]{0, 5, 10, 15, 2, 3, 0}, true);

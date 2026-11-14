@@ -352,6 +352,24 @@ def sylvestres():
             save(Image.fromarray(glow, 'RGBA'), f'{A}/textures/entity/{name}_glow.png')
         print(f'{name}: {len(geo["parts"])} pieces, {len(cubes)} cubes, hauteur {geo["height"]} px, texture {W}x{H}')
 
+def shadow_dragon():
+    """Dragon des ombres (tools/shadow_dragon.py) : geometrie hierarchique + texture + texture lumineuse (yeux, fente du casque)"""
+    import bbimport, tempfile
+    import trollcore as T
+    import shadow_dragon as SD
+    from genlib import wjson, save
+    from PIL import Image
+    groups, cubes, W, H, tex, glow, lo, hi = SD.make()
+    tmp = tempfile.mkdtemp()
+    T.export_bbmodel('shadow_dragon', groups, cubes, W, H, tex, os.path.join(tmp, 'shadow_dragon.bbmodel'))
+    geo = bbimport.convert(os.path.join(tmp, 'shadow_dragon.bbmodel'))
+    geo['height'] = geo_height(geo)
+    wjson(f'{A}/geo/shadow_dragon.json', geo)
+    save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/shadow_dragon.png')
+    save(Image.fromarray(glow, 'RGBA'), f'{A}/textures/entity/shadow_dragon_glow.png')
+    print(f'shadow_dragon: {len(geo["parts"])} pieces, {len(cubes)} cubes, hauteur {geo["height"]} px, texture {W}x{H}')
+
+
 def glow(m, name, chars):
     """texture lumineuse : uniquement les pixels d'art dont le caractere est dans chars (+ boites tres vives)"""
     from PIL import Image
@@ -503,4 +521,4 @@ def skins():
     skin('cave_thief', 'goblin', skin='#b8b8a8', hair='#b8b8a8', hair_style='bald', eyes='#d8f0ff', top='#b0b0a0', legs='#6a6050', boots='#b8b8a8', sleeves=False, seed=55)
 
 def build():
-    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); orc_weapons(); lurker(); treeman_bb(); sylvestres(); eagle(); dragon(); mammoth(); skins()
+    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); orc_weapons(); lurker(); treeman_bb(); sylvestres(); shadow_dragon(); eagle(); dragon(); mammoth(); skins()

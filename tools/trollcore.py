@@ -273,6 +273,9 @@ DECOR = {
 }
 
 
+ALPHA = {}          # materiau -> opacite (0-255) pour les couches translucides
+
+
 def paint_all(cubes, W, H):
     tex = np.zeros((H, W, 4), float)
     glow = np.zeros((H, W, 4), float)
@@ -301,7 +304,7 @@ def paint_all(cubes, W, H):
             c.fx(F, rng, glowfn)
         for f, (x0, y0, fw, fh) in rects.items():
             tex[y0:y0 + fh, x0:x0 + fw, :3] = np.clip(F[f], 0, 255)
-            tex[y0:y0 + fh, x0:x0 + fw, 3] = 255
+            tex[y0:y0 + fh, x0:x0 + fw, 3] = ALPHA.get(c.mat, 255)
     return tex.astype(np.uint8), glow.astype(np.uint8)
 
 

@@ -152,6 +152,30 @@ public final class Renderers {
         @Override protected void scale(net.ringsofash.entity.ShadowRiderEntity e, PoseStack ps, float pt) { float s = scales[e.shadowModel()]; ps.scale(s, s, s); }
     }
 
+    /** Dragon des ombres (monture du chef) : 1 unite du modele = 5 cm, membrane des ailes translucide, yeux et fente du casque lumineux. */
+    public static class ShadowDragon extends MobRenderer<net.ringsofash.entity.ShadowDragonEntity, GeoModel<net.ringsofash.entity.ShadowDragonEntity>> {
+        public ShadowDragon(EntityRendererProvider.Context ctx) {
+            super(ctx, new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_shadow_dragon")), "shadow_dragon"), 2.2F);
+            addLayer(new RenderLayer<net.ringsofash.entity.ShadowDragonEntity, GeoModel<net.ringsofash.entity.ShadowDragonEntity>>(this) {
+                @Override
+                public void render(PoseStack ps, MultiBufferSource buf, int light, net.ringsofash.entity.ShadowDragonEntity e, float a, float b, float c, float d, float f, float g) {
+                    VertexConsumer vc = buf.getBuffer(RenderType.eyes(tex("shadow_dragon_glow")));
+                    getParentModel().renderToBuffer(ps, vc, 0xF000F0, OverlayTexture.NO_OVERLAY, -1);
+                }
+            });
+        }
+
+        @Override public ResourceLocation getTextureLocation(net.ringsofash.entity.ShadowDragonEntity e) { return tex("shadow_dragon"); }
+        @Override protected void scale(net.ringsofash.entity.ShadowDragonEntity e, PoseStack ps, float pt) { ps.scale(0.8F, 0.8F, 0.8F); }
+
+        @Nullable
+        @Override
+        protected RenderType getRenderType(net.ringsofash.entity.ShadowDragonEntity e, boolean visible, boolean ghost, boolean glowing) {
+            if (visible) return RenderType.entityTranslucent(getTextureLocation(e));
+            return super.getRenderType(e, visible, ghost, glowing);
+        }
+    }
+
     /** Les 5 nouveaux modeles spectraux : translucides (peau et tissus par pixel), squelette visible dessous, yeux lumineux. */
     public static class Wraith extends MobRenderer<FoeEntity, GeoModel<FoeEntity>> {
         public static final String[] NAMES = {"spectre_epee", "spectre_lance", "spectre_hache", "spectre_dague", "spectre_roi"};

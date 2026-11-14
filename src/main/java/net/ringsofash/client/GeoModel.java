@@ -194,6 +194,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
         if (e instanceof FoeEntity f && f.kind() == FoeEntity.Kind.GOBLIN_KING) kingPose(e.getId(), swing, amount, age, atk, yaw, pitch);
         if (e instanceof net.ringsofash.entity.GiantSpiderEntity) spiderPose(swing, amount, age, atk);
         if (!sway.isEmpty()) sylvPose(swing, amount, age);
+        if (e instanceof net.ringsofash.entity.ShadowDragonEntity) dragonPose(e, age, atk);
     }
 
     /**
@@ -243,6 +244,46 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
      * Araignee geante : marche en tetrapode (pattes 1g, 3g, 2d, 4d ensemble, les quatre autres en opposition) ; chaque patte avance et se leve
      * pendant qu'elle avance. L'abdomen oscille, le corps se baisse a chaque pas, les crocs et les pattes avant s'ecartent quand elle mord.
      */
+    /**
+     * Dragon des ombres : en vol permanent. Les ailes battent (le poignet suit avec du retard), le corps monte et descend avec elles, et le cou
+     * ondule de bas en haut comme un serpent : une onde qui parcourt les 7 segments du cou, plus forte vers la tete. La queue ondule en
+     * lacet, la machoire s'ouvre quand il mord, la cape du chef flotte. Le nez se leve quand il monte et se baisse quand il pique.
+     */
+    private void dragonPose(T e, float age, float atk) {
+        float beat = age * 0.17F, flap = Mth.sin(beat);
+        ModelPart body = p("body");
+        float dy = (float) e.getDeltaMovement().y;
+        if (body != null) {
+            body.y += Mth.cos(beat) * 1.6F;
+            body.xRot += Mth.clamp(-dy * 0.9F, -0.35F, 0.35F) + 0.04F;
+            body.zRot += Mth.sin(age * 0.05F) * 0.02F;
+        }
+        ModelPart wr = p("dwing_r"), wl = p("dwing_l"), wr2 = p("dwing_r2"), wl2 = p("dwing_l2");
+        float up = 0.10F + flap * 0.55F, tip = Mth.sin(beat - 1.0F) * 0.5F;
+        if (wr != null) wr.zRot += up;
+        if (wl != null) wl.zRot -= up;
+        if (wr2 != null) wr2.zRot += tip;
+        if (wl2 != null) wl2.zRot -= tip;
+        float w = age * 0.15F;
+        for (int i = 0; i < 7; i++) {
+            ModelPart n = p("dneck_" + i);
+            if (n != null) n.xRot += Mth.sin(w - i * 0.8F) * (0.14F + 0.015F * i);
+        }
+        ModelPart head = p("head"), jaw = p("jaw");
+        if (head != null) head.xRot += Mth.sin(w - 7 * 0.8F) * 0.12F;
+        if (jaw != null) jaw.xRot += atk * 0.8F + Mth.max(0F, Mth.sin(age * 0.05F)) * 0.08F;
+        for (int i = 0; i < 7; i++) {
+            ModelPart t = p("dtail_" + i);
+            if (t != null) { t.yRot += Mth.sin(age * 0.1F - i * 0.7F) * 0.13F; t.xRot += Mth.sin(age * 0.1F - i * 0.7F + 1.6F) * 0.04F; }
+        }
+        ModelPart rider = p("rider");
+        if (rider != null) rider.xRot += Mth.sin(beat + 0.6F) * 0.02F;
+        for (int i = 0; i < 4; i++) {
+            ModelPart c = p("cape_" + i);
+            if (c != null) c.xRot += 0.12F + Mth.sin(age * 0.32F - i * 0.9F) * 0.14F;
+        }
+    }
+
     private void spiderPose(float swing, float amount, float age, float atk) {
         float ph = swing * 0.85F;
         for (int i = 1; i <= 4; i++) {
