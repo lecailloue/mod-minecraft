@@ -81,7 +81,7 @@ def pack(cubes):
         else:
             regs[c.key] = (r, c.mat)
     items = sorted(regs.items(), key=lambda kv: (-kv[1][0][1], -kv[1][0][0]))
-    for W, H in [(128, 128), (128, 256), (256, 128), (256, 256)]:
+    for W, H in [(128, 128), (128, 256), (256, 128), (256, 256), (256, 512), (512, 256), (512, 512), (512, 1024), (1024, 512)]:
         x = y = rowh = 0
         place = {}
         ok = True

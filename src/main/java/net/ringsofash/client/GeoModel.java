@@ -119,6 +119,20 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
             body.xRot += atk * 0.55F + Mth.sin(age * 0.05F) * 0.02F;
             body.zRot += Mth.cos(swing * 0.6662F) * 0.04F * amount;
         }
+        // cape : se souleve vers l'arriere quand il marche, ondule en continu (segments de plus en plus mobiles)
+        ModelPart cape = p("cape");
+        if (cape != null) {
+            float run = Math.min(1F, amount * 1.6F);
+            float base = 0.06F + run * 0.32F;
+            cape.xRot += base + Mth.sin(age * 0.05F) * 0.025F + atk * 0.12F;
+            String[] cs = {"cape_c", "cape_d", "cape_e"};
+            for (int i = 0; i < cs.length; i++) {
+                ModelPart cp = p(cs[i]);
+                if (cp == null) continue;
+                cp.xRot += 0.04F + run * 0.2F + Mth.sin(age * 0.09F - i * 0.9F) * (0.05F + 0.03F * i) + Mth.sin(swing * 0.6662F - i) * 0.08F * amount;
+                cp.zRot += Mth.cos(age * 0.07F - i * 0.7F) * 0.025F * (i + 1);
+            }
+        }
         if (e instanceof FoeEntity f && f.isTroll()) trollPose(f, swing, amount, age);
     }
 
