@@ -337,7 +337,7 @@ def spectre_roi(skin='9ae8c0'):
            C('plate_trim', -8.5, 53, -5.6, 17, 2, 1, 's_gold', key='k_ptrim'),
            C('plate_gem', -1.5, 47, -6.2, 3, 3, 1, 's_gem', key='k_pgem'),
            C('belt_g', -7, 33, -5.2, 14, 3, 10, 's_gold', key='k_belt')]
-    tunic(bk, 's_cloth2', 6, 's_cloth2')
+    tunic(bk, 's_cloth', 6, 's_cloth2')
     for sg in (-1, 1):
         n = 'l' if sg < 0 else 'r'
         bk.append(C('paul_' + n, X(sg, 13, 8), 53, -4.5, 8, 3, 9, 's_metal', key='k_paul', rot=(0, 0, sg * -10), pivot=(sg * 13, 55, 0)))
@@ -345,12 +345,12 @@ def spectre_roi(skin='9ae8c0'):
         bk.append(spike('paul_spike_' + n, sg * 13.5, 56, -.5, 5, 2, (0, 0, sg * -12), mat='s_gold'))
     hk += [C('crown_band', -5.5, 66, -6.5, 11, 2, 11, 's_gold', key='k_cband'),
            C('crown_gem', -1, 66.5, -7.2, 2, 1, 1, 's_gem', key='k_cgem')]
-    for i, (x, z, h) in enumerate([(-4.5, -6, 4), (-0.5, -6.4, 6), (3.5, -6, 4), (-4.5, 2.2, 4), (3.5, 2.2, 4), (-0.5, 2.6, 5), (-4.7, -2, 3), (3.7, -2, 3)]):
+    for i, (x, z, h) in enumerate([(-4.5, -6, 4), (-0.5, -6.4, 6), (3.5, -6, 4), (-4.5, 2.2, 4), (3.5, 2.2, 4), (-0.5, 2.6, 5)]):
         hk.append(C(f'crown_{i}', x, 68, z, 2, h, 2, 's_gold', key=f'k_cs{h}'))
     for i in range(3):
         hk.append(C(f'beard_{i}', -3 + i * 2.6, 49 - i % 2 * 2, -5 - (i % 2) * .5, 2, 7 + i % 2 * 3, 1, 's_rag', key=f'k_beard{i % 2}'))
     return finish(legs, pel, bk, hk, arms, fores, w_sword(34, 5), hand_rot=(-24, 0, -6), head_f=1.16,
-                  capes=cape('s_cloth2', 's_gold', 20))
+                  capes=cape('s_cloth', 's_gold', 18))
 
 
 MODELS = {
@@ -358,6 +358,7 @@ MODELS = {
     'spectre_lance': (spectre_lance, 1.0),
     'spectre_hache': (spectre_hache, 1.0),
     'spectre_dague': (spectre_dague, 1.0),
+    'spectre_roi': (spectre_roi, 1.22),
 }
 
 
