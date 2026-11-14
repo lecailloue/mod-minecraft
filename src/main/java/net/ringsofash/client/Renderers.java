@@ -1,7 +1,11 @@
 package net.ringsofash.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -81,6 +85,73 @@ public final class Renderers {
 
         @Override public ResourceLocation getTextureLocation(FoeEntity e) { return tex(NAMES[idx(e)] + "_" + e.orcColor()); }
         @Override protected void scale(FoeEntity e, PoseStack ps, float pt) { float s = scales[idx(e)]; ps.scale(s, s, s); }
+    }
+
+    /** Soldats spectraux : le modele 0 est l'ancien soldat (humanoide), 1 a 4 les nouveaux modeles (hoplite, capuche, crane, Roi des morts). */
+    public static class Spectre extends EntityRenderer<FoeEntity> {
+        private final Human<FoeEntity> classic;
+        private final Wraith wraith;
+
+        public Spectre(EntityRendererProvider.Context ctx, ModelLayerLocation plain) {
+            super(ctx);
+            classic = new Human<FoeEntity>(ctx, plain, 1.0F, 1.0F, f -> "dead_soldier", true);
+            wraith = new Wraith(ctx);
+        }
+
+        @Override
+        public void render(FoeEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource buf, int light) {
+            if (e.spectreModel() == 0) classic.render(e, yaw, pt, ps, buf, light);
+            else wraith.render(e, yaw, pt, ps, buf, light);
+        }
+
+        @Override
+        public ResourceLocation getTextureLocation(FoeEntity e) {
+            return e.spectreModel() == 0 ? classic.getTextureLocation(e) : wraith.getTextureLocation(e);
+        }
+    }
+
+    /** Les 4 nouveaux modeles spectraux : translucides, yeux lumineux. */
+    public static class Wraith extends MobRenderer<FoeEntity, GeoModel<FoeEntity>> {
+        public static final String[] NAMES = {"spectre_lance", "spectre_capuche", "spectre_crane", "spectre_roi"};
+        public static final float[] BLOCKS = {1.95F, 1.95F, 1.9F, 2.2F};
+        private final GeoModel<FoeEntity>[] models;
+        private final float[] scales = new float[NAMES.length];
+
+        @SuppressWarnings("unchecked")
+        public Wraith(EntityRendererProvider.Context ctx) {
+            super(ctx, new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_" + NAMES[0])), NAMES[0]), 0.5F);
+            models = new GeoModel[NAMES.length];
+            for (int i = 0; i < NAMES.length; i++) {
+                models[i] = new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_" + NAMES[i])), NAMES[i]);
+                models[i].alpha = 205;
+                scales[i] = BLOCKS[i] * 16F / GeoDef.get(NAMES[i]).height;
+            }
+            addLayer(new RenderLayer<FoeEntity, GeoModel<FoeEntity>>(this) {
+                @Override
+                public void render(PoseStack ps, MultiBufferSource buf, int light, FoeEntity e, float a, float b, float c, float d, float f, float g) {
+                    VertexConsumer vc = buf.getBuffer(RenderType.eyes(tex(NAMES[idx(e)] + "_glow")));
+                    getParentModel().renderToBuffer(ps, vc, 0xF000F0, OverlayTexture.NO_OVERLAY, -1);
+                }
+            });
+        }
+
+        private int idx(FoeEntity e) { return Math.min(NAMES.length - 1, Math.max(0, e.spectreModel() - 1)); }
+
+        @Override
+        public void render(FoeEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource buf, int light) {
+            this.model = models[idx(e)];
+            super.render(e, yaw, pt, ps, buf, light);
+        }
+
+        @Override public ResourceLocation getTextureLocation(FoeEntity e) { return tex(NAMES[idx(e)]); }
+        @Override protected void scale(FoeEntity e, PoseStack ps, float pt) { float s = scales[idx(e)]; ps.scale(s, s, s); }
+
+        @Nullable
+        @Override
+        protected RenderType getRenderType(FoeEntity e, boolean visible, boolean ghost, boolean glowing) {
+            if (visible) return RenderType.entityTranslucent(getTextureLocation(e));
+            return super.getRenderType(e, visible, ghost, glowing);
+        }
     }
 
     /** Humanoide (modele de joueur + oreilles, defenses ou barbe selon le peuple). */

@@ -65,6 +65,16 @@ public class FoeEntity extends Monster {
     /** Modele d'orque 0..6 : 0-3 orques, 4-5 orques noirs, 6 chef (variante orque = modele*4 + couleur, orque noir = modele*2 + couleur). */
     /** Mise en scene des tests client : impose la variante (modele + couleur). */
     public void testVariant(int v) { entityData.set(VARIANT, v); populateDefaultEquipmentSlots(random, null); }
+    /** Le Roi des morts : plus robuste et plus dangereux, et il reste plus longtemps. */
+    private void makeDeadKing() {
+        getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(80);
+        setHealth(80F);
+        getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).setBaseValue(10);
+        xpReward = 25;
+        if (lifeLeft > 0) lifeLeft = 20 * 150;
+        setCustomName(net.minecraft.network.chat.Component.literal("Roi des morts"));
+        setCustomNameVisible(false);
+    }
     public int orcModel() {
         return switch (kind()) { case ORC -> Math.floorMod(variant() / 4, 4); case WAR_ORC -> 4 + Math.floorMod(variant() / 2, 2); case ORC_CHIEF -> 6; default -> 0; };
     }
@@ -81,6 +91,9 @@ public class FoeEntity extends Monster {
             default -> Reg.ORC_MACE.get();
         });
     }
+    /** Soldat spectral : 0 = ancien modele, 1 a 3 = hoplite / capuche / crane, 4 = Roi des morts (5 % des apparitions). */
+    public int spectreModel() { return kind() == Kind.DEAD_SOLDIER ? Math.max(0, Math.min(4, variant())) : 0; }
+    public boolean isDeadKing() { return spectreModel() == 4; }
     public boolean isStone() { return entityData.get(STONE); }
     public boolean isTroll() { Kind k = kind(); return k == Kind.CAVE_TROLL || k == Kind.STONE_TROLL || k == Kind.TROLL_CHIEF; }
     public int slamTick() { return entityData.get(SLAM); }
@@ -138,7 +151,8 @@ public class FoeEntity extends Monster {
         data = super.finalizeSpawn(level, difficulty, reason, data);
         RandomSource r = level.getRandom();
         Kind k = kind();
-        entityData.set(VARIANT, r.nextInt(k == Kind.ORC ? 16 : k == Kind.WAR_ORC ? 4 : 2));
+        entityData.set(VARIANT, k == Kind.DEAD_SOLDIER ? (r.nextInt(100) < 5 ? 4 : r.nextInt(4)) : r.nextInt(k == Kind.ORC ? 16 : k == Kind.WAR_ORC ? 4 : 2));
+        if (isDeadKing()) makeDeadKing();
         populateDefaultEquipmentSlots(r, difficulty);
         if (k == Kind.TROLL_CHIEF && reason != MobSpawnType.SPAWN_EGG && reason != MobSpawnType.COMMAND) {
             // le chef de meute arrive avec sa meute : deux ou trois trolls des cavernes autour de lui

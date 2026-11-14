@@ -37,10 +37,14 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
 
     /** Teinte multipliee a la texture (variations d'un individu a l'autre), -1 = aucune. */
     private int tint = -1;
+    /** Opacite 0..255 (spectres translucides). */
+    public int alpha = 255;
 
     @Override
     public void renderToBuffer(com.mojang.blaze3d.vertex.PoseStack ps, com.mojang.blaze3d.vertex.VertexConsumer vc, int light, int overlay, int color) {
-        super.renderToBuffer(ps, vc, light, overlay, tint == -1 ? color : net.minecraft.util.FastColor.ARGB32.multiply(color, tint));
+        int c = tint == -1 ? color : net.minecraft.util.FastColor.ARGB32.multiply(color, tint);
+        if (alpha < 255) c = net.minecraft.util.FastColor.ARGB32.multiply(c, net.minecraft.util.FastColor.ARGB32.color(alpha, 255, 255, 255));
+        super.renderToBuffer(ps, vc, light, overlay, c);
     }
 
     private ModelPart p(String n) { return parts.get(n); }

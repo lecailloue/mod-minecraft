@@ -151,6 +151,24 @@ def orcs():
                 assert geo['parts'] == ref['parts'] or [ (p['name'], p['boxes']) for p in geo['parts'] ] == [ (p['name'], p['boxes']) for p in ref['parts'] ], f'{name}: disposition UV differente pour la peau {sk}'
             save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}_{i}.png')
 
+def spectres():
+    """soldats spectraux (tools/spectres.py) : geometrie + texture + texture lumineuse des yeux"""
+    import bbimport, tempfile
+    import spectres as S
+    from genlib import wjson, save
+    from PIL import Image
+    ren = {'leg_left': 'leg_l', 'leg_right': 'leg_r', 'arm_left': 'arm_l', 'arm_right': 'arm_r'}
+    for name in S.MODELS:
+        tmp = tempfile.mkdtemp()
+        groups, cubes, W, H, tex, glow = S.build(name)
+        S.export_bbmodel(name, groups, cubes, W, H, tex, os.path.join(tmp, name + '.bbmodel'))
+        geo = bbimport.convert(os.path.join(tmp, name + '.bbmodel'), rename=ren)
+        geo['height'] = geo_height(geo)
+        wjson(f'{A}/geo/{name}.json', geo)
+        save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}.png')
+        save(Image.fromarray(glow, 'RGBA'), f'{A}/textures/entity/{name}_glow.png')
+        print(f'spectre {name}: {len(geo["parts"])} pieces, hauteur {geo["height"]} px')
+
 def treeman_bb():
     """Sylvestre : modele Blockbench fourni (tools/assets/treeman.bbmodel)"""
     import bbimport, os
@@ -316,4 +334,4 @@ def skins():
     skin('cave_thief', 'goblin', skin='#b8b8a8', hair='#b8b8a8', hair_style='bald', eyes='#d8f0ff', top='#b0b0a0', legs='#6a6050', boots='#b8b8a8', sleeves=False, seed=55)
 
 def build():
-    troll(); warg(); stag(); demon(); ash_lord(); orcs(); lurker(); treeman_bb(); eagle(); dragon(); mammoth(); skins()
+    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); lurker(); treeman_bb(); eagle(); dragon(); mammoth(); skins()

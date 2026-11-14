@@ -197,6 +197,23 @@ public final class ClientTest {
         }));
     }
 
+    /** Les 5 soldats spectraux : ancien modele, hoplite, capuche, crane, Roi des morts (seul le roi pour la vue rapprochee). */
+    private static void spectreLine(String name, double dist, float pitch, double spacing) {
+        SCENES.add(new Scene(name, 70, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            boolean close = name.contains("proche");
+            int n = close ? 1 : 5;
+            double x = SX + (n - 1) * spacing / 2.0;
+            for (int i = 0; i < n; i++) {
+                final int v = close ? 4 : i;
+                actor(ow, ModEntities.DEAD_SOLDIER.get(), x, SZ + dist, o -> o.testVariant(v));
+                x -= spacing;
+            }
+            view(p, ow, SX + 0.5, SY + 1.2, SZ, 0F, pitch);
+        }));
+    }
+
     private static void spot(String name, int x, int z, int up, float yaw, float pitch) {
         SCENES.add(new Scene(name, 320, p -> {
             ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
@@ -253,6 +270,8 @@ public final class ClientTest {
         }));
         lineup("01_orques", 7.5, 2F, 2.0, List.of(ModEntities.ORC.get(), ModEntities.ORC.get(), ModEntities.WAR_ORC.get(), ModEntities.ORC_CHIEF.get(), ModEntities.GOBLIN.get(),
                 ModEntities.WIGHT.get(), ModEntities.WILD_MAN.get(), ModEntities.PALE_RIDER.get()));
+        spectreLine("03b_spectres", 9.0, 3F, 2.2);
+        spectreLine("03c_roi_proche", 4.2, 6F, 2.2);
         orcLine("01b_orques_modeles", 11.0, 3F, 2.3, new int[]{0, 5, 10, 15, 2, 3, 0}, true);
         orcLine("01c_orques_couleurs", 11.0, 3F, 2.3, new int[]{4, 5, 6, 7, 8, 9, 12}, false);
         orcLine("01d_chef_proche", 4.5, 6F, 3.0, new int[]{0}, true);
