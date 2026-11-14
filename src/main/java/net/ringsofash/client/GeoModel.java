@@ -137,6 +137,11 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
                 cp.zRot += Mth.cos(age * 0.07F - i * 0.7F) * 0.025F * (i + 1);
             }
         }
+        if (e instanceof net.ringsofash.entity.ShadowRiderEntity) {             // cavalier : le bras d'epee se leve a l'attaque, la monture tangue au trot
+            ModelPart rr = p("rarm_r");
+            if (rr != null) rr.xRot -= atk * 1.5F;
+            if (body != null) { body.xRot += Mth.sin(swing * 0.6662F * 2F) * 0.025F * amount; body.y += Mth.abs(Mth.sin(swing * 0.6662F)) * -0.9F * amount; }
+        }
         if (e instanceof FoeEntity f && f.isTroll()) trollPose(f, swing, amount, age);
     }
 

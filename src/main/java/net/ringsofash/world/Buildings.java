@@ -578,7 +578,7 @@ public final class Buildings {
         // descente depuis la facade
         for (int i = 0; i <= 3; i++) { b.air(6, -i + 1, i, 6, -i + 3, i); b.s(6, -i, i, stairs(Blocks.MOSSY_STONE_BRICK_STAIRS, N, false)); }
         b.air(6, -3, 3, 6, -2, 3); b.air(6, -4, 3, 6, -4, 3); b.s(6, -4, 3, stairs(Blocks.MOSSY_STONE_BRICK_STAIRS, N, false));
-        b.mob(ModEntities.WIGHT.get(), 5, -4, 7, 0, null); b.mob(ModEntities.WIGHT.get(), 7, -4, 5, 0, null);
+        b.mob(EntityType.SKELETON, 5, -4, 7, 0, null); b.mob(EntityType.SKELETON, 7, -4, 5, 0, null);
     }
 
     private static void hoard(Build b) {

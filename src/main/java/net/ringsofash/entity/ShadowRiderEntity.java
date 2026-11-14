@@ -1,6 +1,9 @@
 package net.ringsofash.entity;
 
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -24,8 +27,6 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.animal.horse.Horse;
-import net.minecraft.world.entity.animal.horse.Variant;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -36,14 +37,30 @@ import net.ringsofash.item.RingItem;
 
 import javax.annotation.Nullable;
 
-/** Cavalier bleme : ne sort que la nuit, tres rapide, et sent de tres loin quiconque porte un anneau. */
-public class PaleRiderEntity extends Monster {
+/**
+ * Etre des ombres : cavalier noir sous une grande cape, rien sous la capuche. Ne sort que la nuit, tres rapide, et sent de tres loin
+ * quiconque porte un anneau. Le cheval fait partie du modele (une seule entite). Le chef (casque a pointes) est un autre type d'entite ;
+ * plus tard il chevauchera un dragon.
+ */
+public class ShadowRiderEntity extends Monster {
     public static final double NORMAL_RANGE = 20.0, RING_RANGE = 96.0;
+    private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(ShadowRiderEntity.class, EntityDataSerializers.INT);
     private int dayGrace = 0;
 
-    public PaleRiderEntity(EntityType<? extends PaleRiderEntity> type, Level level) {
+    public ShadowRiderEntity(EntityType<? extends ShadowRiderEntity> type, Level level) {
         super(type, level);
-        this.xpReward = 30;
+        this.xpReward = type == ModEntities.SHADOW_CHIEF.get() ? 80 : 30;
+    }
+
+    public boolean isChief() { return getType() == ModEntities.SHADOW_CHIEF.get(); }
+    /** Modele : 0 et 1 = deux cavaliers (cape et pose differentes), 2 = chef casque. */
+    public int shadowModel() { return isChief() ? 2 : Math.max(0, Math.min(1, entityData.get(VARIANT))); }
+    public void testVariant(int v) { entityData.set(VARIANT, v); }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder b) {
+        super.defineSynchedData(b);
+        b.define(VARIANT, 0);
     }
 
     public void setSummoned(int ticks) { this.dayGrace = ticks; }
@@ -60,7 +77,7 @@ public class PaleRiderEntity extends Monster {
 
     /** Cible les joueurs : 20 blocs en temps normal, 96 blocs (meme invisibles, meme a travers les murs) s'ils portent un anneau. */
     static class RingSenseGoal extends NearestAttackableTargetGoal<Player> {
-        RingSenseGoal(PaleRiderEntity mob) {
+        RingSenseGoal(ShadowRiderEntity mob) {
             super(mob, Player.class, 10, false, false, null);
             this.targetConditions = TargetingConditions.forCombat().range(RING_RANGE).ignoreInvisibilityTesting().ignoreLineOfSight()
                     .selector(e -> e instanceof Player p && (RingItem.wearsRing(p) || (mob.distanceToSqr(p) < NORMAL_RANGE * NORMAL_RANGE && mob.hasLineOfSight(p))));
@@ -76,20 +93,7 @@ public class PaleRiderEntity extends Monster {
         data = super.finalizeSpawn(level, difficulty, reason, data);
         setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.WIGHT_BLADE.get()));
         setDropChance(EquipmentSlot.MAINHAND, 0.1F);
-        if (reason != MobSpawnType.SPAWN_EGG && level.getRandom().nextInt(5) < 3) {
-            Horse horse = EntityType.HORSE.create(level.getLevel());
-            if (horse != null) {
-                horse.moveTo(getX(), getY(), getZ(), getYRot(), 0);
-                horse.finalizeSpawn(level, difficulty, MobSpawnType.JOCKEY, null);
-                horse.setVariant(Variant.BLACK);
-                horse.setTamed(true);
-                horse.setAge(0);
-                if (horse.getAttribute(Attributes.MOVEMENT_SPEED) != null) horse.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.33);
-                if (horse.getAttribute(Attributes.MAX_HEALTH) != null) { horse.getAttribute(Attributes.MAX_HEALTH).setBaseValue(30); horse.setHealth(30); }
-                level.addFreshEntity(horse);
-                startRiding(horse);
-            }
-        }
+        entityData.set(VARIANT, level.getRandom().nextInt(2));
         return data;
     }
 
@@ -103,7 +107,7 @@ public class PaleRiderEntity extends Monster {
         if (dayGrace > 0) dayGrace--;
         if (tickCount % 40 == 0) {
             // aura de terreur
-            for (Player p : level().getEntitiesOfClass(Player.class, getBoundingBox().inflate(9))) {
+            for (Player p : level().getEntitiesOfClass(Player.class, getBoundingBox().inflate(isChief() ? 14 : 9))) {
                 if (p.isCreative() || p.isSpectator()) continue;
                 p.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 80, 0, true, false), this);
                 if (RingItem.wearsRing(p)) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 0, true, false), this);
@@ -158,7 +162,7 @@ public class PaleRiderEntity extends Monster {
     public float getVoicePitch() { return 0.45F + random.nextFloat() * 0.1F; }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) { super.addAdditionalSaveData(tag); tag.putInt("DayGrace", dayGrace); }
+    public void addAdditionalSaveData(CompoundTag tag) { super.addAdditionalSaveData(tag); tag.putInt("DayGrace", dayGrace); tag.putInt("Variant", entityData.get(VARIANT)); }
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) { super.readAdditionalSaveData(tag); dayGrace = tag.getInt("DayGrace"); }
+    public void readAdditionalSaveData(CompoundTag tag) { super.readAdditionalSaveData(tag); dayGrace = tag.getInt("DayGrace"); entityData.set(VARIANT, tag.getInt("Variant")); }
 }

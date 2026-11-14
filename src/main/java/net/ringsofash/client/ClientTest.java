@@ -38,6 +38,7 @@ import net.ringsofash.GameEvents;
 import net.ringsofash.RingsOfAsh;
 import net.ringsofash.data.ModData;
 import net.ringsofash.entity.FoeEntity;
+import net.ringsofash.entity.ShadowRiderEntity;
 import net.ringsofash.entity.ModEntities;
 import net.ringsofash.entity.PeopleEntity;
 import net.ringsofash.gen.Reg;
@@ -59,6 +60,7 @@ public final class ClientTest {
     private static final List<Scene> SCENES = new ArrayList<>();
     private static int state = 0, wait = 0, index = 0;
     private static final int SX = 0, SY = 200, SZ = 0;
+    private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
 
@@ -122,6 +124,7 @@ public final class ClientTest {
                 }
                 case 3 -> {
                     if (--wait <= 0) {
+                        if (hook != null && mc.getSingleplayerServer() != null) { Runnable h = hook; hook = null; mc.getSingleplayerServer().execute(h); }
                         Screenshot.grab(mc.gameDirectory, SCENES.get(index).name + ".png", mc.getMainRenderTarget(), c -> { });
                         index++; state = 2;
                     }
@@ -203,10 +206,10 @@ public final class ClientTest {
             ServerLevel ow = p.server.overworld();
             clear(ow);
             boolean close = name.contains("proche");
-            int n = close ? 1 : 6;
+            int n = close ? 1 : 5;
             double x = SX + (n - 1) * spacing / 2.0;
             for (int i = 0; i < n; i++) {
-                final int v = close ? 5 : i;
+                final int v = close ? 4 : i;
                 actor(ow, ModEntities.DEAD_SOLDIER.get(), x, SZ + dist, o -> o.testVariant(v));
                 x -= spacing;
             }
@@ -269,7 +272,45 @@ public final class ClientTest {
             view(p, ow, SX + 0.5, SY + 1.2, SZ, 0F, 0F);
         }));
         lineup("01_orques", 7.5, 2F, 2.0, List.of(ModEntities.ORC.get(), ModEntities.ORC.get(), ModEntities.WAR_ORC.get(), ModEntities.ORC_CHIEF.get(), ModEntities.GOBLIN.get(),
-                ModEntities.WIGHT.get(), ModEntities.WILD_MAN.get(), ModEntities.PALE_RIDER.get()));
+                ModEntities.WILD_MAN.get()));
+        SCENES.add(new Scene("03d_roi_marche", 140, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            // vraie apparition (comme dans le jeu) du roi, IA active, avec une cible : on mesure s'il avance
+            FoeEntity king = ModEntities.DEAD_SOLDIER.get().create(ow);
+            king.moveTo(SX, SY, SZ + 16, 180F, 0F);
+            king.finalizeSpawn(ow, ow.getCurrentDifficultyAt(king.blockPosition()), MobSpawnType.NATURAL, null);
+            king.testVariant(4);
+            king.setPersistenceRequired();
+            ow.addFreshEntity(king);
+            net.minecraft.world.entity.monster.Spider bait = EntityType.SPIDER.create(ow);
+            bait.moveTo(SX + 3, SY, SZ + 3, 0F, 0F);
+            bait.setNoAi(true); bait.setPersistenceRequired();
+            ow.addFreshEntity(bait);
+            final double z0 = king.getZ();
+            view(p, ow, SX + 0.5, SY + 3.5, SZ - 6, 0F, 14F);
+            hook = () -> log("ROI_MARCHE avance=" + String.format("%.2f", z0 - king.getZ()) + " pv=" + king.getHealth() + " vivant=" + king.isAlive() + " cible=" + king.getTarget()
+                    + " model=" + king.spectreModel());
+        }));
+        SCENES.add(new Scene("03e_ombres", 70, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            int[] vs = {0, 1, 2};
+            double x = SX + 4.4;
+            for (int v : vs) {
+                final int vv = v;
+                actor(ow, v == 2 ? ModEntities.SHADOW_CHIEF.get() : ModEntities.SHADOW_RIDER.get(), x, SZ + 11, o -> o.testVariant(vv));
+                x -= 4.4;
+            }
+            view(p, ow, SX + 0.5, SY + 1.6, SZ, 0F, 4F);
+        }));
+        SCENES.add(new Scene("03f_ombres_cote", 70, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            ShadowRiderEntity c = actor(ow, ModEntities.SHADOW_CHIEF.get(), SX, SZ + 8, o -> o.testVariant(2));
+            c.moveTo(SX, SY, SZ + 8, 90F, 0F); c.setYBodyRot(90F); c.setYHeadRot(90F);
+            view(p, ow, SX + 0.5, SY + 2.2, SZ, 0F, 8F);
+        }));
         spectreLine("03b_spectres", 9.0, 3F, 2.2);
         spectreLine("03c_roi_proche", 4.2, 6F, 2.2);
         orcLine("01b_orques_modeles", 11.0, 3F, 2.3, new int[]{0, 5, 10, 15, 2, 3, 0}, true);

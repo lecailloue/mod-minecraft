@@ -42,7 +42,7 @@ import javax.annotation.Nullable;
 
 /** Ennemis de melee : orques, gobelins, trolls, loups de guerre, spectres des tertres, hommes sauvages, mammouths. */
 public class FoeEntity extends Monster {
-    public enum Kind { ORC, WAR_ORC, ORC_CHIEF, GOBLIN, CAVE_TROLL, STONE_TROLL, TROLL_CHIEF, WARG, WIGHT, WILD_MAN, MAMMOTH, DEAD_SOLDIER }
+    public enum Kind { ORC, WAR_ORC, ORC_CHIEF, GOBLIN, CAVE_TROLL, STONE_TROLL, TROLL_CHIEF, WARG, WILD_MAN, MAMMOTH, DEAD_SOLDIER }
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(FoeEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> STONE = SynchedEntityData.defineId(FoeEntity.class, EntityDataSerializers.BOOLEAN);
@@ -56,7 +56,7 @@ public class FoeEntity extends Monster {
     public FoeEntity(EntityType<? extends FoeEntity> type, Level level) {
         super(type, level);
         Kind k = kind();
-        this.xpReward = switch (k) { case ORC_CHIEF -> 40; case TROLL_CHIEF -> 35; case CAVE_TROLL, STONE_TROLL, MAMMOTH -> 20; case WAR_ORC, WIGHT -> 10; case GOBLIN -> 3; default -> 6; };
+        this.xpReward = switch (k) { case ORC_CHIEF -> 40; case TROLL_CHIEF -> 35; case CAVE_TROLL, STONE_TROLL, MAMMOTH -> 20; case WAR_ORC -> 10; case GOBLIN -> 3; default -> 6; };
         if (k == Kind.DEAD_SOLDIER) lifeLeft = 20 * 90;
     }
 
@@ -64,7 +64,7 @@ public class FoeEntity extends Monster {
     public int variant() { return entityData.get(VARIANT); }
     /** Modele d'orque 0..6 : 0-3 orques, 4-5 orques noirs, 6 chef (variante orque = modele*4 + couleur, orque noir = modele*2 + couleur). */
     /** Mise en scene des tests client : impose la variante (modele + couleur). */
-    public void testVariant(int v) { entityData.set(VARIANT, v); populateDefaultEquipmentSlots(random, null); }
+    public void testVariant(int v) { entityData.set(VARIANT, v); if (kind() == Kind.DEAD_SOLDIER && v == 4) makeDeadKing(); populateDefaultEquipmentSlots(random, null); }
     /** Le Roi des morts : plus robuste et plus dangereux, et il reste plus longtemps. */
     private void makeDeadKing() {
         getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(80);
@@ -91,9 +91,9 @@ public class FoeEntity extends Monster {
             default -> Reg.ORC_MACE.get();
         });
     }
-    /** Soldat spectral : 0 = ancien modele, 1 a 4 = veteran / hoplite / guerrier a cornes / rodeur a la dague, 5 = Roi des morts (5 % des apparitions). */
-    public int spectreModel() { return kind() == Kind.DEAD_SOLDIER ? Math.max(0, Math.min(5, variant())) : 0; }
-    public boolean isDeadKing() { return spectreModel() == 5; }
+    /** Soldat spectral : 0 a 3 = veteran / hoplite / guerrier a cornes / rodeur a la dague, 4 = Roi des morts (5 % des apparitions). */
+    public int spectreModel() { return kind() == Kind.DEAD_SOLDIER ? Math.max(0, Math.min(4, variant())) : 0; }
+    public boolean isDeadKing() { return spectreModel() == 4; }
     public boolean isStone() { return entityData.get(STONE); }
     public boolean isTroll() { Kind k = kind(); return k == Kind.CAVE_TROLL || k == Kind.STONE_TROLL || k == Kind.TROLL_CHIEF; }
     public int slamTick() { return entityData.get(SLAM); }
@@ -133,10 +133,8 @@ public class FoeEntity extends Monster {
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
                 e -> !(e instanceof Player p && ((k == Kind.WILD_MAN && net.ringsofash.data.ModData.lore(p).general() >= 15)
                         || ((k == Kind.ORC || k == Kind.WAR_ORC || k == Kind.GOBLIN) && net.ringsofash.item.ModGear.fullSet(p, net.ringsofash.item.ModGear.ASHLORD))))));
-        if (k != Kind.WIGHT) {
-            targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, PeopleEntity.class, true));
-            targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, FoeEntity.class, 10, true, false, e -> e instanceof FoeEntity f && f.kind() == Kind.DEAD_SOLDIER));
-        }
+        targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, PeopleEntity.class, true));
+        targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, FoeEntity.class, 10, true, false, e -> e instanceof FoeEntity f && f.kind() == Kind.DEAD_SOLDIER));
     }
 
     @Override
@@ -151,7 +149,7 @@ public class FoeEntity extends Monster {
         data = super.finalizeSpawn(level, difficulty, reason, data);
         RandomSource r = level.getRandom();
         Kind k = kind();
-        entityData.set(VARIANT, k == Kind.DEAD_SOLDIER ? (r.nextInt(100) < 5 ? 5 : r.nextInt(5)) : r.nextInt(k == Kind.ORC ? 16 : k == Kind.WAR_ORC ? 4 : 2));
+        entityData.set(VARIANT, k == Kind.DEAD_SOLDIER ? (r.nextInt(100) < 5 ? 4 : r.nextInt(4)) : r.nextInt(k == Kind.ORC ? 16 : k == Kind.WAR_ORC ? 4 : 2));
         if (isDeadKing()) makeDeadKing();
         populateDefaultEquipmentSlots(r, difficulty);
         if (k == Kind.TROLL_CHIEF && reason != MobSpawnType.SPAWN_EGG && reason != MobSpawnType.COMMAND) {
@@ -182,13 +180,12 @@ public class FoeEntity extends Monster {
         ItemStack hand = switch (kind()) {
             case ORC, WAR_ORC, ORC_CHIEF -> orcWeapon();
             case GOBLIN -> r.nextInt(3) == 0 ? new ItemStack(Items.STONE_SWORD) : ItemStack.EMPTY;
-            case WIGHT -> new ItemStack(Reg.WIGHT_BLADE.get());
             case WILD_MAN -> new ItemStack(r.nextBoolean() ? Items.STONE_AXE : Reg.RIDER_SPEAR.get());
             case DEAD_SOLDIER -> new ItemStack(Reg.RANGER_SWORD.get());
             default -> ItemStack.EMPTY;
         };
         setItemSlot(EquipmentSlot.MAINHAND, hand);
-        setDropChance(EquipmentSlot.MAINHAND, kind() == Kind.WIGHT ? 0.2F : kind() == Kind.DEAD_SOLDIER ? 0.0F : kind() == Kind.ORC_CHIEF ? 0.4F : (kind() == Kind.ORC || kind() == Kind.WAR_ORC) ? 0.15F : 0.06F);
+        setDropChance(EquipmentSlot.MAINHAND, kind() == Kind.DEAD_SOLDIER ? 0.0F : kind() == Kind.ORC_CHIEF ? 0.4F : (kind() == Kind.ORC || kind() == Kind.WAR_ORC) ? 0.15F : 0.06F);
         if (kind() == Kind.WAR_ORC || kind() == Kind.ORC_CHIEF) {
             setItemSlot(EquipmentSlot.HEAD, new ItemStack(Reg.ORC_HELMET.get()));
             setItemSlot(EquipmentSlot.CHEST, new ItemStack(Reg.ORC_CHESTPLATE.get()));
@@ -216,10 +213,6 @@ public class FoeEntity extends Monster {
                 setTarget(null);
                 playSound(sun ? SoundEvents.STONE_PLACE : SoundEvents.STONE_BREAK, 2.0F, 0.5F);
             }
-        }
-        if (k == Kind.WIGHT && level().isDay() && tickCount % 40 == 0 && level().canSeeSky(blockPosition())) {
-            ((net.minecraft.server.level.ServerLevel) level()).sendParticles(net.minecraft.core.particles.ParticleTypes.SOUL, getX(), getY() + 1, getZ(), 20, 0.3, 0.8, 0.3, 0.02);
-            discard();
         }
         if (lifeLeft > 0 && --lifeLeft == 0) {
             ((net.minecraft.server.level.ServerLevel) level()).sendParticles(net.minecraft.core.particles.ParticleTypes.SOUL, getX(), getY() + 1, getZ(), 20, 0.3, 0.8, 0.3, 0.02);
@@ -254,7 +247,6 @@ public class FoeEntity extends Monster {
         boolean hit = super.doHurtTarget(target);
         if (hit && target instanceof LivingEntity le) {
             switch (kind()) {
-                case WIGHT -> { le.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1), this); le.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 0), this); }
                 case CAVE_TROLL, STONE_TROLL, MAMMOTH -> le.knockback(1.6, getX() - le.getX(), getZ() - le.getZ());
                 case TROLL_CHIEF -> le.knockback(1.9, getX() - le.getX(), getZ() - le.getZ());
                 case WARG -> { if (random.nextInt(4) == 0) le.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 0), this); }
@@ -280,7 +272,7 @@ public class FoeEntity extends Monster {
             case GOBLIN -> SoundEvents.PIGLIN_AMBIENT;
             case CAVE_TROLL, STONE_TROLL, TROLL_CHIEF -> isStone() ? null : SoundEvents.RAVAGER_AMBIENT;
             case WARG -> SoundEvents.WOLF_GROWL;
-            case WIGHT, DEAD_SOLDIER -> SoundEvents.STRAY_AMBIENT;
+            case DEAD_SOLDIER -> SoundEvents.STRAY_AMBIENT;
             case WILD_MAN -> SoundEvents.PILLAGER_AMBIENT;
             case MAMMOTH -> SoundEvents.HOGLIN_AMBIENT;
         };
@@ -293,7 +285,7 @@ public class FoeEntity extends Monster {
             case GOBLIN -> SoundEvents.PIGLIN_HURT;
             case CAVE_TROLL, STONE_TROLL, TROLL_CHIEF -> SoundEvents.RAVAGER_HURT;
             case WARG -> SoundEvents.WOLF_HURT;
-            case WIGHT, DEAD_SOLDIER -> SoundEvents.STRAY_HURT;
+            case DEAD_SOLDIER -> SoundEvents.STRAY_HURT;
             case WILD_MAN -> SoundEvents.PILLAGER_HURT;
             case MAMMOTH -> SoundEvents.HOGLIN_HURT;
         };
@@ -306,7 +298,7 @@ public class FoeEntity extends Monster {
             case GOBLIN -> SoundEvents.PIGLIN_DEATH;
             case CAVE_TROLL, STONE_TROLL, TROLL_CHIEF -> SoundEvents.RAVAGER_DEATH;
             case WARG -> SoundEvents.WOLF_DEATH;
-            case WIGHT, DEAD_SOLDIER -> SoundEvents.STRAY_DEATH;
+            case DEAD_SOLDIER -> SoundEvents.STRAY_DEATH;
             case WILD_MAN -> SoundEvents.PILLAGER_DEATH;
             case MAMMOTH -> SoundEvents.HOGLIN_DEATH;
         };

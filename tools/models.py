@@ -169,6 +169,23 @@ def spectres():
         save(Image.fromarray(glow, 'RGBA'), f'{A}/textures/entity/{name}_glow.png')
         print(f'spectre {name}: {len(geo["parts"])} pieces, hauteur {geo["height"]} px')
 
+def shadows():
+    """etres des ombres (tools/shadows.py) : cavalier + cheval en un seul modele, texture lumineuse (yeux du cheval)"""
+    import bbimport, tempfile
+    import shadows as S
+    from genlib import wjson, save
+    from PIL import Image
+    for name in S.MODELS:
+        tmp = tempfile.mkdtemp()
+        groups, cubes, W, H, tex, glow = S.build(name)
+        S.export_bbmodel(name, groups, cubes, W, H, tex, os.path.join(tmp, name + '.bbmodel'))
+        geo = bbimport.convert(os.path.join(tmp, name + '.bbmodel'))
+        geo['height'] = geo_height(geo)
+        wjson(f'{A}/geo/{name}.json', geo)
+        save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}.png')
+        save(Image.fromarray(glow, 'RGBA'), f'{A}/textures/entity/{name}_glow.png')
+        print(f'ombre {name}: {len(geo["parts"])} pieces, hauteur {geo["height"]} px')
+
 def treeman_bb():
     """Sylvestre : modele Blockbench fourni (tools/assets/treeman.bbmodel)"""
     import bbimport, os
@@ -325,13 +342,10 @@ def skins():
     skin('halfling_3', 'half', skin='#d0a080', hair='#3a2818', hair_style='mid', top='#7a3a34', trim='#e0d0a0', legs='#4a4034', boots='#d0a080', seed=42)
     skin('halfling_elder', 'half', skin='#d8ac90', hair='#d0d0d0', hair_style='mid', top='#4a5a7a', trim='#c9a23a', legs='#5a5044', boots='#d8ac90', seed=43)
     # --- spectres et seigneurs
-    skin('pale_rider', 'void', skin='#0c0a0e', hair='#0c0a0e', hair_style='bald', top='#121016', trim='#0a080c', legs='#0e0c12', boots='#3a3a44', hood='#141218', gloves='#4a4a54', skirt=True, seed=50)
-    skin('wight', 'ghost', skin='#b8c8c0', hair='#8a9a94', hair_style='long', eyes='#b0fff0', top='#7a8a84', trim='#5a6a64', legs='#6a7a74', boots='#5a6a64', crown='#9ab0a0', skirt=True, alpha=235, seed=51)
-    skin('dead_soldier', 'ghost', skin='#7ad8a0', hair='#5ab080', hair_style='helmet', eyes='#e0fff0', top='#5ab888', trim='#3a9068', legs='#4aa878', boots='#3a9068', armor='chain', alpha=200, seed=52)
     skin('sorcerer', 'human', skin='#b8b0a8', hair='#e8e8e8', hair_style='long', eyes='#ff3020', top='#e8e4dc', trim='#1c1c20', legs='#d8d4cc', boots='#2a2a2e', beard='#e8e8e8', beard_len=8, skirt=True, seed=53)
     skin('ash_lord', 'lord', skin='#141216', hair='#1c1a20', hair_style='helmet', eyes='#ff5010', top='#1a181c', trim='#c02a10', legs='#141216', boots='#0c0a0e', armor='plate', pauldrons='#24222a', crown='#2a2830', gloves='#1c1a20',
          emblem=(['r.rr.r', '.r..r.', 'r.rr.r', '.r..r.', 'r.rr.r'], {'r': '#ff5a18'}), seed=54)
     skin('cave_thief', 'goblin', skin='#b8b8a8', hair='#b8b8a8', hair_style='bald', eyes='#d8f0ff', top='#b0b0a0', legs='#6a6050', boots='#b8b8a8', sleeves=False, seed=55)
 
 def build():
-    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); lurker(); treeman_bb(); eagle(); dragon(); mammoth(); skins()
+    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); lurker(); treeman_bb(); eagle(); dragon(); mammoth(); skins()

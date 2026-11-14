@@ -55,7 +55,7 @@ import net.ringsofash.data.PlayerLore;
 import net.ringsofash.data.Rep;
 import net.ringsofash.entity.BossEntity;
 import net.ringsofash.entity.ModEntities;
-import net.ringsofash.entity.PaleRiderEntity;
+import net.ringsofash.entity.ShadowRiderEntity;
 import net.ringsofash.entity.PeopleEntity;
 import net.ringsofash.entity.TreemanEntity;
 import net.ringsofash.gen.Reg;
@@ -282,7 +282,7 @@ public final class GameEvents {
             if (Math.abs(y - p.getBlockY()) > 24) y = p.getBlockY();
             BlockPos pos = new BlockPos(x, y, z);
             if (!sl.getBlockState(pos).getCollisionShape(sl, pos).isEmpty() || !sl.getFluidState(pos).isEmpty()) continue;
-            PaleRiderEntity rider = ModEntities.PALE_RIDER.get().create(sl);
+            ShadowRiderEntity rider = ModEntities.SHADOW_RIDER.get().create(sl);
             if (rider == null) continue;
             rider.moveTo(x + 0.5, y, z + 0.5, 0, 0);
             rider.finalizeSpawn(sl, sl.getCurrentDifficultyAt(pos), MobSpawnType.EVENT, null);
@@ -292,14 +292,14 @@ public final class GameEvents {
             done++;
         }
         if (done > 0) {
-            p.displayClientMessage(Component.literal("L'Œil vous a trouvé. Les cavaliers blêmes arrivent !").withStyle(ChatFormatting.DARK_RED), false);
+            p.displayClientMessage(Component.literal("L'Œil vous a trouvé. Les êtres des ombres arrivent !").withStyle(ChatFormatting.DARK_RED), false);
             sl.playSound(null, p.blockPosition(), SoundEvents.ELDER_GUARDIAN_CURSE, SoundSource.HOSTILE, 2.0F, 0.5F);
         }
     }
 
     private static void onVisibility(LivingEvent.LivingVisibilityEvent e) {
         if (!(e.getEntity() instanceof Player p)) return;
-        if (e.getLookingEntity() instanceof PaleRiderEntity) return;
+        if (e.getLookingEntity() instanceof ShadowRiderEntity) return;
         RingItem.Kind ring = RingItem.worn(p);
         if (ring == RingItem.Kind.ASH) e.modifyVisibility(0.0);
         else if (ring == RingItem.Kind.SHADOWS) e.modifyVisibility(0.4);

@@ -24,7 +24,7 @@ import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TooltipFlag;
 import net.ringsofash.entity.BossEntity;
 import net.ringsofash.entity.FoeEntity;
-import net.ringsofash.entity.PaleRiderEntity;
+import net.ringsofash.entity.ShadowRiderEntity;
 
 import java.util.List;
 
@@ -39,7 +39,7 @@ public class SpecialSword extends SwordItem {
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         switch (kind) {
             case ELVEN -> { if (target instanceof FoeEntity f && isOrc(f)) target.hurt(attacker.damageSources().magic(), 3F); }
-            case WIGHT -> { if (target instanceof PaleRiderEntity || (target instanceof FoeEntity f && f.kind() == FoeEntity.Kind.WIGHT)) target.hurt(attacker.damageSources().magic(), 6F); }
+            case WIGHT -> { if (target instanceof ShadowRiderEntity || (target instanceof FoeEntity f && f.kind() == FoeEntity.Kind.DEAD_SOLDIER)) target.hurt(attacker.damageSources().magic(), 6F); }
             case HAMMER, CLUB -> target.knockback(1.2, attacker.getX() - target.getX(), attacker.getZ() - target.getZ());
             case MACE -> { target.igniteForSeconds(5); target.addEffect(new MobEffectInstance(MobEffects.WITHER, 80, 1), attacker); }
             case KING -> { if (target instanceof Monster) { target.hurt(attacker.damageSources().magic(), target instanceof BossEntity ? 6F : 3F); attacker.heal(1F); } }
@@ -80,8 +80,8 @@ public class SpecialSword extends SwordItem {
     }
 
     public static boolean isUndead(LivingEntity e) {
-        return e.getType().is(EntityTypeTags.UNDEAD) || e instanceof PaleRiderEntity
-                || (e instanceof FoeEntity f && (f.kind() == FoeEntity.Kind.WIGHT || f.kind() == FoeEntity.Kind.DEAD_SOLDIER));
+        return e.getType().is(EntityTypeTags.UNDEAD) || e instanceof ShadowRiderEntity
+                || (e instanceof FoeEntity f && f.kind() == FoeEntity.Kind.DEAD_SOLDIER);
     }
 
     public static boolean isOrc(FoeEntity f) {
@@ -95,7 +95,7 @@ public class SpecialSword extends SwordItem {
     public void appendHoverText(ItemStack stack, Item.TooltipContext ctx, List<Component> tip, TooltipFlag flag) {
         String s = switch (kind) {
             case ELVEN -> "Luit de bleu quand des orques approchent. Dégâts bonus contre eux.";
-            case WIGHT -> "Forgée contre les spectres : blesse cavaliers blêmes et êtres des tertres.";
+            case WIGHT -> "Forgée contre les spectres : blesse les êtres des ombres et les soldats spectraux.";
             case HAMMER, CLUB -> "Repousse violemment l'ennemi.";
             case MACE -> "Embrase et flétrit ce qu'elle frappe.";
             case KING -> "Lame du roi elfe : purifie les monstres et soigne son porteur.";

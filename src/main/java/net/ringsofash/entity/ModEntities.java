@@ -46,11 +46,11 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> STONE_TROLL = foe("stone_troll", 1.5F, 3.0F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> TROLL_CHIEF = foe("troll_chief", 1.7F, 3.4F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> WARG = foe("warg", 1.1F, 1.25F);
-    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> WIGHT = foe("wight", 0.6F, 2.05F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> WILD_MAN = foe("wild_man", 0.6F, 1.95F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> MAMMOTH = reg("mammoth", FoeEntity::new, MobCategory.CREATURE, 2.4F, 3.2F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> DEAD_SOLDIER = reg("dead_soldier", FoeEntity::new, MobCategory.MISC, 0.6F, 1.95F, true);
-    public static final DeferredHolder<EntityType<?>, EntityType<PaleRiderEntity>> PALE_RIDER = reg("pale_rider", PaleRiderEntity::new, MobCategory.MONSTER, 0.65F, 2.2F, false);
+    public static final DeferredHolder<EntityType<?>, EntityType<ShadowRiderEntity>> SHADOW_RIDER = reg("shadow_rider", ShadowRiderEntity::new, MobCategory.MONSTER, 1.3F, 2.7F, false);
+    public static final DeferredHolder<EntityType<?>, EntityType<ShadowRiderEntity>> SHADOW_CHIEF = reg("shadow_chief", ShadowRiderEntity::new, MobCategory.MONSTER, 1.5F, 3.0F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<GiantSpiderEntity>> GIANT_SPIDER = reg("giant_spider", GiantSpiderEntity::new, MobCategory.MONSTER, 3.0F, 2.3F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<LurkerEntity>> LURKER = reg("lurker", LurkerEntity::new, MobCategory.MONSTER, 2.4F, 2.0F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<ThiefEntity>> CAVE_THIEF = reg("cave_thief", ThiefEntity::new, MobCategory.MONSTER, 0.5F, 1.3F, false);
@@ -77,7 +77,6 @@ public final class ModEntities {
         if (t == STONE_TROLL.get()) return FoeEntity.Kind.STONE_TROLL;
         if (t == TROLL_CHIEF.get()) return FoeEntity.Kind.TROLL_CHIEF;
         if (t == WARG.get()) return FoeEntity.Kind.WARG;
-        if (t == WIGHT.get()) return FoeEntity.Kind.WIGHT;
         if (t == WILD_MAN.get()) return FoeEntity.Kind.WILD_MAN;
         if (t == MAMMOTH.get()) return FoeEntity.Kind.MAMMOTH;
         if (t == DEAD_SOLDIER.get()) return FoeEntity.Kind.DEAD_SOLDIER;
@@ -109,11 +108,11 @@ public final class ModEntities {
         e.put(STONE_TROLL.get(), mon(90, 18, 0.24, 6, 28, 0.9));
         e.put(TROLL_CHIEF.get(), mon(140, 24, 0.25, 6, 36, 1.0));
         e.put(WARG.get(), mon(22, 6, 0.36, 0, 36, 0));
-        e.put(WIGHT.get(), mon(30, 6, 0.26, 2, 28, 0.2));
         e.put(WILD_MAN.get(), mon(22, 4, 0.29, 0, 24, 0));
         e.put(MAMMOTH.get(), mon(120, 14, 0.22, 4, 20, 1.0));
         e.put(DEAD_SOLDIER.get(), mon(20, 7, 0.3, 4, 32, 0));
-        e.put(PALE_RIDER.get(), mon(60, 9, 0.40, 6, 96, 0.6));
+        e.put(SHADOW_RIDER.get(), mon(60, 9, 0.38, 6, 96, 0.6));
+        e.put(SHADOW_CHIEF.get(), mon(150, 14, 0.42, 12, 96, 0.9));
         e.put(GIANT_SPIDER.get(), Spider.createAttributes().add(Attributes.MAX_HEALTH, 40).add(Attributes.ATTACK_DAMAGE, 7).add(Attributes.MOVEMENT_SPEED, 0.3).add(Attributes.FOLLOW_RANGE, 28).build());
         e.put(LURKER.get(), mon(120, 9, 0.0, 4, 20, 1.0));
         e.put(CAVE_THIEF.get(), mon(16, 2, 0.36, 0, 24, 0));
@@ -159,8 +158,8 @@ public final class ModEntities {
         e.register(CAVE_THIEF.get(), G, H, ModEntities::underground, OP);
         e.register(STONE_TROLL.get(), G, H, ModEntities::nightSky, OP);
         e.register(TROLL_CHIEF.get(), G, H, (t, l, r, p, rnd) -> underground(t, l, r, p, rnd) || (ash(l, p) && surface(t, l, r, p, rnd)) || nightSky(t, l, r, p, rnd), OP);
-        e.register(WIGHT.get(), G, H, ModEntities::nightSky, OP);
-        e.register(PALE_RIDER.get(), G, H, (t, l, r, p, rnd) -> nightSky(t, l, r, p, rnd) && l.getLevel().isNight(), OP);
+        e.register(SHADOW_RIDER.get(), G, H, (t, l, r, p, rnd) -> nightSky(t, l, r, p, rnd) && l.getLevel().isNight(), OP);
+        e.register(SHADOW_CHIEF.get(), G, H, (t, l, r, p, rnd) -> nightSky(t, l, r, p, rnd) && l.getLevel().isNight(), OP);
         e.register(GIANT_SPIDER.get(), G, H, (t, l, r, p, rnd) -> rnd.nextInt(2) == 0 && Monster.checkAnyLightMonsterSpawnRules(t, l, r, p, rnd), OP);
         e.register(LURKER.get(), SpawnPlacementTypes.IN_WATER, H, (t, l, r, p, rnd) -> l.getDifficulty() != Difficulty.PEACEFUL && rnd.nextInt(10) == 0
                 && l.getFluidState(p).is(FluidTags.WATER) && l.getFluidState(p.below(2)).is(FluidTags.WATER) && l.getFluidState(p.above()).isEmpty(), OP);

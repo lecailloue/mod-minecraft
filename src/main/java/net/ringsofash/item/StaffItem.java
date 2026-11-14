@@ -25,7 +25,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.ringsofash.entity.FoeEntity;
 import net.ringsofash.entity.GiantSpiderEntity;
-import net.ringsofash.entity.PaleRiderEntity;
+import net.ringsofash.entity.ShadowRiderEntity;
 import net.ringsofash.entity.PeopleEntity;
 
 import java.util.List;
@@ -60,7 +60,7 @@ public class StaffItem extends Item {
                     m.addEffect(new MobEffectInstance(MobEffects.GLOWING, 200, 0));
                     m.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 160, 1));
                     m.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
-                    boolean dark = m instanceof PaleRiderEntity || m instanceof GiantSpiderEntity || (m instanceof FoeEntity f && f.kind() == FoeEntity.Kind.WIGHT);
+                    boolean dark = m instanceof ShadowRiderEntity || m instanceof GiantSpiderEntity;
                     if (dark) { m.hurt(player.damageSources().indirectMagic(player, player), 8F); m.setTarget(null); }
                 }
                 sl.playSound(null, player.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 1.0F, 1.6F);

@@ -87,27 +87,38 @@ public final class Renderers {
         @Override protected void scale(FoeEntity e, PoseStack ps, float pt) { float s = scales[idx(e)]; ps.scale(s, s, s); }
     }
 
-    /** Soldats spectraux : le modele 0 est l'ancien soldat (humanoide), 1 a 5 les nouveaux modeles (veteran, hoplite, guerrier a cornes, rodeur, Roi des morts). */
-    public static class Spectre extends EntityRenderer<FoeEntity> {
-        private final Human<FoeEntity> classic;
-        private final Wraith wraith;
+    /** Etres des ombres : cavalier + cheval en un seul modele (2 cavaliers, 1 chef), yeux du cheval lumineux. */
+    public static class Shadow extends MobRenderer<net.ringsofash.entity.ShadowRiderEntity, GeoModel<net.ringsofash.entity.ShadowRiderEntity>> {
+        public static final String[] NAMES = {"ombre_1", "ombre_2", "ombre_chef"};
+        public static final float[] BLOCKS = {2.8F, 2.8F, 3.2F};
+        private final GeoModel<net.ringsofash.entity.ShadowRiderEntity>[] models;
+        private final float[] scales = new float[NAMES.length];
 
-        public Spectre(EntityRendererProvider.Context ctx, ModelLayerLocation plain) {
-            super(ctx);
-            classic = new Human<FoeEntity>(ctx, plain, 1.0F, 1.0F, f -> "dead_soldier", true);
-            wraith = new Wraith(ctx);
+        @SuppressWarnings("unchecked")
+        public Shadow(EntityRendererProvider.Context ctx) {
+            super(ctx, new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_" + NAMES[0])), NAMES[0]), 0.9F);
+            models = new GeoModel[NAMES.length];
+            for (int i = 0; i < NAMES.length; i++) {
+                models[i] = new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_" + NAMES[i])), NAMES[i]);
+                scales[i] = BLOCKS[i] * 16F / GeoDef.get(NAMES[i]).height;
+            }
+            addLayer(new RenderLayer<net.ringsofash.entity.ShadowRiderEntity, GeoModel<net.ringsofash.entity.ShadowRiderEntity>>(this) {
+                @Override
+                public void render(PoseStack ps, MultiBufferSource buf, int light, net.ringsofash.entity.ShadowRiderEntity e, float a, float b, float c, float d, float f, float g) {
+                    VertexConsumer vc = buf.getBuffer(RenderType.eyes(tex(NAMES[e.shadowModel()] + "_glow")));
+                    getParentModel().renderToBuffer(ps, vc, 0xF000F0, OverlayTexture.NO_OVERLAY, -1);
+                }
+            });
         }
 
         @Override
-        public void render(FoeEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource buf, int light) {
-            if (e.spectreModel() == 0) classic.render(e, yaw, pt, ps, buf, light);
-            else wraith.render(e, yaw, pt, ps, buf, light);
+        public void render(net.ringsofash.entity.ShadowRiderEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource buf, int light) {
+            this.model = models[e.shadowModel()];
+            super.render(e, yaw, pt, ps, buf, light);
         }
 
-        @Override
-        public ResourceLocation getTextureLocation(FoeEntity e) {
-            return e.spectreModel() == 0 ? classic.getTextureLocation(e) : wraith.getTextureLocation(e);
-        }
+        @Override public ResourceLocation getTextureLocation(net.ringsofash.entity.ShadowRiderEntity e) { return tex(NAMES[e.shadowModel()]); }
+        @Override protected void scale(net.ringsofash.entity.ShadowRiderEntity e, PoseStack ps, float pt) { float s = scales[e.shadowModel()]; ps.scale(s, s, s); }
     }
 
     /** Les 5 nouveaux modeles spectraux : translucides (peau et tissus par pixel), squelette visible dessous, yeux lumineux. */
@@ -135,7 +146,7 @@ public final class Renderers {
             });
         }
 
-        private int idx(FoeEntity e) { return Math.min(NAMES.length - 1, Math.max(0, e.spectreModel() - 1)); }
+        private int idx(FoeEntity e) { return Math.min(NAMES.length - 1, Math.max(0, e.spectreModel())); }
 
         @Override
         public void render(FoeEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource buf, int light) {
