@@ -1,6 +1,7 @@
 package net.ringsofash.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -15,6 +16,7 @@ import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Mob;
 import net.ringsofash.RingsOfAsh;
+import net.ringsofash.entity.FoeEntity;
 import net.ringsofash.entity.GiantSpiderEntity;
 
 import javax.annotation.Nullable;
@@ -47,6 +49,38 @@ public final class Renderers {
 
         @Override public ResourceLocation getTextureLocation(T e) { return tex(texture.apply(e)); }
         @Override protected void scale(T e, PoseStack ps, float pt) { ps.scale(scale, scale, scale); }
+    }
+
+    /** Orques : 7 modeles (4 orques, 2 orques noirs, 1 chef) ; le modele et la couleur de peau viennent de la variante de l'entite. */
+    public static class Orc extends MobRenderer<FoeEntity, GeoModel<FoeEntity>> {
+        public static final String[] NAMES = {"orc_1_nu", "orc_2_fourrure", "orc_3_mailles", "orc_4_casque", "orc_noir_1_main", "orc_noir_2_fer", "orc_chef"};
+        /** hauteur visee a l'ecran (en blocs) de chaque modele */
+        public static final float[] BLOCKS = {1.88F, 1.95F, 2.02F, 2.10F, 2.20F, 2.30F, 2.75F};
+        private final GeoModel<FoeEntity>[] models;
+        private final float[] scales = new float[NAMES.length];
+        private final int first, count;
+
+        @SuppressWarnings("unchecked")
+        public Orc(EntityRendererProvider.Context ctx, int first, int count, float shadow) {
+            super(ctx, new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_" + NAMES[first])), NAMES[first]), shadow);
+            this.first = first; this.count = count;
+            models = new GeoModel[NAMES.length];
+            for (int i = first; i < first + count; i++) {
+                models[i] = new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_" + NAMES[i])), NAMES[i]);
+                scales[i] = BLOCKS[i] * 16F / GeoDef.get(NAMES[i]).height;
+            }
+        }
+
+        private int idx(FoeEntity e) { return Math.min(first + count - 1, Math.max(first, e.orcModel())); }
+
+        @Override
+        public void render(FoeEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource buf, int light) {
+            this.model = models[idx(e)];
+            super.render(e, yaw, pt, ps, buf, light);
+        }
+
+        @Override public ResourceLocation getTextureLocation(FoeEntity e) { return tex(NAMES[idx(e)] + "_" + e.orcColor()); }
+        @Override protected void scale(FoeEntity e, PoseStack ps, float pt) { float s = scales[idx(e)]; ps.scale(s, s, s); }
     }
 
     /** Humanoide (modele de joueur + oreilles, defenses ou barbe selon le peuple). */

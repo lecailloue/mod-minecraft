@@ -89,6 +89,68 @@ def ash_lord():
     wjson(f'{A}/geo/ash_lord.json', geo)
     save(Image.open(os.path.join(tmp, 'ash_lord_texture.png')).convert('RGBA'), f'{A}/textures/entity/ash_lord_geo.png')
 
+def geo_height(geo):
+    """hauteur du modele en pixels (sol a y=24), arme exclue, rotations appliquees comme MC (rotateZYX)"""
+    import math
+    import numpy as np
+    by = {p['name']: p for p in geo['parts']}
+    def mat(r):
+        x, y, z = r
+        rx = np.array([[1, 0, 0], [0, math.cos(x), -math.sin(x)], [0, math.sin(x), math.cos(x)]])
+        ry = np.array([[math.cos(y), 0, math.sin(y)], [0, 1, 0], [-math.sin(y), 0, math.cos(y)]])
+        rz = np.array([[math.cos(z), -math.sin(z), 0], [math.sin(z), math.cos(z), 0], [0, 0, 1]])
+        return rz @ ry @ rx
+    world = {}
+    def frame(n):
+        if n in world: return world[n]
+        p = by[n]
+        R = mat(p['rot']); t = np.array(p['pivot'], float)
+        if p['parent']:
+            PR, Pt = frame(p['parent'])
+            R, t = PR @ R, PR @ t + Pt
+        world[n] = (R, t)
+        return world[n]
+    def is_weapon(n):
+        while n:
+            if n.startswith('weapon'): return True
+            n = by[n]['parent']
+        return False
+    top = 24.0
+    for n, p in by.items():
+        if is_weapon(n): continue
+        R, t = frame(n)
+        for b in p['boxes']:
+            o, sz, inf = b['o'], b['s'], b.get('inflate', 0)
+            for dx in (0, 1):
+                for dy in (0, 1):
+                    for dz in (0, 1):
+                        v = np.array([o[0] - inf + dx * (sz[0] + 2 * inf), o[1] - inf + dy * (sz[1] + 2 * inf), o[2] - inf + dz * (sz[2] + 2 * inf)])
+                        top = min(top, (R @ v + t)[1])
+    return round(24.0 - top, 2)
+
+def orcs():
+    """7 modeles d'orques (tools/orcs.py) : geometrie + une texture par couleur de peau (meme disposition UV)"""
+    import bbimport, tempfile
+    import orcs as O
+    from genlib import wjson, save
+    from PIL import Image
+    ren = {'leg_left': 'leg_l', 'leg_right': 'leg_r', 'arm_left': 'arm_l', 'arm_right': 'arm_r'}
+    for name, (fn, skins, f) in O.MODELS.items():
+        ref = None
+        for i, sk in enumerate(skins):
+            tmp = tempfile.mkdtemp()
+            groups, cubes, W, H, tex = O.build(name, sk)
+            O.export_bbmodel(name, groups, cubes, W, H, tex, os.path.join(tmp, name + '.bbmodel'))
+            geo = bbimport.convert(os.path.join(tmp, name + '.bbmodel'), rename=ren)
+            if ref is None:
+                ref = geo
+                geo['height'] = geo_height(geo)
+                wjson(f'{A}/geo/{name}.json', geo)
+                print(f'orc {name}: {len(geo["parts"])} pieces, hauteur {geo["height"]} px, texture {W}x{H}')
+            else:
+                assert geo['parts'] == ref['parts'] or [ (p['name'], p['boxes']) for p in geo['parts'] ] == [ (p['name'], p['boxes']) for p in ref['parts'] ], f'{name}: disposition UV differente pour la peau {sk}'
+            save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}_{i}.png')
+
 def treeman_bb():
     """Sylvestre : modele Blockbench fourni (tools/assets/treeman.bbmodel)"""
     import bbimport, os
@@ -254,4 +316,4 @@ def skins():
     skin('cave_thief', 'goblin', skin='#b8b8a8', hair='#b8b8a8', hair_style='bald', eyes='#d8f0ff', top='#b0b0a0', legs='#6a6050', boots='#b8b8a8', sleeves=False, seed=55)
 
 def build():
-    troll(); warg(); stag(); demon(); ash_lord(); lurker(); treeman_bb(); eagle(); dragon(); mammoth(); skins()
+    troll(); warg(); stag(); demon(); ash_lord(); orcs(); lurker(); treeman_bb(); eagle(); dragon(); mammoth(); skins()

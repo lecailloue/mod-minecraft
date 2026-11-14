@@ -19,6 +19,8 @@ public final class GeoDef {
     public static class Box { public float[] o; public float[] s; public int[] uv; public float inflate; public boolean mirror; }
     public static class Part { public String name; public String parent; public float[] pivot; public float[] rot; public Box[] boxes; }
     public int tw, th;
+    /** hauteur du modele en pixels (sol a y=24, arme exclue) : sert a calibrer la taille a l'ecran */
+    public float height;
     public Part[] parts;
 
     private static final Map<String, GeoDef> CACHE = new HashMap<>();

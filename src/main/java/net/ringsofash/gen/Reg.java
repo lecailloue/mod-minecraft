@@ -200,6 +200,9 @@ public final class Reg {
     public static final DeferredItem<Item> DWARVEN_HAMMER = ITEMS.register("dwarven_hammer", () -> ModGear.special(SpecialSword.Kind.HAMMER, ModGear.T_DWARVEN, 7, -3.3F, 0, props()));
     public static final DeferredItem<Item> ORC_SCIMITAR = ITEMS.register("orc_scimitar", () -> ModGear.special(SpecialSword.Kind.NONE, ModGear.T_ORC, 3, -2.4F, 0, props()));
     public static final DeferredItem<Item> ORC_CLEAVER = ITEMS.register("orc_cleaver", () -> ModGear.special(SpecialSword.Kind.NONE, ModGear.T_ORC, 5, -3.0F, 0, props()));
+    public static final DeferredItem<Item> ORC_MACHETE = ITEMS.register("orc_machete", () -> ModGear.special(SpecialSword.Kind.NONE, ModGear.T_ORC, 4, -2.6F, 0, props()));
+    public static final DeferredItem<Item> ORC_SPEAR = ITEMS.register("orc_spear", () -> ModGear.special(SpecialSword.Kind.SPEAR, ModGear.T_ORC, 4, -2.7F, 1.5, props()));
+    public static final DeferredItem<Item> ORC_MACE = ITEMS.register("orc_mace", () -> ModGear.special(SpecialSword.Kind.CLUB, ModGear.T_ORC, 8, -3.3F, 0, props()));
     public static final DeferredItem<Item> RIDER_SPEAR = ITEMS.register("rider_spear", () -> ModGear.special(SpecialSword.Kind.SPEAR, ModGear.T_STEEL, 3, -2.6F, 1.5, props()));
     public static final DeferredItem<Item> HALFLING_DAGGER = ITEMS.register("halfling_dagger", () -> ModGear.special(SpecialSword.Kind.DAGGER, ModGear.T_STEEL, 1, -1.6F, 0, props()));
     public static final DeferredItem<Item> RANGER_SWORD = ITEMS.register("ranger_sword", () -> ModGear.special(SpecialSword.Kind.NONE, ModGear.T_STEEL, 3, -2.4F, 0, props()));

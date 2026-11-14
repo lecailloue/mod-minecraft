@@ -170,6 +170,25 @@ public final class ClientTest {
         }));
     }
 
+    /** 4 orques (variantes), 2 orques noirs, puis le chef ; variants = variantes imposees des orques (les 4 premiers) puis noirs. */
+    private static void orcLine(String name, double dist, float pitch, double spacing, int[] v, boolean full) {
+        SCENES.add(new Scene(name, 70, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            int n = full ? (v.length == 1 ? 1 : 7) : 7;
+            double x = SX + (n - 1) * spacing / 2.0;
+            for (int i = 0; i < n; i++) {
+                final int k = i;
+                if (v.length == 1) actor(ow, ModEntities.ORC_CHIEF.get(), x, SZ + dist, null);
+                else if (i < 4) actor(ow, ModEntities.ORC.get(), x, SZ + dist, o -> o.testVariant(v[k]));
+                else if (i < 6) actor(ow, ModEntities.WAR_ORC.get(), x, SZ + dist, o -> o.testVariant(v[k] % 4));
+                else actor(ow, ModEntities.ORC_CHIEF.get(), x, SZ + dist, null);
+                x -= spacing;
+            }
+            view(p, ow, SX + 0.5, SY + 1.2, SZ, 0F, pitch);
+        }));
+    }
+
     private static void spot(String name, int x, int z, int up, float yaw, float pitch) {
         SCENES.add(new Scene(name, 320, p -> {
             ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
@@ -226,6 +245,9 @@ public final class ClientTest {
         }));
         lineup("01_orques", 7.5, 2F, 2.0, List.of(ModEntities.ORC.get(), ModEntities.ORC.get(), ModEntities.WAR_ORC.get(), ModEntities.ORC_CHIEF.get(), ModEntities.GOBLIN.get(),
                 ModEntities.WIGHT.get(), ModEntities.WILD_MAN.get(), ModEntities.PALE_RIDER.get()));
+        orcLine("01b_orques_modeles", 11.0, 3F, 2.3, new int[]{0, 5, 10, 15, 2, 3, 0}, true);
+        orcLine("01c_orques_couleurs", 11.0, 3F, 2.3, new int[]{4, 5, 6, 7, 8, 9, 12}, false);
+        orcLine("01d_chef_proche", 4.5, 6F, 3.0, new int[]{0}, true);
         lineup("02_peuples", 8.5, 2F, 1.9, List.of(ModEntities.HUMAN.get(), ModEntities.HUMAN.get(), ModEntities.ELF.get(), ModEntities.ELF.get(), ModEntities.DWARF.get(), ModEntities.DWARF.get(),
                 ModEntities.HALFLING.get(), ModEntities.HALFLING.get(), ModEntities.RANGER.get(), ModEntities.MAGE.get()));
         lineup("03_divers", 7.0, 2F, 2.2, List.of(ModEntities.CAVE_THIEF.get(), ModEntities.SORCERER.get(), ModEntities.DEAD_SOLDIER.get(), ModEntities.CROW.get(), ModEntities.STAG.get(), ModEntities.WARG.get()));

@@ -62,6 +62,25 @@ public class FoeEntity extends Monster {
 
     public Kind kind() { return ModEntities.kindOf(getType()); }
     public int variant() { return entityData.get(VARIANT); }
+    /** Modele d'orque 0..6 : 0-3 orques, 4-5 orques noirs, 6 chef (variante orque = modele*4 + couleur, orque noir = modele*2 + couleur). */
+    /** Mise en scene des tests client : impose la variante (modele + couleur). */
+    public void testVariant(int v) { entityData.set(VARIANT, v); populateDefaultEquipmentSlots(random, null); }
+    public int orcModel() {
+        return switch (kind()) { case ORC -> Math.floorMod(variant() / 4, 4); case WAR_ORC -> 4 + Math.floorMod(variant() / 2, 2); case ORC_CHIEF -> 6; default -> 0; };
+    }
+    public int orcColor() {
+        return switch (kind()) { case ORC -> Math.floorMod(variant(), 4); case WAR_ORC -> Math.floorMod(variant(), 2); default -> 0; };
+    }
+    /** L'arme que tient chaque modele d'orque (celle qu'il laisse tomber). */
+    private ItemStack orcWeapon() {
+        return new ItemStack(switch (orcModel()) {
+            case 0, 5 -> Reg.ORC_CLEAVER.get();
+            case 1, 4 -> Reg.ORC_SCIMITAR.get();
+            case 2 -> Reg.ORC_MACHETE.get();
+            case 3 -> Reg.ORC_SPEAR.get();
+            default -> Reg.ORC_MACE.get();
+        });
+    }
     public boolean isStone() { return entityData.get(STONE); }
     public boolean isTroll() { Kind k = kind(); return k == Kind.CAVE_TROLL || k == Kind.STONE_TROLL || k == Kind.TROLL_CHIEF; }
     public int slamTick() { return entityData.get(SLAM); }
@@ -119,7 +138,7 @@ public class FoeEntity extends Monster {
         data = super.finalizeSpawn(level, difficulty, reason, data);
         RandomSource r = level.getRandom();
         Kind k = kind();
-        entityData.set(VARIANT, r.nextInt(k == Kind.ORC ? 3 : 2));
+        entityData.set(VARIANT, r.nextInt(k == Kind.ORC ? 16 : k == Kind.WAR_ORC ? 4 : 2));
         populateDefaultEquipmentSlots(r, difficulty);
         if (k == Kind.TROLL_CHIEF && reason != MobSpawnType.SPAWN_EGG && reason != MobSpawnType.COMMAND) {
             // le chef de meute arrive avec sa meute : deux ou trois trolls des cavernes autour de lui
@@ -132,7 +151,7 @@ public class FoeEntity extends Monster {
                 level.addFreshEntity(t);
             }
         }
-        if (k == Kind.WARG && reason != MobSpawnType.SPAWN_EGG && r.nextInt(4) == 0) {
+        if (k == Kind.WARG && reason != MobSpawnType.SPAWN_EGG && level.getLevel().isNight() && level.getBiome(blockPosition()).is(net.ringsofash.world.ModWorldgen.ASH_BIOME) && r.nextInt(4) == 0) {
             FoeEntity orc = ModEntities.ORC.get().create(level.getLevel());
             if (orc != null) {
                 orc.moveTo(getX(), getY(), getZ(), getYRot(), 0);
@@ -147,9 +166,7 @@ public class FoeEntity extends Monster {
     @Override
     protected void populateDefaultEquipmentSlots(RandomSource r, DifficultyInstance difficulty) {
         ItemStack hand = switch (kind()) {
-            case ORC -> new ItemStack(r.nextInt(3) == 0 ? Reg.ORC_CLEAVER.get() : Reg.ORC_SCIMITAR.get());
-            case WAR_ORC -> new ItemStack(r.nextBoolean() ? Reg.ORC_SCIMITAR.get() : Reg.ORC_CLEAVER.get());
-            case ORC_CHIEF -> new ItemStack(Reg.ORC_CLEAVER.get());
+            case ORC, WAR_ORC, ORC_CHIEF -> orcWeapon();
             case GOBLIN -> r.nextInt(3) == 0 ? new ItemStack(Items.STONE_SWORD) : ItemStack.EMPTY;
             case WIGHT -> new ItemStack(Reg.WIGHT_BLADE.get());
             case WILD_MAN -> new ItemStack(r.nextBoolean() ? Items.STONE_AXE : Reg.RIDER_SPEAR.get());
@@ -157,7 +174,7 @@ public class FoeEntity extends Monster {
             default -> ItemStack.EMPTY;
         };
         setItemSlot(EquipmentSlot.MAINHAND, hand);
-        setDropChance(EquipmentSlot.MAINHAND, kind() == Kind.WIGHT ? 0.2F : kind() == Kind.DEAD_SOLDIER ? 0.0F : 0.06F);
+        setDropChance(EquipmentSlot.MAINHAND, kind() == Kind.WIGHT ? 0.2F : kind() == Kind.DEAD_SOLDIER ? 0.0F : kind() == Kind.ORC_CHIEF ? 0.4F : (kind() == Kind.ORC || kind() == Kind.WAR_ORC) ? 0.15F : 0.06F);
         if (kind() == Kind.WAR_ORC || kind() == Kind.ORC_CHIEF) {
             setItemSlot(EquipmentSlot.HEAD, new ItemStack(Reg.ORC_HELMET.get()));
             setItemSlot(EquipmentSlot.CHEST, new ItemStack(Reg.ORC_CHESTPLATE.get()));

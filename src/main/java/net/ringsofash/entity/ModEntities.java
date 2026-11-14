@@ -38,9 +38,9 @@ public final class ModEntities {
     private static DeferredHolder<EntityType<?>, EntityType<PeopleEntity>> people(String name, float w, float h) { return reg(name, PeopleEntity::new, MobCategory.MISC, w, h, false); }
     private static DeferredHolder<EntityType<?>, EntityType<BossEntity>> boss(String name, float w, float h, boolean fire) { return reg(name, BossEntity::new, MobCategory.MONSTER, w, h, fire); }
 
-    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> ORC = foe("orc", 0.6F, 1.95F);
-    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> WAR_ORC = foe("war_orc", 0.7F, 2.15F);
-    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> ORC_CHIEF = foe("orc_chief", 0.8F, 2.5F);
+    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> ORC = foe("orc", 0.6F, 2.1F);
+    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> WAR_ORC = foe("war_orc", 0.7F, 2.35F);
+    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> ORC_CHIEF = foe("orc_chief", 0.85F, 2.8F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> GOBLIN = foe("goblin", 0.45F, 1.2F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> CAVE_TROLL = foe("cave_troll", 1.5F, 3.0F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> STONE_TROLL = foe("stone_troll", 1.5F, 3.0F);
@@ -134,6 +134,11 @@ public final class ModEntities {
     private static <T extends Monster> boolean surface(EntityType<T> t, ServerLevelAccessor l, MobSpawnType r, BlockPos p, RandomSource rnd) {
         return Monster.checkMonsterSpawnRules(t, l, r, p, rnd) || (ash(l, p) && rnd.nextInt(3) == 0 && Monster.checkAnyLightMonsterSpawnRules(t, l, r, p, rnd));
     }
+    /** Orques : uniquement la nuit, dans les biomes de cendre (les autres causes d'apparition : oeuf, forteresse, commande... restent libres). */
+    private static <T extends Monster> boolean orcNight(EntityType<T> t, ServerLevelAccessor l, MobSpawnType r, BlockPos p, RandomSource rnd) {
+        if (r != MobSpawnType.NATURAL && r != MobSpawnType.CHUNK_GENERATION) return Monster.checkAnyLightMonsterSpawnRules(t, l, r, p, rnd);
+        return ash(l, p) && l.getLevel().isNight() && Monster.checkAnyLightMonsterSpawnRules(t, l, r, p, rnd);
+    }
     private static <T extends Monster> boolean underground(EntityType<T> t, ServerLevelAccessor l, MobSpawnType r, BlockPos p, RandomSource rnd) {
         return p.getY() < 56 && !l.canSeeSky(p) && Monster.checkMonsterSpawnRules(t, l, r, p, rnd);
     }
@@ -145,8 +150,8 @@ public final class ModEntities {
         var G = SpawnPlacementTypes.ON_GROUND;
         var H = Heightmap.Types.MOTION_BLOCKING_NO_LEAVES;
         var OP = RegisterSpawnPlacementsEvent.Operation.REPLACE;
-        e.register(ORC.get(), G, H, ModEntities::surface, OP);
-        e.register(WAR_ORC.get(), G, H, ModEntities::surface, OP);
+        e.register(ORC.get(), G, H, ModEntities::orcNight, OP);
+        e.register(WAR_ORC.get(), G, H, ModEntities::orcNight, OP);
         e.register(WARG.get(), G, H, ModEntities::surface, OP);
         e.register(WILD_MAN.get(), G, H, ModEntities::surface, OP);
         e.register(GOBLIN.get(), G, H, ModEntities::underground, OP);

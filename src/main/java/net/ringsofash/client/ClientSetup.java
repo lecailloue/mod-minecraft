@@ -31,7 +31,7 @@ public final class ClientSetup {
 
     public static final KeyMapping REP_KEY = new KeyMapping("key.ringsofash.reputation", InputConstants.KEY_R, "key.categories.ringsofash");
     public static final KeyMapping MAP_KEY = new KeyMapping("key.ringsofash.map", InputConstants.KEY_M, "key.categories.ringsofash");
-    private static final String[] GEO = {"troll", "troll_chief", "warg", "stag", "demon", "lurker", "treeman", "eagle", "dragon", "mammoth", "ash_lord"};
+    private static final String[] GEO = {"troll", "troll_chief", "warg", "stag", "demon", "lurker", "treeman", "eagle", "dragon", "mammoth", "ash_lord", "orc_1_nu", "orc_2_fourrure", "orc_3_mailles", "orc_4_casque", "orc_noir_1_main", "orc_noir_2_fer", "orc_chef"};
     private static final String[] HUMAN = {"plain", "elf", "orc", "goblin", "dwarf"};
 
     public static ModelLayerLocation layer(String name) { return new ModelLayerLocation(RingsOfAsh.id(name), "main"); }
@@ -189,9 +189,9 @@ public final class ClientSetup {
 
     private static void renderers(EntityRenderersEvent.RegisterRenderers e) {
         ModelLayerLocation plain = layer("human_plain"), elf = layer("human_elf"), orc = layer("human_orc"), goblin = layer("human_goblin"), dwarf = layer("human_dwarf");
-        e.registerEntityRenderer(ModEntities.ORC.get(), c -> new Renderers.Human<FoeEntity>(c, orc, 1.0F, 1.0F, f -> "orc_" + (1 + Math.floorMod(f.variant(), 3)), false));
-        e.registerEntityRenderer(ModEntities.WAR_ORC.get(), c -> new Renderers.Human<FoeEntity>(c, orc, 1.1F, 1.1F, f -> "war_orc", false));
-        e.registerEntityRenderer(ModEntities.ORC_CHIEF.get(), c -> new Renderers.Human<FoeEntity>(c, orc, 1.3F, 1.28F, f -> "orc_chief", false));
+        e.registerEntityRenderer(ModEntities.ORC.get(), c -> new Renderers.Orc(c, 0, 4, 0.5F));
+        e.registerEntityRenderer(ModEntities.WAR_ORC.get(), c -> new Renderers.Orc(c, 4, 2, 0.6F));
+        e.registerEntityRenderer(ModEntities.ORC_CHIEF.get(), c -> new Renderers.Orc(c, 6, 1, 0.8F));
         e.registerEntityRenderer(ModEntities.GOBLIN.get(), c -> new Renderers.Human<FoeEntity>(c, goblin, 0.62F, 0.62F, f -> "goblin_" + (1 + Math.floorMod(f.variant(), 2)), false));
         e.registerEntityRenderer(ModEntities.WIGHT.get(), c -> new Renderers.Human<FoeEntity>(c, plain, 1.0F, 1.05F, f -> "wight", true));
         e.registerEntityRenderer(ModEntities.WILD_MAN.get(), c -> new Renderers.Human<FoeEntity>(c, plain, 1.0F, 1.0F, f -> "wild_man", false));
