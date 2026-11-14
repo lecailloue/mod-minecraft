@@ -271,7 +271,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
         }
         ModelPart head = p("head"), jaw = p("jaw");
         if (head != null) head.xRot += Mth.sin(w - 7 * 0.8F) * 0.12F;
-        if (jaw != null) jaw.xRot += atk * 0.8F + Mth.max(0F, Mth.sin(age * 0.05F)) * 0.08F;
+        if (jaw != null) jaw.xRot += atk * 0.8F + Math.max(0F, Mth.sin(age * 0.05F)) * 0.08F;
         for (int i = 0; i < 7; i++) {
             ModelPart t = p("dtail_" + i);
             if (t != null) { t.yRot += Mth.sin(age * 0.1F - i * 0.7F) * 0.13F; t.xRot += Mth.sin(age * 0.1F - i * 0.7F + 1.6F) * 0.04F; }
