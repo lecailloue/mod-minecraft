@@ -273,6 +273,8 @@ public class MapScreen extends Screen {
             g.fill(px - 2, py - 2, px + 3, py + 3, 0xFFE02020);
         }
         g.flush();
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 200);
         // boussole : le nord est en haut
         int ccx = x0 + 22, ccy = y0 + 22;
         Ui.disc(g, ccx, ccy, 17, Ui.BRONZE_D);
@@ -285,7 +287,8 @@ public class MapScreen extends Screen {
         g.drawString(this.font, "S", ccx - 2, ccy + 6, 0xFFCCBB99, false);
         g.drawString(this.font, "O", ccx - 13, ccy - 3, 0xFFCCBB99, false);
         g.drawString(this.font, "E", ccx + 8, ccy - 3, 0xFFCCBB99, false);
-        if (legend) { g.flush(); drawLegend(g); }
+        if (legend) drawLegend(g);
+        g.pose().popPose();
         g.disableScissor();
 
         // bandeau haut : titre et embleme
