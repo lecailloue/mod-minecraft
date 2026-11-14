@@ -166,7 +166,7 @@ public class QuestScreen extends Screen {
     private ItemStack renderQuests(GuiGraphics g, int mx, int my) {
         List<Q> qs = quests();
         if (sel >= qs.size()) sel = 0;
-        int lx = x0 + 8, lw = 134, bottom = stripY() - 5;
+        int lx = x0 + 8, lw = 156, bottom = stripY() - 5;
         g.drawString(this.font, "Quêtes disponibles", lx + 2, y0 + 29, Ui.GOLD, false);
         Ui.inset(g, lx, y0 + 38, lw, bottom - (y0 + 38), 0xFF2A2016);
         for (int i = 0; i < qs.size(); i++) {
@@ -198,7 +198,7 @@ public class QuestScreen extends Screen {
 
     private void renderDetail(GuiGraphics g, Q q, int mx, int my) {
         detailTip = null;
-        int dx = x0 + 150, dw = w - 158, bottom = stripY() - 5;
+        int dx = x0 + 172, dw = w - 180, bottom = stripY() - 5;
         Ui.inset(g, dx - 2, y0 + 28, dw + 2, bottom - (y0 + 28), 0xFF241A10);
         g.enableScissor(dx, y0 + 29, dx + dw, bottom - 1);
         boolean locked = q.state == 0;
@@ -335,7 +335,7 @@ public class QuestScreen extends Screen {
             }
             if (tab == 0) {
                 List<Q> qs = quests();
-                int lx = x0 + 8, lw = 134, bottom = stripY() - 5;
+                int lx = x0 + 8, lw = 156, bottom = stripY() - 5;
                 for (int i = 0; i < qs.size(); i++) {
                     if (rowY(i) + 25 > bottom) break;
                     if (Ui.in(mx, my, lx + 2, rowY(i), lw - 4, 25)) { sel = i; return true; }

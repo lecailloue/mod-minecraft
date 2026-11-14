@@ -251,6 +251,7 @@ public final class ClientTest {
             }
         }
         lineup("05b_seigneur", 9.0, -3F, 4.0, List.of(ModEntities.ASH_LORD.get()));
+        lineup("05b_seigneur_proche", 5.5, 4F, 4.0, List.of(ModEntities.ASH_LORD.get()));
         lineup("05_geants", 15.0, -8F, 7.0, List.of(ModEntities.MAMMOTH.get(), ModEntities.TREEMAN.get(), ModEntities.FIRE_DEMON.get(), ModEntities.ASH_LORD.get()));
         for (float[] v : new float[][]{{0, 155F}, {1, -25F}, {2, 90F}}) {
             SCENES.add(new Scene("05" + "bcd".charAt((int) v[0]) + "_fleau", 70, p -> {

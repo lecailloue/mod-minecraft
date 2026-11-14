@@ -272,6 +272,7 @@ public class MapScreen extends Screen {
             g.fill(px - 3, py - 3, px + 4, py + 4, 0xFFFFFFFF);
             g.fill(px - 2, py - 2, px + 3, py + 3, 0xFFE02020);
         }
+        g.flush();
         // boussole : le nord est en haut
         int ccx = x0 + 22, ccy = y0 + 22;
         Ui.disc(g, ccx, ccy, 17, Ui.BRONZE_D);
@@ -284,11 +285,11 @@ public class MapScreen extends Screen {
         g.drawString(this.font, "S", ccx - 2, ccy + 6, 0xFFCCBB99, false);
         g.drawString(this.font, "O", ccx - 13, ccy - 3, 0xFFCCBB99, false);
         g.drawString(this.font, "E", ccx + 8, ccy - 3, 0xFFCCBB99, false);
-        if (legend) drawLegend(g);
+        if (legend) { g.flush(); drawLegend(g); }
         g.disableScissor();
 
         // bandeau haut : titre et embleme
-        g.drawString(this.font, "Carte de la Hautemarche", fx + 12, fy + 5, Ui.INK, false);
+        g.drawString(this.font, "La Hautemarche", fx + 12, fy + 5, Ui.INK, false);
         int ex = fx + fw / 2;
         Ui.disc(g, ex, fy + 4, 9, Ui.BRONZE_D);
         Ui.disc(g, ex, fy + 4, 8, Ui.GOLD);
@@ -311,7 +312,8 @@ public class MapScreen extends Screen {
         } else {
             coords = "Vous n'êtes pas en Hautemarche";
         }
-        g.drawString(this.font, coords, fx + 26, by + 2, Ui.INK, false);
+        int avail = fw - 26 - (font.width("Légende") + 34);
+        g.drawString(this.font, this.font.plainSubstrByWidth(coords, avail), fx + 26, by + 2, Ui.INK, false);
 
         // boutons
         Btn tip = null;
