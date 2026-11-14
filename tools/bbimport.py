@@ -3,10 +3,19 @@ Usage : python3 bbimport.py modele.bbmodel sortie.json
 Regles (verifiees sur le modele du Fleau de Braise) : x inverse, y vers le bas, pivots enfants relatifs au parent."""
 import json, math, sys
 
-def convert(path, rename=None, reparent=None):
+def convert(path, rename=None, reparent=None, only=None, flat=False):
     """rename : {nom blockbench: nom du mod} ; reparent : {groupe racine: groupe parent} (le groupe est deplace sous ce parent)"""
     b = json.load(open(path))
     rename = rename or {}
+    gl = {x['uuid']: x for x in b.get('groups', []) if isinstance(x, dict)}
+    def fill(nodes):                      # Blockbench range nom/origine/rotation dans "groups" (outliner = uuid + enfants)
+        for n in nodes:
+            if isinstance(n, dict):
+                if 'name' not in n and n.get('uuid') in gl:
+                    g = gl[n['uuid']]
+                    n['name'] = g['name']; n['origin'] = g['origin']; n['rotation'] = g.get('rotation', [0, 0, 0])
+                fill(n['children'])
+    fill(b['outliner'])
     roots = b['outliner']
     for child, par in (reparent or {}).items():
         node = next(n for n in roots if isinstance(n, dict) and n['name'] == child)
@@ -37,7 +46,18 @@ def convert(path, rename=None, reparent=None):
             parts.append({'name': rename.get(n['name'], n['name']), 'parent': rename.get(parent['name'], parent['name']) if parent else None,
                           'pivot': [round(v, 4) for v in pv], 'rot': [-math.radians(rot[0]), -math.radians(rot[1]), math.radians(rot[2])], 'boxes': boxes})
             walk(n['children'], n)
-    walk(b['outliner'], None)
+    if only:                              # ne garder que le sous-arbre 'only' (ex. l'arme), pose a plat : racine sans rotation
+        def find(nodes):
+            for n in nodes:
+                if isinstance(n, dict):
+                    if n['name'] == only: return n
+                    r = find(n['children'])
+                    if r: return r
+        node = find(b['outliner'])
+        if flat: node['rotation'] = [0, 0, 0]
+        walk([node], None)
+    else:
+        walk(b['outliner'], None)
     return {'tw': res['width'], 'th': res['height'], 'parts': parts}
 
 def texture(path, i=0):

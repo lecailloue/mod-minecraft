@@ -34,7 +34,7 @@ public class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
         float len = d.ymax - d.ymin, mid = (d.ymax + d.ymin) / 2F;
         // en main et au sol : taille reelle (la lance et la masse sont longues) ; en inventaire : on ramene l'arme dans la case
         float s = 0.55F;
-        if (name.contains("goblin")) s = Math.min(s, 1.9F / (len / 16F));   // le baton du roi est tres long : 1,9 bloc en main
+        if (name.contains("goblin")) s = Math.min(s, (name.contains("pickaxe") ? 1.2F : 1.9F) / (len / 16F));   // baton du roi : 1,9 bloc ; pioche du gobelin : 1,2 bloc
         if (ctx == ItemDisplayContext.GUI || ctx == ItemDisplayContext.FIXED) s = Math.min(s, 1.25F / (len / 16F));
         ps.pushPose();
         ps.translate(0.5F, 0.5F, 0.5F);

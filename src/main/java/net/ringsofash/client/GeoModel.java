@@ -143,14 +143,53 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
             if (body != null) { body.xRot += Mth.sin(swing * 0.6662F * 2F) * 0.025F * amount; body.y += Mth.abs(Mth.sin(swing * 0.6662F)) * -0.9F * amount; }
         }
         if (e instanceof FoeEntity f && f.isTroll()) trollPose(f, swing, amount, age);
-        if (e instanceof FoeEntity f && f.kind() == FoeEntity.Kind.GOBLIN_KING) kingPose(swing, amount, age, atk);
+        if (e instanceof FoeEntity f && f.kind() == FoeEntity.Kind.GOBLIN_KING) kingPose(e.getId(), swing, amount, age, atk, yaw, pitch);
     }
 
     /**
      * Roi des gobelins : demarche lourde et lente (jambes courtes, tout le corps roule d'un pied sur l'autre), longs bras qui se balancent,
      * ventre qui ballotte a chaque pas, tete qui dodeline et bajoue qui se balance en trois segments.
      */
-    private void kingPose(float swing, float amount, float age, float atk) {
+    /** Etat du pendule de la bajoue du roi, par entite : [segment][ax, vx, az, vz] puis dernier lacet / tangage de la tete et dernier age. */
+    private final java.util.Map<Integer, float[]> dewState = new java.util.HashMap<>();
+    private static final float[] DEW_K = {0.13F, 0.10F, 0.08F}, DEW_C = {0.11F, 0.09F, 0.07F};
+
+    /**
+     * La bajoue pend sous la tete : elle est fixee a la tete mais obeit a la gravite et a l'inertie. Chaque segment est un ressort amorti qui
+     * tend a rester a la verticale (donc a contre-tourner quand la tete regarde en haut/en bas ou de cote), pousse par le rebond des pas et
+     * par les mouvements brusques de la tete, et entraine par le segment du dessus : elle se balance en retard sur la tete.
+     */
+    private void dewlap(int id, float g, float age, float amount, float hy, float hp) {
+        ModelPart[] d = {p("dewlap"), p("dewlap2"), p("dewlap3")};
+        if (d[0] == null) return;
+        if (dewState.size() > 64) dewState.clear();
+        float[] st = dewState.computeIfAbsent(id, k -> new float[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, hy, hp, age});
+        float dt = Mth.clamp(age - st[14], 0F, 3F);
+        float dyaw = dt > 0 ? (hy - st[12]) / dt : 0F, dpitch = dt > 0 ? (hp - st[13]) / dt : 0F;
+        st[12] = hy; st[13] = hp; st[14] = age;
+        int n = Math.max(1, (int) Math.ceil(dt * 2F));
+        float h = dt / n;
+        for (int it = 0; it < n; it++) {
+            float t = age - dt + (it + 1) * h;
+            float walk = amount;
+            float prevVx = 0F, prevVz = 0F;
+            for (int i = 0; i < 3; i++) {
+                int o = i * 4;
+                // cible : rester pendu a la verticale -> contre-rotation de la tete (en partie pour la tete, entierement pour le bout)
+                float tx = -hp * (0.55F + 0.15F * i), tz = hy * (0.30F + 0.10F * i);
+                float fx = Mth.sin(g * 2F - 0.9F - 0.7F * i) * 0.020F * walk - dpitch * 0.9F + prevVx * 0.18F + Mth.sin(t * 0.06F - 0.8F * i) * 0.0012F;
+                float fz = Mth.sin(g - 0.6F - 0.8F * i) * 0.012F * walk + dyaw * 0.8F + prevVz * 0.18F;
+                st[o + 1] += (-DEW_K[i] * (st[o] - tx) - DEW_C[i] * st[o + 1] + fx) * h;
+                st[o + 3] += (-DEW_K[i] * (st[o + 2] - tz) - DEW_C[i] * st[o + 3] + fz) * h;
+                st[o] += st[o + 1] * h; st[o + 2] += st[o + 3] * h;
+                st[o] = Mth.clamp(st[o], -0.9F, 0.9F); st[o + 2] = Mth.clamp(st[o + 2], -0.7F, 0.7F);
+                prevVx = st[o + 1]; prevVz = st[o + 3];
+            }
+        }
+        for (int i = 0; i < 3; i++) if (d[i] != null) { d[i].xRot += st[i * 4]; d[i].zRot += st[i * 4 + 2]; }
+    }
+
+    private void kingPose(int id, float swing, float amount, float age, float atk, float yaw, float pitch) {
         ModelPart body = p("body"), head = p("head"), belly = p("belly"), lr = p("leg_r"), ll = p("leg_l"), ar = p("arm_r"), al = p("arm_l");
         float g = swing * 0.6662F * 0.85F, s = Mth.sin(g), c = Mth.cos(g);
         if (lr != null) lr.xRot *= 0.62F;
@@ -171,10 +210,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
             belly.zRot += Mth.sin(g - 0.6F) * 0.03F * amount;
         }
         if (head != null) head.xRot += Mth.sin(g * 2F - 0.3F) * 0.05F * amount;
-        ModelPart d1 = p("dewlap"), d2 = p("dewlap2"), d3 = p("dewlap3");
-        if (d1 != null) { d1.xRot += Mth.sin(g * 2F - 1.0F) * 0.16F * amount + Mth.sin(age * 0.06F) * 0.025F; d1.zRot += s * 0.04F * amount; }
-        if (d2 != null) { d2.xRot += Mth.sin(g * 2F - 1.7F) * 0.22F * amount + Mth.sin(age * 0.06F - 0.8F) * 0.03F; d2.zRot += Mth.sin(g - 0.8F) * 0.06F * amount; }
-        if (d3 != null) { d3.xRot += Mth.sin(g * 2F - 2.4F) * 0.28F * amount + Mth.sin(age * 0.06F - 1.6F) * 0.04F; d3.zRot += Mth.sin(g - 1.6F) * 0.09F * amount; }
+        dewlap(id, g, age, amount, yaw * Mth.DEG_TO_RAD, pitch * Mth.DEG_TO_RAD);
     }
 
     private static float ease(float k) { k = Mth.clamp(k, 0F, 1F); return k * k * (3F - 2F * k); }

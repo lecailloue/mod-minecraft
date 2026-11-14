@@ -225,6 +225,8 @@ def build():
     weapon('kings_blade', 'Épée du roi elfe', sw('KING', 'T_LEGEND', 6, -2.2, 0, 'props().fireResistant().rarity(Rarity.EPIC)'), sword('#9fe0ff', '#e8c860', grip='#2a5a4a', length=11, gem='#40e080'))
     item('lunargent_pickaxe', 'Pioche de lunargent', java='ModGear.pickaxe(ModGear.T_LUNARGENT, props())', model='handheld', tags=['pickaxes'],
          tex=polearm(['.ooooooo', 'obbbbbcco', '.oo..oaao', '......oao', '.......o.'], matpal('#cfe6f2'), ox=6, oy=1, shaft_from=(2, 14), shaft_to=(10, 6)))
+    item('goblin_pickaxe', 'Pioche de gobelin', java='ModGear.pickaxe(ModGear.T_ORC, props())', model='handheld', tags=['pickaxes'],
+         tex=polearm(['.ooooooo', 'obbbbbcco', '.oo..oaao', '......oao', '.......o.'], matpal('#6a6a62'), ox=6, oy=1, shaft_from=(2, 14), shaft_to=(10, 6)))
     bows = bow_icons('#d8c070')
     item('elven_bow', 'Arc elfique', java='new MiscItems.ElvenBow(props().durability(640))', tex=bows[0], model={
         'parent': 'minecraft:item/bow', 'textures': {'layer0': f'{MOD}:item/elven_bow'},

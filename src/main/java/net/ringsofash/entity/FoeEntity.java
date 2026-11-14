@@ -230,14 +230,14 @@ public class FoeEntity extends Monster {
     protected void populateDefaultEquipmentSlots(RandomSource r, DifficultyInstance difficulty) {
         ItemStack hand = switch (kind()) {
             case ORC, WAR_ORC, ORC_CHIEF -> orcWeapon();
-            case GOBLIN -> goblinModel() == 2 ? new ItemStack(Items.IRON_PICKAXE) : ItemStack.EMPTY;
+            case GOBLIN -> goblinModel() == 2 ? new ItemStack(Reg.GOBLIN_PICKAXE.get()) : ItemStack.EMPTY;
             case GOBLIN_KING -> new ItemStack(Reg.GOBLIN_KING_STAFF.get());
             case WILD_MAN -> new ItemStack(r.nextBoolean() ? Items.STONE_AXE : Reg.RIDER_SPEAR.get());
             case DEAD_SOLDIER -> new ItemStack(Reg.RANGER_SWORD.get());
             default -> ItemStack.EMPTY;
         };
         setItemSlot(EquipmentSlot.MAINHAND, hand);
-        setDropChance(EquipmentSlot.MAINHAND, kind() == Kind.DEAD_SOLDIER ? 0.0F : (kind() == Kind.ORC_CHIEF || kind() == Kind.GOBLIN_KING) ? 0.4F : (kind() == Kind.ORC || kind() == Kind.WAR_ORC) ? 0.15F : 0.06F);
+        setDropChance(EquipmentSlot.MAINHAND, kind() == Kind.DEAD_SOLDIER ? 0.0F : (kind() == Kind.ORC_CHIEF || kind() == Kind.GOBLIN_KING) ? 0.4F : (kind() == Kind.ORC || kind() == Kind.WAR_ORC) ? 0.15F : getMainHandItem().is(Reg.GOBLIN_PICKAXE.get()) ? 0.35F : 0.06F);
         if (kind() == Kind.WAR_ORC || kind() == Kind.ORC_CHIEF) {
             setItemSlot(EquipmentSlot.HEAD, new ItemStack(Reg.ORC_HELMET.get()));
             setItemSlot(EquipmentSlot.CHEST, new ItemStack(Reg.ORC_CHESTPLATE.get()));

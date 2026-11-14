@@ -1,5 +1,6 @@
 """Modeles 3D des creatures + peaux des humanoides."""
 import os
+import numpy as np
 from geo import Model
 from skins import skin
 from tex import rgb, shade, mix
@@ -245,6 +246,7 @@ def orc_weapons():
         save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}.png')
         wjson(f'{A}/models/item/{id}.json', item_model)
         print(f'arme {id}: etendue {geo["ymin"]} .. {geo["ymax"]} px')
+    wjson(f'{A}/models/item/goblin_pickaxe.json', item_model)     # la pioche du gobelin (modele issu de assets/gobelin_3.bbmodel, voir goblins())
 
 def shadows():
     """etres des ombres (tools/shadows.py) : cavalier + cheval en un seul modele, texture lumineuse (yeux du cheval)"""
@@ -270,9 +272,25 @@ def goblins():
     from genlib import wjson, save
     from PIL import Image
     ren = {'leg_left': 'leg_l', 'leg_right': 'leg_r', 'arm_left': 'arm_l', 'arm_right': 'arm_r'}
+    user = os.path.join(os.path.dirname(__file__), 'assets', 'gobelin_3.bbmodel')    # le grand gobelin a ete retouche a la main dans Blockbench
     for name, spec in GB.ALL.items():
         for i, sk in enumerate(spec['skins']):
             groups, cubes, W, H, tex, glow, f = GB.build(name, sk)
+            if name == 'gobelin_3':
+                if i == 0:
+                    geo = bbimport.convert(user, rename=ren)
+                    geo['height'] = geo_height(geo)
+                    wjson(f'{A}/geo/{name}.json', geo)
+                    print(f'gobelin {name} (modele Blockbench): {len(geo["parts"])} pieces, hauteur {geo["height"]} px')
+                    # sa pioche : objet 3D, a plat (manche vertical), meme texture que le gobelin
+                    pk = bbimport.convert(user, only='weapon', flat=True)
+                    pk['ymin'], pk['ymax'] = geo_extent(pk)
+                    pk['height'] = pk['ymax']
+                    wjson(f'{A}/geo/arme_goblin_pickaxe.json', pk)
+                    save(bbimport.texture(user), f'{A}/textures/entity/arme_goblin_pickaxe.png')
+                    tex = np.array(bbimport.texture(user))
+                save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}_{i}.png')
+                continue
             if i == 0:
                 tmp = tempfile.mkdtemp()
                 GB.export_bbmodel(name, groups, cubes, W, H, tex, os.path.join(tmp, name + '.bbmodel'))

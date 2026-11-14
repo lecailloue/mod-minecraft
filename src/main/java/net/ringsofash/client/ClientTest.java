@@ -324,6 +324,16 @@ public final class ClientTest {
                     + " cour=" + ow.getEntitiesOfClass(FoeEntity.class, king.getBoundingBox().inflate(40), o -> o.kind() == FoeEntity.Kind.GOBLIN).size()
                     + " baton=" + king.getMainHandItem().getItem());
         }));
+        SCENES.add(new Scene("09e_roi_gros_plan", 100, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            FoeEntity king = ModEntities.GOBLIN_KING.get().create(ow);
+            king.moveTo(SX, SY, SZ + 9, 180F, 0F);
+            king.finalizeSpawn(ow, ow.getCurrentDifficultyAt(king.blockPosition()), MobSpawnType.COMMAND, null);
+            king.setPersistenceRequired();
+            ow.addFreshEntity(king);
+            view(p, ow, SX + 3.5, SY + 2.2, SZ + 3.0, 25F, 6F);
+        }));
         SCENES.add(new Scene("03d_roi_marche", 140, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
@@ -346,7 +356,7 @@ public final class ClientTest {
         SCENES.add(new Scene("04_armes_orques", 90, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
-            net.minecraft.world.item.Item[] it = {Reg.ORC_CLEAVER.get(), Reg.ORC_SCIMITAR.get(), Reg.ORC_MACHETE.get(), Reg.ORC_SPEAR.get(), Reg.ORC_MACE.get(), Reg.GOBLIN_KING_STAFF.get()};
+            net.minecraft.world.item.Item[] it = {Reg.ORC_CLEAVER.get(), Reg.ORC_SCIMITAR.get(), Reg.ORC_MACHETE.get(), Reg.ORC_SPEAR.get(), Reg.ORC_MACE.get(), Reg.GOBLIN_KING_STAFF.get(), Reg.GOBLIN_PICKAXE.get()};
             for (int i = 0; i < it.length; i++) {
                 net.minecraft.world.entity.item.ItemEntity ie = new net.minecraft.world.entity.item.ItemEntity(ow, SX + 2.0 - i * 0.8, SY + 0.1, SZ + 3.0, new net.minecraft.world.item.ItemStack(it[i]));
                 ie.setPickUpDelay(32767);

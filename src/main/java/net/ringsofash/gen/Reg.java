@@ -212,6 +212,7 @@ public final class Reg {
     public static final DeferredItem<Item> ASH_MACE = ITEMS.register("ash_mace", () -> ModGear.special(SpecialSword.Kind.MACE, ModGear.T_LEGEND, 9, -3.2F, 0, props().fireResistant().rarity(Rarity.EPIC)));
     public static final DeferredItem<Item> KINGS_BLADE = ITEMS.register("kings_blade", () -> ModGear.special(SpecialSword.Kind.KING, ModGear.T_LEGEND, 6, -2.2F, 0, props().fireResistant().rarity(Rarity.EPIC)));
     public static final DeferredItem<Item> LUNARGENT_PICKAXE = ITEMS.register("lunargent_pickaxe", () -> ModGear.pickaxe(ModGear.T_LUNARGENT, props()));
+    public static final DeferredItem<Item> GOBLIN_PICKAXE = ITEMS.register("goblin_pickaxe", () -> ModGear.pickaxe(ModGear.T_ORC, props()));
     public static final DeferredItem<Item> ELVEN_BOW = ITEMS.register("elven_bow", () -> new MiscItems.ElvenBow(props().durability(640)));
     public static final DeferredItem<Item> STAFF_FIRE = ITEMS.register("staff_fire", () -> new StaffItem(StaffItem.Kind.FIRE, props().durability(200).rarity(Rarity.RARE)));
     public static final DeferredItem<Item> STAFF_LIGHT = ITEMS.register("staff_light", () -> new StaffItem(StaffItem.Kind.LIGHT, props().durability(200).rarity(Rarity.RARE)));
