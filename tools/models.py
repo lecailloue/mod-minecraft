@@ -77,14 +77,17 @@ def demon():
     fleau.demon(f'{PREVIEW}/demon.png')
 
 def ash_lord():
-    """Seigneur de Cendre : modele Blockbench fourni (tools/assets/ash_lord.bbmodel)"""
-    import bbimport, os
+    """Seigneur de Cendre : modele genere (tools/ashlord.py), importe via bbimport"""
+    import bbimport, os, tempfile
+    import ashlord
     from genlib import wjson, save
-    src = os.path.join(os.path.dirname(__file__), 'assets', 'ash_lord.bbmodel')
-    geo = bbimport.convert(src, rename={'left_leg': 'leg_l', 'right_leg': 'leg_r', 'left_shoulder': 'shoulder_l', 'right_shoulder': 'shoulder_r'},
-                           reparent={'left_shoulder': 'body', 'right_shoulder': 'body', 'mace': 'body', 'head': 'body'})
+    from PIL import Image
+    tmp = tempfile.mkdtemp()
+    ashlord.generate(tmp)
+    src = os.path.join(tmp, 'ash_lord.bbmodel')
+    geo = bbimport.convert(src, rename={'leg_left': 'leg_l', 'leg_right': 'leg_r'})
     wjson(f'{A}/geo/ash_lord.json', geo)
-    save(bbimport.texture(src), f'{A}/textures/entity/ash_lord_geo.png')
+    save(Image.open(os.path.join(tmp, 'ash_lord_texture.png')).convert('RGBA'), f'{A}/textures/entity/ash_lord_geo.png')
 
 def treeman_bb():
     """Sylvestre : modele Blockbench fourni (tools/assets/treeman.bbmodel)"""

@@ -97,7 +97,15 @@ public final class ClientTest {
                     MinecraftServer server = mc.getSingleplayerServer();
                     if (server == null) throw new IllegalStateException("pas de serveur integre");
                     log("scene " + s.name);
-                    if (s.name.contains("reputation")) { mc.options.hideGui = false; mc.setScreen(new RepScreen()); }
+                    if (mc.screen != null) mc.setScreen(null);
+                    if (s.name.contains("reputation")) { mc.options.hideGui = false; mc.setScreen(new QuestScreen(1)); }
+                    if (s.name.contains("quetes")) { mc.options.hideGui = false; QuestScreen.tracked = 1; mc.setScreen(new QuestScreen(0)); }
+                    if (s.name.contains("carte")) {
+                        mc.options.hideGui = false;
+                        MapScreen.addMarker(-445, -230); MapScreen.addMarker(250, -297);
+                        mc.setScreen(new MapScreen(s.name.contains("legende"), s.name.contains("legende") ? 1 : 2.5, s.name.contains("legende")));
+                    }
+                    if (s.name.contains("suivi")) { mc.options.hideGui = false; QuestScreen.tracked = 1; }
                     server.execute(() -> {
                         try { s.setup.accept(server.getPlayerList().getPlayers().get(0)); }
                         catch (Throwable t) { RingsOfAsh.LOGGER.error("[CLIENTTEST] ECHEC scene " + s.name, t); }
@@ -242,6 +250,8 @@ public final class ClientTest {
                 }));
             }
         }
+        lineup("05b_seigneur", 9.0, -3F, 4.0, List.of(ModEntities.ASH_LORD.get()));
+        lineup("05b_seigneur_proche", 5.5, 4F, 4.0, List.of(ModEntities.ASH_LORD.get()));
         lineup("05_geants", 15.0, -8F, 7.0, List.of(ModEntities.MAMMOTH.get(), ModEntities.TREEMAN.get(), ModEntities.FIRE_DEMON.get(), ModEntities.ASH_LORD.get()));
         for (float[] v : new float[][]{{0, 155F}, {1, -25F}, {2, 90F}}) {
             SCENES.add(new Scene("05" + "bcd".charAt((int) v[0]) + "_fleau", 70, p -> {
@@ -337,5 +347,17 @@ public final class ClientTest {
             for (var pp : net.ringsofash.data.People.values()) ModData.lore(p).rep[pp.ordinal()] = new int[]{35, 60, -20, 12}[pp.ordinal()];
             net.ringsofash.data.Net.sync(p);
         }));
+        SCENES.add(new Scene("25_quetes", 60, p -> {
+            ModData.lore(p).quest = 1;
+            net.ringsofash.data.Net.sync(p);
+        }));
+        SCENES.add(new Scene("26_carte", 60, p -> {
+            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+            lands.getChunk(-445 >> 4, -230 >> 4);
+            int y = lands.getHeight(Heightmap.Types.MOTION_BLOCKING, -445, -230);
+            view(p, lands, -444.5, y, -229.5, 160F, 12F);
+        }));
+        SCENES.add(new Scene("27_carte_legende", 40, p -> { }));
+        SCENES.add(new Scene("28_suivi", 40, p -> { }));
     }
 }
