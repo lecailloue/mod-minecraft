@@ -9,22 +9,33 @@ PREVIEW = os.path.join(ROOT, 'build', 'apercu')
 EYE = {'e': '#ffb020', 'r': '#ff3010', 'k': '#101010', 'w': '#f0ead8', 'd': '#201818', 'g': '#9fe060', 'c': '#ff7a18', 'y': '#ffe070', 'm': '#3a5a2a'}
 
 def troll():
-    m = Model('troll', 128, 64, 3)
-    c = '#6d7868'; belly = '#8a947e'
-    b = m.part('body', (0, 30, 0))
-    b.box((-10, 22, -6), (20, 18, 12), c, faces={'front': belly}, art={'front': ['....................', '....................', '......dd....dd......']}, pal=EYE)
-    b.box((-8, 18, -5), (16, 4, 10), '#5a4a38')
-    h = m.part('head', (0, 40, -2), 'body')
-    h.box((-5, 40, -7), (10, 9, 9), c, art={'front': ['..........', '..........', 'dddddddddd', '.ek....ke.', '..........', '....dd....', '.w......w.', '.wddddddw.', '..........']}, pal=EYE)
-    h.box((-7, 43, -3), (2, 4, 1), c); h.box((5, 43, -3), (2, 4, 1), c)
-    ar = m.part('arm_r', (-12, 38, 0), 'body'); ar.box((-17, 14, -3), (6, 26, 6), c)
-    ar.box((-16, 10, -16), (4, 5, 18), '#5a4028', noise=0.2)
-    al = m.part('arm_l', (12, 38, 0), 'body'); al.box((11, 14, -3), (6, 26, 6), c, mirror=True)
-    m.part('leg_r', (-5, 20, 0)).box((-9, 0, -4), (8, 20, 8), shade(rgb(c), 0.92))
-    m.part('leg_l', (5, 20, 0)).box((1, 0, -4), (8, 20, 8), shade(rgb(c), 0.92), mirror=True)
-    m.export(); m.preview(f'{PREVIEW}/troll.png')
-    m.retexture('troll_stone', lambda col: mix(col, (150, 150, 146), 0.75), 4)
-    m.retexture('troll_statue', lambda col: (128, 128, 124), 5)
+    """Trolls : modeles generes par trollbrute.py (tools/assets/troll*.bbmodel), importes comme les modeles Blockbench.
+    Classique (gris, presque nu, vouté) et chef de meute (plus grand, casque, yeux rouges lumineux)."""
+    import bbimport, os, trollbrute
+    from PIL import Image
+    from genlib import wjson, save
+    assets = os.path.join(os.path.dirname(__file__), 'assets')
+    trollbrute.generate(assets)
+    ren = {'leg_left': 'leg_l', 'leg_right': 'leg_r', 'arm_left': 'arm_l', 'arm_right': 'arm_r'}
+    for name in ('troll', 'troll_chief'):
+        src = os.path.join(assets, name + '.bbmodel')
+        wjson(f'{A}/geo/{name}.json', bbimport.convert(src, rename=ren))
+        save(bbimport.texture(src), f'{A}/textures/entity/{name}.png')
+    save(Image.open(os.path.join(assets, 'troll_chief_glow.png')), f'{A}/textures/entity/troll_chief_glow.png')
+    # variantes du troll de pierre : pierre claire, puis statue (soleil)
+    base = bbimport.texture(os.path.join(assets, 'troll.bbmodel'))
+    stone, statue = base.copy(), base.copy()
+    sp, tp, bp = stone.load(), statue.load(), base.load()
+    for y in range(base.height):
+        for x in range(base.width):
+            r, g, b, a = bp[x, y]
+            if a == 0: continue
+            sp[x, y] = tuple(mix((r, g, b), (150, 150, 146), 0.75)) + (a,)
+            lum = (r + g + b) / 3
+            v = max(0, min(255, int(128 + (lum - 100) * 0.22)))
+            tp[x, y] = (v, v, max(0, v - 4), a)
+    save(stone, f'{A}/textures/entity/troll_stone.png')
+    save(statue, f'{A}/textures/entity/troll_statue.png')
 
 def warg():
     m = Model('warg', 64, 64, 7)

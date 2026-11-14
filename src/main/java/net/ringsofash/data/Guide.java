@@ -49,8 +49,9 @@ public final class Guide {
         b("war_orc", "Orque noir", "Soldat d'élite en armure. Frappe fort. Visez-le en premier ou fuyez.");
         b("orc_chief", "Chef orque", "Commande les forteresses. Garde le meilleur butin.");
         b("goblin", "Gobelin", "Vermine des cavernes. Minuscule, rapide, toujours en nombre. Craint le soleil.");
-        b("cave_troll", "Troll des cavernes", "Trois blocs de haut. Sa massue envoie valser. Lent : gardez vos distances.");
+        b("cave_troll", "Troll des cavernes", "Trois blocs de haut, gris et massif. Ses grands coups de poing sont lents mais envoient valser. Il chasse à quatre pattes, comme un gorille : ne comptez pas le distancer.");
         b("stone_troll", "Troll de pierre", "Le soleil le change en statue. Une pioche en vient alors à bout sans risque.");
+        b("troll_chief", "Troll chef de meute", "Plus grand, casqué, les yeux rouges. Arrive avec sa meute de trolls et la lance sur vous. Son coup de poing est lent... et terrible.");
         b("warg", "Loup de guerre", "Chasse en meute dans les plaines. Parfois monté par un orque.");
         b("wight", "Être des tertres", "Hante les Landes la nuit. Glace et affaiblit. Disparaît à l'aube.");
         b("wild_man", "Homme sauvage", "Hostile... sauf si votre réputation générale est bonne.");

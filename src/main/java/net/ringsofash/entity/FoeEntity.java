@@ -42,28 +42,43 @@ import javax.annotation.Nullable;
 
 /** Ennemis de melee : orques, gobelins, trolls, loups de guerre, spectres des tertres, hommes sauvages, mammouths. */
 public class FoeEntity extends Monster {
-    public enum Kind { ORC, WAR_ORC, ORC_CHIEF, GOBLIN, CAVE_TROLL, STONE_TROLL, WARG, WIGHT, WILD_MAN, MAMMOTH, DEAD_SOLDIER }
+    public enum Kind { ORC, WAR_ORC, ORC_CHIEF, GOBLIN, CAVE_TROLL, STONE_TROLL, TROLL_CHIEF, WARG, WIGHT, WILD_MAN, MAMMOTH, DEAD_SOLDIER }
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(FoeEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> STONE = SynchedEntityData.defineId(FoeEntity.class, EntityDataSerializers.BOOLEAN);
+    /** Trolls : tick du coup de poing en cours (0 = aucun) et course a quatre pattes (synchronises pour l'animation). */
+    private static final EntityDataAccessor<Integer> SLAM = SynchedEntityData.defineId(FoeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> RUNNING = SynchedEntityData.defineId(FoeEntity.class, EntityDataSerializers.BOOLEAN);
     private int lifeLeft = -1;
+    private float runBlend;
+    private boolean poseLock;
 
     public FoeEntity(EntityType<? extends FoeEntity> type, Level level) {
         super(type, level);
         Kind k = kind();
-        this.xpReward = switch (k) { case ORC_CHIEF -> 40; case CAVE_TROLL, STONE_TROLL, MAMMOTH -> 20; case WAR_ORC, WIGHT -> 10; case GOBLIN -> 3; default -> 6; };
+        this.xpReward = switch (k) { case ORC_CHIEF -> 40; case TROLL_CHIEF -> 35; case CAVE_TROLL, STONE_TROLL, MAMMOTH -> 20; case WAR_ORC, WIGHT -> 10; case GOBLIN -> 3; default -> 6; };
         if (k == Kind.DEAD_SOLDIER) lifeLeft = 20 * 90;
     }
 
     public Kind kind() { return ModEntities.kindOf(getType()); }
     public int variant() { return entityData.get(VARIANT); }
     public boolean isStone() { return entityData.get(STONE); }
+    public boolean isTroll() { Kind k = kind(); return k == Kind.CAVE_TROLL || k == Kind.STONE_TROLL || k == Kind.TROLL_CHIEF; }
+    public int slamTick() { return entityData.get(SLAM); }
+    public void setSlam(int t) { entityData.set(SLAM, t); }
+    public boolean isRunning() { return entityData.get(RUNNING); }
+    /** Fondu 0..1 vers la course a quatre pattes (cote client, pour l'animation). */
+    public float runBlend() { return runBlend; }
+    /** Mise en scene des tests client : fige la pose (coup de poing au tick donne, ou course). */
+    public void testPose(boolean running, int slam) { poseLock = true; entityData.set(RUNNING, running); entityData.set(SLAM, slam); runBlend = running ? 1F : 0F; }
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder b) {
         super.defineSynchedData(b);
         b.define(VARIANT, 0);
         b.define(STONE, false);
+        b.define(SLAM, 0);
+        b.define(RUNNING, false);
     }
 
     @Override
@@ -72,7 +87,8 @@ public class FoeEntity extends Monster {
         goalSelector.addGoal(0, new FloatGoal(this));
         if (k == Kind.GOBLIN) { goalSelector.addGoal(1, new RestrictSunGoal(this)); goalSelector.addGoal(2, new FleeSunGoal(this, 1.1)); }
         if (k == Kind.GOBLIN || k == Kind.WARG) goalSelector.addGoal(3, new LeapAtTargetGoal(this, 0.42F));
-        goalSelector.addGoal(4, new MeleeAttackGoal(this, k == Kind.WARG ? 1.25 : 1.1, false));
+        if (k == Kind.CAVE_TROLL || k == Kind.STONE_TROLL || k == Kind.TROLL_CHIEF) goalSelector.addGoal(4, new TrollSlamGoal(this, k == Kind.TROLL_CHIEF ? 1.35 : 1.2));
+        else goalSelector.addGoal(4, new MeleeAttackGoal(this, k == Kind.WARG ? 1.25 : 1.1, false));
         goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.8));
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 8.0F));
         goalSelector.addGoal(8, new RandomLookAroundGoal(this));
@@ -105,6 +121,17 @@ public class FoeEntity extends Monster {
         Kind k = kind();
         entityData.set(VARIANT, r.nextInt(k == Kind.ORC ? 3 : 2));
         populateDefaultEquipmentSlots(r, difficulty);
+        if (k == Kind.TROLL_CHIEF && reason != MobSpawnType.SPAWN_EGG && reason != MobSpawnType.COMMAND) {
+            // le chef de meute arrive avec sa meute : deux ou trois trolls des cavernes autour de lui
+            for (int i = 0, n = 2 + r.nextInt(2); i < n; i++) {
+                FoeEntity t = ModEntities.CAVE_TROLL.get().create(level.getLevel());
+                if (t == null) continue;
+                t.moveTo(getX() + (r.nextDouble() - 0.5) * 7, getY(), getZ() + (r.nextDouble() - 0.5) * 7, r.nextFloat() * 360F, 0);
+                if (!level.noCollision(t)) t.moveTo(getX(), getY(), getZ(), r.nextFloat() * 360F, 0);
+                t.finalizeSpawn(level, difficulty, MobSpawnType.JOCKEY, null);
+                level.addFreshEntity(t);
+            }
+        }
         if (k == Kind.WARG && reason != MobSpawnType.SPAWN_EGG && r.nextInt(4) == 0) {
             FoeEntity orc = ModEntities.ORC.get().create(level.getLevel());
             if (orc != null) {
@@ -141,8 +168,15 @@ public class FoeEntity extends Monster {
     @Override
     public void aiStep() {
         super.aiStep();
+        if (isTroll()) runBlend += ((isRunning() ? 1F : 0F) - runBlend) * 0.25F;
         if (level().isClientSide) return;
         Kind k = kind();
+        if (isTroll() && !poseLock) {
+            // course a quatre pattes quand il chasse
+            boolean run = !isStone() && isAggressive() && getTarget() != null && slamTick() == 0 && getDeltaMovement().horizontalDistanceSqr() > 0.004;
+            if (run != isRunning()) entityData.set(RUNNING, run);
+            if (k == Kind.TROLL_CHIEF && tickCount % 20 == 0 && getTarget() != null) rally(getTarget());
+        }
         if (k == Kind.STONE_TROLL && tickCount % 20 == 0) {
             boolean sun = level().isDay() && level().canSeeSky(blockPosition().above(2)) && !level().isRaining();
             if (sun != isStone()) {
@@ -159,6 +193,13 @@ public class FoeEntity extends Monster {
         if (lifeLeft > 0 && --lifeLeft == 0) {
             ((net.minecraft.server.level.ServerLevel) level()).sendParticles(net.minecraft.core.particles.ParticleTypes.SOUL, getX(), getY() + 1, getZ(), 20, 0.3, 0.8, 0.3, 0.02);
             discard();
+        }
+    }
+
+    /** Le chef de meute designe sa cible a tous les trolls proches. */
+    private void rally(LivingEntity target) {
+        for (FoeEntity f : level().getEntitiesOfClass(FoeEntity.class, getBoundingBox().inflate(24), o -> o != this && o.isTroll() && o.getTarget() == null)) {
+            if (f.canAttack(target)) f.setTarget(target);
         }
     }
 
@@ -184,6 +225,7 @@ public class FoeEntity extends Monster {
             switch (kind()) {
                 case WIGHT -> { le.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1), this); le.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 0), this); }
                 case CAVE_TROLL, STONE_TROLL, MAMMOTH -> le.knockback(1.6, getX() - le.getX(), getZ() - le.getZ());
+                case TROLL_CHIEF -> le.knockback(1.9, getX() - le.getX(), getZ() - le.getZ());
                 case WARG -> { if (random.nextInt(4) == 0) le.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 0), this); }
                 default -> { }
             }
@@ -205,7 +247,7 @@ public class FoeEntity extends Monster {
         return switch (kind()) {
             case ORC, WAR_ORC, ORC_CHIEF -> SoundEvents.PIGLIN_BRUTE_AMBIENT;
             case GOBLIN -> SoundEvents.PIGLIN_AMBIENT;
-            case CAVE_TROLL, STONE_TROLL -> isStone() ? null : SoundEvents.RAVAGER_AMBIENT;
+            case CAVE_TROLL, STONE_TROLL, TROLL_CHIEF -> isStone() ? null : SoundEvents.RAVAGER_AMBIENT;
             case WARG -> SoundEvents.WOLF_GROWL;
             case WIGHT, DEAD_SOLDIER -> SoundEvents.STRAY_AMBIENT;
             case WILD_MAN -> SoundEvents.PILLAGER_AMBIENT;
@@ -218,7 +260,7 @@ public class FoeEntity extends Monster {
         return switch (kind()) {
             case ORC, WAR_ORC, ORC_CHIEF -> SoundEvents.PIGLIN_BRUTE_HURT;
             case GOBLIN -> SoundEvents.PIGLIN_HURT;
-            case CAVE_TROLL, STONE_TROLL -> SoundEvents.RAVAGER_HURT;
+            case CAVE_TROLL, STONE_TROLL, TROLL_CHIEF -> SoundEvents.RAVAGER_HURT;
             case WARG -> SoundEvents.WOLF_HURT;
             case WIGHT, DEAD_SOLDIER -> SoundEvents.STRAY_HURT;
             case WILD_MAN -> SoundEvents.PILLAGER_HURT;
@@ -231,7 +273,7 @@ public class FoeEntity extends Monster {
         return switch (kind()) {
             case ORC, WAR_ORC, ORC_CHIEF -> SoundEvents.PIGLIN_BRUTE_DEATH;
             case GOBLIN -> SoundEvents.PIGLIN_DEATH;
-            case CAVE_TROLL, STONE_TROLL -> SoundEvents.RAVAGER_DEATH;
+            case CAVE_TROLL, STONE_TROLL, TROLL_CHIEF -> SoundEvents.RAVAGER_DEATH;
             case WARG -> SoundEvents.WOLF_DEATH;
             case WIGHT, DEAD_SOLDIER -> SoundEvents.STRAY_DEATH;
             case WILD_MAN -> SoundEvents.PILLAGER_DEATH;
@@ -241,14 +283,14 @@ public class FoeEntity extends Monster {
 
     @Override
     public float getVoicePitch() {
-        float base = switch (kind()) { case GOBLIN -> 1.5F; case WAR_ORC -> 0.8F; case ORC_CHIEF -> 0.65F; case CAVE_TROLL, STONE_TROLL -> 0.7F; case WARG -> 0.75F; case MAMMOTH -> 0.5F; default -> 1.0F; };
+        float base = switch (kind()) { case GOBLIN -> 1.5F; case WAR_ORC -> 0.8F; case ORC_CHIEF -> 0.65F; case CAVE_TROLL, STONE_TROLL -> 0.7F; case TROLL_CHIEF -> 0.58F; case WARG -> 0.75F; case MAMMOTH -> 0.5F; default -> 1.0F; };
         return base + (random.nextFloat() - 0.5F) * 0.15F;
     }
 
     @Override
     protected void playStepSound(BlockPos pos, BlockState state) {
         Kind k = kind();
-        if (k == Kind.CAVE_TROLL || k == Kind.STONE_TROLL || k == Kind.MAMMOTH) playSound(SoundEvents.RAVAGER_STEP, 0.4F, 0.8F);
+        if (k == Kind.CAVE_TROLL || k == Kind.STONE_TROLL || k == Kind.TROLL_CHIEF || k == Kind.MAMMOTH) playSound(SoundEvents.RAVAGER_STEP, 0.4F, 0.8F);
         else super.playStepSound(pos, state);
     }
 

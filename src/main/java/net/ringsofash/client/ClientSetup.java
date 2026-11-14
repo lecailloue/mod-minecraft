@@ -31,7 +31,7 @@ public final class ClientSetup {
 
     public static final KeyMapping REP_KEY = new KeyMapping("key.ringsofash.reputation", InputConstants.KEY_R, "key.categories.ringsofash");
     public static final KeyMapping MAP_KEY = new KeyMapping("key.ringsofash.map", InputConstants.KEY_M, "key.categories.ringsofash");
-    private static final String[] GEO = {"troll", "warg", "stag", "demon", "lurker", "treeman", "eagle", "dragon", "mammoth", "ash_lord"};
+    private static final String[] GEO = {"troll", "troll_chief", "warg", "stag", "demon", "lurker", "treeman", "eagle", "dragon", "mammoth", "ash_lord"};
     private static final String[] HUMAN = {"plain", "elf", "orc", "goblin", "dwarf"};
 
     public static ModelLayerLocation layer(String name) { return new ModelLayerLocation(RingsOfAsh.id(name), "main"); }
@@ -195,8 +195,9 @@ public final class ClientSetup {
         e.registerEntityRenderer(ModEntities.WIGHT.get(), c -> new Renderers.Human<FoeEntity>(c, plain, 1.0F, 1.05F, f -> "wight", true));
         e.registerEntityRenderer(ModEntities.WILD_MAN.get(), c -> new Renderers.Human<FoeEntity>(c, plain, 1.0F, 1.0F, f -> "wild_man", false));
         e.registerEntityRenderer(ModEntities.DEAD_SOLDIER.get(), c -> new Renderers.Human<FoeEntity>(c, plain, 1.0F, 1.0F, f -> "dead_soldier", true));
-        e.registerEntityRenderer(ModEntities.CAVE_TROLL.get(), c -> new Renderers.Geo<FoeEntity>(c, layer("geo_troll"), "troll", 1.2F, 1.0F, f -> "troll", null));
-        e.registerEntityRenderer(ModEntities.STONE_TROLL.get(), c -> new Renderers.Geo<FoeEntity>(c, layer("geo_troll"), "troll", 1.2F, 1.0F, f -> f.isStone() ? "troll_statue" : "troll_stone", null));
+        e.registerEntityRenderer(ModEntities.CAVE_TROLL.get(), c -> new Renderers.Geo<FoeEntity>(c, layer("geo_troll"), "troll", 1.5F, 1.3F, f -> "troll", null));
+        e.registerEntityRenderer(ModEntities.STONE_TROLL.get(), c -> new Renderers.Geo<FoeEntity>(c, layer("geo_troll"), "troll", 1.5F, 1.3F, f -> f.isStone() ? "troll_statue" : "troll_stone", null));
+        e.registerEntityRenderer(ModEntities.TROLL_CHIEF.get(), c -> new Renderers.Geo<FoeEntity>(c, layer("geo_troll_chief"), "troll_chief", 1.8F, 1.3F, f -> "troll_chief", "troll_chief_glow"));
         e.registerEntityRenderer(ModEntities.WARG.get(), c -> new Renderers.Geo<FoeEntity>(c, layer("geo_warg"), "warg", 0.8F, 1.15F, f -> "warg", null));
         e.registerEntityRenderer(ModEntities.MAMMOTH.get(), c -> new Renderers.Geo<FoeEntity>(c, layer("geo_mammoth"), "mammoth", 1.8F, 1.0F, f -> "mammoth", null));
         e.registerEntityRenderer(ModEntities.PALE_RIDER.get(), c -> new Renderers.Human<>(c, plain, 1.1F, 1.15F, f -> "pale_rider", false));

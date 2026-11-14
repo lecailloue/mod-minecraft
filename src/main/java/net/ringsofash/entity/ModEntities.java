@@ -42,8 +42,9 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> WAR_ORC = foe("war_orc", 0.7F, 2.15F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> ORC_CHIEF = foe("orc_chief", 0.8F, 2.5F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> GOBLIN = foe("goblin", 0.45F, 1.2F);
-    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> CAVE_TROLL = foe("cave_troll", 1.4F, 3.0F);
-    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> STONE_TROLL = foe("stone_troll", 1.4F, 3.0F);
+    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> CAVE_TROLL = foe("cave_troll", 1.5F, 3.0F);
+    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> STONE_TROLL = foe("stone_troll", 1.5F, 3.0F);
+    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> TROLL_CHIEF = foe("troll_chief", 1.7F, 3.4F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> WARG = foe("warg", 1.1F, 1.25F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> WIGHT = foe("wight", 0.6F, 2.05F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> WILD_MAN = foe("wild_man", 0.6F, 1.95F);
@@ -74,6 +75,7 @@ public final class ModEntities {
         if (t == GOBLIN.get()) return FoeEntity.Kind.GOBLIN;
         if (t == CAVE_TROLL.get()) return FoeEntity.Kind.CAVE_TROLL;
         if (t == STONE_TROLL.get()) return FoeEntity.Kind.STONE_TROLL;
+        if (t == TROLL_CHIEF.get()) return FoeEntity.Kind.TROLL_CHIEF;
         if (t == WARG.get()) return FoeEntity.Kind.WARG;
         if (t == WIGHT.get()) return FoeEntity.Kind.WIGHT;
         if (t == WILD_MAN.get()) return FoeEntity.Kind.WILD_MAN;
@@ -103,8 +105,9 @@ public final class ModEntities {
         e.put(WAR_ORC.get(), mon(36, 7, 0.28, 8, 40, 0.2));
         e.put(ORC_CHIEF.get(), mon(90, 10, 0.27, 10, 40, 0.5));
         e.put(GOBLIN.get(), mon(12, 3, 0.33, 0, 24, 0));
-        e.put(CAVE_TROLL.get(), mon(80, 12, 0.24, 4, 28, 0.8));
-        e.put(STONE_TROLL.get(), mon(90, 12, 0.24, 6, 28, 0.9));
+        e.put(CAVE_TROLL.get(), mon(80, 18, 0.24, 4, 28, 0.8));
+        e.put(STONE_TROLL.get(), mon(90, 18, 0.24, 6, 28, 0.9));
+        e.put(TROLL_CHIEF.get(), mon(140, 24, 0.25, 6, 36, 1.0));
         e.put(WARG.get(), mon(22, 6, 0.36, 0, 36, 0));
         e.put(WIGHT.get(), mon(30, 6, 0.26, 2, 28, 0.2));
         e.put(WILD_MAN.get(), mon(22, 4, 0.29, 0, 24, 0));
@@ -150,6 +153,7 @@ public final class ModEntities {
         e.register(CAVE_TROLL.get(), G, H, (t, l, r, p, rnd) -> underground(t, l, r, p, rnd) || (ash(l, p) && surface(t, l, r, p, rnd)), OP);
         e.register(CAVE_THIEF.get(), G, H, ModEntities::underground, OP);
         e.register(STONE_TROLL.get(), G, H, ModEntities::nightSky, OP);
+        e.register(TROLL_CHIEF.get(), G, H, (t, l, r, p, rnd) -> underground(t, l, r, p, rnd) || (ash(l, p) && surface(t, l, r, p, rnd)) || nightSky(t, l, r, p, rnd), OP);
         e.register(WIGHT.get(), G, H, ModEntities::nightSky, OP);
         e.register(PALE_RIDER.get(), G, H, (t, l, r, p, rnd) -> nightSky(t, l, r, p, rnd) && l.getLevel().isNight(), OP);
         e.register(GIANT_SPIDER.get(), G, H, (t, l, r, p, rnd) -> rnd.nextInt(2) == 0 && Monster.checkAnyLightMonsterSpawnRules(t, l, r, p, rnd), OP);
