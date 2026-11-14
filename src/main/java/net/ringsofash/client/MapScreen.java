@@ -220,7 +220,7 @@ public class MapScreen extends Screen {
     public boolean keyPressed(int key, int scan, int mods) {
         if (ClientSetup.MAP_KEY.matches(key, scan)) { onClose(); return true; }
         if (key == InputConstants.KEY_ADD || key == InputConstants.KEY_EQUALS) { zoomBy(1.5); return true; }
-        if (key == InputConstants.KEY_MINUS || key == InputConstants.KEY_SUBTRACT) { zoomBy(1 / 1.5); return true; }
+        if (key == InputConstants.KEY_MINUS) { zoomBy(1 / 1.5); return true; }
         return super.keyPressed(key, scan, mods);
     }
 
