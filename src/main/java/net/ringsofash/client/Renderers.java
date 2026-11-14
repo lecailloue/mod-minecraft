@@ -87,7 +87,7 @@ public final class Renderers {
         @Override protected void scale(FoeEntity e, PoseStack ps, float pt) { float s = scales[idx(e)]; ps.scale(s, s, s); }
     }
 
-    /** Soldats spectraux : le modele 0 est l'ancien soldat (humanoide), 1 a 4 les nouveaux modeles (hoplite, capuche, crane, Roi des morts). */
+    /** Soldats spectraux : le modele 0 est l'ancien soldat (humanoide), 1 a 4 les nouveaux modeles (veteran, hoplite, guerrier a cornes, Roi des morts). */
     public static class Spectre extends EntityRenderer<FoeEntity> {
         private final Human<FoeEntity> classic;
         private final Wraith wraith;
@@ -112,7 +112,7 @@ public final class Renderers {
 
     /** Les 4 nouveaux modeles spectraux : translucides, yeux lumineux. */
     public static class Wraith extends MobRenderer<FoeEntity, GeoModel<FoeEntity>> {
-        public static final String[] NAMES = {"spectre_lance", "spectre_capuche", "spectre_crane", "spectre_roi"};
+        public static final String[] NAMES = {"spectre_epee", "spectre_lance", "spectre_hache", "spectre_roi"};
         public static final float[] BLOCKS = {1.95F, 1.95F, 1.9F, 2.2F};
         private final GeoModel<FoeEntity>[] models;
         private final float[] scales = new float[NAMES.length];

@@ -8,17 +8,19 @@ import orcs as O
 from orcs import C, X, chain, spike, translate, scale_about, scale_all, unique_names
 
 MAT = {
-    's_cloth': dict(base=(62, 108, 100), n1=8, n2=8, tint=(.9, 1, 1)),
-    's_cloth2': dict(base=(34, 62, 74), n1=7, n2=8, tint=(.9, 1, 1.1)),
-    's_rag': dict(base=(96, 138, 120), n1=9, n2=8, tint=(.95, 1, 1)),
-    's_metal': dict(base=(112, 142, 140), n1=6, n2=7, tint=(.95, 1, 1)),
-    's_rust': dict(base=(82, 104, 96), n1=8, n2=9, tint=(.95, 1, .95)),
-    's_blade': dict(base=(170, 202, 198), n1=7, n2=6, tint=(.95, 1, 1)),
-    's_bone': dict(base=(208, 224, 208), n1=7, n2=6, tint=(1, 1, .95)),
-    's_wood': dict(base=(72, 80, 64), n1=6, n2=6, tint=(.95, 1, .9)),
-    's_gold': dict(base=(212, 176, 74), n1=8, n2=8, tint=(1, .95, .7)),
-    's_gem': dict(base=(96, 236, 204), n1=5, n2=5, tint=(.9, 1, 1)),
-    's_dark': dict(base=(12, 24, 22), n1=3, n2=4, tint=(1, 1, 1)),
+    # tout est vert spectral, comme le soldat d'origine : peau, mailles, tissu
+    's_mail': dict(base=(88, 146, 114), n1=6, n2=7, tint=(.92, 1, .96)),
+    's_cloth': dict(base=(58, 124, 94), n1=8, n2=8, tint=(.9, 1, .95)),
+    's_cloth2': dict(base=(36, 88, 70), n1=7, n2=8, tint=(.9, 1, .95)),
+    's_rag': dict(base=(98, 160, 126), n1=9, n2=8, tint=(.95, 1, .98)),
+    's_metal': dict(base=(104, 158, 134), n1=6, n2=7, tint=(.92, 1, .98)),
+    's_rust': dict(base=(72, 120, 98), n1=7, n2=8, tint=(.92, 1, .96)),
+    's_blade': dict(base=(192, 238, 218), n1=7, n2=6, tint=(.95, 1, 1)),
+    's_bone': dict(base=(176, 226, 200), n1=7, n2=6, tint=(.95, 1, .98)),
+    's_wood': dict(base=(76, 100, 72), n1=6, n2=6, tint=(.92, 1, .92)),
+    's_gold': dict(base=(206, 188, 96), n1=8, n2=8, tint=(.95, 1, .8)),
+    's_gem': dict(base=(150, 255, 225), n1=5, n2=5, tint=(.9, 1, 1)),
+    's_dark': dict(base=(14, 34, 28), n1=3, n2=4, tint=(1, 1, 1)),
 }
 
 
@@ -48,8 +50,8 @@ def d_plain(arr, face, rng):
 
 
 T.MATS.update(MAT)
-T.DECOR.update({'s_cloth': O.d_cloth2, 's_cloth2': O.d_cloth2, 's_rag': O.d_cloth2, 's_metal': lambda a, f, r: O.d_iron2(a, f, r, rust=.2),
-                's_rust': lambda a, f, r: O.d_iron2(a, f, r, rust=.8), 's_blade': O.d_blade2, 's_bone': O.d_tooth, 's_wood': O.d_wood,
+T.DECOR.update({'s_mail': O.d_mail2, 's_cloth': O.d_cloth2, 's_cloth2': O.d_cloth2, 's_rag': O.d_cloth2, 's_metal': lambda a, f, r: O.d_iron2(a, f, r, rust=.2),
+                's_rust': lambda a, f, r: O.d_iron2(a, f, r, rust=.6), 's_blade': O.d_blade2, 's_bone': O.d_tooth, 's_wood': O.d_wood,
                 's_gold': d_plain, 's_gem': d_plain, 's_dark': d_plain})
 
 
@@ -72,36 +74,8 @@ def fx_eyes(col):
     return f
 
 
-def fx_skull(col):
-    base = fx_eyes(col)
-
-    def f(F, rng, glow):
-        base(F, rng, glow)
-        n = F['north']
-        h, w, _ = n.shape
-        for x in range(w):                                   # rangee de dents
-            put(n, x, h - 2, (20, 30, 26), .9)
-            if x % 2 == 0:
-                put(n, x, h - 3, (236, 244, 230), 1)
-    return f
-
-
-def fx_hood(col):
-    """visage cache sous la capuche : seulement deux points lumineux"""
-    def f(F, rng, glow):
-        n = F['north']
-        h, w, _ = n.shape
-        n[:, :] = (8, 16, 15)
-        for x0 in (1, w - 4):
-            for dx in range(3):
-                for y in (3, 4, 5):
-                    glow('north', x0 + dx, y, col)
-                    put(n, x0 + dx, y, col, 1)
-    return f
-
-
 # ---------------------------------------------------------------- corps
-def body_parts(sk, eye, head_mat, head_fx, ax=11, rib=False):
+def body_parts(sk, eye, head_mat, head_fx, ax=11, rib=False, mail=True):
     legs = {}
     for sg in (-1, 1):
         n = 'left' if sg < 0 else 'right'
@@ -113,6 +87,11 @@ def body_parts(sk, eye, head_mat, head_fx, ax=11, rib=False):
     bk = [C('chest', -8, 41, -4.5, 16, 14, 9, sk, key='s_chest'),
           C('abd', -6, 34, -4, 12, 8, 8, sk, key='s_abd'),
           C('neck', -3, 55, -3, 6, 3, 6, sk, key='s_neck')]
+    if mail:                                                # cotte de mailles et ceinture, comme le soldat d'origine
+        bk += [C('mail_chest', -8.5, 40.5, -5, 17, 15, 10, 's_mail', key='s_mchest'),
+               C('mail_abd', -6.5, 33.5, -4.5, 13, 8, 9, 's_mail', key='s_mabd'),
+               C('belt', -7, 33, -4.9, 14, 2, 9, 's_cloth2', key='s_belt0'),
+               C('buckle', -1, 33.2, -5.4, 2, 1.6, 1, 's_gold', key='s_buckle')]
     if rib:
         for i in range(4):
             bk.append(C(f'rib_{i}', -7, 43 + i * 3, -5.2, 14, 1, 1, 's_bone', key='s_rib'))
@@ -218,101 +197,102 @@ def shield(sg=-1, ax=11):
 
 
 # ---------------------------------------------------------------- les modeles
-TEAL = np.array((120, 255, 220))
-ICE = np.array((200, 235, 255))
-GOLD = np.array((255, 230, 140))
+EYE = np.array((224, 255, 240))
+GOLD = np.array((255, 236, 160))
 
 
 def col(c):
     return O.col(c)
 
 
-def spectre_lance(skin='6fc4b4'):
-    """hoplite : casque a crete et a joues, bouclier rond rouille, lance ; tunique en loques"""
+def spectre_epee(skin='7ad8a0'):
+    """veteran : coiffe de mailles autour du visage, jupe de mailles, epee droite"""
     sk = skin_mat(skin)
-    legs, pel, bk, hk, arms, fores = body_parts(sk, col(TEAL), sk, fx_eyes(col(TEAL)))
-    tunic(bk)
-    bk.append(C('strap_a', -1.5, 40, -5.1, 2, 15, 1, 's_cloth2', key='s_strapa', rot=(0, 0, -30)))
-    hk += [C('helm_dome', -5.5, 65, -6.5, 11, 4, 11, 's_rust', key='s_hdome'),
-           C('helm_back', -5.5, 57, 3, 11, 7, 2, 's_rust', key='s_hback'),
-           C('helm_nasal', -.5, 58, -6.4, 1, 6, 1, 's_metal', key='s_hnasal'),
-           C('crest', -.5, 69, -7, 1, 5, 12, 's_cloth2', key='s_crest')]
+    legs, pel, bk, hk, arms, fores = body_parts(sk, col(EYE), sk, fx_eyes(col(EYE)))
+    hk += [C('coif_top', -5.5, 65, -6.5, 11, 4, 11, 's_mail', key='s_ctop'),
+           C('coif_back', -5.5, 56, 3, 11, 10, 2, 's_mail', key='s_cback'),
+           C('coif_neck', -6, 52, -4.5, 12, 4, 10, 's_mail', key='s_cneck'),
+           C('coif_brow', -5.5, 64, -7, 11, 1, 1, 's_metal', key='s_cbrow')]
     for sg in (-1, 1):
-        hk.append(C('cheek_' + ('l' if sg < 0 else 'r'), X(sg, 5, 2), 57, -6, 2, 7, 7, 's_rust', key='s_cheek'))
+        hk.append(C('coif_side_' + ('l' if sg < 0 else 'r'), X(sg, 5.5, 2), 56, -6, 2, 9, 9, 's_mail', key='s_cside'))
+    for i in range(7):
+        ln = 9 + (i * 5 % 4) * 2
+        bk.append(C(f'skirt_{i}', -6.5 + i * 1.9, 33 - ln, -5.2 - (i % 2) * .5, 2, ln, 1, 's_mail', key=f's_skirt{ln}', rot=(0, 0, (-3, 3, -2, 4)[i % 4])))
+    for i in range(3):
+        bk.append(C(f'skirt_back_{i}', -5 + i * 4, 22, 4.6, 4, 11, 1, 's_mail', key='s_skirtb'))
+    return finish(legs, pel, bk, hk, arms, fores, w_sword(26, 3), hand_rot=(-30, 0, -6))
+
+
+def spectre_lance(skin='6cc99a'):
+    """hoplite : casque conique a nasal, bouclier rond, lance, pans de tissu"""
+    sk = skin_mat(skin)
+    legs, pel, bk, hk, arms, fores = body_parts(sk, col(EYE), sk, fx_eyes(col(EYE)))
+    tunic(bk)
+    hk += [C('helm_dome', -5.5, 65, -6.5, 11, 3, 11, 's_metal', key='s_hdome'),
+           C('helm_mid', -4.5, 68, -5.5, 9, 2, 9, 's_metal', key='s_hmid'),
+           C('helm_top', -2.5, 70, -3.5, 5, 2, 5, 's_metal', key='s_htop'),
+           C('helm_tip', -.5, 72, -1.5, 1, 3, 1, 's_rust', key='s_htip'),
+           C('helm_back', -5.5, 57, 3, 11, 8, 2, 's_metal', key='s_hback'),
+           C('helm_nasal', -.5, 58, -6.5, 1, 7, 1, 's_metal', key='s_hnasal')]
+    for sg in (-1, 1):
+        hk.append(C('cheek_' + ('l' if sg < 0 else 'r'), X(sg, 5, 2), 57, -6, 2, 7, 6, 's_metal', key='s_cheek'))
     bk.append(C('paul_l', -14, 52, -3.5, 5, 3, 7, 's_rust', key='s_paul'))
     return finish(legs, pel, bk, hk, arms, fores, w_spear(), hand_rot=(-8, 0, -6), shield=shield())
 
 
-def spectre_capuche(skin='8ab8d0'):
-    """silhouette a capuche : visage noir, deux yeux, cape deteriorée, longue epee"""
+def spectre_hache(skin='8ae0b0'):
+    """guerrier a cornes : casque ouvert a deux cornes, echarpe de tissu, epaulieres, hache, longs cheveux fantomatiques"""
     sk = skin_mat(skin)
-    legs, pel, bk, hk, arms, fores = body_parts(sk, col(ICE), 's_dark', fx_hood(col(ICE)))
-    tunic(bk, 's_cloth2', 7, 's_cloth', rag=1.7)
-    bk.append(C('robe', -8.5, 36, -5, 17, 19, 10, 's_cloth2', key='s_robe'))
-    hk += [C('hood_top', -5.5, 62, -6.5, 11, 6, 11, 's_cloth2', key='s_htop'),
-           C('hood_back', -5.5, 54, 3, 11, 10, 3, 's_cloth2', key='s_hback'),
-           C('hood_peak', -5.5, 63, -8, 11, 3, 2, 's_cloth2', key='s_hpeak'),
-           C('hood_point', -1, 66, 3, 2, 6, 3, 's_cloth2', key='s_hpoint', rot=(30, 0, 0))]
-    for sg in (-1, 1):
-        hk.append(C('hood_side_' + ('l' if sg < 0 else 'r'), X(sg, 5.5, 2), 55, -6, 2, 10, 9, 's_cloth2', key='s_hside'))
-    bk.append(C('mantle', -9.5, 50, -4.5, 19, 5, 9, 's_cloth2', key='s_mantle'))
-    bk.append(C('mantle_l', -12, 47, -4, 3, 5, 8, 's_cloth2', key='s_mantle2', rot=(0, 0, 12)))
-    bk.append(C('mantle_r', 9, 47, -4, 3, 5, 8, 's_cloth2', key='s_mantle2', rot=(0, 0, -12)))
-    return finish(legs, pel, bk, hk, arms, fores, w_sword(26, 3), hand_rot=(-30, 0, -6), capes=cape('s_cloth2', 's_cloth', 15))
-
-
-def spectre_crane(skin='cfeede'):
-    """guerrier-crane : visage de squelette, cotte de mailles en lambeaux, epaulieres rouillees, cotes apparentes, hache"""
-    sk = skin_mat(skin)
-    legs, pel, bk, hk, arms, fores = body_parts(sk, col(TEAL), 's_bone', fx_skull(col(TEAL)), rib=True)
-    bk.append(C('belt', -7, 33, -4.7, 14, 2, 9, 's_rust', key='s_belt2'))
-    for i in range(7):
-        ln = 9 + (i * 5 % 4) * 2
-        bk.append(C(f'mail_{i}', -6.5 + i * 1.9, 33 - ln, -5, 2, ln, 1, 's_rust', key=f's_mail{ln}', rot=(0, 0, (-4, 3, -2, 4)[i % 4])))
-    for i in range(3):
-        bk.append(C(f'mail_back_{i}', -5 + i * 4, 22, 4.6, 4, 11, 1, 's_rust', key='s_mailb'))
-    for sg in (-1, 1):
-        n = 'l' if sg < 0 else 'r'
-        bk.append(C('paul_' + n, X(sg, 12.5, 7), 53, -4, 7, 3, 8, 's_rust', key='s_paulr', rot=(0, 0, sg * -10), pivot=(sg * 12.5, 55, 0)))
-        bk.append(C('paul2_' + n, X(sg, 13, 6), 50, -3.5, 6, 3, 7, 's_metal', key='s_paulm', rot=(0, 0, sg * -14), pivot=(sg * 13, 52, 0)))
-    hk += [C('helm_band', -5.5, 64, -6.5, 11, 2, 11, 's_rust', key='s_hband'),
-           C('helm_back', -5.5, 59, 3, 11, 6, 2, 's_rust', key='s_hback2')]
+    legs, pel, bk, hk, arms, fores = body_parts(sk, col(EYE), sk, fx_eyes(col(EYE)))
+    bk.append(C('belt2', -7, 33, -4.9, 14, 2, 9, 's_rust', key='s_belt2'))
+    for i in range(6):
+        ln = 8 + (i * 5 % 4) * 2
+        bk.append(C(f'rag_{i}', -6.5 + i * 2.2, 33 - ln, -5.2, 2, ln, 1, 's_cloth', key=f's_hrag{ln}', rot=(0, 0, (-4, 3, -2, 5)[i % 4])))
+    hk += [C('helm_band', -5.5, 64, -6.5, 11, 2, 11, 's_metal', key='s_hband'),
+           C('helm_cap', -5.5, 66, -6.5, 11, 3, 11, 's_rust', key='s_hcap'),
+           C('helm_back', -5.5, 58, 3, 11, 6, 2, 's_metal', key='s_hback2')]
     for sg in (-1, 1):
         n = 'l' if sg < 0 else 'r'
         hk.append(spike('horn_' + n, sg * 5.5, 65, -2, 6, 2, (0, 0, sg * -40), mat='s_bone'))
+        hk.append(C('hair_' + n, X(sg, 5.6, 2), 52, 1, 2, 12, 3, 's_rag', key='s_hair'))
+    for i in range(3):
+        hk.append(C(f'hair_back_{i}', -4 + i * 3.4, 46, 3.6 + (i % 2) * .6, 3, 18 - i % 2 * 4, 1, 's_rag', key=f's_hairb{i % 2}'))
+    bk.append(C('scarf', -7, 52, -5, 14, 4, 10, 's_cloth2', key='s_scarf'))
+    bk.append(C('scarf_tail', 3, 38, -5.6, 3, 15, 1, 's_cloth2', key='s_scarft', rot=(0, 0, -6)))
+    for sg in (-1, 1):
+        n = 'l' if sg < 0 else 'r'
+        bk.append(C('paul_' + n, X(sg, 12.5, 7), 53, -4, 7, 3, 8, 's_rust', key='s_paulr', rot=(0, 0, sg * -10), pivot=(sg * 12.5, 55, 0)))
     return finish(legs, pel, bk, hk, arms, fores, w_axe(), hand_rot=(-44, 0, -6))
 
 
-def spectre_roi(skin='bff2d4'):
-    """Roi des morts : grande couronne d'or, cape royale doublee d'or, plastron et epaulieres, grande epee ; plus grand que les autres"""
+def spectre_roi(skin='9ae8c0'):
+    """Roi des morts : le soldat d'origine en grand, avec une couronne d'or, une cape royale et une grande epee"""
     sk = skin_mat(skin)
-    legs, pel, bk, hk, arms, fores = body_parts(sk, col(GOLD), 's_bone', fx_skull(col(GOLD)), rib=False)
-    bk += [C('plate', -8.5, 41, -5.4, 17, 13, 2, 's_metal', key='k_plate'),
-           C('plate_trim', -8.5, 41, -5.6, 17, 2, 1, 's_gold', key='k_ptrim'),
+    legs, pel, bk, hk, arms, fores = body_parts(sk, col(GOLD), sk, fx_eyes(col(GOLD)))
+    bk += [C('plate', -8.5, 43, -5.5, 17, 11, 1, 's_metal', key='k_plate'),
+           C('plate_trim', -8.5, 53, -5.6, 17, 2, 1, 's_gold', key='k_ptrim'),
            C('plate_gem', -1.5, 47, -6.2, 3, 3, 1, 's_gem', key='k_pgem'),
-           C('belt', -7, 33, -4.7, 14, 3, 9, 's_gold', key='k_belt')]
+           C('belt_g', -7, 33, -5.2, 14, 3, 10, 's_gold', key='k_belt')]
     tunic(bk, 's_cloth2', 6, 's_cloth2')
     for sg in (-1, 1):
         n = 'l' if sg < 0 else 'r'
         bk.append(C('paul_' + n, X(sg, 13, 8), 53, -4.5, 8, 3, 9, 's_metal', key='k_paul', rot=(0, 0, sg * -10), pivot=(sg * 13, 55, 0)))
         bk.append(C('paul_trim_' + n, X(sg, 13, 8), 56, -4.5, 8, 1, 9, 's_gold', key='k_pault', rot=(0, 0, sg * -10), pivot=(sg * 13, 55, 0)))
         bk.append(spike('paul_spike_' + n, sg * 13.5, 56, -.5, 5, 2, (0, 0, sg * -12), mat='s_gold'))
-    # couronne : bandeau, cinq pointes, gemme centrale
     hk += [C('crown_band', -5.5, 66, -6.5, 11, 2, 11, 's_gold', key='k_cband'),
-           C('crown_gem', -1, 66.5, -7.2, 2, 1, 1, 's_gem', key='k_cgem', fx=None)]
+           C('crown_gem', -1, 66.5, -7.2, 2, 1, 1, 's_gem', key='k_cgem')]
     for i, (x, z, h) in enumerate([(-4.5, -6, 4), (-0.5, -6.4, 6), (3.5, -6, 4), (-4.5, 2.2, 4), (3.5, 2.2, 4), (-0.5, 2.6, 5), (-4.7, -2, 3), (3.7, -2, 3)]):
         hk.append(C(f'crown_{i}', x, 68, z, 2, h, 2, 's_gold', key=f'k_cs{h}'))
-    # barbe de lambeaux sous le menton
     for i in range(3):
         hk.append(C(f'beard_{i}', -3 + i * 2.6, 49 - i % 2 * 2, -5 - (i % 2) * .5, 2, 7 + i % 2 * 3, 1, 's_rag', key=f'k_beard{i % 2}'))
     return finish(legs, pel, bk, hk, arms, fores, w_sword(34, 5), hand_rot=(-24, 0, -6), head_f=1.16,
-                  capes=cape('s_cloth2', 's_gold', 20, wide=1.0))
+                  capes=cape('s_cloth2', 's_gold', 20))
 
 
 MODELS = {
+    'spectre_epee': (spectre_epee, 1.0),
     'spectre_lance': (spectre_lance, 1.0),
-    'spectre_capuche': (spectre_capuche, 1.0),
-    'spectre_crane': (spectre_crane, 1.0),
+    'spectre_hache': (spectre_hache, 1.0),
     'spectre_roi': (spectre_roi, 1.22),
 }
 
@@ -342,5 +322,5 @@ def sheet(path, names=None, views=(0, 40, 180)):
 
 
 if __name__ == '__main__':
-    sheet('/tmp/spectres_a.png', ['spectre_lance', 'spectre_capuche'])
-    sheet('/tmp/spectres_b.png', ['spectre_crane', 'spectre_roi'])
+    sheet('/tmp/spectres_a.png', ['spectre_epee', 'spectre_lance'])
+    sheet('/tmp/spectres_b.png', ['spectre_hache', 'spectre_roi'])

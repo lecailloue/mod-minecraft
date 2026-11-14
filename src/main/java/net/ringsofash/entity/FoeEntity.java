@@ -91,7 +91,7 @@ public class FoeEntity extends Monster {
             default -> Reg.ORC_MACE.get();
         });
     }
-    /** Soldat spectral : 0 = ancien modele, 1 a 3 = hoplite / capuche / crane, 4 = Roi des morts (5 % des apparitions). */
+    /** Soldat spectral : 0 = ancien modele, 1 a 3 = veteran / hoplite / guerrier a cornes, 4 = Roi des morts (5 % des apparitions). */
     public int spectreModel() { return kind() == Kind.DEAD_SOLDIER ? Math.max(0, Math.min(4, variant())) : 0; }
     public boolean isDeadKing() { return spectreModel() == 4; }
     public boolean isStone() { return entityData.get(STONE); }
