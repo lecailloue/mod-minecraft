@@ -87,7 +87,7 @@ public final class Renderers {
         @Override protected void scale(FoeEntity e, PoseStack ps, float pt) { float s = scales[idx(e)]; ps.scale(s, s, s); }
     }
 
-    /** Soldats spectraux : le modele 0 est l'ancien soldat (humanoide), 1 a 4 les nouveaux modeles (veteran, hoplite, guerrier a cornes, Roi des morts). */
+    /** Soldats spectraux : le modele 0 est l'ancien soldat (humanoide), 1 a 5 les nouveaux modeles (veteran, hoplite, guerrier a cornes, rodeur, Roi des morts). */
     public static class Spectre extends EntityRenderer<FoeEntity> {
         private final Human<FoeEntity> classic;
         private final Wraith wraith;
@@ -110,10 +110,10 @@ public final class Renderers {
         }
     }
 
-    /** Les 4 nouveaux modeles spectraux : translucides, yeux lumineux. */
+    /** Les 5 nouveaux modeles spectraux : translucides (peau et tissus par pixel), squelette visible dessous, yeux lumineux. */
     public static class Wraith extends MobRenderer<FoeEntity, GeoModel<FoeEntity>> {
-        public static final String[] NAMES = {"spectre_epee", "spectre_lance", "spectre_hache", "spectre_roi"};
-        public static final float[] BLOCKS = {1.95F, 1.95F, 1.9F, 2.2F};
+        public static final String[] NAMES = {"spectre_epee", "spectre_lance", "spectre_hache", "spectre_dague", "spectre_roi"};
+        public static final float[] BLOCKS = {1.95F, 1.95F, 1.9F, 1.9F, 2.65F};
         private final GeoModel<FoeEntity>[] models;
         private final float[] scales = new float[NAMES.length];
 
@@ -123,7 +123,7 @@ public final class Renderers {
             models = new GeoModel[NAMES.length];
             for (int i = 0; i < NAMES.length; i++) {
                 models[i] = new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_" + NAMES[i])), NAMES[i]);
-                models[i].alpha = 205;
+                models[i].alpha = 255;
                 scales[i] = BLOCKS[i] * 16F / GeoDef.get(NAMES[i]).height;
             }
             addLayer(new RenderLayer<FoeEntity, GeoModel<FoeEntity>>(this) {

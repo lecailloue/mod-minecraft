@@ -197,16 +197,16 @@ public final class ClientTest {
         }));
     }
 
-    /** Les 5 soldats spectraux : ancien modele, hoplite, capuche, crane, Roi des morts (seul le roi pour la vue rapprochee). */
+    /** Les 6 soldats spectraux : ancien modele, veteran, hoplite, guerrier a cornes, rodeur, Roi des morts (seul le roi pour la vue rapprochee). */
     private static void spectreLine(String name, double dist, float pitch, double spacing) {
         SCENES.add(new Scene(name, 70, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
             boolean close = name.contains("proche");
-            int n = close ? 1 : 5;
+            int n = close ? 1 : 6;
             double x = SX + (n - 1) * spacing / 2.0;
             for (int i = 0; i < n; i++) {
-                final int v = close ? 4 : i;
+                final int v = close ? 5 : i;
                 actor(ow, ModEntities.DEAD_SOLDIER.get(), x, SZ + dist, o -> o.testVariant(v));
                 x -= spacing;
             }

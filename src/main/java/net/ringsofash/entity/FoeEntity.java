@@ -91,9 +91,9 @@ public class FoeEntity extends Monster {
             default -> Reg.ORC_MACE.get();
         });
     }
-    /** Soldat spectral : 0 = ancien modele, 1 a 3 = veteran / hoplite / guerrier a cornes, 4 = Roi des morts (5 % des apparitions). */
-    public int spectreModel() { return kind() == Kind.DEAD_SOLDIER ? Math.max(0, Math.min(4, variant())) : 0; }
-    public boolean isDeadKing() { return spectreModel() == 4; }
+    /** Soldat spectral : 0 = ancien modele, 1 a 4 = veteran / hoplite / guerrier a cornes / rodeur a la dague, 5 = Roi des morts (5 % des apparitions). */
+    public int spectreModel() { return kind() == Kind.DEAD_SOLDIER ? Math.max(0, Math.min(5, variant())) : 0; }
+    public boolean isDeadKing() { return spectreModel() == 5; }
     public boolean isStone() { return entityData.get(STONE); }
     public boolean isTroll() { Kind k = kind(); return k == Kind.CAVE_TROLL || k == Kind.STONE_TROLL || k == Kind.TROLL_CHIEF; }
     public int slamTick() { return entityData.get(SLAM); }
@@ -151,7 +151,7 @@ public class FoeEntity extends Monster {
         data = super.finalizeSpawn(level, difficulty, reason, data);
         RandomSource r = level.getRandom();
         Kind k = kind();
-        entityData.set(VARIANT, k == Kind.DEAD_SOLDIER ? (r.nextInt(100) < 5 ? 4 : r.nextInt(4)) : r.nextInt(k == Kind.ORC ? 16 : k == Kind.WAR_ORC ? 4 : 2));
+        entityData.set(VARIANT, k == Kind.DEAD_SOLDIER ? (r.nextInt(100) < 5 ? 5 : r.nextInt(5)) : r.nextInt(k == Kind.ORC ? 16 : k == Kind.WAR_ORC ? 4 : 2));
         if (isDeadKing()) makeDeadKing();
         populateDefaultEquipmentSlots(r, difficulty);
         if (k == Kind.TROLL_CHIEF && reason != MobSpawnType.SPAWN_EGG && reason != MobSpawnType.COMMAND) {
