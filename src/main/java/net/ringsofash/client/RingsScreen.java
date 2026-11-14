@@ -40,7 +40,7 @@ public class RingsScreen extends AbstractContainerScreen<RingsMenu> {
             g.fill(x + s.x - 1, y + s.y - 1, x + s.x + 17, y + s.y + 17, 0xFF1C1A18);
             g.fill(x + s.x, y + s.y, x + s.x + 16, y + s.y + 16, 0xFF5B5651);
         }
-        g.drawCenteredString(font, "Maintenez Alt pour choisir l'anneau actif", x + imageWidth / 2, y + 20, 0xFFD8C8A8);
+        g.drawCenteredString(font, "Alt : choisir l'anneau actif", x + imageWidth / 2, y + 20, 0xFFD8C8A8);
         g.drawCenteredString(font, "Seul l'anneau actif agit", x + imageWidth / 2, y + 73, 0xFF9C9486);
     }
 
