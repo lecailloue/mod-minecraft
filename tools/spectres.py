@@ -58,20 +58,20 @@ T.DECOR.update({'s_mail': O.d_mail2, 's_cloth': O.d_cloth2, 's_cloth2': O.d_clot
 
 # ---------------------------------------------------------------- visages : orbites sombres, yeux lumineux
 def fx_eyes(col):
+    """visage : sourcils sombres, yeux (orbite sombre + point lumineux), bouche fermee"""
     def f(F, rng, glow):
         n = F['north']
         h, w, _ = n.shape                                   # 9 x 9
         for (x0, y0) in ((1, 3), (w - 3, 3)):
             for dx in range(2):
-                for dy in range(3):
-                    put(n, x0 + dx, y0 + dy, (6, 14, 12), .95)
-            for dy in (1, 2):
-                glow('north', x0 + 0, y0 + dy, col)
-                glow('north', x0 + 1, y0 + dy, col)
-                put(n, x0, y0 + dy, col, 1)
-                put(n, x0 + 1, y0 + dy, col, 1)
-        put(n, w // 2, 5, (8, 16, 14), .9)                  # fente du nez
-        put(n, w // 2, 6, (8, 16, 14), .9)
+                put(n, x0 + dx, y0 - 1, (8, 22, 16), .9)    # sourcil
+                put(n, x0 + dx, y0, (6, 14, 12), .95)       # orbite
+                put(n, x0 + dx, y0 + 1, col, 1)             # oeil
+                glow('north', x0 + dx, y0 + 1, col)
+        for x in range(3, 6):                                # bouche
+            put(n, x, 7, (12, 36, 26), .85)
+        put(n, 3, 8, (40, 90, 70), .5)
+        put(n, 5, 8, (40, 90, 70), .5)
     return f
 
 
@@ -92,28 +92,35 @@ def fx_bonehead(F, rng, glow):
 
 # ---------------------------------------------------------------- corps
 def body_parts(sk, eye, head_mat, head_fx, ax=11, mail=True):
-    """enveloppe fantomatique translucide (peau verte) autour d'un squelette opaque. Dans chaque piece le squelette vient AVANT l'enveloppe
+    """enveloppe fantomatique translucide (peau verte) autour d'un squelette opaque, a proportions humaines : genoux, mollets, epaules,
+    pectoraux, cou, mains a doigts, visage (nez, arcade, pommettes, menton, oreilles). Dans chaque piece le squelette vient AVANT l'enveloppe
     (le rendu translucide ecrit la profondeur : il faut dessiner l'interieur d'abord)."""
     legs = {}
     for sg in (-1, 1):
         n = 'left' if sg < 0 else 'right'
-        k = [C('femur_' + n, X(sg, 5, 2), 20, -1, 2, 14, 2, 's_bone2', key='b_femur'),
-             C('tibia_' + n, X(sg, 5, 2), 4, -1, 2, 16, 2, 's_bone2', key='b_tibia'),
-             C('footb_' + n, X(sg, 5, 3), 0, -3.5, 3, 2, 6, 's_bone2', key='b_foot'),
-             C('thigh_' + n, X(sg, 5, 6), 19, -3, 6, 15, 6, sk, key='s_thigh'),
-             C('shin_' + n, X(sg, 5, 5), 3, -2.5, 5, 17, 5, sk, key='s_shin'),
-             C('foot_' + n, X(sg, 5, 6), 0, -5, 6, 3, 9, sk, key='s_foot')]
-        legs[sg] = Group('leg_' + n, (sg * 5, 34, 0), (0, 0, 0), k)
+        x = 5.2
+        k = [C('femur_' + n, X(sg, x, 2), 20, -1, 2, 14, 2, 's_bone2', key='b_femur'),
+             C('tibia_' + n, X(sg, x, 2), 4, -1, 2, 16, 2, 's_bone2', key='b_tibia'),
+             C('footb_' + n, X(sg, x, 3), 0, -3.5, 3, 2, 6, 's_bone2', key='b_foot'),
+             C('thigh_' + n, X(sg, x, 7), 20, -3.5, 7, 14, 7, sk, key='s_thigh'),
+             C('knee_' + n, X(sg, x, 6), 17, -4.4, 6, 4, 1, sk, key='s_knee'),
+             C('shin_' + n, X(sg, x, 5), 3, -2.5, 5, 17, 5, sk, key='s_shin'),
+             C('calf_' + n, X(sg, x, 5), 7, 2.5, 5, 7, 2, sk, key='s_calf'),
+             C('foot_' + n, X(sg, x, 5), 0, -4, 5, 3, 9, sk, key='s_foot'),
+             C('toes_' + n, X(sg, x, 5), 0, -6.5, 5, 2, 3, sk, key='s_toes')]
+        legs[sg] = Group('leg_' + n, (sg * x, 34, 0), (0, 0, 0), k)
     pelvis = Group('pelvis', (0, 34, 0), children=[C('pelvis_bone', -4, 31.5, -2.5, 8, 3, 5, 's_bone2', key='b_pelvis'),
-                                                   C('pelvis', -6, 31, -3.5, 12, 5, 7, sk, key='s_pelvis')])
+                                                   C('pelvis', -6.5, 31, -3.7, 13, 5, 7, sk, key='s_pelvis')])
     bk = [C('spine', -1, 35, -1.5, 2, 21, 3, 's_bone2', key='b_spine'),
           C('sternum', -.5, 41, -3.9, 1, 11, 1, 's_bone2', key='b_sternum'),
           C('clavicle', -6, 52, -2, 12, 1, 2, 's_bone2', key='b_clav')]
     for i in range(5):
         bk.append(C(f'rib_{i}', -4.5, 41.5 + i * 2.6, -3.3, 9, 1, 6, 's_bone2', key='b_rib'))
     bk += [C('chest', -8, 41, -4.5, 16, 14, 9, sk, key='s_chest'),
+           C('pecs', -7, 46, -5.6, 14, 5, 1, sk, key='s_pecs'),
            C('abd', -6, 34, -4, 12, 8, 8, sk, key='s_abd'),
-           C('neck', -3, 55, -3, 6, 3, 6, sk, key='s_neck')]
+           C('traps', -6, 54, -3.5, 12, 2, 7, sk, key='s_traps'),
+           C('neck', -2, 55, -2.5, 4, 4, 5, sk, key='s_neck')]
     if mail:                                                # cotte de mailles et ceinture, comme le soldat d'origine
         bk += [C('mail_chest', -8.5, 40.5, -5, 17, 15, 10, 's_mail', key='s_mchest'),
                C('mail_abd', -6.5, 33.5, -4.5, 13, 8, 9, 's_mail', key='s_mabd'),
@@ -122,17 +129,29 @@ def body_parts(sk, eye, head_mat, head_fx, ax=11, mail=True):
     hk = [C('skull_bone', -3.5, 59, -4.5, 7, 7, 7, 's_bone2', key='b_skull', fx=fx_bonehead),
           C('jaw_bone', -2.5, 56.5, -3.5, 5, 2, 6, 's_bone2', key='b_jaw'),
           C('skull', -4.5, 58, -5.5, 9, 9, 9, head_mat, key='s_skull' + eye.hex() + head_mat, fx=head_fx),
-          C('jaw', -3.5, 55.5, -4.5, 7, 3, 7, head_mat, key='s_jawm' + head_mat)]
+          C('jaw', -3.5, 55.5, -4.5, 7, 3, 7, head_mat, key='s_jawm' + head_mat),
+          C('nose', -1, 59, -7.2, 2, 3, 2, head_mat, key='s_nose'),
+          C('brow', -4.5, 63, -6, 9, 1, 1, head_mat, key='s_brow'),
+          C('chin', -1.5, 54.5, -5.3, 3, 2, 2, head_mat, key='s_chin'),
+          C('cheek_l', -4.2, 58.2, -6.2, 2, 2, 1, head_mat, key='s_cheek0'),
+          C('cheek_r', 2.2, 58.2, -6.2, 2, 2, 1, head_mat, key='s_cheek0'),
+          C('ear_l', -5.5, 59.5, -2.5, 1, 3, 2, head_mat, key='s_ear'),
+          C('ear_r', 4.5, 59.5, -2.5, 1, 3, 2, head_mat, key='s_ear')]
     arms, fores = {}, {}
     for sg in (-1, 1):
         n = 'left' if sg < 0 else 'right'
         cx = ax + .5
         arms[sg] = [C('humerus_' + n, X(sg, cx, 2), 41, -1, 2, 12, 2, 's_bone2', key='b_hum'),
-                    C('shoulder_' + n, X(sg, cx, 5), 50, -2.5, 5, 5, 5, sk, key='s_sh'),
-                    C('uarm_' + n, X(sg, cx, 4), 41, -2, 4, 10, 4, sk, key='s_ua')]
+                    C('shoulder_' + n, X(sg, cx, 6), 49, -3, 6, 6, 6, sk, key='s_sh'),
+                    C('uarm_' + n, X(sg, cx, 5), 41, -2.5, 5, 9, 5, sk, key='s_ua')]
         fores[sg] = [C('radius_' + n, X(sg, cx, 2), 29, -1, 2, 12, 2, 's_bone2', key='b_rad'),
+                     C('elbow_' + n, X(sg, cx, 4), 38.5, 1.7, 4, 3, 1, sk, key='s_elb'),
                      C('farm_' + n, X(sg, cx, 4), 30, -2, 4, 11, 4, sk, key='s_fa'),
-                     C('hand_' + n, X(sg, cx, 3), 27, -1.5, 3, 3, 3, 's_bone2', key='b_hand')]
+                     C('forearm_top_' + n, X(sg, cx, 5), 35, -2.5, 5, 5, 5, sk, key='s_fat'),
+                     C('palm_' + n, X(sg, cx, 4), 27, -2, 4, 3, 3, sk, key='s_palm'),
+                     C('thumb_' + n, X(sg, cx, 4) + (1 if sg < 0 else -1) * -1 + (0 if sg < 0 else 3), 27.5, -3, 1, 2, 1, sk, key='s_thumb')]
+        for f in range(4):
+            fores[sg].append(C(f'finger_{n}{f}', X(sg, cx, 4) + f, 24, -1.5, 1, 3, 1, sk, key='s_fing'))
     return legs, pelvis, bk, hk, arms, fores
 
 
@@ -260,7 +279,7 @@ def spectre_lance(skin='6cc99a'):
            C('helm_top', -2.5, 70, -3.5, 5, 2, 5, 's_metal', key='s_htop'),
            C('helm_tip', -.5, 72, -1.5, 1, 3, 1, 's_rust', key='s_htip'),
            C('helm_back', -5.5, 57, 3, 11, 8, 2, 's_metal', key='s_hback'),
-           C('helm_nasal', -.5, 58, -6.5, 1, 7, 1, 's_metal', key='s_hnasal')]
+           C('helm_nasal', -.5, 58, -7.5, 1, 7, 1, 's_metal', key='s_hnasal')]
     for sg in (-1, 1):
         hk.append(C('cheek_' + ('l' if sg < 0 else 'r'), X(sg, 5, 2), 57, -6, 2, 7, 6, 's_metal', key='s_cheek'))
     bk.append(C('paul_l', -14, 52, -3.5, 5, 3, 7, 's_rust', key='s_paul'))
