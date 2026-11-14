@@ -457,8 +457,10 @@ public final class ClientTest {
         }
         lineup("05b_seigneur", 9.0, -3F, 4.0, List.of(ModEntities.ASH_LORD.get()));
         lineup("05b_seigneur_proche", 5.5, 4F, 4.0, List.of(ModEntities.ASH_LORD.get()));
+        SCENES.add(new Scene("12a0_survie", 10, p -> p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL)));
         SCENES.add(new Scene("12a_onglet_inventaire", 40, p -> { }));
         SCENES.add(new Scene("12b_anneaux_menu", 50, p -> {
+            p.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
             var l = net.ringsofash.data.ModData.lore(p);
             l.rings.clearContent();
             net.minecraft.world.item.Item[] rs = {Reg.RING_WATERS.get(), Reg.RING_WINDS.get(), Reg.RING_EMBERS.get(), Reg.RING_FORGE.get(), Reg.RING_HOARD.get(), Reg.RING_KINGS.get(), Reg.RING_SHADOWS.get(), Reg.ASH_RING.get()};

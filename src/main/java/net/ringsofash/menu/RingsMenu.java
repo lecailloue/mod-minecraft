@@ -30,7 +30,7 @@ public class RingsMenu extends AbstractContainerMenu {
         super(ModMenus.RINGS.get(), id);
         this.rings = rings;
         for (int i = 0; i < PlayerLore.RING_SLOTS; i++) {
-            addSlot(new Slot(rings, i, 44 + (i % COLS) * 18, 36 + (i / COLS) * 22) {
+            addSlot(new Slot(rings, i, 44 + (i % COLS) * 18, 34 + (i / COLS) * 20) {
                 @Override public boolean mayPlace(ItemStack s) { return s.getItem() instanceof RingItem; }
                 @Override public int getMaxStackSize() { return 1; }
             });

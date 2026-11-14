@@ -35,14 +35,15 @@ public class RingWheel extends Screen {
     @Override public boolean isPauseScreen() { return false; }
     @Override public void renderBackground(GuiGraphics g, int mx, int my, float pt) { g.fill(0, 0, width, height, 0x66000000); }
 
-    private int radius() { return slots.size() > 7 ? 70 : 58; }
+    private int radius() { return slots.size() > 7 ? 62 : 52; }
+    private int cy() { return height / 2 - 22; }
     private int noneX() { return width / 2 - NONE_W / 2; }
-    private int noneY() { return height / 2 + radius() + 62; }
+    private int noneY() { return cy() + radius() + 58; }
 
     private void pick(double mx, double my) {
         hover = -2;
         if (Ui.in(mx, my, noneX(), noneY(), NONE_W, NONE_H)) { hover = -1; return; }
-        double dx = mx - width / 2.0, dy = my - height / 2.0, d = Math.sqrt(dx * dx + dy * dy);
+        double dx = mx - width / 2.0, dy = my - cy(), d = Math.sqrt(dx * dx + dy * dy);
         if (d < 18 || d > radius() + 40 || slots.isEmpty()) return;
         double ang = Math.toDegrees(Math.atan2(dy, dx)) + 90;                  // 0 = en haut, sens horaire
         double step = 360.0 / slots.size();
@@ -54,7 +55,7 @@ public class RingWheel extends Screen {
     public void render(GuiGraphics g, int mx, int my, float pt) {
         renderBackground(g, mx, my, pt);
         pick(mx, my);
-        int cx = width / 2, cy = height / 2, r = radius();
+        int cx = width / 2, cy = cy(), r = radius();
         Ui.disc(g, cx, cy, r + 26, 0x55100C08);
         Ui.disc(g, cx, cy, 20, 0x88000000);
         g.drawCenteredString(font, "Alt", cx, cy - 4, 0xFF9C8A5C);
@@ -73,12 +74,12 @@ public class RingWheel extends Screen {
         }
         // texte : l'anneau survole, sinon l'anneau actif
         ItemStack info = hover >= 0 ? Net.ClientRings.stacks[slots.get(hover)] : Net.ClientRings.active();
-        int ty = cy + r + 28;
+        int ty = cy + r + 24;
         if (info.getItem() instanceof RingItem ri) {
-            g.drawCenteredString(font, info.getHoverName(), cx, ty, 0xFFFFD070);
+            boolean act = hover >= 0 ? slots.get(hover) == Net.ClientRings.active : true;
+            g.drawCenteredString(font, Component.empty().append(info.getHoverName()).append(act ? " (actif)" : ""), cx, ty, 0xFFFFD070);
             g.drawCenteredString(font, ri.kind.power, cx, ty + 12, 0xFFE8E0D0);
             if (ri.kind.curse != null) g.drawCenteredString(font, ri.kind.curse, cx, ty + 24, 0xFFE05040);
-            if (hover < 0 || slots.get(hover) == Net.ClientRings.active) g.drawCenteredString(font, "(actif)", cx, ty - 12, 0xFF9CE08A);
         } else {
             g.drawCenteredString(font, "Aucun anneau actif", cx, ty, 0xFFB0A090);
         }

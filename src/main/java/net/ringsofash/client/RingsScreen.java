@@ -41,7 +41,13 @@ public class RingsScreen extends AbstractContainerScreen<RingsMenu> {
             g.fill(x + s.x, y + s.y, x + s.x + 16, y + s.y + 16, 0xFF5B5651);
         }
         g.drawCenteredString(font, "Maintenez Alt pour choisir l'anneau actif", x + imageWidth / 2, y + 20, 0xFFD8C8A8);
-        g.drawCenteredString(font, "Seul l'anneau actif agit", x + imageWidth / 2, y + 68, 0xFF9C9486);
+        g.drawCenteredString(font, "Seul l'anneau actif agit", x + imageWidth / 2, y + 73, 0xFF9C9486);
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphics g, int mx, int my) {
+        g.drawString(font, title, titleLabelX, titleLabelY, 0xFFE8D8B0, false);
+        g.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFD8C8A8, false);
     }
 
     @Override
