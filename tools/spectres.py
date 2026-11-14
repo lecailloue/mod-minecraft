@@ -22,6 +22,11 @@ MAT = {
     's_gold': dict(base=(206, 188, 96), n1=8, n2=8, tint=(.95, 1, .8)),
     's_gem': dict(base=(150, 255, 225), n1=5, n2=5, tint=(.9, 1, 1)),
     's_dark': dict(base=(14, 34, 28), n1=3, n2=4, tint=(1, 1, 1)),
+    # Roi des morts : robe sombre, cheveux gris, metal terni
+    's_robe': dict(base=(26, 62, 50), n1=8, n2=8, tint=(.9, 1, .95)),
+    's_robe2': dict(base=(14, 38, 32), n1=7, n2=8, tint=(.9, 1, .95)),
+    's_hairk': dict(base=(170, 186, 178), n1=9, n2=8, tint=(.96, 1, .98)),
+    's_brass': dict(base=(138, 128, 78), n1=7, n2=8, tint=(.95, 1, .8)),
 }
 
 
@@ -45,6 +50,16 @@ def d_ghost(arr, face, rng):
         line(arr, int(rng.integers(0, w)), int(rng.integers(0, h)), 0, 1, int(rng.integers(3, h + 1)), tuple(m * .66), .5)
 
 
+def d_hair(arr, face, rng):
+    """meches verticales : colonnes alternativement claires et sombres"""
+    h, w, _ = arr.shape
+    for x in range(w):
+        f = (1.25, .8, 1.05, .7)[int(rng.integers(0, 4))]
+        arr[:, x, :] = np.clip(arr[:, x, :] * f, 0, 255)
+    for _ in range(int(h * w / 18)):
+        put(arr, int(rng.integers(0, w)), int(rng.integers(0, h)), (210, 224, 216), .6)
+
+
 def d_plain(arr, face, rng):
     h, w, _ = arr.shape
     arr *= np.linspace(1.06, .88, h)[:, None, None]
@@ -53,7 +68,8 @@ def d_plain(arr, face, rng):
 T.MATS.update(MAT)
 T.DECOR.update({'s_mail': O.d_mail2, 's_cloth': O.d_cloth2, 's_cloth2': O.d_cloth2, 's_rag': O.d_cloth2, 's_metal': lambda a, f, r: O.d_iron2(a, f, r, rust=.2),
                 's_rust': lambda a, f, r: O.d_iron2(a, f, r, rust=.6), 's_blade': O.d_blade2, 's_bone': O.d_tooth, 's_bone2': O.d_tooth, 's_wood': O.d_wood,
-                's_gold': d_plain, 's_gem': d_plain, 's_dark': d_plain})
+                's_gold': d_plain, 's_gem': d_plain, 's_dark': d_plain,
+                's_robe': O.d_cloth2, 's_robe2': O.d_cloth2, 's_hairk': d_hair, 's_brass': lambda a, f, r: O.d_iron2(a, f, r, rust=.5)})
 
 
 # ---------------------------------------------------------------- visages : orbites sombres, yeux lumineux
@@ -73,6 +89,53 @@ def fx_eyes(col):
         put(n, 3, 8, (40, 90, 70), .5)
         put(n, 5, 8, (40, 90, 70), .5)
     return f
+
+
+def fx_kingface(col):
+    """visage du Roi des morts : orbites creuses, nez en trou, joues creusees, dents a nu"""
+    def f(F, rng, glow):
+        n = F['north']
+        h, w, _ = n.shape                                   # 9 x 9
+        for x0 in (1, 5):
+            for dx in range(3):
+                put(n, x0 + dx, 2, (8, 22, 16), .85)        # arcade
+                for dy in range(3, 6):
+                    put(n, x0 + dx, dy, (4, 10, 8), 1)      # orbite creuse
+            put(n, x0 + 1, 4, col, 1)                       # oeil
+            put(n, x0 + 1, 3, tuple(int(c * .6) for c in col), 1)
+            glow('north', x0 + 1, 4, col)
+            glow('north', x0 + 1, 3, tuple(int(c * .6) for c in col))
+        put(n, 4, 5, (6, 14, 12), 1)                        # trou du nez
+        put(n, 4, 6, (6, 14, 12), 1)
+        for (x, y) in ((0, 5), (0, 6), (1, 6), (1, 7), (8, 5), (8, 6), (7, 6), (7, 7)):
+            put(n, x, y, (16, 38, 30), .9)                  # joues creusees
+        for x in range(1, 8):                               # dents : rangee haute et basse decalees
+            if x % 2 == 1:
+                put(n, x, 7, (240, 244, 232), 1)
+            else:
+                put(n, x, 7, (8, 20, 16), 1)
+            if x % 2 == 0:
+                put(n, x, 8, (236, 240, 226), 1)
+            else:
+                put(n, x, 8, (8, 20, 16), 1)
+    return f
+
+
+def fx_lace(F, rng, glow):
+    """lacet croise sur le devant de la tunique : fils clairs qui luisent"""
+    n = F['north']
+    h, w, _ = n.shape
+    for y in range(h):
+        for x in range(w):
+            put(n, x, y, (8, 20, 16), 1)
+    for y in range(0, h, 3):
+        for i in range(w):                                  # barreau clair, puis deux fils en bordure
+            put(n, i, y, (150, 236, 196), 1)
+            glow('n' + 'orth', i, y, (70, 170, 130))
+        if y + 1 < h:
+            for i in (0, w - 1):
+                put(n, i, y + 1, (150, 236, 196), 1)
+                glow('north', i, y + 1, (70, 170, 130))
 
 
 def fx_bonehead(F, rng, glow):
@@ -329,28 +392,59 @@ def spectre_dague(skin='84dcab'):
     return finish(legs, pel, bk, hk, arms, fores, w_sword(14, 2), hand_rot=(-50, 0, -6))
 
 
-def spectre_roi(skin='9ae8c0'):
-    """Roi des morts : le soldat d'origine en grand, avec une couronne d'or, une cape royale et une grande epee"""
+def spectre_roi(skin='a4d4bc'):
+    """Roi des morts, d'apres les images : visage de crane creuse, longs cheveux gris, couronne ternie a pointes, collier de pointes,
+    robe sombre a lacet qui luit, longue cape en loques et grande epee"""
+    import math
     sk = skin_mat(skin)
-    legs, pel, bk, hk, arms, fores = body_parts(sk, col(GOLD), sk, fx_eyes(col(GOLD)))
-    bk += [C('plate', -8.5, 43, -5.5, 17, 11, 1, 's_metal', key='k_plate'),
-           C('plate_trim', -8.5, 53, -5.6, 17, 2, 1, 's_gold', key='k_ptrim'),
-           C('plate_gem', -1.5, 47, -6.2, 3, 3, 1, 's_gem', key='k_pgem'),
-           C('belt_g', -7, 33, -5.2, 14, 3, 10, 's_gold', key='k_belt')]
-    tunic(bk, 's_cloth', 6, 's_cloth2')
+    legs, pel, bk, hk, arms, fores = body_parts(sk, col(EYE), sk, fx_kingface(col(EYE)))
+    hk[:] = [c for c in hk if c.name not in ('cheek_l', 'cheek_r')]            # joues creusees
+    # robe : deux revers sombres bordes de metal, lacet au milieu, ceinture, longs pans
+    bk += [C('lace', -2.5, 35.5, -5.7, 5, 17, 1, 's_robe2', key='k_lace', fx=fx_lace),
+           C('robe_l', -8.9, 35, -5.6, 6, 20, 1, 's_robe', key='k_robe'),
+           C('robe_r', 2.9, 35, -5.6, 6, 20, 1, 's_robe', key='k_robe'),
+           C('robe_trim_l', -3, 35, -5.9, 1, 19, 1, 's_brass', key='k_rtrim'),
+           C('robe_trim_r', 2, 35, -5.9, 1, 19, 1, 's_brass', key='k_rtrim'),
+           C('gorget', -6.5, 52, -5.8, 13, 2, 11, 's_brass', key='k_gorget'),
+           C('belt_k', -7, 33, -5.3, 14, 3, 10, 's_robe2', key='k_belt'),
+           C('buckle_k', -2, 33.5, -6, 4, 2, 1, 's_brass', key='k_buckle')]
+    tunic(bk, 's_robe', 7, 's_robe2', rag=1.4)
     for sg in (-1, 1):
         n = 'l' if sg < 0 else 'r'
-        bk.append(C('paul_' + n, X(sg, 13, 8), 53, -4.5, 8, 3, 9, 's_metal', key='k_paul', rot=(0, 0, sg * -10), pivot=(sg * 13, 55, 0)))
-        bk.append(C('paul_trim_' + n, X(sg, 13, 8), 56, -4.5, 8, 1, 9, 's_gold', key='k_pault', rot=(0, 0, sg * -10), pivot=(sg * 13, 55, 0)))
-        bk.append(spike('paul_spike_' + n, sg * 13.5, 56, -.5, 5, 2, (0, 0, sg * -12), mat='s_gold'))
-    hk += [C('crown_band', -5.5, 66, -6.5, 11, 2, 11, 's_gold', key='k_cband'),
-           C('crown_gem', -1, 66.5, -7.2, 2, 1, 1, 's_gem', key='k_cgem')]
-    for i, (x, z, h) in enumerate([(-4.5, -6, 4), (-0.5, -6.4, 6), (3.5, -6, 4), (-4.5, 2.2, 4), (3.5, 2.2, 4), (-0.5, 2.6, 5)]):
-        hk.append(C(f'crown_{i}', x, 68, z, 2, h, 2, 's_gold', key=f'k_cs{h}'))
+        bk.append(C('paul_' + n, X(sg, 13, 8), 53, -4.5, 8, 3, 9, 's_brass', key='k_paul', rot=(0, 0, sg * -10), pivot=(sg * 13, 55, 0)))
+        bk.append(spike('paul_spike_' + n, sg * 13.5, 56, -.5, 5, 2, (0, 0, sg * -14), mat='s_brass'))
+        bk.append(spike('paul_spike2_' + n, sg * 11, 56, -3.5, 4, 2, (-8, 0, sg * -8), mat='s_brass'))
+        fores[sg].append(C('bracer_' + n, X(sg, 11.5, 5), 30, -2.6, 5, 6, 5, 's_robe2', key='k_brc'))
+    # collier de pointes autour du cou (plus hautes derriere, basses devant pour garder le visage)
+    for k in range(10):
+        a = math.radians(k * 36)
+        sx, cz = math.sin(a), math.cos(a)
+        ln = int(round(8 - 3.5 * cz + 2 * abs(sx)))
+        bk.append(spike(f'collar_{k}', 7.4 * sx, 55.5, -6.2 * cz, ln, 2, (-14 * cz, 0, -sx * 14), mat='s_brass'))
+    # cheveux : meches sur les cotes de la tete, dans le dos, longues meches sur la poitrine et barbe en lambeaux
+    for sg in (-1, 1):
+        n = 'l' if sg < 0 else 'r'
+        hk.append(C('hair_side_' + n, X(sg, 5.9, 1), 50, -3.5, 1, 14, 7, 's_hairk', key='k_hside'))
+        bk.append(C('lock_' + n, X(sg, 6.1, 2), 40, -6.9, 2, 17, 1, 's_hairk', key='k_lock'))
+        bk.append(C('lock2_' + n, X(sg, 4.4, 2), 44, -6.6, 2, 11, 1, 's_hairk', key='k_lock2'))
+    hk.append(C('hair_back', -5, 50, 3.3, 10, 16, 3, 's_hairk', key='k_hback'))
     for i in range(3):
-        hk.append(C(f'beard_{i}', -3 + i * 2.6, 49 - i % 2 * 2, -5 - (i % 2) * .5, 2, 7 + i % 2 * 3, 1, 's_rag', key=f'k_beard{i % 2}'))
+        bk.append(C(f'beard_{i}', -3 + i * 2.6, 45 - i % 2 * 3, -6.7 - (i % 2) * .3, 2, 10 + i % 2 * 3, 1, 's_hairk', key=f'k_beard{i % 2}'))
+    # couronne ternie : bandeau, calotte sombre, pointes irregulieres inclinees vers l'exterieur
+    hk += [C('crown_band', -5.5, 66, -6.5, 11, 2, 11, 's_brass', key='k_cband'),
+           C('crown_gem', -1, 66.5, -7.2, 2, 1, 1, 's_gem', key='k_cgem')]
+    for k, ln in enumerate([8, 4, 6, 4, 7, 4, 6, 4]):
+        a = math.radians(k * 45)
+        sx, cz = math.sin(a), math.cos(a)
+        px, pz = 4.7 * sx, -1 - 4.7 * cz
+        h1 = max(2, int(ln * .55))
+        hk.append(spike(f'crown_{k}', px, 68, pz, h1, 3, (0, 0, 0), mat='s_brass'))
+        hk.append(spike(f'crown_tip_{k}', px + sx * .5, 68 + h1, pz - cz * .5, ln - h1 + 1, 1, (0, 0, 0), mat='s_brass'))
+    for sg in (-1, 1):
+        n = 'l' if sg < 0 else 'r'
+        hk.append(spike('crown_ear_' + n, sg * 6.2, 63, -1.5, 5, 1, (0, 0, sg * -28), mat='s_brass'))
     return finish(legs, pel, bk, hk, arms, fores, w_sword(34, 5), hand_rot=(-24, 0, -6), head_f=1.16,
-                  capes=cape('s_cloth', 's_gold', 18))
+                  capes=cape('s_robe', 's_brass', 18))
 
 
 MODELS = {
@@ -363,7 +457,8 @@ MODELS = {
 
 
 ALPHA = {'s_cloth': 165, 's_cloth2': 175, 's_rag': 160, 's_metal': 205, 's_rust': 205, 's_blade': 230, 's_wood': 225, 's_gold': 235, 's_gem': 255,
-         's_dark': 255, 's_bone': 255, 's_bone2': 255}
+         's_dark': 255, 's_bone': 255, 's_bone2': 255,
+         's_robe': 228, 's_robe2': 225, 's_hairk': 225, 's_brass': 225}
 SKIN_ALPHA = 105
 
 
