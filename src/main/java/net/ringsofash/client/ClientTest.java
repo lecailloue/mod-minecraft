@@ -453,6 +453,16 @@ public final class ClientTest {
         }
         lineup("05b_seigneur", 9.0, -3F, 4.0, List.of(ModEntities.ASH_LORD.get()));
         lineup("05b_seigneur_proche", 5.5, 4F, 4.0, List.of(ModEntities.ASH_LORD.get()));
+        for (int[] v : new int[][]{{0, 14, -6, 40}, {1, 8, -4, 40}, {2, 8, -4, 110}}) {
+            final int close = v[0];
+            SCENES.add(new Scene("11" + "abc".charAt(close) + "_sylvestres", v[3], p -> {
+                ServerLevel ow = p.server.overworld();
+                clear(ow);
+                double x = SX + 6.0;
+                for (int var = 0; var < 3; var++) { final int vv = var; actor(ow, ModEntities.TREEMAN.get(), x, SZ + v[1] + (close == 0 ? 0 : 3.0), t -> t.setVariant(vv)); x -= 6.0; }
+                view(p, ow, SX + 0.5, SY + 2.6, SZ, 0F, close == 0 ? -4F : v[2]);
+            }));
+        }
         lineup("05_geants", 15.0, -8F, 7.0, List.of(ModEntities.MAMMOTH.get(), ModEntities.TREEMAN.get(), ModEntities.FIRE_DEMON.get(), ModEntities.ASH_LORD.get()));
         for (float[] v : new float[][]{{0, 155F}, {1, -25F}, {2, 90F}}) {
             SCENES.add(new Scene("05" + "bcd".charAt((int) v[0]) + "_fleau", 70, p -> {

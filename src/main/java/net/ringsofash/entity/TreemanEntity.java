@@ -10,6 +10,11 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerLevelAccessor;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
+import javax.annotation.Nullable;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -54,6 +59,8 @@ import java.util.UUID;
  */
 public class TreemanEntity extends PathfinderMob {
     private static final EntityDataAccessor<Boolean> TREE = SynchedEntityData.defineId(TreemanEntity.class, EntityDataSerializers.BOOLEAN);
+    /** 0 = Sylvgarde classique, 1 = ancien (massif, longue barbe de mousse), 2 = saule (maigre, rideaux de feuilles) */
+    private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(TreemanEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Optional<UUID>> OWNER = SynchedEntityData.defineId(TreemanEntity.class, EntityDataSerializers.OPTIONAL_UUID);
     private int leavesNeeded, leavesFed;
 
@@ -66,7 +73,20 @@ public class TreemanEntity extends PathfinderMob {
     protected void defineSynchedData(SynchedEntityData.Builder b) {
         super.defineSynchedData(b);
         b.define(TREE, false);
+        b.define(VARIANT, 0);
         b.define(OWNER, Optional.empty());
+    }
+
+    public int variant() { return entityData.get(VARIANT); }
+    public void setVariant(int v) { entityData.set(VARIANT, Mth.clamp(v, 0, 2)); }
+
+    @Nullable
+    @Override
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData data) {
+        data = super.finalizeSpawn(level, difficulty, reason, data);
+        int r = level.getRandom().nextInt(100);
+        setVariant(r < 40 ? 0 : r < 70 ? 1 : 2);
+        return data;
     }
 
     public boolean isTree() { return entityData.get(TREE); }
@@ -243,6 +263,7 @@ public class TreemanEntity extends PathfinderMob {
     public void addAdditionalSaveData(CompoundTag t) {
         super.addAdditionalSaveData(t);
         t.putBoolean("Tree", isTree());
+        t.putInt("Variant", variant());
         entityData.get(OWNER).ifPresent(u -> t.putUUID("Owner", u));
         t.putInt("LeavesNeeded", leavesNeeded);
         t.putInt("LeavesFed", leavesFed);
@@ -252,6 +273,7 @@ public class TreemanEntity extends PathfinderMob {
     public void readAdditionalSaveData(CompoundTag t) {
         super.readAdditionalSaveData(t);
         entityData.set(TREE, t.getBoolean("Tree"));
+        setVariant(t.getInt("Variant"));
         if (t.hasUUID("Owner")) entityData.set(OWNER, Optional.of(t.getUUID("Owner")));
         leavesNeeded = t.getInt("LeavesNeeded");
         leavesFed = t.getInt("LeavesFed");

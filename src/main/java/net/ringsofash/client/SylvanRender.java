@@ -122,12 +122,40 @@ public final class SylvanRender {
 
     // ---------- le Sylvgarde fige en arbre : tronc et feuillage
     public static class TreemanRenderer extends Renderers.Geo<TreemanEntity> {
+        /** modele, texture et yeux lumineux de chaque variante ; la forme d'arbre de nuit est la meme pour toutes */
+        private static final String[] NAMES = {"treeman", "sylvestre_ancien", "sylvestre_saule"};
+        /** hauteur visee a l'ecran (en blocs) */
+        private static final float[] BLOCKS = {5.1F, 5.2F, 5.1F};
+        private final GeoModel<TreemanEntity>[] models;
+        private final float[] scales = new float[NAMES.length];
+        private final net.minecraft.client.renderer.RenderType[] glows = new net.minecraft.client.renderer.RenderType[NAMES.length];
+        private int cur;
+
+        @SuppressWarnings("unchecked")
         public TreemanRenderer(EntityRendererProvider.Context ctx) {
-            super(ctx, ClientSetup.layer("geo_treeman"), "treeman", 1.4F, 0.52F, f -> "treeman", null);
+            super(ctx, ClientSetup.layer("geo_treeman"), "treeman", 1.4F, 0.52F, f -> NAMES[Mth.clamp(f.variant(), 0, 2)], null);
+            models = new GeoModel[NAMES.length];
+            for (int i = 0; i < NAMES.length; i++) {
+                models[i] = new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_" + NAMES[i])), NAMES[i]);
+                scales[i] = i == 0 ? 0.52F : BLOCKS[i] * 16F / GeoDef.get(NAMES[i]).height;
+                if (i > 0) glows[i] = net.minecraft.client.renderer.RenderType.eyes(Renderers.tex(NAMES[i] + "_glow"));
+            }
+            addLayer(new net.minecraft.client.renderer.entity.layers.RenderLayer<TreemanEntity, GeoModel<TreemanEntity>>(this) {
+                @Override
+                public void render(PoseStack ps, MultiBufferSource buf, int light, TreemanEntity e, float a, float b, float c, float d, float f, float g) {
+                    if (cur == 0 || e.isTree()) return;
+                    getParentModel().renderToBuffer(ps, buf.getBuffer(glows[cur]), 0xF00000, OverlayTexture.NO_OVERLAY, -1);
+                }
+            });
         }
 
         @Override
+        protected void scale(TreemanEntity e, PoseStack ps, float pt) { float s = scales[cur]; ps.scale(s, s, s); }
+
+        @Override
         public void render(TreemanEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource buf, int light) {
+            cur = Mth.clamp(e.variant(), 0, 2);
+            this.model = models[cur];
             if (!e.isTree()) { super.render(e, yaw, pt, ps, buf, light); return; }
             var br = Minecraft.getInstance().getBlockRenderer();
             BlockState log = Reg.ANCIENT_LOG.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);

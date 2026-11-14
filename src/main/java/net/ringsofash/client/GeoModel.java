@@ -19,6 +19,9 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
     private final Map<String, ModelPart> parts = new HashMap<>();
     private final List<ModelPart> flames = new ArrayList<>();
     private final List<ModelPart> branches = new ArrayList<>();
+    /** Sylvestres : feuillages, feuilles, barbes et branches qui bougent au vent ; [type, rang dans la chaine, phase] */
+    private final List<ModelPart> sway = new ArrayList<>();
+    private final List<float[]> swayInfo = new ArrayList<>();
 
     public GeoModel(ModelPart root, String geo) {
         this.root = root;
@@ -27,6 +30,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
             parts.put(p.name, parent.getChild(p.name));
             if (p.name.startsWith("flame")) flames.add(parts.get(p.name));
             if (p.name.startsWith("couronne") || p.name.contains("branche")) branches.add(parts.get(p.name));
+            if (geo.startsWith("sylvestre")) addSway(p.name);
         }
     }
 
@@ -48,6 +52,50 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
     }
 
     private ModelPart p(String n) { return parts.get(n); }
+
+    private void addSway(String n) {
+        int type = n.startsWith("frond") ? 0 : n.contains("leaf") ? 1 : n.startsWith("beard") || n.startsWith("must") ? 2
+                : n.startsWith("cr") || n.startsWith("top") || n.startsWith("shb") || n.startsWith("back") ? 3 : -1;
+        if (type < 0 || n.endsWith("yaw")) return;
+        int cut = n.lastIndexOf('_'), depth = 0;
+        String base = n;
+        if (cut > 0 && n.substring(cut + 1).matches("\\d+")) { depth = Integer.parseInt(n.substring(cut + 1)); base = n.substring(0, cut); }
+        sway.add(parts.get(n));
+        swayInfo.add(new float[]{type, depth, (base.hashCode() & 0xFFFF) / 10430F});
+    }
+
+    /**
+     * Sylvestres : le vent fait onduler les rideaux de feuilles (de plus en plus vers le bout de chaque brin, qui trainent derriere quand il
+     * marche), les feuilles au bout des branches frissonnent, la barbe et les branches se balancent doucement.
+     */
+    private void sylvPose(float swing, float amount, float age) {
+        for (int i = 0; i < sway.size(); i++) {
+            ModelPart m = sway.get(i);
+            float[] f = swayInfo.get(i);
+            int type = (int) f[0];
+            float d = f[1], ph = f[2];
+            float walk = Mth.sin(swing * 0.6662F - d * 0.7F) * amount;
+            switch (type) {
+                case 0 -> {
+                    float amp = 0.045F + 0.03F * d;
+                    m.xRot += Mth.sin(age * 0.06F + ph + d * 0.55F) * amp + Mth.sin(age * 0.03F + d * 0.4F) * 0.02F * (d + 1) - amount * 0.08F * (1 + d * 0.3F) + walk * 0.06F;
+                    m.zRot += Mth.cos(age * 0.047F + ph * 1.3F + d * 0.5F) * amp * 0.8F;
+                }
+                case 1 -> {
+                    m.xRot += Mth.sin(age * 0.22F + ph) * 0.14F + walk * 0.1F;
+                    m.zRot += Mth.cos(age * 0.18F + ph * 1.7F) * 0.14F;
+                }
+                case 2 -> {
+                    m.xRot += Mth.sin(age * 0.05F + ph + d * 0.5F) * 0.03F * (1 + d * 0.4F) + walk * 0.05F;
+                    m.zRot += Mth.cos(age * 0.04F + ph + d * 0.4F) * 0.02F * (1 + d * 0.3F);
+                }
+                default -> {
+                    m.zRot += Mth.sin(age * 0.04F + ph) * 0.025F;
+                    m.xRot += Mth.cos(age * 0.035F + ph * 1.3F) * 0.02F;
+                }
+            }
+        }
+    }
 
     @Override
     public void setupAnim(T e, float swing, float amount, float age, float yaw, float pitch) {
@@ -145,6 +193,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
         if (e instanceof FoeEntity f && f.isTroll()) trollPose(f, swing, amount, age);
         if (e instanceof FoeEntity f && f.kind() == FoeEntity.Kind.GOBLIN_KING) kingPose(e.getId(), swing, amount, age, atk, yaw, pitch);
         if (e instanceof net.ringsofash.entity.GiantSpiderEntity) spiderPose(swing, amount, age, atk);
+        if (!sway.isEmpty()) sylvPose(swing, amount, age);
     }
 
     /**

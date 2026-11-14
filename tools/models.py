@@ -325,6 +325,25 @@ def treeman_bb():
     wjson(f'{A}/geo/treeman.json', geo)
     save(bbimport.texture(src), f'{A}/textures/entity/treeman.png')
 
+def sylvestres():
+    """Variantes du Sylvestre (tools/sylvestres.py) : geometrie + texture + texture lumineuse des yeux"""
+    import bbimport, tempfile
+    import trollcore as T
+    import sylvestres as S
+    from genlib import wjson, save
+    from PIL import Image
+    tmp = tempfile.mkdtemp()
+    for name in S.ALL:
+        groups, cubes, W, H, tex, glow, f = S.build(name)
+        T.export_bbmodel(name, groups, cubes, W, H, tex, os.path.join(tmp, name + '.bbmodel'))
+        geo = bbimport.convert(os.path.join(tmp, name + '.bbmodel'), rename={'leg_left': 'leg_l'})
+        geo['height'] = geo_height(geo)
+        wjson(f'{A}/geo/{name}.json', geo)
+        save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}.png')
+        if glow[..., 3].any():
+            save(Image.fromarray(glow, 'RGBA'), f'{A}/textures/entity/{name}_glow.png')
+        print(f'{name}: {len(geo["parts"])} pieces, {len(cubes)} cubes, hauteur {geo["height"]} px, texture {W}x{H}')
+
 def glow(m, name, chars):
     """texture lumineuse : uniquement les pixels d'art dont le caractere est dans chars (+ boites tres vives)"""
     from PIL import Image
@@ -476,4 +495,4 @@ def skins():
     skin('cave_thief', 'goblin', skin='#b8b8a8', hair='#b8b8a8', hair_style='bald', eyes='#d8f0ff', top='#b0b0a0', legs='#6a6050', boots='#b8b8a8', sleeves=False, seed=55)
 
 def build():
-    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); orc_weapons(); lurker(); treeman_bb(); eagle(); dragon(); mammoth(); skins()
+    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); orc_weapons(); lurker(); treeman_bb(); sylvestres(); eagle(); dragon(); mammoth(); skins()
