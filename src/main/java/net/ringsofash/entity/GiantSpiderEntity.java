@@ -32,14 +32,9 @@ public class GiantSpiderEntity extends Spider {
     @Override
     protected void registerGoals() {
         super.registerGoals();
+        goalSelector.addGoal(2, new WebSprayGoal(this));
         goalSelector.addGoal(1, new AvoidEntityGoal<>(this, Player.class, 10.0F, 1.2, 1.5,
                 e -> e instanceof Player p && (p.getMainHandItem().is(Reg.LIGHT_PHIAL.get()) || p.getOffhandItem().is(Reg.LIGHT_PHIAL.get()))));
-    }
-
-    @Override
-    protected void registerGoals() {
-        super.registerGoals();
-        goalSelector.addGoal(2, new WebSprayGoal(this));
     }
 
     /** Sa propre toile ne la retient pas (la toile vanilla non plus). */
