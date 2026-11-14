@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
@@ -25,13 +26,26 @@ public class MapScreen extends Screen {
             0xBEEB9E, 0xFFEB9E, 0x96938E, 0x2F7A3A, 0x808080, 0xFFFFFF, 0x2A5FB0, 0xF0E0A0, 0x4F94EB, 0x60504A, 0x6FAF55, 0x9FD680, 0xFF6A14};
     private static ResourceLocation texture;
     /** Reperes poses par le joueur (coordonnees monde), enregistres dans ringsofash_markers.txt. */
-    private static final List<int[]> MARKERS = new ArrayList<>();
+    public static final class Marker {
+        public int x, z, color;
+        public String name;
+        Marker(int x, int z, int color, String name) { this.x = x; this.z = z; this.color = color; this.name = name; }
+        public String label() { return name.isEmpty() ? "Repère" : name; }
+    }
+    private static final List<Marker> MARKERS = new ArrayList<>();
     private static boolean markersLoaded;
+    /** Couleurs proposees pour un repere. */
+    private static final int[] PALETTE = {0xE03030, 0xF08A20, 0xF0D030, 0x40C040, 0x30C8D0, 0x3060E0, 0xA040E0, 0xF0F0F0};
 
     private double zoom = 1, cx = 0, cz = 0;          // vue : facteur de zoom et centre (coordonnees monde)
     private int x0, y0, size;                          // zone de la carte
     private int fx, fy, fw, fh;                        // cadre
     private boolean legend, placing;
+    /** Edition d'un repere : index (-1 = aucune), champ du nom, position de la fenetre. */
+    private int editing = -1, editInit = -1;
+    private EditBox nameBox;
+    private int ex0, ey0;
+    private static final int EW = 158, EH = 86;
     private double pressX, pressY;
     private boolean dragged;
 
@@ -43,10 +57,26 @@ public class MapScreen extends Screen {
         this.legend = legend; this.zoom = zoom; this.placing = placing;
     }
 
+    MapScreen(boolean legend, double zoom, boolean placing, int edit) {
+        this(legend, zoom, placing);
+        this.editInit = edit;
+    }
+
     @Override
     public boolean isPauseScreen() { return false; }
 
-    static void addMarker(int x, int z) { loadMarkers(); MARKERS.add(new int[]{x, z}); }
+    static void addMarker(int x, int z) { addMarker(x, z, "", PALETTE[0]); }
+
+    static void addMarker(int x, int z, String name, int color) { loadMarkers(); MARKERS.add(new Marker(x, z, color, name)); }
+
+    /** Les reperes du joueur (pour la boussole du haut de l'ecran). */
+    public static List<Marker> markers() { loadMarkers(); return MARKERS; }
+
+    /** Vrai si le joueur est en Hautemarche (la carte et les reperes n'ont de sens que la). */
+    public static boolean inLands() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.player != null && mc.level != null && mc.level.dimension().location().getPath().equals("hautemarche");
+    }
 
     private static Path markerFile() { return Minecraft.getInstance().gameDirectory.toPath().resolve("ringsofash_markers.txt"); }
 
@@ -57,8 +87,9 @@ public class MapScreen extends Screen {
             Path f = markerFile();
             if (!Files.exists(f)) return;
             for (String line : Files.readAllLines(f)) {
-                String[] p = line.trim().split("\\s+");
-                if (p.length == 2) MARKERS.add(new int[]{Integer.parseInt(p[0]), Integer.parseInt(p[1])});
+                String[] p = line.trim().split("\\s+", 4);
+                if (p.length >= 2) MARKERS.add(new Marker(Integer.parseInt(p[0]), Integer.parseInt(p[1]),
+                        p.length >= 3 ? Integer.parseInt(p[2], 16) & 0xFFFFFF : PALETTE[0], p.length >= 4 ? p[3] : ""));
             }
         } catch (IOException | NumberFormatException ignored) { }
     }
@@ -66,7 +97,7 @@ public class MapScreen extends Screen {
     private static void saveMarkers() {
         try {
             List<String> lines = new ArrayList<>();
-            for (int[] m : MARKERS) lines.add(m[0] + " " + m[1]);
+            for (Marker m : MARKERS) lines.add(m.x + " " + m.z + " " + String.format("%06X", m.color) + (m.name.isEmpty() ? "" : " " + m.name));
             Files.write(markerFile(), lines);
         } catch (IOException ignored) { }
     }
@@ -106,10 +137,7 @@ public class MapScreen extends Screen {
         cz = Math.max(-MapData.HALF + h, Math.min(MapData.HALF - h, cz));
     }
 
-    private boolean playerHere() {
-        Minecraft mc = Minecraft.getInstance();
-        return mc.player != null && mc.level != null && mc.level.dimension().location().getPath().equals("hautemarche");
-    }
+    private boolean playerHere() { return inLands(); }
 
     // ------------------------------------------------------------------ boutons
     private record Btn(int x, int y, int w, int h, int icon, String label, String tip, boolean active, Runnable act) {}
@@ -120,7 +148,7 @@ public class MapScreen extends Screen {
         l.add(new Btn(bx, by, 20, 20, Ui.I_PLUS, null, "Zoom avant", false, () -> zoomBy(1.5)));
         l.add(new Btn(bx, by + st, 20, 20, Ui.I_MINUS, null, "Zoom arrière", false, () -> zoomBy(1 / 1.5)));
         l.add(new Btn(bx, by + st * 2, 20, 20, Ui.I_TARGET, null, "Centrer sur ma position", false, this::recenter));
-        l.add(new Btn(bx, by + st * 3, 20, 20, Ui.I_PIN, null, placing ? "Repère : cliquez sur la carte (recliquez un repère pour l'effacer)" : "Poser / effacer un repère", placing,
+        l.add(new Btn(bx, by + st * 3, 20, 20, Ui.I_PIN, null, placing ? "Repère : cliquez sur la carte pour en poser un" : "Poser un repère (cliquer un repère existant le modifie)", placing,
                 () -> placing = !placing));
         l.add(new Btn(bx, by + st * 4, 20, 20, Ui.I_SCROLL, null, "Journal de quêtes", false, () -> Minecraft.getInstance().setScreen(new QuestScreen(0))));
         l.add(new Btn(fx + fw - 24, fy + 3, 16, 10, Ui.I_CLOSE, null, "Fermer", false, this::onClose));
@@ -145,7 +173,7 @@ public class MapScreen extends Screen {
     // ------------------------------------------------------------------ souris
     @Override
     public boolean mouseScrolled(double mx, double my, double sx, double sy) {
-        if (!Ui.in(mx, my, x0, y0, size, size)) return true;
+        if (editing >= 0 || !Ui.in(mx, my, x0, y0, size, size)) return true;
         double wx = toWorldX(mx), wz = toWorldZ(my);
         double nz = Math.max(1, Math.min(16, zoom * (sy > 0 ? 1.4 : 1 / 1.4)));
         if (nz == zoom) return true;
@@ -158,6 +186,7 @@ public class MapScreen extends Screen {
 
     @Override
     public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
+        if (editing >= 0) return true;
         if (button == 0 && Ui.in(pressX, pressY, x0, y0, size, size)) {
             if (Math.abs(mx - pressX) + Math.abs(my - pressY) > 3) dragged = true;
             cx -= dx * span() / size; cz -= dy * span() / size; clampView();
@@ -178,7 +207,7 @@ public class MapScreen extends Screen {
 
     private int markerAt(double mx, double my) {
         for (int i = 0; i < MARKERS.size(); i++) {
-            double dx = toScreenX(MARKERS.get(i)[0]) - mx, dy = toScreenY(MARKERS.get(i)[1]) - 4 - my;
+            double dx = toScreenX(MARKERS.get(i).x) - mx, dy = toScreenY(MARKERS.get(i).z) - 4 - my;
             if (dx * dx + dy * dy < 7 * 7) return i;
         }
         return -1;
@@ -187,6 +216,7 @@ public class MapScreen extends Screen {
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
         pressX = mx; pressY = my; dragged = false;
+        if (editing >= 0) { editClick(mx, my, button); return true; }
         if (button == 0) {
             for (Btn b : buttons()) {
                 if (Ui.in(mx, my, b.x, b.y, b.w, b.h)) { b.act.run(); return true; }
@@ -205,23 +235,91 @@ public class MapScreen extends Screen {
 
     @Override
     public boolean mouseReleased(double mx, double my, int button) {
-        if (button == 0 && placing && !dragged && Ui.in(mx, my, x0, y0, size, size) && Ui.in(pressX, pressY, x0, y0, size, size)) {
+        if (editing >= 0) return true;
+        if (button == 0 && !dragged && Ui.in(mx, my, x0, y0, size, size) && Ui.in(pressX, pressY, x0, y0, size, size)) {
             loadMarkers();
             int i = markerAt(mx, my);
-            if (i >= 0) MARKERS.remove(i);
-            else MARKERS.add(new int[]{(int) toWorldX(mx), (int) toWorldZ(my)});
-            saveMarkers();
-            return true;
+            if (i < 0 && placing) {
+                MARKERS.add(new Marker((int) toWorldX(mx), (int) toWorldZ(my), PALETTE[0], ""));
+                i = MARKERS.size() - 1;
+                saveMarkers();
+            }
+            if (i >= 0) { openEdit(i); return true; }
         }
         return super.mouseReleased(mx, my, button);
     }
 
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
+        if (editing >= 0) {
+            if (key == InputConstants.KEY_ESCAPE || key == InputConstants.KEY_RETURN || key == InputConstants.KEY_NUMPADENTER) closeEdit();
+            else nameBox.keyPressed(key, scan, mods);
+            return true;
+        }
         if (ClientSetup.MAP_KEY.matches(key, scan)) { onClose(); return true; }
         if (key == InputConstants.KEY_ADD || key == InputConstants.KEY_EQUALS) { zoomBy(1.5); return true; }
         if (key == InputConstants.KEY_MINUS) { zoomBy(1 / 1.5); return true; }
         return super.keyPressed(key, scan, mods);
+    }
+
+    @Override
+    public boolean charTyped(char c, int mods) {
+        if (editing >= 0) return nameBox.charTyped(c, mods);
+        return super.charTyped(c, mods);
+    }
+
+    // ------------------------------------------------------------------ edition d'un repere (nom, couleur, suppression)
+    private void openEdit(int i) {
+        editing = i;
+        Marker m = MARKERS.get(i);
+        int px = (int) toScreenX(m.x), py = (int) toScreenY(m.z);
+        ex0 = px + 12 + EW > this.width - 4 ? px - 12 - EW : px + 12;
+        ex0 = Math.max(4, Math.min(this.width - EW - 4, ex0));
+        ey0 = Math.max(4, Math.min(this.height - EH - 4, py - EH / 2));
+        nameBox = new EditBox(this.font, ex0 + 8, ey0 + 20, EW - 16, 14, Component.literal("Nom du repère"));
+        nameBox.setMaxLength(24);
+        nameBox.setHint(Component.literal("Nom du repère"));
+        nameBox.setValue(m.name);
+        nameBox.setFocused(true);
+    }
+
+    private void closeEdit() {
+        if (editing >= 0 && editing < MARKERS.size()) { MARKERS.get(editing).name = nameBox.getValue().trim(); saveMarkers(); }
+        editing = -1;
+    }
+
+    private void editClick(double mx, double my, int button) {
+        if (!Ui.in(mx, my, ex0, ey0, EW, EH)) { closeEdit(); return; }
+        if (button != 0) return;
+        Marker m = MARKERS.get(editing);
+        nameBox.mouseClicked(mx, my, button);
+        for (int i = 0; i < PALETTE.length; i++) {
+            if (Ui.in(mx, my, ex0 + 8 + i * 18, ey0 + 42, 14, 14)) { m.color = PALETTE[i]; saveMarkers(); return; }
+        }
+        if (Ui.in(mx, my, ex0 + 8, ey0 + EH - 24, 72, 16)) { MARKERS.remove(editing); editing = -1; saveMarkers(); return; }
+        if (Ui.in(mx, my, ex0 + EW - 68, ey0 + EH - 24, 60, 16)) closeEdit();
+    }
+
+    private void drawEdit(GuiGraphics g, int mx, int my, float pt) {
+        Marker m = MARKERS.get(editing);
+        Ui.frame(g, ex0, ey0, EW, EH);
+        Ui.parchment(g, ex0 + 4, ey0 + 4, EW - 8, EH - 8);
+        g.drawString(this.font, "Repère", ex0 + 8, ey0 + 8, Ui.INK, false);
+        Ui.icon(g, Ui.I_PIN, ex0 + EW - 14, ey0 + 11, 0xFF000000 | m.color);
+        nameBox.setX(ex0 + 8); nameBox.setY(ey0 + 20);
+        nameBox.render(g, mx, my, pt);
+        for (int i = 0; i < PALETTE.length; i++) {
+            int sx = ex0 + 8 + i * 18, sy = ey0 + 42;
+            boolean sel = PALETTE[i] == m.color;
+            g.fill(sx - 2, sy - 2, sx + 16, sy + 16, sel ? 0xFFFFFFFF : Ui.BRONZE_D);
+            g.fill(sx - 1, sy - 1, sx + 15, sy + 15, sel ? Ui.BRONZE_D : Ui.GOLD);
+            g.fill(sx, sy, sx + 14, sy + 14, 0xFF000000 | PALETTE[i]);
+        }
+        boolean hd = Ui.in(mx, my, ex0 + 8, ey0 + EH - 24, 72, 16), ho = Ui.in(mx, my, ex0 + EW - 68, ey0 + EH - 24, 60, 16);
+        Ui.button(g, ex0 + 8, ey0 + EH - 24, 72, 16, hd, false, true);
+        g.drawCenteredString(this.font, "Supprimer", ex0 + 8 + 36, ey0 + EH - 24 + 4, 0xFFFF9080);
+        Ui.button(g, ex0 + EW - 68, ey0 + EH - 24, 60, 16, ho, false, true);
+        g.drawCenteredString(this.font, "OK", ex0 + EW - 68 + 30, ey0 + EH - 24 + 4, 0xFFF0E0B0);
     }
 
     private static String pretty(String key) {
@@ -234,6 +332,7 @@ public class MapScreen extends Screen {
     public void render(GuiGraphics g, int mx, int my, float pt) {
         if (texture == null) build();
         loadMarkers();
+        if (editInit >= 0 && editInit < MARKERS.size()) { int k = editInit; editInit = -1; openEdit(k); }
         this.renderBackground(g, mx, my, pt);
 
         size = Math.max(120, Math.min(this.height - 44, this.width - 60));
@@ -260,10 +359,11 @@ public class MapScreen extends Screen {
             g.fill(px - (h ? 2 : 1), py - (h ? 2 : 1), px + (h ? 3 : 2), py + (h ? 3 : 2), h ? 0xFFFFFFFF : 0xFFFFD070);
             g.drawString(this.font, pretty(e.getKey()), px + 4, py - 4, h ? 0xFFFFFFFF : 0xFFF0E0B0, true);
         }
-        for (int[] m : MARKERS) {
-            int px = (int) toScreenX(m[0]), py = (int) toScreenY(m[1]);
+        for (Marker m : MARKERS) {
+            int px = (int) toScreenX(m.x), py = (int) toScreenY(m.z);
             if (px < x0 - 8 || px > x0 + size + 8 || py < y0 - 8 || py > y0 + size + 16) continue;
-            Ui.icon(g, Ui.I_PIN, px, py - 4, 0xFFE03030);
+            Ui.icon(g, Ui.I_PIN, px, py - 4, 0xFF000000 | m.color);
+            if (!m.name.isEmpty()) g.drawString(this.font, m.name, px + 6, py - 9, 0xFFFFFFFF, true);
         }
         Minecraft mc = Minecraft.getInstance();
         boolean here = playerHere();
@@ -290,6 +390,12 @@ public class MapScreen extends Screen {
         if (legend) drawLegend(g);
         g.pose().popPose();
         g.disableScissor();
+        if (editing >= 0 && editing < MARKERS.size()) {
+            g.pose().pushPose();
+            g.pose().translate(0, 0, 300);
+            drawEdit(g, mx, my, pt);
+            g.pose().popPose();
+        }
 
         // bandeau haut : titre et embleme
         g.drawString(this.font, "La Hautemarche", fx + 12, fy + 5, Ui.INK, false);
@@ -327,9 +433,12 @@ public class MapScreen extends Screen {
             else g.drawCenteredString(this.font, b.label, b.x + b.w / 2, b.y + (b.h - 8) / 2 + 1, 0xFFF0E0B0);
             if (hv) tip = b;
         }
-        if (tip != null) g.renderTooltip(this.font, Component.literal(tip.tip), mx, my);
+        int hm = editing < 0 && Ui.in(mx, my, x0, y0, size, size) ? markerAt(mx, my) : -1;
+        if (editing >= 0) { }
+        else if (hm >= 0) g.renderTooltip(this.font, Component.literal(MARKERS.get(hm).label() + " — clic pour renommer, colorer ou effacer"), mx, my);
+        else if (tip != null) g.renderTooltip(this.font, Component.literal(tip.tip), mx, my);
         else if (hover != null) g.renderTooltip(this.font, Component.literal(pretty(hover.getKey()) + " — clic droit pour s'y rendre"), mx, my);
-        else if (placing && Ui.in(mx, my, x0, y0, size, size)) g.renderTooltip(this.font, Component.literal(markerAt(mx, my) >= 0 ? "Effacer ce repère" : "Poser un repère"), mx, my);
+        else if (placing && Ui.in(mx, my, x0, y0, size, size)) g.renderTooltip(this.font, Component.literal("Poser un repère"), mx, my);
     }
 
     private void drawLegend(GuiGraphics g) {

@@ -82,6 +82,25 @@ public final class ClientSetup {
                 g.drawString(mc.font, names[i], px - mc.font.width(names[i]) / 2, y, col, true);
             }
             g.fill(cx, y + 10, cx + 1, y + 13, 0xFFFFD070);
+            // reperes poses sur la carte : une epingle coloree sous la boussole, a leur cap ; celui qu'on vise affiche nom et distance
+            if (MapScreen.inLands()) {
+                MapScreen.Marker aim = null;
+                float aimD = 9F;
+                double aimDist = 0;
+                for (MapScreen.Marker m : MapScreen.markers()) {
+                    double dx = m.x + 0.5 - mc.player.getX(), dz = m.z + 0.5 - mc.player.getZ();
+                    float d = net.minecraft.util.Mth.wrapDegrees((float) Math.toDegrees(Math.atan2(-dx, dz)) - yaw);
+                    if (Math.abs(d) > 58) continue;
+                    int px = cx + Math.round(d * 1.05F);
+                    g.fill(px, y + 11, px + 1, y + 13, 0xFF000000 | m.color);
+                    Ui.icon(g, Ui.I_PIN, px, y + 18, 0xFF000000 | m.color);
+                    if (Math.abs(d) < aimD) { aimD = Math.abs(d); aim = m; aimDist = Math.sqrt(dx * dx + dz * dz); }
+                }
+                if (aim != null) {
+                    String t = aim.label() + " · " + (aimDist >= 1000 ? String.format("%.1f km", aimDist / 1000) : (int) aimDist + " m");
+                    g.drawString(mc.font, t, cx - mc.font.width(t) / 2, y + 26, 0xFF000000 | aim.color, true);
+                }
+            }
         });
         e.registerAboveAll(RingsOfAsh.id("quest_tracker"), (g, dt) -> QuestScreen.renderTracker(g));
     }

@@ -102,8 +102,16 @@ public final class ClientTest {
                     if (s.name.contains("quetes")) { mc.options.hideGui = false; QuestScreen.tracked = 1; mc.setScreen(new QuestScreen(0)); }
                     if (s.name.contains("carte")) {
                         mc.options.hideGui = false;
-                        MapScreen.addMarker(-445, -230); MapScreen.addMarker(250, -297);
-                        mc.setScreen(new MapScreen(s.name.contains("legende"), s.name.contains("legende") ? 1 : 2.5, s.name.contains("legende")));
+                        if (MapScreen.markers().isEmpty()) {
+                            MapScreen.addMarker(-445, -230, "Refuge", 0x3060E0); MapScreen.addMarker(250, -297, "", 0xE03030);
+                            MapScreen.addMarker(-400, -150, "Tour du guet", 0x40C040);
+                        }
+                        mc.setScreen(new MapScreen(s.name.contains("legende"), s.name.contains("legende") ? 1 : 2.5, s.name.contains("legende"), s.name.contains("edition") ? 2 : -1));
+                    }
+                    if (s.name.contains("boussole")) {
+                        mc.options.hideGui = false;
+                        MapScreen.addMarker(-410, -160, "Tour du guet", 0x40C040); MapScreen.addMarker(-485, -170, "Camp", 0xF08A20);
+                        MapScreen.addMarker(-440, -80, "Mine", 0xA040E0); MapScreen.addMarker(-700, -230, "Loin", 0xE03030);
                     }
                     if (s.name.contains("suivi")) { mc.options.hideGui = false; QuestScreen.tracked = 1; }
                     server.execute(() -> {
@@ -381,5 +389,7 @@ public final class ClientTest {
         }));
         SCENES.add(new Scene("27_carte_legende", 40, p -> { }));
         SCENES.add(new Scene("28_suivi", 40, p -> { }));
+        SCENES.add(new Scene("29_carte_edition", 40, p -> { }));
+        spot("30_boussole", -445, -230, 30, 0F, 10F);
     }
 }
