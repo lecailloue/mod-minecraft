@@ -55,7 +55,7 @@ public class ShadowRiderEntity extends Monster {
     public boolean isChief() { return getType() == ModEntities.SHADOW_CHIEF.get(); }
     /** Modele : 0 et 1 = deux cavaliers (cape et pose differentes), 2 = chef casque. */
     public int shadowModel() { return isChief() ? 2 : Math.max(0, Math.min(1, entityData.get(VARIANT))); }
-    public void testVariant(int v) { entityData.set(VARIANT, v); }
+    public void testVariant(int v) { entityData.set(VARIANT, v); dayGrace = 1_000_000; }
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder b) {

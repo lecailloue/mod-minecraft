@@ -292,6 +292,18 @@ public final class ClientTest {
             hook = () -> log("ROI_MARCHE avance=" + String.format("%.2f", z0 - king.getZ()) + " pv=" + king.getHealth() + " vivant=" + king.isAlive() + " cible=" + king.getTarget()
                     + " model=" + king.spectreModel());
         }));
+        SCENES.add(new Scene("04_armes_orques", 90, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            net.minecraft.world.item.Item[] it = {Reg.ORC_CLEAVER.get(), Reg.ORC_SCIMITAR.get(), Reg.ORC_MACHETE.get(), Reg.ORC_SPEAR.get(), Reg.ORC_MACE.get()};
+            for (int i = 0; i < it.length; i++) {
+                net.minecraft.world.entity.item.ItemEntity ie = new net.minecraft.world.entity.item.ItemEntity(ow, SX + 1.6 - i * 0.8, SY + 0.1, SZ + 3.0, new net.minecraft.world.item.ItemStack(it[i]));
+                ie.setPickUpDelay(32767);
+                ie.setUnlimitedLifetime();
+                ow.addFreshEntity(ie);
+            }
+            view(p, ow, SX + 0.5, SY + 1.2, SZ, 0F, 18F);
+        }));
         SCENES.add(new Scene("03e_ombres", 70, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);

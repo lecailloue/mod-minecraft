@@ -31,7 +31,7 @@ public final class ClientSetup {
 
     public static final KeyMapping REP_KEY = new KeyMapping("key.ringsofash.reputation", InputConstants.KEY_R, "key.categories.ringsofash");
     public static final KeyMapping MAP_KEY = new KeyMapping("key.ringsofash.map", InputConstants.KEY_M, "key.categories.ringsofash");
-    private static final String[] GEO = {"troll", "troll_chief", "warg", "stag", "demon", "lurker", "treeman", "eagle", "dragon", "mammoth", "ash_lord", "orc_1_nu", "orc_2_fourrure", "orc_3_mailles", "orc_4_casque", "orc_noir_1_main", "orc_noir_2_fer", "orc_chef", "spectre_epee", "spectre_lance", "spectre_hache", "spectre_dague", "spectre_roi", "ombre_1", "ombre_2", "ombre_chef"};
+    private static final String[] GEO = {"troll", "troll_chief", "warg", "stag", "demon", "lurker", "treeman", "eagle", "dragon", "mammoth", "ash_lord", "orc_1_nu", "orc_2_fourrure", "orc_3_mailles", "orc_4_casque", "orc_noir_1_main", "orc_noir_2_fer", "orc_chef", "spectre_epee", "spectre_lance", "spectre_hache", "spectre_dague", "spectre_roi", "ombre_1", "ombre_2", "ombre_chef", "arme_orc_cleaver", "arme_orc_scimitar", "arme_orc_machete", "arme_orc_spear", "arme_orc_mace"};
     private static final String[] HUMAN = {"plain", "elf", "orc", "goblin", "dwarf"};
 
     public static ModelLayerLocation layer(String name) { return new ModelLayerLocation(RingsOfAsh.id(name), "main"); }
@@ -49,6 +49,7 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::blockColors);
         modBus.addListener(ClientSetup::itemColors);
         modBus.addListener(ClientSetup::setup);
+        modBus.addListener(ClientSetup::itemExtensions);
         NeoForge.EVENT_BUS.addListener(ClientSetup::tick);
         if (System.getProperty("roa.clienttest") != null) ClientTest.init();
     }
@@ -115,6 +116,19 @@ public final class ClientSetup {
         while (REP_KEY.consumeClick()) {
             if (mc.player != null && mc.screen == null) mc.setScreen(new QuestScreen(0));
         }
+    }
+
+    /** Armes d'orques : rendu 3D (meme modele que celui porte par les orques). */
+    private static void itemExtensions(net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent e) {
+        net.neoforged.neoforge.client.extensions.common.IClientItemExtensions ext = new net.neoforged.neoforge.client.extensions.common.IClientItemExtensions() {
+            private WeaponItemRenderer renderer;
+            @Override
+            public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) renderer = new WeaponItemRenderer();
+                return renderer;
+            }
+        };
+        e.registerItem(ext, Reg.ORC_CLEAVER.get(), Reg.ORC_SCIMITAR.get(), Reg.ORC_MACHETE.get(), Reg.ORC_SPEAR.get(), Reg.ORC_MACE.get());
     }
 
     private static void setup(FMLClientSetupEvent e) {

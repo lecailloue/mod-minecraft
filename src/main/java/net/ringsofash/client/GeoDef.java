@@ -21,6 +21,8 @@ public final class GeoDef {
     public int tw, th;
     /** hauteur du modele en pixels (sol a y=24, arme exclue) : sert a calibrer la taille a l'ecran */
     public float height;
+    /** etendue verticale (px) autour du point de prise : armes rendues comme objets */
+    public float ymin, ymax;
     public Part[] parts;
 
     private static final Map<String, GeoDef> CACHE = new HashMap<>();

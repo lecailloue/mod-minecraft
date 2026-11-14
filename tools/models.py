@@ -169,6 +169,82 @@ def spectres():
         save(Image.fromarray(glow, 'RGBA'), f'{A}/textures/entity/{name}_glow.png')
         print(f'spectre {name}: {len(geo["parts"])} pieces, hauteur {geo["height"]} px')
 
+def geo_extent(geo):
+    """etendue verticale du modele en pixels autour du point de prise (y=24 dans le geo) : (bas, haut), rotations appliquees"""
+    import math
+    import numpy as np
+    by = {p['name']: p for p in geo['parts']}
+    def mat(r):
+        x, y, z = r
+        rx = np.array([[1, 0, 0], [0, math.cos(x), -math.sin(x)], [0, math.sin(x), math.cos(x)]])
+        ry = np.array([[math.cos(y), 0, math.sin(y)], [0, 1, 0], [-math.sin(y), 0, math.cos(y)]])
+        rz = np.array([[math.cos(z), -math.sin(z), 0], [math.sin(z), math.cos(z), 0], [0, 0, 1]])
+        return rz @ ry @ rx
+    world = {}
+    def frame(n):
+        if n in world: return world[n]
+        p = by[n]
+        R = mat(p['rot']); t = np.array(p['pivot'], float)
+        if p['parent']:
+            PR, Pt = frame(p['parent'])
+            R, t = PR @ R, PR @ t + Pt
+        world[n] = (R, t)
+        return world[n]
+    lo, hi = 1e9, -1e9
+    for n, p in by.items():
+        R, t = frame(n)
+        for b in p['boxes']:
+            o, sz = b['o'], b['s']
+            for dx in (0, 1):
+                for dy in (0, 1):
+                    for dz in (0, 1):
+                        v = np.array([o[0] + dx * sz[0], o[1] + dy * sz[1], o[2] + dz * sz[2]])
+                        y = 24.0 - (R @ v + t)[1]
+                        lo, hi = min(lo, y), max(hi, y)
+    return round(lo, 2), round(hi, 2)
+
+def orc_weapons():
+    """les armes d'orques en 3D (memes cubes que celles que portent les orques) : modele + texture, rendus comme objets (WeaponItemRenderer)"""
+    import bbimport, tempfile
+    import orcs as O
+    import trollcore as T
+    from genlib import wjson, save
+    from PIL import Image
+    ws = {'orc_cleaver': O.w_cleaver, 'orc_scimitar': O.w_scimitar, 'orc_machete': O.w_notched, 'orc_spear': O.w_spear, 'orc_mace': O.w_mace}
+    item_model = {'parent': 'minecraft:builtin/entity', 'display': {
+        'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0, 4.0, 0.5], 'scale': [0.85, 0.85, 0.85]},
+        'thirdperson_lefthand': {'rotation': [0, 90, -55], 'translation': [0, 4.0, 0.5], 'scale': [0.85, 0.85, 0.85]},
+        'firstperson_righthand': {'rotation': [0, -90, 25], 'translation': [1.13, 3.2, 1.13], 'scale': [0.68, 0.68, 0.68]},
+        'firstperson_lefthand': {'rotation': [0, 90, -25], 'translation': [1.13, 3.2, 1.13], 'scale': [0.68, 0.68, 0.68]},
+        'ground': {'rotation': [0, 0, 0], 'translation': [0, 2, 0], 'scale': [0.6, 0.6, 0.6]},
+        'head': {'rotation': [0, 180, 0], 'translation': [0, 13, 7], 'scale': [1, 1, 1]},
+        'gui': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]},
+        'fixed': {'rotation': [0, 180, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]}}}
+    for id, fn in ws.items():
+        name = 'arme_' + id
+        T._N[0] = 0
+        groups = [T.Group('arme', (0, 0, 0), (0, 0, 0), fn())]
+        O.unique_names(groups)
+        T.normalize(groups)
+        cubes = [c for c, _ in T.walk(groups)]
+        for c in cubes:                                      # une pointe a longueur negative (masse) : on la retourne
+            fr, sz = list(c.frm), list(c.size)
+            for i in range(3):
+                if sz[i] < 0:
+                    fr[i] += sz[i]; sz[i] = -sz[i]
+            c.frm, c.size = tuple(fr), tuple(sz)
+        W, H = T.pack(cubes)
+        tex, glow = T.paint_all(cubes, W, H)
+        tmp = tempfile.mkdtemp()
+        T.export_bbmodel(name, groups, cubes, W, H, tex, os.path.join(tmp, name + '.bbmodel'))
+        geo = bbimport.convert(os.path.join(tmp, name + '.bbmodel'))
+        geo['ymin'], geo['ymax'] = geo_extent(geo)
+        geo['height'] = geo['ymax']
+        wjson(f'{A}/geo/{name}.json', geo)
+        save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}.png')
+        wjson(f'{A}/models/item/{id}.json', item_model)
+        print(f'arme {id}: etendue {geo["ymin"]} .. {geo["ymax"]} px')
+
 def shadows():
     """etres des ombres (tools/shadows.py) : cavalier + cheval en un seul modele, texture lumineuse (yeux du cheval)"""
     import bbimport, tempfile
@@ -348,4 +424,4 @@ def skins():
     skin('cave_thief', 'goblin', skin='#b8b8a8', hair='#b8b8a8', hair_style='bald', eyes='#d8f0ff', top='#b0b0a0', legs='#6a6050', boots='#b8b8a8', sleeves=False, seed=55)
 
 def build():
-    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); lurker(); treeman_bb(); eagle(); dragon(); mammoth(); skins()
+    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); orc_weapons(); lurker(); treeman_bb(); eagle(); dragon(); mammoth(); skins()
