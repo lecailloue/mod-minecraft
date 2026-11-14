@@ -264,6 +264,7 @@ public final class Reg {
     public static final DeferredItem<Item> GOBLIN_SPAWN_EGG = ITEMS.register("goblin_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.GOBLIN, 0x7a8a52, 0xf0e040, props()));
     public static final DeferredItem<Item> CAVE_TROLL_SPAWN_EGG = ITEMS.register("cave_troll_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.CAVE_TROLL, 0x6d7868, 0x8a947e, props()));
     public static final DeferredItem<Item> STONE_TROLL_SPAWN_EGG = ITEMS.register("stone_troll_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.STONE_TROLL, 0x8a8a84, 0x5a5a56, props()));
+    public static final DeferredItem<Item> TROLL_CHIEF_SPAWN_EGG = ITEMS.register("troll_chief_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.TROLL_CHIEF, 0x2b2b30, 0xc02018, props()));
     public static final DeferredItem<Item> WARG_SPAWN_EGG = ITEMS.register("warg_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.WARG, 0x423c38, 0xc02010, props()));
     public static final DeferredItem<Item> WIGHT_SPAWN_EGG = ITEMS.register("wight_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.WIGHT, 0xb8c8c0, 0x70ffd8, props()));
     public static final DeferredItem<Item> WILD_MAN_SPAWN_EGG = ITEMS.register("wild_man_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.WILD_MAN, 0xa87a58, 0x2a1c12, props()));

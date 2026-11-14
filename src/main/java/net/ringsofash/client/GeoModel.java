@@ -5,6 +5,8 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.ringsofash.entity.EagleEntity;
+import net.ringsofash.entity.FoeEntity;
+import net.ringsofash.entity.TrollSlamGoal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -117,6 +119,53 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
             body.xRot += atk * 0.55F + Mth.sin(age * 0.05F) * 0.02F;
             body.zRot += Mth.cos(swing * 0.6662F) * 0.04F * amount;
         }
+        if (e instanceof FoeEntity f && f.isTroll()) trollPose(f, swing, amount, age);
+    }
+
+    private static float ease(float k) { k = Mth.clamp(k, 0F, 1F); return k * k * (3F - 2F * k); }
+
+    /**
+     * Trolls : (1) coup de poing lent a deux mains (poings leves, puis abattus), (2) course a quatre pattes comme un gorille quand
+     * ils chassent : buste presque a l'horizontale, bras tendus vers le sol qui se relaient avec les jambes.
+     */
+    private void trollPose(FoeEntity f, float swing, float amount, float age) {
+        ModelPart body = p("body"), head = p("head"), ar = p("arm_r"), al = p("arm_l"), lr = p("leg_r"), ll = p("leg_l");
+        if (body == null || head == null || ar == null || al == null) return;
+        int t = f.slamTick();
+        if (t > 0) {
+            float tt = t + (age - Mth.floor(age));                                   // + partie fractionnaire = fluidite entre deux ticks
+            float W = TrollSlamGoal.WINDUP, S = TrollSlamGoal.STRIKE, R = TrollSlamGoal.RECOVER;
+            float bodyD, armD, spread = 0F;
+            if (tt <= W) {                                                           // il se redresse, poings au-dessus de la tete
+                float k = ease(tt / W);
+                bodyD = -0.55F * k; armD = -2.9F * k; spread = 0.22F * k;
+                if (tt > W - 5F) { bodyD += Mth.sin(age * 2.6F) * 0.02F; armD += Mth.sin(age * 3.1F) * 0.04F; }   // tremblement de la charge
+            } else if (tt <= W + S) {                                                // il s'abat
+                float k = ease((tt - W) / S);
+                bodyD = Mth.lerp(k, -0.55F, 0.7F); armD = Mth.lerp(k, -2.9F, -1.0F); spread = Mth.lerp(k, 0.22F, 0F);
+            } else {                                                                 // il reprend son souffle
+                float k = ease((tt - W - S) / R);
+                bodyD = Mth.lerp(k, 0.7F, 0F); armD = Mth.lerp(k, -1.0F, 0F);
+            }
+            body.xRot += bodyD;
+            head.xRot -= bodyD * 0.7F;
+            ar.xRot += armD; al.xRot += armD;
+            ar.zRot -= spread; al.zRot += spread;
+            return;
+        }
+        float run = f.runBlend();
+        if (run < 0.01F) return;
+        float g = swing * 0.62F, c = Mth.cos(g), c2 = Mth.cos(g + Mth.PI);
+        float bodyAbs = body.xRot + (0.95F - body.xRot) * run;                       // inclinaison totale visee : ~55 degres
+        body.xRot = bodyAbs;
+        body.yRot += c * 0.10F * run;
+        head.xRot -= 0.6F * run;                                                     // la tete reste relevee vers sa proie
+        ar.xRot = Mth.lerp(run, ar.xRot, -bodyAbs - 0.30F + c2 * 0.55F);             // bras tendus au sol, en alternance avec les jambes
+        al.xRot = Mth.lerp(run, al.xRot, -bodyAbs - 0.30F + c * 0.55F);
+        ar.zRot *= 1F - run; al.zRot *= 1F - run;
+        if (lr != null) lr.xRot += c * 0.5F * run * amount;
+        if (ll != null) ll.xRot += c2 * 0.5F * run * amount;
+        root.y -= Mth.abs(Mth.sin(g)) * 1.6F * run * amount;                         // bond de la course
     }
 
     private void leg(String n, float rot) {

@@ -4,7 +4,7 @@ from PIL import Image
 
 MOBS = [  # id, nom, constante, couleur1, couleur2
     ('orc', 'Orque', 0x5f7248, 0x2a2622), ('war_orc', 'Orque noir', 0x3a3a34, 0x8a1a14), ('orc_chief', 'Chef orque', 0x4a4034, 0xc02018),
-    ('goblin', 'Gobelin', 0x7a8a52, 0xf0e040), ('cave_troll', 'Troll des cavernes', 0x6d7868, 0x8a947e), ('stone_troll', 'Troll de pierre', 0x8a8a84, 0x5a5a56),
+    ('goblin', 'Gobelin', 0x7a8a52, 0xf0e040), ('cave_troll', 'Troll des cavernes', 0x6d7868, 0x8a947e), ('stone_troll', 'Troll de pierre', 0x8a8a84, 0x5a5a56), ('troll_chief', 'Troll chef de meute', 0x2b2b30, 0xc02018),
     ('warg', 'Loup de guerre', 0x423c38, 0xc02010), ('wight', 'Être des tertres', 0xb8c8c0, 0x70ffd8), ('wild_man', 'Homme sauvage', 0xa87a58, 0x2a1c12),
     ('mammoth', 'Mammouth', 0x6a5544, 0xe8dfc4), ('dead_soldier', 'Soldat spectral', 0x7ad8a0, 0xe0fff0), ('pale_rider', 'Cavalier blême', 0x0c0a0e, 0x4a4a54),
     ('giant_spider', 'Araignée géante', 0x1a1420, 0xa01828), ('lurker', 'Guetteur des profondeurs', 0x27332e, 0x9fe060), ('cave_thief', 'Créature blême', 0xb8b8a8, 0xd8f0ff),
@@ -46,6 +46,7 @@ def build():
     loot('goblin', entry('silver_coin', 1, 1, 0.4), entry('minecraft:bone', 0, 1), entry('minecraft:raw_iron', 1, 2, 0.1))
     for t in ('cave_troll', 'stone_troll'):
         loot(t, entry('troll_hide', 1, 3), entry('minecraft:bone', 1, 3), entry('silver_coin', 0, 4), entry('troll_club', 1, 1, 0.06))
+    loot('troll_chief', entry('troll_hide', 3, 5), entry('minecraft:bone', 2, 4), entry('silver_coin', 3, 8), entry('black_steel_ingot', 0, 2), entry('troll_club', 1, 1, 0.2))
     loot('warg', entry('warg_pelt', 0, 2), entry('minecraft:bone', 0, 1))
     loot('wight', entry('wight_dust', 1, 2), entry('silver_coin', 0, 2), entry('ring_shadows', 1, 1, 0.03))
     loot('wild_man', entry('minecraft:leather', 0, 1), entry('silver_coin', 0, 1))

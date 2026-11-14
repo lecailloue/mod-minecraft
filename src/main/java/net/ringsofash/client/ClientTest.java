@@ -37,6 +37,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.ringsofash.GameEvents;
 import net.ringsofash.RingsOfAsh;
 import net.ringsofash.data.ModData;
+import net.ringsofash.entity.FoeEntity;
 import net.ringsofash.entity.ModEntities;
 import net.ringsofash.entity.PeopleEntity;
 import net.ringsofash.gen.Reg;
@@ -220,7 +221,27 @@ public final class ClientTest {
         lineup("02_peuples", 8.5, 2F, 1.9, List.of(ModEntities.HUMAN.get(), ModEntities.HUMAN.get(), ModEntities.ELF.get(), ModEntities.ELF.get(), ModEntities.DWARF.get(), ModEntities.DWARF.get(),
                 ModEntities.HALFLING.get(), ModEntities.HALFLING.get(), ModEntities.RANGER.get(), ModEntities.MAGE.get()));
         lineup("03_divers", 7.0, 2F, 2.2, List.of(ModEntities.CAVE_THIEF.get(), ModEntities.SORCERER.get(), ModEntities.DEAD_SOLDIER.get(), ModEntities.CROW.get(), ModEntities.STAG.get(), ModEntities.WARG.get()));
-        lineup("04_betes", 12.0, -4F, 5.5, List.of(ModEntities.CAVE_TROLL.get(), ModEntities.STONE_TROLL.get(), ModEntities.GIANT_SPIDER.get(), ModEntities.EAGLE.get(), ModEntities.LURKER.get()));
+        lineup("04_betes", 12.0, -4F, 5.5, List.of(ModEntities.CAVE_TROLL.get(), ModEntities.TROLL_CHIEF.get(), ModEntities.STONE_TROLL.get(), ModEntities.GIANT_SPIDER.get(), ModEntities.EAGLE.get(), ModEntities.LURKER.get()));
+        // poses des trolls (profil + trois quarts) : course a quatre pattes, poings leves, poings abattus
+        {
+            Object[][] poses = {{"04b_troll_course", true, 0, 90F}, {"04c_troll_leve", false, 17, 90F}, {"04d_troll_frappe", false, 22, 90F}, {"04e_troll_face", true, 0, 20F}, {"04f_troll_leve_face", false, 17, 35F}};
+            for (Object[] o : poses) {
+                SCENES.add(new Scene((String) o[0], 60, p -> {
+                    ServerLevel ow = p.server.overworld();
+                    clear(ow);
+                    float yaw = (Float) o[3];
+                    for (int i = 0; i < 2; i++) {
+                        EntityType<? extends Mob> type = i == 0 ? ModEntities.CAVE_TROLL.get() : ModEntities.TROLL_CHIEF.get();
+                        double x = SX + (i == 0 ? 2.6 : -2.6);
+                        actor(ow, type, x, SZ + 9, m -> {
+                            m.setYRot(yaw); m.setYHeadRot(yaw); m.setYBodyRot(yaw);
+                            if (m instanceof FoeEntity f) f.testPose((Boolean) o[1], (Integer) o[2]);
+                        });
+                    }
+                    view(p, ow, SX + 0.5, SY + 2.0, SZ, 0F, 4F);
+                }));
+            }
+        }
         lineup("05_geants", 15.0, -8F, 7.0, List.of(ModEntities.MAMMOTH.get(), ModEntities.TREEMAN.get(), ModEntities.FIRE_DEMON.get(), ModEntities.ASH_LORD.get()));
         for (float[] v : new float[][]{{0, 155F}, {1, -25F}, {2, 90F}}) {
             SCENES.add(new Scene("05" + "bcd".charAt((int) v[0]) + "_fleau", 70, p -> {
