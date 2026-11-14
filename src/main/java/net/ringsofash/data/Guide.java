@@ -58,7 +58,7 @@ public final class Guide {
         b("mammoth", "Mammouth", "Paisible tant qu'on ne le frappe pas. Sinon, courez.");
         b("shadow_rider", "Être des ombres", "Cavalier noir sous une grande cape, sans rien sous la capuche. Ne craint pas le soleil. Très rapide. Sent un anneau à près de cent blocs, même à travers les murs. Craint le feu et les lames des tertres.");
         b("shadow_chief", "Chef des ombres", "Le maître des êtres des ombres : casque à pointes, cheval cuirassé. Bien plus robuste que ses cavaliers.");
-        b("giant_spider", "Araignée géante", "Reine du Bois-Noir. Venin et toiles. Fuit la fiole de lumière.");
+        b("giant_spider", "Araignée géante", "Reine du Bois-Noir. Venin, toiles qui engluent, crache des fils à distance. Fuit la fiole de lumière.");
         b("lurker", "Guetteur des profondeurs", "Tapi dans les eaux sombres. Ses tentacules vous tirent vers lui. Frappez de loin.");
         b("cave_thief", "Créature blême", "Vole un objet de votre barre et s'enfuit. Rattrapez-la pour le reprendre.");
         b("fire_demon", "Fléau de Braise", "Démon d'ombre et de flamme, un par mine naine. Insensible au feu. Fouet, boules de feu, explosion de braises.");

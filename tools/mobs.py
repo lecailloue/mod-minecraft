@@ -84,14 +84,3 @@ def build():
                                  ('minecraft:experience_bottle', 6, 1, 4), ('black_steel_ingot', 8, 1, 4), ('minecraft:lapis_lazuli', 6, 2, 6)])
     chest('hoard', (6, 9), [('minecraft:gold_ingot', 12, 4, 10), ('minecraft:gold_block', 6, 1, 3), ('minecraft:diamond', 8, 2, 5), ('minecraft:emerald', 8, 2, 6), ('silver_coin', 10, 8, 20),
                             ('lunargent_ingot', 6, 2, 5), ('ring_hoard', 1, 1, 1), ('kings_blade', 0 + 1, 1, 1)])
-    # texture de l'araignee geante (disposition vanilla 64x32)
-    from skins import Skin
-    s = Skin(77)
-    s.im = Image.new('RGBA', (64, 32), (0, 0, 0, 0))
-    s.box(32, 4, 8, 8, 8, '#231a2c', noise=0.14)
-    s.box(0, 0, 6, 6, 6, '#1a1420', noise=0.14)
-    s.box(0, 12, 10, 8, 12, '#2a1e30', noise=0.18)
-    s.box(18, 0, 16, 2, 2, '#18121c', noise=0.12)
-    for (x, y) in ((16, 15), (17, 16), (18, 15), (15, 17), (19, 17), (17, 18), (16, 20), (18, 20), (17, 21)): s.px(x, y, (170, 24, 40))
-    for (x, y) in ((41, 14), (46, 14), (42, 17), (45, 17), (40, 16), (47, 16)): s.px(x, y, (220, 30, 40))
-    save(s.im, f'{A}/textures/entity/giant_spider.png')

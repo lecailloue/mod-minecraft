@@ -109,6 +109,20 @@ def features():
     pf('pipeweed_patch', 'pipeweed_patch', [RARE(10), SQ, HM(), BIOME])
     patch('cobweb_patch', st('minecraft:cobweb'), 12, 4, 3)
     pf('cobweb_patch', 'cobweb_patch', [RARE(3), SQ, HM(), BIOME])
+    # toiles d'araignee : accrochees aux troncs et aux feuilles (haut) ou au pied des arbres (bas)
+    def web_patch(name, tries, xz, y):
+        near = lambda off: {'type': 'minecraft:any_of', 'predicates': [{'type': 'minecraft:matching_block_tag', 'tag': 'minecraft:logs', 'offset': off},
+                                                                       {'type': 'minecraft:matching_block_tag', 'tag': 'minecraft:leaves', 'offset': off}]}
+        offs = [[1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1], [0, 1, 0]]
+        cf(name, 'random_patch', {'tries': tries, 'xz_spread': xz, 'y_spread': y, 'feature': {
+            'feature': {'type': 'minecraft:simple_block', 'config': {'to_place': simple(st('spider_web'))}},
+            'placement': [{'type': 'minecraft:block_predicate_filter', 'predicate': {'type': 'minecraft:all_of', 'predicates': [
+                {'type': 'minecraft:matching_blocks', 'blocks': 'minecraft:air'},
+                {'type': 'minecraft:any_of', 'predicates': [near(o)['predicates'][i] for o in offs for i in (0, 1)]}]}}]}})
+    web_patch('web_patch_low', 28, 8, 3)
+    web_patch('web_patch_high', 30, 8, 7)
+    pf('web_patch_low', 'web_patch_low', [RARE(3), SQ, HM('OCEAN_FLOOR_WG'), BIOME])
+    pf('web_patch_high', 'web_patch_high', [RARE(2), SQ, HM(), BIOME])
     # minerais
     targets = [{'target': {'predicate_type': 'minecraft:tag_match', 'tag': 'minecraft:stone_ore_replaceables'}, 'state': st('lunargent_ore')},
                {'target': {'predicate_type': 'minecraft:tag_match', 'tag': 'minecraft:deepslate_ore_replaceables'}, 'state': st('lunargent_ore')}]
@@ -139,7 +153,7 @@ VEG_ORDER = ['minecraft:glow_lichen', 'ash_spires', 'dead_trees', 'dead_trees_ma
              'bushes_oak', 'bushes_oak_few', 'bushes_birch', 'bushes_birch_few', 'bushes_spruce', 'bushes_spruce_few',
              'minecraft:dark_forest_vegetation', 'minecraft:trees_swamp', 'minecraft:trees_taiga', 'minecraft:trees_windswept_hills',
              'minecraft:trees_plains', 'minecraft:trees_savanna', 'minecraft:trees_birch_and_oak',
-             'sunstar_patch', 'sunstar_patch_rare', 'moonbell_patch', 'pipeweed_patch', 'cobweb_patch', 'ashroot_patch', 'smoke_vents', 'smoke_vents_dense',
+             'sunstar_patch', 'sunstar_patch_rare', 'moonbell_patch', 'pipeweed_patch', 'cobweb_patch', 'web_patch_low', 'web_patch_high', 'ashroot_patch', 'smoke_vents', 'smoke_vents_dense',
              'minecraft:flower_default', 'minecraft:flower_plains', 'minecraft:patch_tall_grass_2', 'minecraft:patch_tall_grass',
              'minecraft:patch_grass_plain', 'minecraft:patch_grass_forest', 'minecraft:patch_grass_savanna', 'minecraft:patch_large_fern',
              'minecraft:patch_dead_bush_2', 'minecraft:patch_waterlily', 'minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal',
@@ -205,7 +219,7 @@ def biomes():
           spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 60, 3, 5), ('war_orc', 35, 2, 3), ('warg', 25, 2, 4), ('cave_troll', 10, 1, 1), ('troll_chief', 3, 1, 1), ('shadow_rider', 5, 1, 2), ('goblin', 20, 3, 5)]})
     biome('grande_foret', 'Grande Forêt', 0.6, 0.9, '#6f9ed8', '#7f9a78', water='#3d6a55', wfog='#0c1f16', grass='#3f7a2e', foliage='#2f6a25',
           veg=('trees_oak_big', 'trees_birch_big', 'trees_spruce_big', 'fallen_oak_logs', 'fallen_spruce_logs', 'fallen_birch_logs_few', 'bushes_oak', 'bushes_spruce', 'moonbell_patch', 'minecraft:patch_grass_forest', 'minecraft:patch_large_fern',
-               'minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal'),
+               'minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal', 'web_patch_low', 'web_patch_high'),
           spawns={'creature': [('minecraft:fox', 4, 1, 2), ('minecraft:rabbit', 4, 2, 3), ('treeman', 5, 1, 1), ('stag', 6, 1, 3)], 'ambient': BATS,
                   'monster': ORCS + [('giant_spider', 10, 1, 1)]})
     biome('monts_rocheux', 'Monts Rocheux', 0.3, 0.4, '#7fa6e0', '#c0d0e0', grass='#7a9a64', foliage='#6a8a54', lunar='ore_lunargent',

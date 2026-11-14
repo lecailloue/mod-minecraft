@@ -144,6 +144,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
         }
         if (e instanceof FoeEntity f && f.isTroll()) trollPose(f, swing, amount, age);
         if (e instanceof FoeEntity f && f.kind() == FoeEntity.Kind.GOBLIN_KING) kingPose(e.getId(), swing, amount, age, atk, yaw, pitch);
+        if (e instanceof net.ringsofash.entity.GiantSpiderEntity) spiderPose(swing, amount, age, atk);
     }
 
     /**
@@ -187,6 +188,38 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
             }
         }
         for (int i = 0; i < 3; i++) if (d[i] != null) { d[i].xRot += st[i * 4]; d[i].zRot += st[i * 4 + 2]; }
+    }
+
+    /**
+     * Araignee geante : marche en tetrapode (pattes 1g, 3g, 2d, 4d ensemble, les quatre autres en opposition) ; chaque patte avance et se leve
+     * pendant qu'elle avance. L'abdomen oscille, le corps se baisse a chaque pas, les crocs et les pattes avant s'ecartent quand elle mord.
+     */
+    private void spiderPose(float swing, float amount, float age, float atk) {
+        float ph = swing * 0.85F;
+        for (int i = 1; i <= 4; i++) {
+            for (int sd = 0; sd < 2; sd++) {
+                String s = i + (sd == 0 ? "l" : "r");
+                int sg = sd == 0 ? -1 : 1;
+                float th = ph + (((i + sd) % 2 == 1) ? 0F : Mth.PI);
+                float fwd = Mth.cos(th) * 0.42F * amount;                      // + = vers l'avant
+                float lift = Math.max(0F, -Mth.sin(th)) * 0.55F * amount;      // se leve quand elle avance
+                ModelPart yaw = p("leg_" + s + "_yaw"), a = p("leg_" + s + "_a"), b = p("leg_" + s + "_b"), c = p("leg_" + s + "_c");
+                if (yaw != null) yaw.yRot += -sg * fwd;
+                if (a != null) a.zRot += sg * (lift + Mth.sin(age * 0.07F + i * 1.3F + sd) * 0.02F);
+                if (b != null) b.zRot -= sg * lift * 0.9F;
+                if (c != null) c.zRot += sg * lift * 0.3F;
+                if (i == 1) {                                                  // les pattes avant se dressent pour mordre
+                    if (a != null) a.zRot += sg * atk * 0.7F;
+                    if (yaw != null) yaw.yRot += -sg * atk * 0.3F;
+                }
+            }
+        }
+        ModelPart root = p("body_root"), abd = p("abdomen"), fl = p("fang_l"), fr = p("fang_r");
+        if (root != null) root.y += Mth.cos(ph * 2F) * 0.9F * amount;
+        if (abd != null) { abd.xRot += Mth.sin(age * 0.05F) * 0.025F - atk * 0.12F; abd.zRot += Mth.sin(ph) * 0.03F * amount; }
+        float tw = Mth.sin(age * 0.11F) * 0.04F + atk * 0.55F;
+        if (fl != null) fl.xRot += tw;
+        if (fr != null) fr.xRot += tw;
     }
 
     private void kingPose(int id, float swing, float amount, float age, float atk, float yaw, float pitch) {

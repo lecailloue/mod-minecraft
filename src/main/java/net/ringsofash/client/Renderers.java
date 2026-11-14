@@ -219,10 +219,4 @@ public final class Renderers {
             return super.getRenderType(e, visible, ghost, glowing);
         }
     }
-
-    public static class GiantSpider extends SpiderRenderer<GiantSpiderEntity> {
-        public GiantSpider(EntityRendererProvider.Context ctx) { super(ctx); this.shadowRadius = 2.0F; }
-        @Override public ResourceLocation getTextureLocation(GiantSpiderEntity e) { return tex("giant_spider"); }
-        @Override protected void scale(GiantSpiderEntity e, PoseStack ps, float pt) { ps.scale(2.5F, 2.5F, 2.5F); }
-    }
 }

@@ -52,7 +52,7 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> DEAD_SOLDIER = reg("dead_soldier", FoeEntity::new, MobCategory.MISC, 0.6F, 1.95F, true);
     public static final DeferredHolder<EntityType<?>, EntityType<ShadowRiderEntity>> SHADOW_RIDER = reg("shadow_rider", ShadowRiderEntity::new, MobCategory.MONSTER, 1.3F, 2.7F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<ShadowRiderEntity>> SHADOW_CHIEF = reg("shadow_chief", ShadowRiderEntity::new, MobCategory.MONSTER, 1.7F, 3.5F, false);
-    public static final DeferredHolder<EntityType<?>, EntityType<GiantSpiderEntity>> GIANT_SPIDER = reg("giant_spider", GiantSpiderEntity::new, MobCategory.MONSTER, 3.0F, 2.3F, false);
+    public static final DeferredHolder<EntityType<?>, EntityType<GiantSpiderEntity>> GIANT_SPIDER = reg("giant_spider", GiantSpiderEntity::new, MobCategory.MONSTER, 3.0F, 2.5F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<LurkerEntity>> LURKER = reg("lurker", LurkerEntity::new, MobCategory.MONSTER, 2.4F, 2.0F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<ThiefEntity>> CAVE_THIEF = reg("cave_thief", ThiefEntity::new, MobCategory.MONSTER, 0.5F, 1.3F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<BossEntity>> FIRE_DEMON = boss("fire_demon", 2.2F, 6.4F, true);

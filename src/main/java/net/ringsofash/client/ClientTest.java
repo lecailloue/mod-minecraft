@@ -324,6 +324,44 @@ public final class ClientTest {
                     + " cour=" + ow.getEntitiesOfClass(FoeEntity.class, king.getBoundingBox().inflate(40), o -> o.kind() == FoeEntity.Kind.GOBLIN).size()
                     + " baton=" + king.getMainHandItem().getItem());
         }));
+        // araignee geante : face, profil, marche (elle poursuit une vache : on mesure l'avance et les toiles qu'elle crache), bloc de toile
+        for (float yaw : new float[]{0F, 90F}) {
+            SCENES.add(new Scene(yaw == 0F ? "10_araignee" : "10b_araignee_profil", 70, p -> {
+                ServerLevel ow = p.server.overworld();
+                clear(ow);
+                var sp = actor(ow, ModEntities.GIANT_SPIDER.get(), SX, SZ + 8.5, o -> { o.setYRot(180F - yaw); o.setYHeadRot(180F - yaw); o.setYBodyRot(180F - yaw); });
+                view(p, ow, SX + 0.5, SY + 1.7, SZ, 0F, 6F);
+                hook = () -> log("SPIDER_DIMS larg=" + String.format("%.2f", sp.getBbWidth()) + " haut=" + String.format("%.2f", sp.getBbHeight()) + " pv=" + sp.getMaxHealth());
+            }));
+        }
+        SCENES.add(new Scene("10c_araignee_marche", 150, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            net.minecraft.world.entity.animal.Cow cow = actor(ow, EntityType.COW, SX + 1.0, SZ + 3.0, null);
+            var sp = ModEntities.GIANT_SPIDER.get().create(ow);
+            sp.moveTo(SX - 2.0, SY, SZ + 22, 180F, 0F);
+            sp.finalizeSpawn(ow, ow.getCurrentDifficultyAt(sp.blockPosition()), MobSpawnType.COMMAND, null);
+            sp.setPersistenceRequired();
+            sp.setTarget(cow);
+            ow.addFreshEntity(sp);
+            final double z0 = sp.getZ();
+            view(p, ow, SX + 0.5, SY + 2.2, SZ - 3, 0F, 8F);
+            hook = () -> {
+                int webs = 0;
+                for (BlockPos q : BlockPos.betweenClosed(BlockPos.containing(SX - 6, SY - 1, SZ - 2), BlockPos.containing(SX + 8, SY + 3, SZ + 12)))
+                    if (ow.getBlockState(q).is(net.ringsofash.gen.Reg.SPIDER_WEB.get())) webs++;
+                log("SPIDER_MARCHE avance=" + String.format("%.2f", z0 - sp.getZ()) + " pv=" + sp.getHealth() + " vivante=" + sp.isAlive() + " cible=" + sp.getTarget() + " toiles=" + webs + " vache=" + cow.isAlive());
+            };
+        }));
+        SCENES.add(new Scene("10d_toiles", 40, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            for (int i = 0; i < 6; i++) ow.setBlock(BlockPos.containing(SX - 2 + i * 1.2, SY, SZ + 4 + (i % 2)), net.ringsofash.gen.Reg.SPIDER_WEB.get().defaultBlockState(), 3);
+            ow.setBlock(BlockPos.containing(SX, SY + 1, SZ + 4), net.ringsofash.gen.Reg.SPIDER_WEB.get().defaultBlockState(), 3);
+            ow.setBlock(BlockPos.containing(SX + 1, SY + 2, SZ + 4), net.ringsofash.gen.Reg.SPIDER_WEB.get().defaultBlockState(), 3);
+            view(p, ow, SX + 1.0, SY + 1.8, SZ + 0.5, 0F, 12F);
+            hook = () -> ow.setBlock(BlockPos.containing(SX + 1, SY, SZ + 3), Blocks.AIR.defaultBlockState(), 3);
+        }));
         SCENES.add(new Scene("09e_roi_gros_plan", 100, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);

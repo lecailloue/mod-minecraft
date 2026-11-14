@@ -300,6 +300,22 @@ def goblins():
                 print(f'gobelin {name}: {len(geo["parts"])} pieces, hauteur {geo["height"]} px, texture {W}x{H}')
             save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}_{i}.png')
 
+def giant_spider():
+    """Araignee geante (tools/spiders.py) : geometrie + texture + texture lumineuse des yeux"""
+    import bbimport, tempfile
+    import spiders as S
+    from genlib import wjson, save
+    from PIL import Image
+    groups, cubes, W, H, tex, glow, f = S.build()
+    tmp = tempfile.mkdtemp()
+    S.export_bbmodel('giant_spider', groups, cubes, W, H, tex, os.path.join(tmp, 'giant_spider.bbmodel'))
+    geo = bbimport.convert(os.path.join(tmp, 'giant_spider.bbmodel'))
+    geo['height'] = geo_height(geo)
+    wjson(f'{A}/geo/giant_spider.json', geo)
+    save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/giant_spider.png')
+    save(Image.fromarray(glow, 'RGBA'), f'{A}/textures/entity/giant_spider_glow.png')
+    print(f'araignee geante: {len(geo["parts"])} pieces, {len(cubes)} cubes, hauteur {geo["height"]} px, texture {W}x{H}')
+
 def treeman_bb():
     """Sylvestre : modele Blockbench fourni (tools/assets/treeman.bbmodel)"""
     import bbimport, os
@@ -460,4 +476,4 @@ def skins():
     skin('cave_thief', 'goblin', skin='#b8b8a8', hair='#b8b8a8', hair_style='bald', eyes='#d8f0ff', top='#b0b0a0', legs='#6a6050', boots='#b8b8a8', sleeves=False, seed=55)
 
 def build():
-    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); orc_weapons(); lurker(); treeman_bb(); eagle(); dragon(); mammoth(); skins()
+    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); orc_weapons(); lurker(); treeman_bb(); eagle(); dragon(); mammoth(); skins()

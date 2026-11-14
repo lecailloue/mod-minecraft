@@ -170,6 +170,24 @@ def blocks():
         '.....pppp.......', '......pp........', '......pp........', '......pp........'], fl))
     block('pipeweed', 'Herbe à pipe', 'cross', java='new FlowerBlock(MobEffects.SLOW_FALLING, 5.0F, copy(Blocks.DANDELION))')
 
+    # toile d'araignee : bloc qui englue (comme la toile vanilla), dessinee en rayons et anneaux
+    from PIL import Image as _I, ImageDraw as _D
+    _w = _I.new('RGBA', (16, 16), (0, 0, 0, 0))
+    _d = _D.Draw(_w)
+    _c = (232, 234, 240, 255); _s = (196, 200, 212, 235)
+    for p in ((0, 0, 15, 15), (15, 0, 0, 15), (7, 0, 8, 15), (0, 7, 15, 8)): _d.line(p, fill=_c)
+    for r in (3, 6):
+        pts = [(7.5 + r * dx, 7.5 + r * dy) for dx, dy in ((1, 0), (.7, .7), (0, 1), (-.7, .7), (-1, 0), (-.7, -.7), (0, -1), (.7, -.7))]
+        for i in range(8):
+            _d.line((round(pts[i][0]), round(pts[i][1]), round(pts[(i + 1) % 8][0]), round(pts[(i + 1) % 8][1])), fill=_s)
+    btex('spider_web', _w)
+    block('spider_web', "Toile d'araignée", 'cross', java='new WebBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOL).sound(SoundType.COBWEB).noCollission().noOcclusion().strength(0.6F).pushReaction(PushReaction.DESTROY))',
+          drop={'type': 'minecraft:block', 'pools': [{'rolls': 1, 'entries': [{'type': 'minecraft:alternatives', 'children': [
+              {'type': 'minecraft:item', 'name': mid('spider_web'), 'conditions': [{'condition': 'minecraft:any_of', 'terms': [
+                  {'condition': 'minecraft:match_tool', 'predicate': {'items': 'minecraft:shears'}},
+                  {'condition': 'minecraft:match_tool', 'predicate': {'predicates': {'minecraft:enchantments': [{'enchantments': 'minecraft:silk_touch', 'levels': {'min': 1}}]}}}]}]},
+              {'type': 'minecraft:item', 'name': 'minecraft:string', 'functions': [{'function': 'minecraft:set_count', 'count': {'type': 'minecraft:uniform', 'min': 1, 'max': 2}}]}]}]}]})
+
 # ============================================================ OBJETS
 INGOT = ['................', '................', '................', '................', '......oooooo....', '....oobbbbcco...',
          '..oobbbbbccaao..', '.obbbbbccaaado..', '.oaaaaaaaaddo...', '.oaddddddddo....', '..oooooooooo....', '................',
