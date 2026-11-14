@@ -41,7 +41,8 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> ORC = foe("orc", 0.6F, 2.1F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> WAR_ORC = foe("war_orc", 0.7F, 2.35F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> ORC_CHIEF = foe("orc_chief", 0.85F, 2.8F);
-    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> GOBLIN = foe("goblin", 0.45F, 1.2F);
+    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> GOBLIN = foe("goblin", 0.75F, 1.8F);
+    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> GOBLIN_KING = foe("goblin_king", 1.5F, 2.7F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> CAVE_TROLL = foe("cave_troll", 1.5F, 3.0F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> STONE_TROLL = foe("stone_troll", 1.5F, 3.0F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> TROLL_CHIEF = foe("troll_chief", 1.7F, 3.4F);
@@ -73,6 +74,7 @@ public final class ModEntities {
         if (t == WAR_ORC.get()) return FoeEntity.Kind.WAR_ORC;
         if (t == ORC_CHIEF.get()) return FoeEntity.Kind.ORC_CHIEF;
         if (t == GOBLIN.get()) return FoeEntity.Kind.GOBLIN;
+        if (t == GOBLIN_KING.get()) return FoeEntity.Kind.GOBLIN_KING;
         if (t == CAVE_TROLL.get()) return FoeEntity.Kind.CAVE_TROLL;
         if (t == STONE_TROLL.get()) return FoeEntity.Kind.STONE_TROLL;
         if (t == TROLL_CHIEF.get()) return FoeEntity.Kind.TROLL_CHIEF;
@@ -104,6 +106,7 @@ public final class ModEntities {
         e.put(WAR_ORC.get(), mon(36, 7, 0.28, 8, 40, 0.2));
         e.put(ORC_CHIEF.get(), mon(90, 10, 0.27, 10, 40, 0.5));
         e.put(GOBLIN.get(), mon(12, 3, 0.33, 0, 24, 0));
+        e.put(GOBLIN_KING.get(), mon(160, 8, 0.22, 6, 32, 0.8));
         e.put(CAVE_TROLL.get(), mon(80, 18, 0.24, 4, 28, 0.8));
         e.put(STONE_TROLL.get(), mon(90, 18, 0.24, 6, 28, 0.9));
         e.put(TROLL_CHIEF.get(), mon(140, 24, 0.25, 6, 36, 1.0));
@@ -154,6 +157,7 @@ public final class ModEntities {
         e.register(WARG.get(), G, H, ModEntities::surface, OP);
         e.register(WILD_MAN.get(), G, H, ModEntities::surface, OP);
         e.register(GOBLIN.get(), G, H, ModEntities::underground, OP);
+        e.register(GOBLIN_KING.get(), G, H, ModEntities::underground, OP);
         e.register(CAVE_TROLL.get(), G, H, (t, l, r, p, rnd) -> underground(t, l, r, p, rnd) || (ash(l, p) && surface(t, l, r, p, rnd)), OP);
         e.register(CAVE_THIEF.get(), G, H, ModEntities::underground, OP);
         e.register(STONE_TROLL.get(), G, H, ModEntities::nightSky, OP);

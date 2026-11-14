@@ -215,6 +215,7 @@ def build():
     weapon('orc_machete', 'Machette ébréchée', sw('NONE', 'T_ORC', 4, -2.6), sword('#5a5860', '#2a2428', grip='#4a3424', length=9, wide=True))
     weapon('orc_spear', 'Lance orque', sw('SPEAR', 'T_ORC', 4, -2.7, 1.5), spear_icon('#6a6870', '#4a3424'))
     weapon('orc_mace', 'Masse du chef orque', sw('CLUB', 'T_ORC', 8, -3.3), mace_icon('#7a7f88', '#a8b0b0'))
+    weapon('goblin_king_staff', 'Bâton du Roi des gobelins', sw('CLUB', 'T_ORC', 8, -3.2), mace_icon('#6b4a2a', '#d8cba0'))
     weapon('rider_spear', 'Lance des cavaliers', sw('SPEAR', 'T_STEEL', 3, -2.6, 1.5), spear_icon('#b8bcc4'))
     weapon('halfling_dagger', 'Dague de semi-homme', sw('DAGGER', 'T_STEEL', 1, -1.6), sword('#c8ccd4', '#c9a23a', length=6))
     weapon('ranger_sword', 'Épée de rôdeur', sw('NONE', 'T_STEEL', 3, -2.4), sword('#b8bcc4', '#5a5a60', length=11))

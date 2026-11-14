@@ -203,6 +203,7 @@ public final class Reg {
     public static final DeferredItem<Item> ORC_MACHETE = ITEMS.register("orc_machete", () -> ModGear.special(SpecialSword.Kind.NONE, ModGear.T_ORC, 4, -2.6F, 0, props()));
     public static final DeferredItem<Item> ORC_SPEAR = ITEMS.register("orc_spear", () -> ModGear.special(SpecialSword.Kind.SPEAR, ModGear.T_ORC, 4, -2.7F, 1.5, props()));
     public static final DeferredItem<Item> ORC_MACE = ITEMS.register("orc_mace", () -> ModGear.special(SpecialSword.Kind.CLUB, ModGear.T_ORC, 8, -3.3F, 0, props()));
+    public static final DeferredItem<Item> GOBLIN_KING_STAFF = ITEMS.register("goblin_king_staff", () -> ModGear.special(SpecialSword.Kind.CLUB, ModGear.T_ORC, 8, -3.2F, 0, props()));
     public static final DeferredItem<Item> RIDER_SPEAR = ITEMS.register("rider_spear", () -> ModGear.special(SpecialSword.Kind.SPEAR, ModGear.T_STEEL, 3, -2.6F, 1.5, props()));
     public static final DeferredItem<Item> HALFLING_DAGGER = ITEMS.register("halfling_dagger", () -> ModGear.special(SpecialSword.Kind.DAGGER, ModGear.T_STEEL, 1, -1.6F, 0, props()));
     public static final DeferredItem<Item> RANGER_SWORD = ITEMS.register("ranger_sword", () -> ModGear.special(SpecialSword.Kind.NONE, ModGear.T_STEEL, 3, -2.4F, 0, props()));
@@ -265,6 +266,7 @@ public final class Reg {
     public static final DeferredItem<Item> WAR_ORC_SPAWN_EGG = ITEMS.register("war_orc_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.WAR_ORC, 0x3a3a34, 0x8a1a14, props()));
     public static final DeferredItem<Item> ORC_CHIEF_SPAWN_EGG = ITEMS.register("orc_chief_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.ORC_CHIEF, 0x4a4034, 0xc02018, props()));
     public static final DeferredItem<Item> GOBLIN_SPAWN_EGG = ITEMS.register("goblin_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.GOBLIN, 0x7a8a52, 0xf0e040, props()));
+    public static final DeferredItem<Item> GOBLIN_KING_SPAWN_EGG = ITEMS.register("goblin_king_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.GOBLIN_KING, 0xc4a898, 0xd8a838, props()));
     public static final DeferredItem<Item> CAVE_TROLL_SPAWN_EGG = ITEMS.register("cave_troll_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.CAVE_TROLL, 0x6d7868, 0x8a947e, props()));
     public static final DeferredItem<Item> STONE_TROLL_SPAWN_EGG = ITEMS.register("stone_troll_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.STONE_TROLL, 0x8a8a84, 0x5a5a56, props()));
     public static final DeferredItem<Item> TROLL_CHIEF_SPAWN_EGG = ITEMS.register("troll_chief_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.TROLL_CHIEF, 0x2b2b30, 0xc02018, props()));

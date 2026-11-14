@@ -273,6 +273,57 @@ public final class ClientTest {
         }));
         lineup("01_orques", 7.5, 2F, 2.0, List.of(ModEntities.ORC.get(), ModEntities.ORC.get(), ModEntities.WAR_ORC.get(), ModEntities.ORC_CHIEF.get(), ModEntities.GOBLIN.get(),
                 ModEntities.WILD_MAN.get()));
+        // gobelins : les 3 types (1,2 / 1,5 / 1,8 m) et leur roi (2,7 m), de face puis de profil ; on journalise les hauteurs reelles de hitbox
+        for (float yaw : new float[]{0F, 90F}) {
+            SCENES.add(new Scene(yaw == 0F ? "09_gobelins" : "09b_gobelins_profil", 70, p -> {
+                ServerLevel ow = p.server.overworld();
+                clear(ow);
+                int[] vs = {0, 4, 8, 0};
+                double[] xs = {SX + 5.2, SX + 3.0, SX + 0.6, SX - 3.4};
+                List<FoeEntity> all = new ArrayList<>();
+                for (int i = 0; i < 4; i++) {
+                    final int v = vs[i];
+                    all.add(actor(ow, i < 3 ? ModEntities.GOBLIN.get() : ModEntities.GOBLIN_KING.get(), xs[i], SZ + 9.5, o -> {
+                        o.testVariant(v);
+                        o.setYRot(180F - yaw); o.setYHeadRot(180F - yaw); o.setYBodyRot(180F - yaw);
+                    }));
+                }
+                view(p, ow, SX + 0.5, SY + 1.6, SZ, 0F, 4F);
+                hook = () -> log("GOB_DIMS " + all.stream().map(f -> String.format("%.2f", f.getBbHeight())).toList()
+                        + " pv=" + all.stream().map(f -> String.format("%.0f", f.getMaxHealth())).toList());
+            }));
+        }
+        SCENES.add(new Scene("09c_gobelin_peaux", 70, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            double x = SX + 4.0;
+            for (int t = 0; t < 3; t++) {
+                for (int sk = 0; sk < 3; sk++) {
+                    final int v = t * 3 + sk;
+                    actor(ow, ModEntities.GOBLIN.get(), SX + 2.8 - sk * 2.2 + 0.0 * x, SZ + 5.5 + t * 3.5, o -> o.testVariant(v));
+                }
+            }
+            view(p, ow, SX + 0.5, SY + 4.5, SZ, 0F, 22F);
+        }));
+        SCENES.add(new Scene("09d_roi_marche", 140, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            // vraie apparition du roi, IA active : on mesure s'il avance (et la cour de gobelins qui l'accompagne)
+            FoeEntity king = ModEntities.GOBLIN_KING.get().create(ow);
+            king.moveTo(SX, SY, SZ + 14, 180F, 0F);
+            king.finalizeSpawn(ow, ow.getCurrentDifficultyAt(king.blockPosition()), MobSpawnType.NATURAL, null);
+            king.setPersistenceRequired();
+            ow.addFreshEntity(king);
+            net.minecraft.world.entity.monster.Spider bait = EntityType.SPIDER.create(ow);
+            bait.moveTo(SX + 3, SY, SZ + 2, 0F, 0F);
+            bait.setNoAi(true); bait.setPersistenceRequired();
+            ow.addFreshEntity(bait);
+            final double z0 = king.getZ();
+            view(p, ow, SX + 0.5, SY + 3.5, SZ - 6, 0F, 14F);
+            hook = () -> log("GOB_ROI_MARCHE avance=" + String.format("%.2f", z0 - king.getZ()) + " pv=" + king.getHealth() + " vivant=" + king.isAlive() + " cible=" + king.getTarget()
+                    + " cour=" + ow.getEntitiesOfClass(FoeEntity.class, king.getBoundingBox().inflate(40), o -> o.kind() == FoeEntity.Kind.GOBLIN).size()
+                    + " baton=" + king.getMainHandItem().getItem());
+        }));
         SCENES.add(new Scene("03d_roi_marche", 140, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
@@ -295,9 +346,9 @@ public final class ClientTest {
         SCENES.add(new Scene("04_armes_orques", 90, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
-            net.minecraft.world.item.Item[] it = {Reg.ORC_CLEAVER.get(), Reg.ORC_SCIMITAR.get(), Reg.ORC_MACHETE.get(), Reg.ORC_SPEAR.get(), Reg.ORC_MACE.get()};
+            net.minecraft.world.item.Item[] it = {Reg.ORC_CLEAVER.get(), Reg.ORC_SCIMITAR.get(), Reg.ORC_MACHETE.get(), Reg.ORC_SPEAR.get(), Reg.ORC_MACE.get(), Reg.GOBLIN_KING_STAFF.get()};
             for (int i = 0; i < it.length; i++) {
-                net.minecraft.world.entity.item.ItemEntity ie = new net.minecraft.world.entity.item.ItemEntity(ow, SX + 1.6 - i * 0.8, SY + 0.1, SZ + 3.0, new net.minecraft.world.item.ItemStack(it[i]));
+                net.minecraft.world.entity.item.ItemEntity ie = new net.minecraft.world.entity.item.ItemEntity(ow, SX + 2.0 - i * 0.8, SY + 0.1, SZ + 3.0, new net.minecraft.world.item.ItemStack(it[i]));
                 ie.setPickUpDelay(32767);
                 ie.setUnlimitedLifetime();
                 ow.addFreshEntity(ie);

@@ -87,6 +87,37 @@ public final class Renderers {
         @Override protected void scale(FoeEntity e, PoseStack ps, float pt) { float s = scales[idx(e)]; ps.scale(s, s, s); }
     }
 
+    /** Gobelins : 3 types (1,2 / 1,5 / 1,8 blocs) et leur roi (2,7 blocs) ; le type et la couleur de peau viennent de la variante de l'entite. */
+    public static class Goblin extends MobRenderer<FoeEntity, GeoModel<FoeEntity>> {
+        public static final String[] NAMES = {"gobelin_1", "gobelin_2", "gobelin_3", "gobelin_roi"};
+        /** hauteur visee a l'ecran (en blocs) de chaque modele : 1 bloc = 1 m */
+        public static final float[] BLOCKS = {1.2F, 1.5F, 1.8F, 2.7F};
+        private final GeoModel<FoeEntity>[] models;
+        private final float[] scales = new float[NAMES.length];
+
+        @SuppressWarnings("unchecked")
+        public Goblin(EntityRendererProvider.Context ctx, boolean king) {
+            super(ctx, new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_" + NAMES[king ? 3 : 0])), NAMES[king ? 3 : 0]), king ? 1.1F : 0.5F);
+            models = new GeoModel[NAMES.length];
+            for (int i = king ? 3 : 0; i < (king ? 4 : 3); i++) {
+                models[i] = new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_" + NAMES[i])), NAMES[i]);
+                scales[i] = BLOCKS[i] * 16F / GeoDef.get(NAMES[i]).height;
+            }
+        }
+
+        private int idx(FoeEntity e) { return Math.min(NAMES.length - 1, Math.max(0, e.goblinModel())); }
+
+        @Override
+        public void render(FoeEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource buf, int light) {
+            this.model = models[idx(e)];
+            this.shadowRadius = 0.35F + 0.15F * idx(e);
+            super.render(e, yaw, pt, ps, buf, light);
+        }
+
+        @Override public ResourceLocation getTextureLocation(FoeEntity e) { return tex(NAMES[idx(e)] + "_" + e.goblinSkin()); }
+        @Override protected void scale(FoeEntity e, PoseStack ps, float pt) { float s = scales[idx(e)]; ps.scale(s, s, s); }
+    }
+
     /** Etres des ombres : cavalier + cheval en un seul modele (2 cavaliers, 1 chef), yeux du cheval lumineux. */
     public static class Shadow extends MobRenderer<net.ringsofash.entity.ShadowRiderEntity, GeoModel<net.ringsofash.entity.ShadowRiderEntity>> {
         public static final String[] NAMES = {"ombre_1", "ombre_2", "ombre_chef"};

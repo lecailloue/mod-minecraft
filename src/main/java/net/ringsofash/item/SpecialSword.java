@@ -85,7 +85,7 @@ public class SpecialSword extends SwordItem {
     }
 
     public static boolean isOrc(FoeEntity f) {
-        return switch (f.kind()) { case ORC, WAR_ORC, ORC_CHIEF, GOBLIN -> true; default -> false; };
+        return switch (f.kind()) { case ORC, WAR_ORC, ORC_CHIEF, GOBLIN, GOBLIN_KING -> true; default -> false; };
     }
 
     @Override

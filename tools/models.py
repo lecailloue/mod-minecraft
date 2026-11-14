@@ -210,7 +210,8 @@ def orc_weapons():
     import trollcore as T
     from genlib import wjson, save
     from PIL import Image
-    ws = {'orc_cleaver': O.w_cleaver, 'orc_scimitar': O.w_scimitar, 'orc_machete': O.w_notched, 'orc_spear': O.w_spear, 'orc_mace': O.w_mace}
+    import goblins as GB
+    ws = {'orc_cleaver': O.w_cleaver, 'orc_scimitar': O.w_scimitar, 'orc_machete': O.w_notched, 'orc_spear': O.w_spear, 'orc_mace': O.w_mace, 'goblin_king_staff': GB.w_kstaff}
     item_model = {'parent': 'minecraft:builtin/entity', 'display': {
         'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0, 4.0, 0.5], 'scale': [0.85, 0.85, 0.85]},
         'thirdperson_lefthand': {'rotation': [0, 90, -55], 'translation': [0, 4.0, 0.5], 'scale': [0.85, 0.85, 0.85]},
@@ -261,6 +262,25 @@ def shadows():
         save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}.png')
         save(Image.fromarray(glow, 'RGBA'), f'{A}/textures/entity/{name}_glow.png')
         print(f'ombre {name}: {len(geo["parts"])} pieces, hauteur {geo["height"]} px')
+
+def goblins():
+    """3 gobelins + leur roi (tools/goblins.py) : geometrie + une texture par couleur de peau (meme disposition UV)"""
+    import bbimport, tempfile
+    import goblins as GB
+    from genlib import wjson, save
+    from PIL import Image
+    ren = {'leg_left': 'leg_l', 'leg_right': 'leg_r', 'arm_left': 'arm_l', 'arm_right': 'arm_r'}
+    for name, spec in GB.ALL.items():
+        for i, sk in enumerate(spec['skins']):
+            groups, cubes, W, H, tex, glow, f = GB.build(name, sk)
+            if i == 0:
+                tmp = tempfile.mkdtemp()
+                GB.export_bbmodel(name, groups, cubes, W, H, tex, os.path.join(tmp, name + '.bbmodel'))
+                geo = bbimport.convert(os.path.join(tmp, name + '.bbmodel'), rename=ren)
+                geo['height'] = geo_height(geo)
+                wjson(f'{A}/geo/{name}.json', geo)
+                print(f'gobelin {name}: {len(geo["parts"])} pieces, hauteur {geo["height"]} px, texture {W}x{H}')
+            save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}_{i}.png')
 
 def treeman_bb():
     """Sylvestre : modele Blockbench fourni (tools/assets/treeman.bbmodel)"""
@@ -390,8 +410,6 @@ def skins():
     skin('war_orc', 'orc', skin='#3a3a34', hair='#101010', hair_style='mid', eyes='#ff5020', top='#26262c', trim='#8a1a14', legs='#1e1e22', boots='#101012', armor='plate', pauldrons='#34343c',
          emblem=(['.rr.', 'rrrr', '.rr.', '.rr.'], {'r': '#e8e0d0'}), seed=4)
     skin('orc_chief', 'orc', skin='#4a4034', hair='#101010', hair_style='helmet', eyes='#ff3010', top='#2a2226', trim='#a02018', legs='#1e1a1c', boots='#101010', armor='plate', pauldrons='#5a1c16', seed=5)
-    skin('goblin_1', 'goblin', skin='#7a8a52', hair='#2a2a20', hair_style='bald', eyes='#f0e040', top='#4a3a2a', legs='#3a2e22', boots='#5a6a3a', sleeves=False, seed=6)
-    skin('goblin_2', 'goblin', skin='#8a8a6a', hair='#2a2a20', hair_style='bald', eyes='#f0e040', top='#3a3430', legs='#2e2a26', boots='#6a6a4a', sleeves=False, seed=7)
     # --- hommes
     skin('human_1', 'human', skin='#c99a78', hair='#5a3a22', top='#8a5a3a', trim='#5a3a22', legs='#4a4034', boots='#2a2018', seed=10)
     skin('human_2', 'human', skin='#d8ac88', hair='#c9a25a', hair_style='long', top='#4a6a8a', trim='#e0d6c0', legs='#5a4a3a', boots='#2a2018', skirt=True, seed=11)
@@ -424,4 +442,4 @@ def skins():
     skin('cave_thief', 'goblin', skin='#b8b8a8', hair='#b8b8a8', hair_style='bald', eyes='#d8f0ff', top='#b0b0a0', legs='#6a6050', boots='#b8b8a8', sleeves=False, seed=55)
 
 def build():
-    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); orc_weapons(); lurker(); treeman_bb(); eagle(); dragon(); mammoth(); skins()
+    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); orc_weapons(); lurker(); treeman_bb(); eagle(); dragon(); mammoth(); skins()

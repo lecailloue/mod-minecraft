@@ -143,6 +143,38 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
             if (body != null) { body.xRot += Mth.sin(swing * 0.6662F * 2F) * 0.025F * amount; body.y += Mth.abs(Mth.sin(swing * 0.6662F)) * -0.9F * amount; }
         }
         if (e instanceof FoeEntity f && f.isTroll()) trollPose(f, swing, amount, age);
+        if (e instanceof FoeEntity f && f.kind() == FoeEntity.Kind.GOBLIN_KING) kingPose(swing, amount, age, atk);
+    }
+
+    /**
+     * Roi des gobelins : demarche lourde et lente (jambes courtes, tout le corps roule d'un pied sur l'autre), longs bras qui se balancent,
+     * ventre qui ballotte a chaque pas, tete qui dodeline et bajoue qui se balance en trois segments.
+     */
+    private void kingPose(float swing, float amount, float age, float atk) {
+        ModelPart body = p("body"), head = p("head"), belly = p("belly"), lr = p("leg_r"), ll = p("leg_l"), ar = p("arm_r"), al = p("arm_l");
+        float g = swing * 0.6662F * 0.85F, s = Mth.sin(g), c = Mth.cos(g);
+        if (lr != null) lr.xRot *= 0.62F;
+        if (ll != null) ll.xRot *= 0.62F;
+        if (ar != null) ar.xRot += Mth.cos(g + Mth.PI) * 0.30F * amount;                 // les bras pendent loin devant : grand balancier
+        if (al != null) al.xRot += c * 0.30F * amount;
+        if (ar != null) ar.zRot += (s * 0.05F) * amount;
+        if (al != null) al.zRot -= (s * 0.05F) * amount;
+        if (body != null) {
+            body.zRot += c * 0.07F * amount;                                               // il roule d'un pied sur l'autre
+            body.yRot += c * 0.05F * amount;
+            body.xRot += Mth.sin(age * 0.05F) * 0.015F + atk * 0.28F;                      // respiration, et il s'abat en frappant
+        }
+        root.y += Mth.abs(s) * 1.5F * amount;                                              // il s'affaisse a chaque pas
+        if (belly != null) {
+            belly.xRot += Mth.sin(g * 2F - 0.9F) * 0.13F * amount + Mth.sin(age * 0.07F) * 0.02F - atk * 0.10F;
+            belly.y += Mth.cos(g * 2F - 0.5F) * 1.4F * amount;
+            belly.zRot += Mth.sin(g - 0.6F) * 0.03F * amount;
+        }
+        if (head != null) head.xRot += Mth.sin(g * 2F - 0.3F) * 0.05F * amount;
+        ModelPart d1 = p("dewlap"), d2 = p("dewlap2"), d3 = p("dewlap3");
+        if (d1 != null) { d1.xRot += Mth.sin(g * 2F - 1.0F) * 0.16F * amount + Mth.sin(age * 0.06F) * 0.025F; d1.zRot += s * 0.04F * amount; }
+        if (d2 != null) { d2.xRot += Mth.sin(g * 2F - 1.7F) * 0.22F * amount + Mth.sin(age * 0.06F - 0.8F) * 0.03F; d2.zRot += Mth.sin(g - 0.8F) * 0.06F * amount; }
+        if (d3 != null) { d3.xRot += Mth.sin(g * 2F - 2.4F) * 0.28F * amount + Mth.sin(age * 0.06F - 1.6F) * 0.04F; d3.zRot += Mth.sin(g - 1.6F) * 0.09F * amount; }
     }
 
     private static float ease(float k) { k = Mth.clamp(k, 0F, 1F); return k * k * (3F - 2F * k); }

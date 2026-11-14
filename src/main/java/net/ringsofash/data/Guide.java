@@ -48,7 +48,8 @@ public final class Guide {
         b("orc", "Orque", "Pillards des Terres de Cendre. Sortent la nuit, en bandes. Faibles seuls, dangereux à plusieurs.");
         b("war_orc", "Orque noir", "Soldat d'élite en armure. Frappe fort. Visez-le en premier ou fuyez.");
         b("orc_chief", "Chef orque", "Commande les forteresses. Garde le meilleur butin.");
-        b("goblin", "Gobelin", "Vermine des cavernes. Minuscule, rapide, toujours en nombre. Craint le soleil.");
+        b("goblin", "Gobelin", "Vermine des cavernes, toujours en nombre. Trois sortes : l'éclaireur (1,2 bloc), le guerrier (1,5) et la brute à la pioche (1,8). Ils craignent le soleil.");
+        b("goblin_king", "Roi des gobelins", "Bossu, massif, la tête énorme et une poche de chair qui lui pend du menton. Lourd et lent, mais ses coups font mal, et il appelle tous les gobelins à lui. Il tient un bâton à crâne de chèvre qu'il laisse parfois tomber.");
         b("cave_troll", "Troll des cavernes", "Trois blocs de haut, gris et massif. Ses grands coups de poing sont lents mais envoient valser. Il chasse à quatre pattes, comme un gorille : ne comptez pas le distancer.");
         b("stone_troll", "Troll de pierre", "Le soleil le change en statue. Une pioche en vient alors à bout sans risque.");
         b("troll_chief", "Troll chef de meute", "Plus grand, casqué, les yeux rouges. Arrive avec sa meute de trolls et la lance sur vous. Son coup de poing est lent... et terrible.");
