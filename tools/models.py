@@ -319,11 +319,19 @@ def giant_spider():
 def treeman_bb():
     """Sylvestre : modele Blockbench fourni (tools/assets/treeman.bbmodel)"""
     import bbimport, os
+    from PIL import Image
     from genlib import wjson, save
     src = os.path.join(os.path.dirname(__file__), 'assets', 'treeman.bbmodel')
     geo = bbimport.convert(src, rename={'torse': 'body', 'tete': 'head', 'jambe_G': 'leg_l', 'jambe_D': 'leg_r', 'bras_G': 'arm_l', 'bras_D': 'arm_r'})
     wjson(f'{A}/geo/treeman.json', geo)
-    save(bbimport.texture(src), f'{A}/textures/entity/treeman.png')
+    tex = bbimport.texture(src)
+    save(tex, f'{A}/textures/entity/treeman.png')
+    # yeux lumineux : les quatre texels ambre (2x2 par oeil) du visage
+    px = np.array(tex.convert('RGBA'))
+    eyes = (px[..., 0] == 0x54) & (px[..., 1] == 0x42) & (px[..., 2] == 0x22) & (px[..., 3] > 0)
+    gl = np.zeros_like(px)
+    gl[eyes] = (255, 190, 50, 255)
+    save(Image.fromarray(gl, 'RGBA'), f'{A}/textures/entity/treeman_glow.png')
 
 def sylvestres():
     """Variantes du Sylvestre (tools/sylvestres.py) : geometrie + texture + texture lumineuse des yeux"""

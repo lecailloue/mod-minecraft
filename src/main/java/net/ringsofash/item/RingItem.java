@@ -28,10 +28,15 @@ public class RingItem extends Item {
 
     public RingItem(Kind kind, Properties p) { super(p); this.kind = kind; }
 
+    /** L'anneau actif choisi dans l'onglet d'anneaux (cote serveur) ou recu du serveur (cote client) ; plus besoin de le tenir en main. */
     public static Kind worn(Player p) {
-        if (p.getOffhandItem().getItem() instanceof RingItem r) return r.kind;
-        if (p.getMainHandItem().getItem() instanceof RingItem r) return r.kind;
-        return null;
+        net.minecraft.world.item.ItemStack st = p.level().isClientSide ? net.ringsofash.data.Net.ClientRings.active() : activeStack(p);
+        return st.getItem() instanceof RingItem r ? r.kind : null;
+    }
+
+    public static net.minecraft.world.item.ItemStack activeStack(Player p) {
+        net.ringsofash.data.PlayerLore l = net.ringsofash.data.ModData.lore(p);
+        return l.activeRing >= 0 && l.activeRing < net.ringsofash.data.PlayerLore.RING_SLOTS ? l.rings.getItem(l.activeRing) : net.minecraft.world.item.ItemStack.EMPTY;
     }
 
     public static boolean wearsRing(Player p) { return worn(p) != null; }

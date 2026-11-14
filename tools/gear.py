@@ -446,5 +446,6 @@ def build():
                           'result': {'id': 'minecraft:written_book', 'count': 1, 'components': {'minecraft:custom_data': {'roa_guide': 1}}}})
     LANG['key.ringsofash.reputation'] = 'Menu de réputation'
     LANG['key.ringsofash.map'] = 'Carte de la Hautemarche'
+    LANG['key.ringsofash.rings'] = "Onglet d'anneaux"
     LANG['biome.ringsofash.rivieres_de_lave'] = 'Rivières de Lave'
     LANG['key.categories.ringsofash'] = 'Les Anneaux de Cendre'

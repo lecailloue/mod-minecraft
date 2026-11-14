@@ -30,6 +30,7 @@ public final class ClientSetup {
     private ClientSetup() {}
 
     public static final KeyMapping REP_KEY = new KeyMapping("key.ringsofash.reputation", InputConstants.KEY_R, "key.categories.ringsofash");
+    public static final KeyMapping RINGS_KEY = new KeyMapping("key.ringsofash.rings", InputConstants.KEY_G, "key.categories.ringsofash");
     public static final KeyMapping MAP_KEY = new KeyMapping("key.ringsofash.map", InputConstants.KEY_M, "key.categories.ringsofash");
     private static final String[] GEO = {"troll", "troll_chief", "warg", "stag", "demon", "lurker", "treeman", "eagle", "dragon", "mammoth", "ash_lord", "orc_1_nu", "orc_2_fourrure", "orc_3_mailles", "orc_4_casque", "orc_noir_1_main", "orc_noir_2_fer", "orc_chef", "spectre_epee", "spectre_lance", "spectre_hache", "spectre_dague", "spectre_roi", "ombre_1", "ombre_2", "ombre_chef", "arme_orc_cleaver", "arme_orc_scimitar", "arme_orc_machete", "arme_orc_spear", "arme_orc_mace", "gobelin_1", "gobelin_2", "gobelin_3", "gobelin_roi", "arme_goblin_king_staff", "arme_goblin_pickaxe", "giant_spider", "sylvestre_ancien", "sylvestre_saule"};
     private static final String[] HUMAN = {"plain", "elf", "orc", "goblin", "dwarf"};
@@ -42,6 +43,7 @@ public final class ClientSetup {
         Atmosphere.init(modBus);
         SwordAura.init();
         SylvanRender.init();
+        RingTabs.init();
         modBus.addListener(ClientSetup::addLayers);
         modBus.addListener(ClientSetup::keys);
         modBus.addListener(ClientSetup::gui);
@@ -64,6 +66,7 @@ public final class ClientSetup {
 
     private static void screens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent e) {
         e.register(net.ringsofash.menu.ModMenus.FORGE.get(), ForgeScreen::new);
+        e.register(net.ringsofash.menu.ModMenus.RINGS.get(), RingsScreen::new);
     }
 
     private static void gui(net.neoforged.neoforge.client.event.RegisterGuiLayersEvent e) {
@@ -103,16 +106,28 @@ public final class ClientSetup {
                 }
             }
         });
+        e.registerAboveAll(RingsOfAsh.id("active_ring"), (g, dt) -> {
+            Minecraft mc = Minecraft.getInstance();
+            net.minecraft.world.item.ItemStack st = net.ringsofash.data.Net.ClientRings.active();
+            if (mc.player == null || mc.options.hideGui || st.isEmpty()) return;
+            g.fill(4, 4, 24, 24, 0x66000000);
+            g.renderItem(st, 6, 6);
+        });
         e.registerAboveAll(RingsOfAsh.id("quest_tracker"), (g, dt) -> QuestScreen.renderTracker(g));
     }
 
-    private static void keys(RegisterKeyMappingsEvent e) { e.register(REP_KEY); e.register(MAP_KEY); }
+    private static void keys(RegisterKeyMappingsEvent e) { e.register(REP_KEY); e.register(MAP_KEY); e.register(RINGS_KEY); }
 
     private static void tick(ClientTickEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
         while (MAP_KEY.consumeClick()) {
             if (mc.player != null && mc.screen == null) mc.setScreen(new MapScreen());
         }
+        while (RINGS_KEY.consumeClick()) {
+            if (mc.player != null && mc.screen == null) net.neoforged.neoforge.network.PacketDistributor.sendToServer(new net.ringsofash.data.Net.OpenRings());
+        }
+        if (!net.minecraft.client.gui.screens.Screen.hasAltDown()) RingWheel.waitRelease = false;
+        else if (mc.player != null && mc.screen == null && !RingWheel.waitRelease && RingWheel.hasRings()) mc.setScreen(new RingWheel());
         while (REP_KEY.consumeClick()) {
             if (mc.player != null && mc.screen == null) mc.setScreen(new QuestScreen(0));
         }

@@ -355,7 +355,9 @@ def ancien():
         inner.children.append(fore)
         ar.children.append(C(f'shmoss{side}', sh[0] - 10, 110, -10, 20, 6, 20, 'sy_moss', key='shmoss'))
         for j in range(3):
-            ar.children.append(up_branch(f'shb{side}{j}', (sh[0] + sg * (j - 1) * 3, 118, (j - 1) * 6), 5, 5, 7, sg * (.3 + j * .12), sg * .15, rng=rng, key='shb', leaf=3, leaf_size=8))
+            piv = (sh[0] + sg * (j - 1) * 3, 118, (j - 1) * 6)
+            # tournees de 180 degres autour de la verticale : elles penchent vers l'exterieur
+            ar.children.append(Group(f'shb{side}{j}_yaw', piv, (0, math.pi, 0), [up_branch(f'shb{side}{j}', piv, 5, 5, 7, sg * (.3 + j * .12), sg * .15, rng=rng, key='shb', leaf=3, leaf_size=8)]))
         kids_body.append(ar)
     for j in range(3):
         kids_body.append(up_branch(f'back{j}', ((j - 1) * 10, 100 + j * 6, 17), 6, 6, 8, 0, (j - 1) * .1, rx0=.45, drx=-.12, rng=rng, key='bk', leaf=3, leaf_size=8))

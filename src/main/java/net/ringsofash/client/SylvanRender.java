@@ -84,6 +84,7 @@ public final class SylvanRender {
         m.setupAnim(p, swing, amount, p.tickCount + pt, Mth.wrapDegrees(head - body), p.getViewXRot(pt));
         VertexConsumer vc = e.getMultiBufferSource().getBuffer(RenderType.entityCutoutNoCull(Renderers.tex("treeman")));
         m.renderToBuffer(ps, vc, e.getPackedLight(), LivingEntityRenderer.getOverlayCoords(p, 0.0F), -1);
+        m.renderToBuffer(ps, e.getMultiBufferSource().getBuffer(RenderType.eyes(Renderers.tex("treeman_glow"))), 0xF00000, OverlayTexture.NO_OVERLAY, -1);
         ps.popPose();
     }
 
@@ -138,12 +139,12 @@ public final class SylvanRender {
             for (int i = 0; i < NAMES.length; i++) {
                 models[i] = new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_" + NAMES[i])), NAMES[i]);
                 scales[i] = i == 0 ? 0.52F : BLOCKS[i] * 16F / GeoDef.get(NAMES[i]).height;
-                if (i > 0) glows[i] = net.minecraft.client.renderer.RenderType.eyes(Renderers.tex(NAMES[i] + "_glow"));
+                glows[i] = net.minecraft.client.renderer.RenderType.eyes(Renderers.tex(NAMES[i] + "_glow"));
             }
             addLayer(new net.minecraft.client.renderer.entity.layers.RenderLayer<TreemanEntity, GeoModel<TreemanEntity>>(this) {
                 @Override
                 public void render(PoseStack ps, MultiBufferSource buf, int light, TreemanEntity e, float a, float b, float c, float d, float f, float g) {
-                    if (cur == 0 || e.isTree()) return;
+                    if (e.isTree()) return;
                     getParentModel().renderToBuffer(ps, buf.getBuffer(glows[cur]), 0xF00000, OverlayTexture.NO_OVERLAY, -1);
                 }
             });

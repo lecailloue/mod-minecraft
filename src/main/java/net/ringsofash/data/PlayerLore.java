@@ -3,6 +3,7 @@ package net.ringsofash.data;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
@@ -23,6 +24,17 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
     public boolean rewarded;
     public int grow;
     public final Set<String> bestiary = new HashSet<>();
+    /** Onglet d'anneaux : 10 emplacements ; un seul anneau est actif a la fois (-1 = aucun). */
+    public static final int RING_SLOTS = 10;
+    public final SimpleContainer rings = new SimpleContainer(RING_SLOTS);
+    public int activeRing = -1;
+
+    /** L'anneau actif doit exister : sinon on prend le premier anneau range, ou aucun. */
+    public void fixActiveRing() {
+        if (activeRing >= 0 && activeRing < RING_SLOTS && rings.getItem(activeRing).getItem() instanceof net.ringsofash.item.RingItem) return;
+        activeRing = -1;
+        for (int i = 0; i < RING_SLOTS; i++) if (rings.getItem(i).getItem() instanceof net.ringsofash.item.RingItem) { activeRing = i; break; }
+    }
 
     public int rep(People p) { return rep[p.ordinal()]; }
 
@@ -55,6 +67,8 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
         ListTag l = new ListTag();
         for (String s : bestiary) l.add(StringTag.valueOf(s));
         t.put("bestiary", l);
+        t.put("rings", rings.createTag(provider));
+        t.putInt("activeRing", activeRing);
         return t;
     }
 
@@ -74,5 +88,8 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
         bestiary.clear();
         ListTag l = t.getList("bestiary", Tag.TAG_STRING);
         for (int i = 0; i < l.size(); i++) bestiary.add(l.getString(i));
+        rings.clearContent();
+        if (t.contains("rings", Tag.TAG_LIST)) rings.fromTag(t.getList("rings", Tag.TAG_COMPOUND), provider);
+        activeRing = t.contains("activeRing") ? t.getInt("activeRing") : -1;
     }
 }

@@ -1,6 +1,10 @@
 package net.ringsofash.data;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.world.item.ItemStack;
+import java.util.List;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
@@ -41,6 +45,37 @@ public final class Net {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    /** Onglet d'anneaux : contenu des 10 emplacements et anneau actif, envoyes au client. */
+    public record RingSync(List<ItemStack> stacks, int active) implements CustomPacketPayload {
+        public static final CustomPacketPayload.Type<RingSync> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("rings"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, RingSync> CODEC = StreamCodec.composite(
+                ItemStack.OPTIONAL_LIST_STREAM_CODEC, RingSync::stacks, ByteBufCodecs.VAR_INT, RingSync::active, RingSync::new);
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    /** Menu Alt : choix de l'anneau actif (numero d'emplacement, -1 = aucun). */
+    public record SelectRing(int slot) implements CustomPacketPayload {
+        public static final CustomPacketPayload.Type<SelectRing> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("select_ring"));
+        public static final StreamCodec<FriendlyByteBuf, SelectRing> CODEC = StreamCodec.of((buf, v) -> buf.writeVarInt(v.slot + 1), buf -> new SelectRing(buf.readVarInt() - 1));
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    /** Ouvre l'onglet d'anneaux. */
+    public record OpenRings() implements CustomPacketPayload {
+        public static final CustomPacketPayload.Type<OpenRings> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("open_rings"));
+        public static final StreamCodec<FriendlyByteBuf, OpenRings> CODEC = StreamCodec.of((buf, v) -> { }, buf -> new OpenRings());
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    /** Copie cote client des anneaux ranges. */
+    public static final class ClientRings {
+        public static final ItemStack[] stacks = new ItemStack[PlayerLore.RING_SLOTS];
+        public static int active = -1;
+        static { java.util.Arrays.fill(stacks, ItemStack.EMPTY); }
+        public static ItemStack active() { return active >= 0 && active < stacks.length ? stacks[active] : ItemStack.EMPTY; }
+        private ClientRings() {}
+    }
+
     /** Copie cote client des dernieres valeurs recues. */
     public static final class ClientLore {
         public static int[] rep = new int[People.values().length];
@@ -49,6 +84,16 @@ public final class Net {
     }
 
     public static void register(RegisterPayloadHandlersEvent e) {
+        e.registrar("1").playToClient(RingSync.TYPE, RingSync.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
+            for (int i = 0; i < ClientRings.stacks.length; i++) ClientRings.stacks[i] = i < payload.stacks().size() ? payload.stacks().get(i) : ItemStack.EMPTY;
+            ClientRings.active = payload.active();
+        }));
+        e.registrar("1").playToServer(SelectRing.TYPE, SelectRing.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer sp) net.ringsofash.menu.RingsMenu.select(sp, payload.slot());
+        }));
+        e.registrar("1").playToServer(OpenRings.TYPE, OpenRings.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer sp) net.ringsofash.menu.RingsMenu.open(sp);
+        }));
         e.registrar("1").playToClient(LoreSync.TYPE, LoreSync.CODEC, (payload, ctx) -> {
             ClientLore.rep = payload.rep(); ClientLore.corruption = payload.corruption(); ClientLore.eye = payload.eye(); ClientLore.quest = payload.quest();
         });
@@ -64,5 +109,7 @@ public final class Net {
     public static void sync(ServerPlayer p) {
         PlayerLore l = ModData.lore(p);
         PacketDistributor.sendToPlayer(p, new LoreSync(l.rep.clone(), l.corruption, l.eye, l.quest));
+        l.fixActiveRing();
+        PacketDistributor.sendToPlayer(p, new RingSync(java.util.stream.IntStream.range(0, PlayerLore.RING_SLOTS).mapToObj(l.rings::getItem).map(ItemStack::copy).toList(), l.activeRing));
     }
 }

@@ -180,7 +180,10 @@ public final class GameEvents {
     }
 
     private static boolean hasItem(Player p, net.minecraft.world.item.Item item) {
-        return p.getInventory().contains(new ItemStack(item)) || p.getOffhandItem().is(item);
+        if (p.getInventory().contains(new ItemStack(item)) || p.getOffhandItem().is(item)) return true;
+        var rings = ModData.lore(p).rings;
+        for (int i = 0; i < rings.getContainerSize(); i++) if (rings.getItem(i).is(item)) return true;
+        return false;
     }
     private static boolean hasGuide(Player p) {
         for (int i = 0; i < p.getInventory().getContainerSize(); i++) if (Guide.isGuide(p.getInventory().getItem(i))) return true;

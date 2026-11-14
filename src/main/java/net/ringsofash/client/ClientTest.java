@@ -115,6 +115,10 @@ public final class ClientTest {
                         MapScreen.addMarker(-410, -160, "Tour du guet", 0x40C040); MapScreen.addMarker(-485, -170, "Camp", 0xF08A20);
                         MapScreen.addMarker(-440, -80, "Mine", 0xA040E0); MapScreen.addMarker(-700, -230, "Loin", 0xE03030);
                     }
+                    RingWheel.keepOpen = false;
+                    if (s.name.contains("onglet")) { mc.options.hideGui = false; mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player)); }
+                    if (s.name.contains("roue")) { mc.options.hideGui = false; RingWheel.keepOpen = true; mc.setScreen(new RingWheel()); }
+                    if (s.name.contains("anneaux")) mc.options.hideGui = false;
                     if (s.name.contains("suivi")) { mc.options.hideGui = false; QuestScreen.tracked = 1; }
                     server.execute(() -> {
                         try { s.setup.accept(server.getPlayerList().getPlayers().get(0)); }
@@ -453,6 +457,21 @@ public final class ClientTest {
         }
         lineup("05b_seigneur", 9.0, -3F, 4.0, List.of(ModEntities.ASH_LORD.get()));
         lineup("05b_seigneur_proche", 5.5, 4F, 4.0, List.of(ModEntities.ASH_LORD.get()));
+        SCENES.add(new Scene("12a_onglet_inventaire", 40, p -> { }));
+        SCENES.add(new Scene("12b_anneaux_menu", 50, p -> {
+            var l = net.ringsofash.data.ModData.lore(p);
+            l.rings.clearContent();
+            net.minecraft.world.item.Item[] rs = {Reg.RING_WATERS.get(), Reg.RING_WINDS.get(), Reg.RING_EMBERS.get(), Reg.RING_FORGE.get(), Reg.RING_HOARD.get(), Reg.RING_KINGS.get(), Reg.RING_SHADOWS.get(), Reg.ASH_RING.get()};
+            for (int i = 0; i < rs.length; i++) l.rings.setItem(i + (i > 4 ? 1 : 0), new ItemStack(rs[i]));
+            l.activeRing = 2;
+            net.ringsofash.data.Net.sync(p);
+            net.ringsofash.menu.RingsMenu.open(p);
+        }));
+        SCENES.add(new Scene("12c_anneaux_roue", 30, p -> { }));
+        SCENES.add(new Scene("12d_anneaux_actif", 80, p -> {
+            net.ringsofash.menu.RingsMenu.select(p, 4);
+            hook = () -> log("12d anneau actif=" + net.ringsofash.item.RingItem.worn(p) + " chance=" + p.hasEffect(net.minecraft.world.effect.MobEffects.LUCK) + " nuit=" + p.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION));
+        }));
         for (int[] v : new int[][]{{0, 14, -6, 40}, {1, 8, -4, 40}, {2, 8, -4, 110}}) {
             final int close = v[0];
             SCENES.add(new Scene("11" + "abc".charAt(close) + "_sylvestres", v[3], p -> {
