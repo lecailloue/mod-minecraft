@@ -55,8 +55,8 @@ public final class Guide {
         b("warg", "Loup de guerre", "Chasse en meute dans les plaines. Parfois monté par un orque.");
         b("wild_man", "Homme sauvage", "Hostile... sauf si votre réputation générale est bonne.");
         b("mammoth", "Mammouth", "Paisible tant qu'on ne le frappe pas. Sinon, courez.");
-        b("shadow_rider", "Être des ombres", "Cavalier noir sous une grande cape, sans rien sous la capuche. Ne sort que la nuit. Très rapide. Sent un anneau à près de cent blocs, même à travers les murs. Craint le feu et les lames des tertres.");
-        b("shadow_chief", "Chef des ombres", "Le maître des êtres des ombres : casque à pointes, cheval cuirassé. Ne chevauche que la nuit, bien plus robuste que ses cavaliers.");
+        b("shadow_rider", "Être des ombres", "Cavalier noir sous une grande cape, sans rien sous la capuche. Ne craint pas le soleil. Très rapide. Sent un anneau à près de cent blocs, même à travers les murs. Craint le feu et les lames des tertres.");
+        b("shadow_chief", "Chef des ombres", "Le maître des êtres des ombres : casque à pointes, cheval cuirassé. Bien plus robuste que ses cavaliers.");
         b("giant_spider", "Araignée géante", "Reine du Bois-Noir. Venin et toiles. Fuit la fiole de lumière.");
         b("lurker", "Guetteur des profondeurs", "Tapi dans les eaux sombres. Ses tentacules vous tirent vers lui. Frappez de loin.");
         b("cave_thief", "Créature blême", "Vole un objet de votre barre et s'enfuit. Rattrapez-la pour le reprendre.");

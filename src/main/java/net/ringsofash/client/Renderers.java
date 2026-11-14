@@ -90,7 +90,7 @@ public final class Renderers {
     /** Etres des ombres : cavalier + cheval en un seul modele (2 cavaliers, 1 chef), yeux du cheval lumineux. */
     public static class Shadow extends MobRenderer<net.ringsofash.entity.ShadowRiderEntity, GeoModel<net.ringsofash.entity.ShadowRiderEntity>> {
         public static final String[] NAMES = {"ombre_1", "ombre_2", "ombre_chef"};
-        public static final float[] BLOCKS = {2.8F, 2.8F, 3.2F};
+        public static final float[] BLOCKS = {2.8F, 2.8F, 3.8F};
         private final GeoModel<net.ringsofash.entity.ShadowRiderEntity>[] models;
         private final float[] scales = new float[NAMES.length];
 

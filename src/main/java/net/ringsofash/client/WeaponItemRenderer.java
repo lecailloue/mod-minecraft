@@ -32,7 +32,9 @@ public class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
         GeoModel<Entity> m = models.computeIfAbsent(name, n -> new GeoModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ClientSetup.layer("geo_" + n)), n));
         GeoDef d = GeoDef.get(name);
         float len = d.ymax - d.ymin, mid = (d.ymax + d.ymin) / 2F;
-        float s = 1.25F / (len / 16F);
+        // en main et au sol : taille reelle (la lance et la masse sont longues) ; en inventaire : on ramene l'arme dans la case
+        float s = 0.55F;
+        if (ctx == ItemDisplayContext.GUI || ctx == ItemDisplayContext.FIXED) s = Math.min(s, 1.25F / (len / 16F));
         ps.pushPose();
         ps.translate(0.5F, 0.5F, 0.5F);
         ps.mulPose(Axis.ZP.rotationDegrees(-45F));

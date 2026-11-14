@@ -112,7 +112,6 @@ public class ShadowRiderEntity extends Monster {
                 p.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 80, 0, true, false), this);
                 if (RingItem.wearsRing(p)) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 0, true, false), this);
             }
-            if (dayGrace == 0 && level().isDay() && level().canSeeSky(blockPosition())) vanish();
         }
     }
 

@@ -250,11 +250,11 @@ def arm_pair(variant, chief):
     for f in range(4):
         cuff.append(C(f'finger_r{f}', cx - 2.2 + f * 1.1, 50.5, -2.2, 1.1, 3, 1.4, 'h_iron', key='ar_fing'))
     if variant == 0:
-        r_up, r_fo, sword_rot = -30, -80, 110
+        r_up, r_fo, sword_rot = 30, 80, -110
     elif variant == 1:
-        r_up, r_fo, sword_rot = -22, -20, -108
+        r_up, r_fo, sword_rot = 22, 20, -177
     else:
-        r_up, r_fo, sword_rot = -26, -70, 96
+        r_up, r_fo, sword_rot = 26, 70, -96
     blade_len = 50 if chief else (40 if variant == 0 else 34)
     sword = [C('grip', -1, -4, -1, 2, 8, 2, 'h_leather', key='sw_grip'),
              C('pommel', -2, -6, -2, 4, 2, 4, 'h_bronze', key='sw_pom'),
@@ -275,8 +275,8 @@ def arm_pair(variant, chief):
             C('glove_edge_l', -cx - 3, 57, -2.5, 6, 2, 5, 'h_bronze', key='ar_gedge')]
     for f in range(4):
         cufl.append(C(f'finger_l{f}', -cx - 2.2 + f * 1.1, 50.5, -2.2, 1.1, 3, 1.4, 'h_iron', key='ar_fing'))
-    forel = Group('forearm_l', (-cx, 72, 1), (-62, 0, 0), cufl)
-    arms.append(Group('rarm_l', (-cx, 85, 1), (-34, 0, 0), upl + [forel]))
+    forel = Group('forearm_l', (-cx, 72, 1), (62, 0, 0), cufl)
+    arms.append(Group('rarm_l', (-cx, 85, 1), (34, 0, 0), upl + [forel]))
     return arms
 
 
