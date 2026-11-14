@@ -83,6 +83,7 @@ public final class ClientSetup {
             }
             g.fill(cx, y + 10, cx + 1, y + 13, 0xFFFFD070);
         });
+        e.registerAboveAll(RingsOfAsh.id("quest_tracker"), (g, dt) -> QuestScreen.renderTracker(g));
     }
 
     private static void keys(RegisterKeyMappingsEvent e) { e.register(REP_KEY); e.register(MAP_KEY); }
@@ -93,7 +94,7 @@ public final class ClientSetup {
             if (mc.player != null && mc.screen == null) mc.setScreen(new MapScreen());
         }
         while (REP_KEY.consumeClick()) {
-            if (mc.player != null && mc.screen == null) mc.setScreen(new RepScreen());
+            if (mc.player != null && mc.screen == null) mc.setScreen(new QuestScreen(0));
         }
     }
 
