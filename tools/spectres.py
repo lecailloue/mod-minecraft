@@ -17,6 +17,7 @@ MAT = {
     's_rust': dict(base=(72, 120, 98), n1=7, n2=8, tint=(.92, 1, .96)),
     's_blade': dict(base=(192, 238, 218), n1=7, n2=6, tint=(.95, 1, 1)),
     's_bone': dict(base=(176, 226, 200), n1=7, n2=6, tint=(.95, 1, .98)),
+    's_bone2': dict(base=(222, 226, 208), n1=7, n2=7, tint=(1, 1, .96)),
     's_wood': dict(base=(76, 100, 72), n1=6, n2=6, tint=(.92, 1, .92)),
     's_gold': dict(base=(206, 188, 96), n1=8, n2=8, tint=(.95, 1, .8)),
     's_gem': dict(base=(150, 255, 225), n1=5, n2=5, tint=(.9, 1, 1)),
@@ -51,7 +52,7 @@ def d_plain(arr, face, rng):
 
 T.MATS.update(MAT)
 T.DECOR.update({'s_mail': O.d_mail2, 's_cloth': O.d_cloth2, 's_cloth2': O.d_cloth2, 's_rag': O.d_cloth2, 's_metal': lambda a, f, r: O.d_iron2(a, f, r, rust=.2),
-                's_rust': lambda a, f, r: O.d_iron2(a, f, r, rust=.6), 's_blade': O.d_blade2, 's_bone': O.d_tooth, 's_wood': O.d_wood,
+                's_rust': lambda a, f, r: O.d_iron2(a, f, r, rust=.6), 's_blade': O.d_blade2, 's_bone': O.d_tooth, 's_bone2': O.d_tooth, 's_wood': O.d_wood,
                 's_gold': d_plain, 's_gem': d_plain, 's_dark': d_plain})
 
 
@@ -74,38 +75,64 @@ def fx_eyes(col):
     return f
 
 
+def fx_bonehead(F, rng, glow):
+    """crane interieur : orbites sombres, trou du nez, rangee de dents"""
+    n = F['north']
+    h, w, _ = n.shape
+    for (x0, y0) in ((1, 3), (w - 3, 3)):
+        for dx in range(2):
+            for dy in range(2):
+                put(n, x0 + dx, y0 + dy, (14, 20, 16), .95)
+    put(n, w // 2, 5, (20, 26, 22), .95)
+    for x in range(w):
+        put(n, x, h - 1, (30, 34, 30), .9)
+        if x % 2 == 0:
+            put(n, x, h - 2, (240, 242, 232), 1)
+
+
 # ---------------------------------------------------------------- corps
-def body_parts(sk, eye, head_mat, head_fx, ax=11, rib=False, mail=True):
+def body_parts(sk, eye, head_mat, head_fx, ax=11, mail=True):
+    """enveloppe fantomatique translucide (peau verte) autour d'un squelette opaque. Dans chaque piece le squelette vient AVANT l'enveloppe
+    (le rendu translucide ecrit la profondeur : il faut dessiner l'interieur d'abord)."""
     legs = {}
     for sg in (-1, 1):
         n = 'left' if sg < 0 else 'right'
-        k = [C('thigh_' + n, X(sg, 5, 6), 19, -3, 6, 15, 6, sk, key='s_thigh'),
+        k = [C('femur_' + n, X(sg, 5, 2), 20, -1, 2, 14, 2, 's_bone2', key='b_femur'),
+             C('tibia_' + n, X(sg, 5, 2), 4, -1, 2, 16, 2, 's_bone2', key='b_tibia'),
+             C('footb_' + n, X(sg, 5, 3), 0, -3.5, 3, 2, 6, 's_bone2', key='b_foot'),
+             C('thigh_' + n, X(sg, 5, 6), 19, -3, 6, 15, 6, sk, key='s_thigh'),
              C('shin_' + n, X(sg, 5, 5), 3, -2.5, 5, 17, 5, sk, key='s_shin'),
              C('foot_' + n, X(sg, 5, 6), 0, -5, 6, 3, 9, sk, key='s_foot')]
         legs[sg] = Group('leg_' + n, (sg * 5, 34, 0), (0, 0, 0), k)
-    pelvis = Group('pelvis', (0, 34, 0), children=[C('pelvis', -6, 31, -3.5, 12, 5, 7, sk, key='s_pelvis')])
-    bk = [C('chest', -8, 41, -4.5, 16, 14, 9, sk, key='s_chest'),
-          C('abd', -6, 34, -4, 12, 8, 8, sk, key='s_abd'),
-          C('neck', -3, 55, -3, 6, 3, 6, sk, key='s_neck')]
+    pelvis = Group('pelvis', (0, 34, 0), children=[C('pelvis_bone', -4, 31.5, -2.5, 8, 3, 5, 's_bone2', key='b_pelvis'),
+                                                   C('pelvis', -6, 31, -3.5, 12, 5, 7, sk, key='s_pelvis')])
+    bk = [C('spine', -1, 35, -1.5, 2, 21, 3, 's_bone2', key='b_spine'),
+          C('sternum', -.5, 41, -3.9, 1, 11, 1, 's_bone2', key='b_sternum'),
+          C('clavicle', -6, 52, -2, 12, 1, 2, 's_bone2', key='b_clav')]
+    for i in range(5):
+        bk.append(C(f'rib_{i}', -4.5, 41.5 + i * 2.6, -3.3, 9, 1, 6, 's_bone2', key='b_rib'))
+    bk += [C('chest', -8, 41, -4.5, 16, 14, 9, sk, key='s_chest'),
+           C('abd', -6, 34, -4, 12, 8, 8, sk, key='s_abd'),
+           C('neck', -3, 55, -3, 6, 3, 6, sk, key='s_neck')]
     if mail:                                                # cotte de mailles et ceinture, comme le soldat d'origine
         bk += [C('mail_chest', -8.5, 40.5, -5, 17, 15, 10, 's_mail', key='s_mchest'),
                C('mail_abd', -6.5, 33.5, -4.5, 13, 8, 9, 's_mail', key='s_mabd'),
                C('belt', -7, 33, -4.9, 14, 2, 9, 's_cloth2', key='s_belt0'),
                C('buckle', -1, 33.2, -5.4, 2, 1.6, 1, 's_gold', key='s_buckle')]
-    if rib:
-        for i in range(4):
-            bk.append(C(f'rib_{i}', -7, 43 + i * 3, -5.2, 14, 1, 1, 's_bone', key='s_rib'))
-        bk.append(C('spine', -.5, 36, -5.2, 1, 17, 1, 's_bone', key='s_spine'))
-    hk = [C('skull', -4.5, 58, -5.5, 9, 9, 9, head_mat, key='s_skull' + eye.hex() + head_mat, fx=head_fx),
+    hk = [C('skull_bone', -3.5, 59, -4.5, 7, 7, 7, 's_bone2', key='b_skull', fx=fx_bonehead),
+          C('jaw_bone', -2.5, 56.5, -3.5, 5, 2, 6, 's_bone2', key='b_jaw'),
+          C('skull', -4.5, 58, -5.5, 9, 9, 9, head_mat, key='s_skull' + eye.hex() + head_mat, fx=head_fx),
           C('jaw', -3.5, 55.5, -4.5, 7, 3, 7, head_mat, key='s_jawm' + head_mat)]
     arms, fores = {}, {}
     for sg in (-1, 1):
         n = 'left' if sg < 0 else 'right'
         cx = ax + .5
-        arms[sg] = [C('shoulder_' + n, X(sg, cx, 5), 50, -2.5, 5, 5, 5, sk, key='s_sh'),
+        arms[sg] = [C('humerus_' + n, X(sg, cx, 2), 41, -1, 2, 12, 2, 's_bone2', key='b_hum'),
+                    C('shoulder_' + n, X(sg, cx, 5), 50, -2.5, 5, 5, 5, sk, key='s_sh'),
                     C('uarm_' + n, X(sg, cx, 4), 41, -2, 4, 10, 4, sk, key='s_ua')]
-        fores[sg] = [C('farm_' + n, X(sg, cx, 4), 30, -2, 4, 11, 4, sk, key='s_fa'),
-                     C('hand_' + n, X(sg, cx, 3), 27, -1.5, 3, 3, 3, 's_bone', key='s_hand')]
+        fores[sg] = [C('radius_' + n, X(sg, cx, 2), 29, -1, 2, 12, 2, 's_bone2', key='b_rad'),
+                     C('farm_' + n, X(sg, cx, 4), 30, -2, 4, 11, 4, sk, key='s_fa'),
+                     C('hand_' + n, X(sg, cx, 3), 27, -1.5, 3, 3, 3, 's_bone2', key='b_hand')]
     return legs, pelvis, bk, hk, arms, fores
 
 
@@ -159,7 +186,7 @@ def finish(legs, pelvis, bk, hk, arms, fores, weapon, wsg=1, lean=-8, hand_rot=(
     arm_groups = [Group('arm_' + ('left' if sg < 0 else 'right'), (sg * ax, 54, 0), (-4, 0, sg * -3), arms[sg] + [farms[sg]]) for sg in (-1, 1)]
     kids = bk + [head] + arm_groups + ([capes] if capes else [])
     body = Group('body', (0, 34, 0), (lean, 0, 0), kids)
-    groups = [legs[-1], legs[1], pelvis, body]
+    groups = [pelvis, legs[-1], legs[1], body]
     unique_names(groups)
     return groups
 
@@ -265,6 +292,24 @@ def spectre_hache(skin='8ae0b0'):
     return finish(legs, pel, bk, hk, arms, fores, w_axe(), hand_rot=(-44, 0, -6))
 
 
+def spectre_dague(skin='84dcab'):
+    """rodeur en loques : sans armure, bandeau de tissu, echarpe et courte cape, pans de tissu dechires, dague ; le squelette se voit le mieux"""
+    sk = skin_mat(skin)
+    legs, pel, bk, hk, arms, fores = body_parts(sk, col(EYE), sk, fx_eyes(col(EYE)), mail=False)
+    bk.append(C('belt', -7, 33, -4.9, 14, 2, 9, 's_cloth2', key='s_beltd'))
+    for i in range(6):
+        ln = 12 + (i * 7 % 5) * 3
+        bk.append(C(f'rag_{i}', -6.5 + i * 2.2, 33 - ln, -5.2 - (i % 2) * .6, 2, ln, 1, 's_cloth', key=f's_drag{ln}', rot=(0, 0, (-4, 3, -2, 5)[i % 4])))
+    for i in range(3):
+        bk.append(C(f'shred_{i}', -6 + i * 5, 42 + i % 2 * 4, -5.2, 3, 8 - i, 1, 's_cloth2', key=f's_shred{i}', rot=(0, 0, (6, -5, 4)[i])))
+    bk.append(C('scarf', -7, 52, -5, 14, 3, 10, 's_cloth', key='s_scarfd'))
+    bk.append(C('scarf_tail', 2, 36, -5.6, 3, 17, 1, 's_cloth', key='s_scarfdt', rot=(0, 0, -5)))
+    hk += [C('headband', -5, 63, -6.2, 10, 2, 10, 's_cloth2', key='s_hbd'),
+           C('headband_tail', -4, 56, 4.6, 3, 9, 1, 's_cloth2', key='s_hbdt'),
+           C('headband_tail2', 1, 55, 4.6, 3, 11, 1, 's_cloth2', key='s_hbdt2')]
+    return finish(legs, pel, bk, hk, arms, fores, w_sword(14, 2), hand_rot=(-50, 0, -6))
+
+
 def spectre_roi(skin='9ae8c0'):
     """Roi des morts : le soldat d'origine en grand, avec une couronne d'or, une cape royale et une grande epee"""
     sk = skin_mat(skin)
@@ -293,8 +338,33 @@ MODELS = {
     'spectre_epee': (spectre_epee, 1.0),
     'spectre_lance': (spectre_lance, 1.0),
     'spectre_hache': (spectre_hache, 1.0),
-    'spectre_roi': (spectre_roi, 1.22),
+    'spectre_dague': (spectre_dague, 1.0),
 }
+
+
+ALPHA = {'s_cloth': 165, 's_cloth2': 175, 's_rag': 160, 's_metal': 205, 's_rust': 205, 's_blade': 230, 's_wood': 225, 's_gold': 235, 's_gem': 255,
+         's_dark': 255, 's_bone': 255, 's_bone2': 255}
+SKIN_ALPHA = 105
+
+
+def apply_alpha(cubes, tex):
+    """transparence par pixel : peau fantomatique tres translucide, mailles ajourees, os opaques"""
+    done = set()
+    for c in cubes:
+        if c.key in done:
+            continue
+        done.add(c.key)
+        w, h, d = c.size
+        for f, (x0, y0, fw, fh) in face_rects(c.u, c.v, w, h, d).items():
+            lum = tex[y0:y0 + fh, x0:x0 + fw, :3].astype(float).mean(2)
+            if c.mat.startswith('s_sk_'):
+                v = np.where(lum > 232, 255, SKIN_ALPHA)             # les yeux restent lumineux
+            elif c.mat == 's_mail':
+                v = np.where(lum >= lum.mean(), 215, 80)             # mailles ajourees : on voit les cotes a travers
+            else:
+                v = ALPHA.get(c.mat, 255)
+            tex[y0:y0 + fh, x0:x0 + fw, 3] = v
+    return tex
 
 
 def build(name):
@@ -307,6 +377,7 @@ def build(name):
     cubes = [c for c, _ in walk(groups)]
     W, H = pack(cubes)
     tex, glow = paint_all(cubes, W, H)
+    tex = apply_alpha(cubes, tex)
     return groups, cubes, W, H, tex, glow
 
 
@@ -317,10 +388,14 @@ def sheet(path, names=None, views=(0, 40, 180)):
         fn, f = MODELS[name]
         groups, cubes, W, H, tex, glow = build(name)
         sc = 5.6 / f
-        rows.append(np.concatenate([render(groups, tex, y, pitch=-8, W=330, H=520, scale=sc) for y in views], axis=1))
+        ims = []
+        for y in views:
+            im, zb = render(groups, tex, y, pitch=-8, W=330, H=520, scale=sc, mode='opaque')
+            ims.append(render(groups, tex, y, pitch=-8, W=330, H=520, scale=sc, mode='trans', img=im, zbuf=zb))
+        rows.append(np.concatenate(ims, axis=1))
     Image.fromarray(np.concatenate(rows, axis=0)).save(path)
 
 
 if __name__ == '__main__':
     sheet('/tmp/spectres_a.png', ['spectre_epee', 'spectre_lance'])
-    sheet('/tmp/spectres_b.png', ['spectre_hache', 'spectre_roi'])
+    sheet('/tmp/spectres_b.png', ['spectre_hache', 'spectre_dague'])

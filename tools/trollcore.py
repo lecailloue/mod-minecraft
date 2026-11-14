@@ -392,11 +392,12 @@ def quad_corners(f, lo, hi):
     return P(x1, y0, z0), P(x0, y0, z0), P(x1, y0, z1), P(x0, y0, z1)
 
 
-def render(groups, tex, yaw, pitch=-16, W=420, H=560, scale=10.5, ybase=0):
-    img = np.zeros((H, W, 3), float)
-    yy = np.linspace(0, 1, H)[:, None, None]
-    img[:] = np.array((30, 33, 40)) * (1 - yy) + np.array((58, 62, 72)) * yy
-    zbuf = np.full((H, W), -1e9)
+def render(groups, tex, yaw, pitch=-16, W=420, H=560, scale=10.5, ybase=0, mode='all', img=None, zbuf=None):
+    if img is None:
+        img = np.zeros((H, W, 3), float)
+        yy = np.linspace(0, 1, H)[:, None, None]
+        img[:] = np.array((30, 33, 40)) * (1 - yy) + np.array((58, 62, 72)) * yy
+        zbuf = np.full((H, W), -1e9)
     Rv = rot_mat((pitch, 0, 0)) @ rot_mat((0, yaw, 0))
     L = np.array((.45, .8, -.45)); L /= np.linalg.norm(L)
     cx, cy = W / 2, H - 40
@@ -452,8 +453,20 @@ def render(groups, tex, yaw, pitch=-16, W=420, H=560, scale=10.5, ybase=0):
                 V = l0 * UA[1] + l1 * UB[1] + l2 * UC[1]
                 tx = np.clip(np.floor(U - 1e-4).astype(int), 0, tex.shape[1] - 1)
                 ty = np.clip(np.floor(V - 1e-4).astype(int), 0, tex.shape[0] - 1)
+                al = tex[ty, tx, 3].astype(float) / 255
+                if mode == 'opaque':
+                    upd = upd & (al > .97)
+                elif mode == 'trans':
+                    upd = upd & (al <= .97)
+                if not upd.any():
+                    continue
                 col = tex[ty, tx, :3].astype(float) * light
-                sub[upd] = depth[upd]
                 region = img[miny:maxy + 1, minx:maxx + 1]
-                region[upd] = col[upd]
+                if mode == 'trans':
+                    region[upd] = region[upd] * (1 - al[upd, None]) + col[upd] * al[upd, None]
+                else:
+                    sub[upd] = depth[upd]
+                    region[upd] = col[upd]
+    if mode == 'opaque':
+        return img, zbuf
     return np.clip(img, 0, 255).astype(np.uint8)
