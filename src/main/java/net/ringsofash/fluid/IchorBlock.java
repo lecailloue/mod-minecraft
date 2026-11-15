@@ -12,8 +12,8 @@ import org.joml.Vector3f;
 
 /** Bloc d'ichor : degage une fumee verte claire qui monte de la surface. */
 public class IchorBlock extends LiquidBlock {
-    private static final DustParticleOptions SMOKE = new DustParticleOptions(new Vector3f(0.50F, 1.0F, 0.55F), 2.4F);
-    private static final DustParticleOptions WISP = new DustParticleOptions(new Vector3f(0.70F, 1.0F, 0.70F), 1.5F);
+    private static final DustParticleOptions SMOKE = new DustParticleOptions(new Vector3f(0.30F, 0.85F, 0.45F), 2.4F);
+    private static final DustParticleOptions WISP = new DustParticleOptions(new Vector3f(0.83F, 1.0F, 0.85F), 1.5F);
 
     public IchorBlock(FlowingFluid fluid, BlockBehaviour.Properties props) {
         super(fluid, props);

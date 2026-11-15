@@ -1,7 +1,7 @@
 """Contenu : blocs, objets, recettes, textures."""
 from genlib import *
 from tex import *
-import random
+import random, math
 import dwarf
 
 def build():
@@ -50,6 +50,35 @@ def morgul_crystal(seed):
             im.putpixel((x, y), c + (255,))
     return im
 
+def ichor_frames(size, frames, seed):
+    """liquide style lave aux couleurs des cristaux de Morgul ; bruit periodique : se raccorde parfaitement d'un bloc a l'autre et d'une image a l'autre"""
+    rnd = random.Random(seed)
+    def lattice(n): return [[rnd.random() for _ in range(n)] for _ in range(n)]
+    def smooth(t): return t * t * (3 - 2 * t)
+    def noise(g, n, x, y):                       # x, y dans [0, size) ; periode = size
+        fx, fy = x * n / size, y * n / size
+        ix, iy = int(math.floor(fx)), int(math.floor(fy))
+        tx, ty = smooth(fx - ix), smooth(fy - iy)
+        a, b = g[iy % n][ix % n], g[iy % n][(ix + 1) % n]
+        d, e = g[(iy + 1) % n][ix % n], g[(iy + 1) % n][(ix + 1) % n]
+        return (a + (b - a) * tx) * (1 - ty) + (d + (e - d) * tx) * ty
+    n1, n2 = size // 4, size // 2
+    g1, g2 = lattice(n1), lattice(n2)
+    ramp = [(0.0, rgb('#178040')), (0.35, rgb('#27b85c')), (0.7, rgb('#7fe898')), (1.0, rgb('#d4ffd8'))]
+    def color(w):
+        for (p0, c0), (p1, c1) in zip(ramp, ramp[1:]):
+            if w <= p1: return mix(c0, c1, (w - p0) / (p1 - p0))
+        return ramp[-1][1]
+    im = Image.new('RGBA', (size, size * frames))
+    for f in range(frames):
+        sh = f * size / frames
+        for y in range(size):
+            for x in range(size):
+                v = 0.6 * noise(g1, n1, x, (y + sh) % size) + 0.4 * noise(g2, n2, (x - sh * 2) % size, y)
+                w = min(1.0, max(0.0, (v - 0.22) / 0.52))
+                im.putpixel((x, f * size + y), color(w * w * (3 - 2 * w)) + (255,))
+    return im
+
 def glow_block(id, fr, base_tex, glow_tex, light):
     """bloc de pierre dont un calque de pixels est emissif (lumiere pleine, meme dans le noir), avec une vraie lumiere en jeu"""
     block(id, fr, 'custom', java=f'new Block(copy(Blocks.POLISHED_BLACKSTONE_BRICKS).lightLevel(s -> {light}))', tool='pickaxe')
@@ -85,9 +114,13 @@ def blocks():
           java='new PaleLavaBlock(BlockBehaviour.Properties.of().mapColor(MapColor.SAND).noCollission().forceSolidOn()'
                '.strength(-1.0F, 3600000.0F).lightLevel(s -> 15).noLootTable().pushReaction(PushReaction.BLOCK))')
 
-    # --- ichor de Morgul : liquide vert lumineux (fluide de type lave, code dans fluid/ModFluids.java ; texture = lave vanilla teintee en vert cote client)
+    # --- ichor de Morgul : liquide vert lumineux (fluide de type lave, code dans fluid/ModFluids.java ; texture procedurale aux couleurs des cristaux de Morgul)
+    save(ichor_frames(16, 16, 11), f'{A}/textures/block/morgul_ichor_still.png')
+    wjson(f'{A}/textures/block/morgul_ichor_still.png.mcmeta', {'animation': {'frametime': 3, 'interpolate': True}})
+    save(ichor_frames(32, 32, 12), f'{A}/textures/block/morgul_ichor_flow.png')
+    wjson(f'{A}/textures/block/morgul_ichor_flow.png.mcmeta', {'animation': {'frametime': 2, 'interpolate': True}})
     bstate('morgul_ichor', {'variants': {'': {'model': f'{MOD}:block/morgul_ichor'}}})
-    wjson(f'{A}/models/block/morgul_ichor.json', {'textures': {'particle': 'minecraft:block/lava_still'}})
+    wjson(f'{A}/models/block/morgul_ichor.json', {'textures': {'particle': f'{MOD}:block/morgul_ichor_still'}})
     imodel('morgul_ichor_bucket', {'parent': 'neoforge:item/bucket_drip', 'loader': 'neoforge:fluid_container', 'fluid': f'{MOD}:morgul_ichor'})
     LANG[f'block.{MOD}.morgul_ichor'] = 'Ichor de Morgul'
     LANG[f'fluid_type.{MOD}.morgul_ichor'] = 'Ichor de Morgul'
