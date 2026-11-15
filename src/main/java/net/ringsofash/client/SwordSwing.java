@@ -50,9 +50,9 @@ public final class SwordSwing {
     /** vue subjective : decalage x, y, z puis rotations x, y, z (degres) de la lame */
     private static final float[][] FIRST = {
             {0, 0, 0, 0, 0, 0},
-            {0.12F, 0.30F, 0.22F, 50F, -8F, -30F},
-            {-0.38F, -0.24F, -0.42F, -75F, 20F, 35F},
-            {-0.46F, -0.34F, -0.28F, -55F, 26F, 45F},
+            {0.10F, 0.34F, 0.20F, 45F, -8F, -28F},
+            {-0.40F, 0.02F, -0.30F, -70F, 20F, 35F},
+            {-0.46F, -0.10F, -0.18F, -50F, 26F, 45F},
             {0, 0, 0, 0, 0, 0}};
 
     private static float ease(int seg, float f) {

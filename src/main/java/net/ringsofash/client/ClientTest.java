@@ -504,8 +504,8 @@ public final class ClientTest {
             hook = () -> log("MONTE_FIN monte=" + (p.getVehicle() == dr) + " dyJoueur=" + String.format("%.2f", p.getY() - dr.getY()) + " dragonY=" + String.format("%.2f", dr.getY()));
         }));
         // coup d'epee : vue subjective puis troisieme personne de face, a quelques ticks du debut du geste
-        for (int n : new int[]{2, 3, 4}) SCENES.add(new Scene("16a_coup_1p_" + n, n, p -> swingScene(p)));
-        for (int n : new int[]{1, 2, 3, 4}) SCENES.add(new Scene("16b_coup_face_" + n, n, p -> swingScene(p)));
+        for (int n : new int[]{3, 4, 5, 6}) SCENES.add(new Scene("16a_coup_1p_" + n, n, p -> swingScene(p)));
+        for (int n : new int[]{3, 4, 5, 6, 7}) SCENES.add(new Scene("16b_coup_face_" + n, n, p -> swingScene(p)));
         spectreLine("03b_spectres", 9.0, 3F, 2.2);
         spectreLine("03c_roi_proche", 4.2, 6F, 2.2);
         orcLine("01b_orques_modeles", 11.0, 3F, 2.3, new int[]{0, 5, 10, 15, 2, 3, 0}, true);

@@ -310,8 +310,8 @@ def rider(variant, chief):
     return k
 
 
-def shadow(variant=0, chief=False):
-    legs, hbody = horse(chief)
+def shadow(variant=0, chief=False, armored=False):
+    legs, hbody = horse(chief or armored)      # cheval cuirasse du chef, aussi pour les etres des ombres
     r = rider(variant, chief)
     cape = cape_chain(26 if chief else 24)
     body = Group('body', (0, 58, 0), (0, 0, 0), hbody + r + [cape])
@@ -321,8 +321,8 @@ def shadow(variant=0, chief=False):
 
 
 MODELS = {
-    'ombre_1': (lambda: shadow(0, False), 1.0),
-    'ombre_2': (lambda: shadow(1, False), 1.0),
+    'ombre_1': (lambda: shadow(0, False, True), 1.0),
+    'ombre_2': (lambda: shadow(1, False, True), 1.0),
     'ombre_chef': (lambda: shadow(2, True), 1.12),
 }
 
