@@ -23,7 +23,7 @@ public class IchorSmokeParticle extends TextureSheetParticle {
         this.hasPhysics = false;
         float k = this.random.nextFloat();
         this.setColor(0.35F + 0.35F * k, 0.92F + 0.08F * k, 0.50F + 0.35F * k);       // du vert des cristaux au vert pale
-        this.alpha = 0.75F;
+        this.alpha = 0.85F;
         this.setSpriteFromAge(sprites);
     }
 
@@ -32,7 +32,7 @@ public class IchorSmokeParticle extends TextureSheetParticle {
         super.tick();
         this.setSpriteFromAge(this.sprites);
         this.quadSize *= 1.012F;
-        this.alpha = 0.75F * (1F - (float) this.age / this.lifetime);
+        this.alpha = 0.85F * (1F - (float) this.age / this.lifetime);
     }
 
     @Override
