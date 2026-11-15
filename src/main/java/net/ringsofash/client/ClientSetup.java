@@ -43,6 +43,7 @@ public final class ClientSetup {
         Atmosphere.init(modBus);
         SwordAura.init();
         SylvanRender.init();
+        SwordSwing.init();
         RingTabs.init();
         modBus.addListener(ClientSetup::addLayers);
         modBus.addListener(ClientSetup::keys);
@@ -219,7 +220,17 @@ public final class ClientSetup {
     private static void addLayers(EntityRenderersEvent.AddLayers e) {
         for (net.minecraft.client.resources.PlayerSkin.Model m : new net.minecraft.client.resources.PlayerSkin.Model[]{net.minecraft.client.resources.PlayerSkin.Model.WIDE, net.minecraft.client.resources.PlayerSkin.Model.SLIM}) {
             var r = e.getSkin(m);
-            if (r instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer pr) pr.addLayer(new CloakLayer(pr, e.getEntityModels().bakeLayer(CLOAK)));
+            if (r instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer pr) {
+                pr.addLayer(new CloakLayer(pr, e.getEntityModels().bakeLayer(CLOAK)));
+                boolean slim = m == net.minecraft.client.resources.PlayerSkin.Model.SLIM;
+                try {                                                     // modele de joueur qui sait donner un coup d'epee realiste
+                    var f = net.minecraft.client.renderer.entity.LivingEntityRenderer.class.getDeclaredField("model");
+                    f.setAccessible(true);
+                    f.set(pr, new SwordSwing.SwingPlayerModel(e.getEntityModels().bakeLayer(slim ? net.minecraft.client.model.geom.ModelLayers.PLAYER_SLIM : net.minecraft.client.model.geom.ModelLayers.PLAYER), slim));
+                } catch (ReflectiveOperationException ex) {
+                    RingsOfAsh.LOGGER.warn("coup d'epee 3e personne indisponible : " + ex);
+                }
+            }
         }
     }
 

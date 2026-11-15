@@ -126,7 +126,7 @@ public final class ClientTest {
                         try { s.setup.accept(server.getPlayerList().getPlayers().get(0)); }
                         catch (Throwable t) { RingsOfAsh.LOGGER.error("[CLIENTTEST] ECHEC scene " + s.name, t); }
                     });
-                    mc.options.setCameraType(s.name.contains("monte") ? net.minecraft.client.CameraType.THIRD_PERSON_BACK : net.minecraft.client.CameraType.FIRST_PERSON);
+                    mc.options.setCameraType(s.name.contains("monte") ? net.minecraft.client.CameraType.THIRD_PERSON_BACK : s.name.contains("face") ? net.minecraft.client.CameraType.THIRD_PERSON_FRONT : net.minecraft.client.CameraType.FIRST_PERSON);
                     wait = s.ticks; state = 3;
                 }
                 case 3 -> {
@@ -151,6 +151,15 @@ public final class ClientTest {
         p.getAbilities().flying = true;
         p.onUpdateAbilities();
         p.teleportTo(level, x, y, z, yaw, pitch);
+    }
+
+    private static void swingScene(ServerPlayer p) {
+        ServerLevel ow = p.server.overworld();
+        clear(ow);
+        view(p, ow, SX + 0.5, SY, SZ + 0.5, 0F, 12F);
+        p.getAbilities().flying = false; p.onUpdateAbilities();
+        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(net.ringsofash.gen.Reg.WIGHT_BLADE.get()));
+        p.swing(InteractionHand.MAIN_HAND, true);
     }
 
     private static void clear(ServerLevel level) {
@@ -494,6 +503,9 @@ public final class ClientTest {
             log("MONTE_64 " + r + " monte=" + (p.getVehicle() == dr) + " tamed=" + dr.isTamed() + " os=" + p.getInventory().getItem(0).getCount() + " ctrl=" + (dr.getControllingPassenger() == p));
             hook = () -> log("MONTE_FIN monte=" + (p.getVehicle() == dr) + " dyJoueur=" + String.format("%.2f", p.getY() - dr.getY()) + " dragonY=" + String.format("%.2f", dr.getY()));
         }));
+        // coup d'epee : vue subjective puis troisieme personne de face, a quelques ticks du debut du geste
+        for (int n : new int[]{2, 3, 4}) SCENES.add(new Scene("16a_coup_1p_" + n, n, p -> swingScene(p)));
+        for (int n : new int[]{1, 2, 3, 4}) SCENES.add(new Scene("16b_coup_face_" + n, n, p -> swingScene(p)));
         spectreLine("03b_spectres", 9.0, 3F, 2.2);
         spectreLine("03c_roi_proche", 4.2, 6F, 2.2);
         orcLine("01b_orques_modeles", 11.0, 3F, 2.3, new int[]{0, 5, 10, 15, 2, 3, 0}, true);
