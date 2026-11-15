@@ -758,6 +758,10 @@ public final class ClientTest {
         spotT("45_morgul_nuit_pont", 1368 - 62, 1608, 3, -90F, 2F, 18000);
         spotT("46_morgul_nuit_cour", 1368 - 24, 1608, 2, -90F, -38F, 18000);
         spotT("47_morgul_nuit_aerien", 1368 - 84, 1608 - 84, 100, -45F, 24F, 18000);
+        spotT("48_morgul_statues", 1368 - 95, 1608, 7, -90F, 3F, 6000);
+        spotT("49_morgul_gouffre", 1368, 1608 - 92, 14, 0F, 24F, 6000);
+        spotT("50_morgul_gouffre_nuit", 1368, 1608 - 92, 14, 0F, 24F, 18000);
+        spotT("51_morgul_statue_proche", 1368 - 88, 1608 - 14, 6, -60F, 8F, 18000);
     }
 
     private static void spotT(String name, int x, int z, int up, float yaw, float pitch, int time) {

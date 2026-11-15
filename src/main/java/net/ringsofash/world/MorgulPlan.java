@@ -15,8 +15,8 @@ public final class MorgulPlan {
     public static final int W = 150, D = 150, OFF = 48, H = 200;        // y local de -OFF a H - OFF - 1
     public static final int CX = 75, CZ = 75;                           // centre : axe de la tour
     public static final int DECK = 95;                                  // plateforme du sommet de la tour (sol plein a y = 95)
-    public static final int DEPTH = 44, CHW = 14, LEDGE = 2;            // gouffre : profondeur, largeur, corniche au pied de la muraille
-    public static final double R1 = 58, R2 = 38, SHARP = 0.52;          // rayons des pointes ; creux = SHARP * pointe
+    public static final int DEPTH = 44, CHW = 14, LEDGE = 2, WATER_TOP = -DEPTH + 10;            // gouffre : profondeur, largeur, corniche au pied de la muraille
+    public static final double R1 = 55, R2 = 36, SHARP = 0.52;          // rayons des pointes ; creux = SHARP * pointe
 
     public static final byte AIR = 0, STONE = 1, DARK = 2, DETAIL = 3, PALE = 4, VEIN = 5, HOT = 6, GLOW = 7, GLASS = 8, BARS = 9,
             SLAB_S = 10, SLAB_S_TOP = 11, SLAB_P = 12, SLAB_P_TOP = 13, SLAB_D = 14, SLAB_D_TOP = 15, WALL_S = 16, WALL_D = 17,
@@ -26,6 +26,7 @@ public final class MorgulPlan {
     private final byte[] g = new byte[W * H * D];
     private final int[] top = new int[W * D];
     private final byte[] chasm = new byte[W * D];
+    private final boolean[] flat = new boolean[W * D];
     private final double[] sdO = new double[W * D], sdI = new double[W * D];
     private double[] ovx, ovz, ivx, ivz;
     private double[][] tipsO, tipsI;
@@ -48,6 +49,20 @@ public final class MorgulPlan {
     public byte[] raw() { return g; }
     /** profondeur du gouffre sous le sol dans cette colonne (0 = pas de gouffre) */
     public int chasm(int x, int z) { return x < 0 || x >= W || z < 0 || z >= D ? 0 : chasm[z * W + x]; }
+    /** colonne dont le relief naturel est rase au niveau du chateau (cours, corniche, chemin d'acces) */
+    public boolean flat(int x, int z) { return x >= 0 && x < W && z >= 0 && z < D && flat[z * W + x]; }
+    private void markFlat(int x0, int z0, int x1, int z1) {
+        for (int x = Math.max(0, x0); x <= Math.min(W - 1, x1); x++) for (int z = Math.max(0, z0); z <= Math.min(D - 1, z1); z++) flat[z * W + x] = true;
+    }
+    /** bruit lisse dans [-1, 1] */
+    private static double vn(double x, double z, int seed) {
+        int x0 = (int) Math.floor(x), z0 = (int) Math.floor(z);
+        double fx = x - x0, fz = z - z0;
+        fx = fx * fx * (3 - 2 * fx); fz = fz * fz * (3 - 2 * fz);
+        double a = rnd(x0, seed, z0), b = rnd(x0 + 1, seed, z0), c = rnd(x0, seed, z0 + 1), d = rnd(x0 + 1, seed, z0 + 1);
+        return ((a * (1 - fx) + b * fx) * (1 - fz) + (c * (1 - fx) + d * fx) * fz) * 2 - 1;
+    }
+    private static double noise(double x, double z) { return 0.65 * vn(x / 9.0, z / 9.0, 11) + 0.35 * vn(x / 4.0, z / 4.0, 23); }
 
     private static int idx(int x, int y, int z) { return ((y + OFF) * D + z) * W + x; }
     private static boolean ok(int x, int y, int z) { return x >= 0 && x < W && z >= 0 && z < D && y >= -OFF && y < H - OFF; }
@@ -111,10 +126,13 @@ public final class MorgulPlan {
             sdI[z * W + x] = sdPoly(x + 0.5, z + 0.5, ivx, ivz);
             double s = sdO[z * W + x];
             int dep = 0;
-            if (s > LEDGE && s < LEDGE + CHW) {
-                dep = (int) Math.round(Math.min(DEPTH, Math.min((s - LEDGE) * 10, (LEDGE + CHW - s) * 10)));
+            double sn = s + 2.4 * noise(x, z);                              // bords irreguliers
+            if (s > 1.2 && sn > LEDGE && sn < LEDGE + CHW) {
+                dep = (int) Math.round(Math.min(DEPTH, Math.min((sn - LEDGE) * 8, (LEDGE + CHW - sn) * 5)));
+                dep -= (int) Math.round((vn(x / 3.0, z / 3.0, 31) + 1) * 1.2);   // parois et fond un peu accidentes
             }
             chasm[z * W + x] = (byte) Math.max(0, dep);
+            if (s <= LEDGE + 0.5 && dep == 0) flat[z * W + x] = true;
         }
         ground();
         wall(sdO, 5, 15, tipsO, 24, 0.5, 20, true);
@@ -127,8 +145,6 @@ public final class MorgulPlan {
         crown();
         gates();
         bridge();
-        gargoyle(CX - 8, 37);
-        gargoyle(CX + 8, 37);
     }
 
     /** sol plein sous la muraille exterieure et les cours, avec un motif en etoile en pierre pale */
@@ -376,7 +392,8 @@ public final class MorgulPlan {
 
     /** portes en ogive de la muraille exterieure et de la muraille interieure, alignees sur l'axe */
     private void gates() {
-        int[][] gt = {{40, 52, 5, 13, 4}, {53, 62, 5, 18, 4}};           // z0, z1, ressaut, sommet, demi-largeur
+        int vo = (int) Math.floor(CZ - R1 * SHARP), vi = (int) Math.floor(CZ - R2 * SHARP);
+        int[][] gt = {{vo - 6, vo + 8, 5, 13, 4}, {vi - 3, CZ - 13, 5, 18, 4}};   // z0, z1, ressaut, sommet, demi-largeur
         for (int[] q : gt) {
             for (int y = 0; y <= q[3]; y++) {
                 int hw = arch(y, q[2], q[3], q[4]);
@@ -398,10 +415,18 @@ public final class MorgulPlan {
         }
     }
 
-    /** viaduc a arches au-dessus du gouffre, de la porte vers l'exterieur */
+    /** viaduc a arches au-dessus du gouffre : il va jusqu'a la terre ferme, puis un chemin pave et deux grandes statues */
     private void bridge() {
-        int zA = 27, zB = 45;
-        for (int z = zA; z <= zB; z++) {
+        int zB = (int) Math.floor(CZ - R1 * SHARP) + 1;
+        int z = zB;
+        boolean seen = false;
+        for (; z >= 0; z--) {
+            boolean any = false;
+            for (int x = CX - 6; x <= CX + 6; x++) if (chasm(x, z) > 0) any = true;
+            if (any) seen = true; else if (seen) break;
+        }
+        int zA = Math.max(10, z - 3);
+        for (z = zA; z <= zB; z++) {
             int lz = (z - zA) % 7;
             boolean pier = lz <= 1;
             int dz = lz - 4;
@@ -409,39 +434,63 @@ public final class MorgulPlan {
             for (int x = CX - 4; x <= CX + 4; x++) {
                 int dep = Math.max(chasm(x, z), 6);
                 for (int y = -dep; y <= -1; y++) {
-                    if (!pier && y <= archTop && y >= -dep) continue;
+                    if (!pier && y <= archTop) continue;
                     set(x, y, z, y >= -2 ? (Math.abs(x - CX) < 2 ? PALE : STONE) : (rnd(x, y, z) < 0.12 ? DARK : STONE));
                 }
             }
-            // parapets
-            for (int sx = -1; sx <= 1 && z <= 40; sx += 2) {
+            for (int sx = -1; sx <= 1 && z <= zB - 6; sx += 2) {
                 int x = CX + sx * 4;
                 set(x, 0, z, WALL_S);
                 if (z % 4 == 0) { set(x, 0, z, DARK); set(x, 1, z, DARK); set(x, 2, z, DARK); set(x, 3, z, GLOW); set(x, 4, z, SLAB_P); }
             }
         }
+        // chemin d'acces sur la terre ferme (relief rase autour)
+        for (z = zA - 1; z >= 4; z--) {
+            for (int x = CX - 4; x <= CX + 4; x++) {
+                for (int y = -3; y <= -1; y++) set(x, y, z, y == -1 && Math.abs(x - CX) < 2 ? PALE : STONE);
+            }
+            if (z % 4 == 0) for (int sx = -1; sx <= 1; sx += 2) { int x = CX + sx * 4; set(x, 0, z, DARK); set(x, 1, z, DARK); set(x, 2, z, GLOW); set(x, 3, z, SLAB_P); }
+        }
+        markFlat(CX - 7, 4, CX + 7, zA);
+        // deux grandes statues devant le pont, sur la terre ferme
+        int zc = zA - 2;
+        for (; zc > 12; zc--) {
+            boolean free = true;
+            for (int x = CX - 15; x <= CX + 15 && free; x++) for (int zz = zc - 6; zz <= zc + 6; zz++) if (chasm(x, zz) > 0) { free = false; break; }
+            if (free) break;
+        }
+        statue(CX - 9, zc);
+        statue(CX + 9, zc);
+        markFlat(CX - 16, zc - 7, CX + 16, zc + 7);
     }
 
-    /** gargouille assise sur un piedestal, qui regarde vers l'exterieur (z negatif) */
-    private void gargoyle(int cx, int cz) {
-        int dep = Math.max(chasm(cx, cz), 3);
-        for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
-            int d = Math.max(chasm(cx + dx, cz + dz), 0);
-            for (int y = -d - 1; y <= -1; y++) set(cx + dx, y, cz + dz, STONE);
+    /** grande gargouille assise sur un piedestal pale, dans les couleurs du chateau, qui regarde vers l'exterieur (z negatif) */
+    private void statue(int cx, int cz) {
+        for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++) for (int y = -3; y <= -1; y++) set(cx + dx, y, cz + dz, STONE);
+        box(cx - 2, 0, cz - 2, cx + 2, 0, cz + 2, DARK);
+        box(cx - 2, 1, cz - 2, cx + 2, 2, cz + 2, PALE);
+        for (int sx = -2; sx <= 2; sx += 4) for (int sz = -2; sz <= 2; sz += 4) { set(cx + sx, 1, cz + sz, DETAIL); set(cx + sx, 2, cz + sz, DETAIL); }
+        box(cx - 2, 3, cz - 2, cx + 2, 3, cz + 2, STONE);
+        int b = 4;
+        box(cx - 2, b, cz - 1, cx - 1, b + 1, cz + 1, STONE);                    // cuisses
+        box(cx + 1, b, cz - 1, cx + 2, b + 1, cz + 1, STONE);
+        for (int sx : new int[]{-2, -1, 1, 2}) set(cx + sx, b, cz - 2, DARK);    // griffes
+        box(cx - 1, b, cz, cx + 1, b + 6, cz + 1, DARK);                         // torse
+        for (int y = b + 2; y <= b + 5; y++) for (int dx = -1; dx <= 1; dx++) set(cx + dx, y, cz - 1, y % 2 == 0 ? DETAIL : DARK);   // cotes
+        box(cx - 2, b + 2, cz - 1, cx - 2, b + 4, cz, STONE);                    // bras sur les genoux
+        box(cx + 2, b + 2, cz - 1, cx + 2, b + 4, cz, STONE);
+        set(cx - 2, b + 1, cz - 2, DARK); set(cx + 2, b + 1, cz - 2, DARK);
+        box(cx - 1, b + 7, cz - 1, cx + 1, b + 8, cz, DARK);                     // tete
+        set(cx - 1, b + 8, cz - 2, GLOW); set(cx + 1, b + 8, cz - 2, GLOW);      // yeux verts
+        set(cx, b + 7, cz - 2, DARK); set(cx, b + 6, cz - 2, DARK);              // museau
+        for (int sx = -1; sx <= 1; sx += 2) {                                    // cornes recourbees
+            set(cx + sx * 2, b + 9, cz, DARK); set(cx + sx * 2, b + 10, cz, DARK); set(cx + sx * 3, b + 11, cz, DARK); set(cx + sx * 3, b + 12, cz - 1, DARK);
         }
-        box(cx - 1, 0, cz - 1, cx + 1, 0, cz + 1, DARK);
-        box(cx - 1, 1, cz - 1, cx + 1, 2, cz + 1, STONE);
-        box(cx - 1, 3, cz - 1, cx + 1, 3, cz + 1, PALE);
-        for (int dx = -1; dx <= 1; dx++) { set(cx + dx, 4, cz, DARK); set(cx + dx, 5, cz, DARK); set(cx + dx, 6, cz, DARK); }
-        set(cx - 1, 4, cz - 1, DARK); set(cx + 1, 4, cz - 1, DARK);
-        set(cx - 1, 5, cz - 1, DARK); set(cx + 1, 5, cz - 1, DARK);
-        set(cx - 1, 7, cz, GLOW); set(cx + 1, 7, cz, GLOW); set(cx, 7, cz, DARK);
-        set(cx - 1, 8, cz, DARK); set(cx, 8, cz, DARK); set(cx + 1, 8, cz, DARK);
-        set(cx - 1, 9, cz, DARK); set(cx + 1, 9, cz, DARK);
-        for (int sx = -1; sx <= 1; sx += 2) {                                   // ailes repliees
-            for (int y = 5; y <= 8; y++) { set(cx + sx * 2, y, cz, DARK); set(cx + sx * 2, y, cz + 1, DARK); }
-            set(cx + sx * 3, 7, cz + 1, DARK); set(cx + sx * 3, 8, cz + 1, DARK); set(cx + sx * 3, 9, cz + 1, DARK);
+        int[] hw = {b + 13, b + 9, b + 12, b + 8, b + 11, b + 7};                // crete en ailes de chauve-souris, a pointes
+        for (int dx = -5; dx <= 5; dx++) {
+            int h = hw[Math.abs(dx)];
+            for (int y = b + 3; y <= h; y++) set(cx + dx, y, cz + 2, y == h && (dx & 1) == 0 ? GLOW : (y + dx) % 4 == 0 ? DETAIL : DARK);
+            if (Math.abs(dx) <= 3) for (int y = b + 6; y <= h - 2; y++) set(cx + dx, y, cz + 1, DARK);
         }
-        set(cx, 6, cz + 1, DARK); set(cx, 5, cz + 1, DARK);
     }
 }

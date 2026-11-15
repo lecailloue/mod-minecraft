@@ -214,7 +214,7 @@ def biomes():
     biome('plaines_jaunes', 'Plaines Pâles', 0.6, 0.35, '#86b8f5', '#d2e2f2', grass='#FFEB9E', foliage='#d9c85a',
           veg=('trees_birch_sparse', 'trees_oak_sparse', 'bushes_birch_few', 'bushes_oak_few', 'fallen_birch_logs_few', 'minecraft:flower_default', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
           spawns={'creature': [('minecraft:horse', 10, 2, 6), ('minecraft:cow', 8, 4, 4), ('minecraft:sheep', 6, 4, 4), ('stag', 2, 1, 2)], 'ambient': BATS, 'monster': ORCS + [('warg', 20, 2, 4)]})
-    biome('plaines_cendre', 'Plaines de Cendre', 0.9, 0.1, '#55200e', '#30140c', water='#4a4a44', wfog='#1c1c18', grass='#96938E', foliage='#7d7a6a',
+    biome('plaines_cendre', 'Plaines de Cendre', 0.9, 0.1, '#55200e', '#30140c', water='#2f9a4e', wfog='#0b3a1c', grass='#96938E', foliage='#7d7a6a',
           veg=('ashroot_patch', 'smoke_vents'), precip=False, particle=('minecraft:ash', 0.06), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
           spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 60, 3, 5), ('war_orc', 35, 2, 3), ('warg', 25, 2, 4), ('cave_troll', 10, 1, 1), ('troll_chief', 3, 1, 1), ('shadow_rider', 5, 1, 2), ('shadow_chief', 1, 1, 1), ('goblin', 20, 3, 5)]})
     biome('grande_foret', 'Grande Forêt', 0.6, 0.9, '#6f9ed8', '#7f9a78', water='#3d6a55', wfog='#0c1f16', grass='#3f7a2e', foliage='#2f6a25',

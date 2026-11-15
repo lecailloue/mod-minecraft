@@ -697,7 +697,7 @@ public final class Buildings {
         MorgulPlan p = MorgulPlan.get();
         BlockState[] pal = morgulPal();
         Block base = Reg.MORGUL_DARK_BRICKS.get();
-        BlockState bottom = Blocks.BLACKSTONE.defaultBlockState(), lit = Reg.MORGUL_GLOW.get().defaultBlockState();
+        BlockState bottom = Blocks.BLACKSTONE.defaultBlockState(), lit = Reg.MORGUL_GLOW.get().defaultBlockState(), water = Blocks.WATER.defaultBlockState();
         int maxY = MorgulPlan.H - MorgulPlan.OFF - 1;
         for (int x = 0; x < MorgulPlan.W; x++) {
             for (int z = 0; z < MorgulPlan.D; z++) {
@@ -706,11 +706,12 @@ public final class Buildings {
                 int cd = p.chasm(x, z);
                 int ground = Math.min(b.groundY(x, z), maxY);
                 if (p.get(x, -1, z) != MorgulPlan.AIR) b.foundation(x, z, x, z, base);          // le socle repose sur le sol
-                int lo = cd > 0 ? -cd + 1 : 1;                                                    // on rase le relief qui depasse, et on creuse le gouffre
+                int lo = cd > 0 ? -cd + 1 : p.flat(x, z) ? 0 : Integer.MAX_VALUE;                // on rase le relief des cours et on creuse le gouffre
                 for (int y = ground; y >= lo; y--) if (p.get(x, y, z) == MorgulPlan.AIR) b.s(x, y, z, Build.AIR);
                 if (cd > 0) {
-                    b.s(x, -cd, z, (x * 7 + z * 13) % 11 == 0 ? lit : bottom);
+                    b.s(x, -cd, z, (x * 7 + z * 13) % 6 == 0 ? lit : bottom);
                     b.s(x, -cd - 1, z, bottom);
+                    for (int y = -cd + 1; y <= MorgulPlan.WATER_TOP; y++) b.s(x, y, z, water);       // liquide verdatre au fond du gouffre
                 }
                 for (int y = -MorgulPlan.OFF; y <= top; y++) {
                     byte id = p.get(x, y, z);
