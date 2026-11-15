@@ -77,6 +77,10 @@ public final class Atmosphere {
     }
 
     private static void fogColor(ViewportEvent.ComputeFogColor e) {
+        if (e.getCamera().getBlockAtCamera().getFluidState().getType().isSame(net.ringsofash.fluid.ModFluids.ICHOR.get())) {   // plonge dans l'ichor : brouillard vert vif
+            e.setRed(0.10F); e.setGreen(0.65F); e.setBlue(0.22F);
+            return;
+        }
         float a = amount((float) e.getPartialTick()), gl = glow((float) e.getPartialTick());
         if (a <= 0.001F && gl <= 0.001F) return;
         float r = Mth.lerp(a, e.getRed(), 0.42F), g = Mth.lerp(a, e.getGreen(), 0.15F), b = Mth.lerp(a, e.getBlue(), 0.06F);

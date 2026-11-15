@@ -27,6 +27,7 @@ public class RingsOfAsh {
             .displayItems((params, out) -> {
                 out.accept(net.ringsofash.data.Guide.create(null));
                 Reg.ITEMS.getEntries().forEach(e -> out.accept(e.get()));
+                out.accept(net.ringsofash.fluid.ModFluids.ICHOR_BUCKET.get());
             })
             .build());
 
@@ -36,6 +37,7 @@ public class RingsOfAsh {
         TABS.register(modBus);
         net.ringsofash.menu.ModMenus.MENUS.register(modBus);
         net.ringsofash.effect.ModEffects.EFFECTS.register(modBus);
+        net.ringsofash.fluid.ModFluids.register(modBus);
         ModWorldgen.register(modBus);
         ModData.ATTACHMENTS.register(modBus);
         net.ringsofash.entity.ModEntities.register(modBus);

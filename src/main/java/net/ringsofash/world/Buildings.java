@@ -697,7 +697,7 @@ public final class Buildings {
         MorgulPlan p = MorgulPlan.get();
         BlockState[] pal = morgulPal();
         Block base = Reg.MORGUL_DARK_BRICKS.get();
-        BlockState bottom = Blocks.BLACKSTONE.defaultBlockState(), lit = Reg.MORGUL_GLOW.get().defaultBlockState(), water = Blocks.WATER.defaultBlockState();
+        BlockState bottom = Blocks.BLACKSTONE.defaultBlockState(), lit = Reg.MORGUL_GLOW.get().defaultBlockState(), water = net.ringsofash.fluid.ModFluids.ICHOR_BLOCK.get().defaultBlockState();
         int maxY = MorgulPlan.H - MorgulPlan.OFF - 1;
         for (int x = 0; x < MorgulPlan.W; x++) {
             for (int z = 0; z < MorgulPlan.D; z++) {
@@ -711,7 +711,7 @@ public final class Buildings {
                 if (cd > 0) {
                     b.s(x, -cd, z, (x * 7 + z * 13) % 6 == 0 ? lit : bottom);
                     b.s(x, -cd - 1, z, bottom);
-                    for (int y = -cd + 1; y <= MorgulPlan.WATER_TOP; y++) b.s(x, y, z, water);       // liquide verdatre au fond du gouffre
+                    for (int y = -cd + 1; y <= MorgulPlan.WATER_TOP; y++) b.s(x, y, z, water);       // ichor vert (liquide de type lave) au fond du gouffre
                 }
                 for (int y = -MorgulPlan.OFF; y <= top; y++) {
                     byte id = p.get(x, y, z);

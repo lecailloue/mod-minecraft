@@ -85,6 +85,19 @@ def blocks():
           java='new PaleLavaBlock(BlockBehaviour.Properties.of().mapColor(MapColor.SAND).noCollission().forceSolidOn()'
                '.strength(-1.0F, 3600000.0F).lightLevel(s -> 15).noLootTable().pushReaction(PushReaction.BLOCK))')
 
+    # --- ichor de Morgul : liquide vert lumineux (fluide de type lave, code dans fluid/ModFluids.java)
+    save(lava_frames('#0f5a2a', '#2fd45a', '#c4ff9a', frames=16, size=16, seed=11), f'{A}/textures/block/morgul_ichor_still.png')
+    wjson(f'{A}/textures/block/morgul_ichor_still.png.mcmeta', {'animation': {'frametime': 3, 'interpolate': True}})
+    save(lava_frames('#0f5a2a', '#2fd45a', '#c4ff9a', frames=16, size=32, seed=12), f'{A}/textures/block/morgul_ichor_flow.png')
+    wjson(f'{A}/textures/block/morgul_ichor_flow.png.mcmeta', {'animation': {'frametime': 3, 'interpolate': True}})
+    bstate('morgul_ichor', {'variants': {'': {'model': f'{MOD}:block/morgul_ichor'}}})
+    wjson(f'{A}/models/block/morgul_ichor.json', {'textures': {'particle': f'{MOD}:block/morgul_ichor_still'}})
+    imodel('morgul_ichor_bucket', {'parent': 'neoforge:item/bucket_drip', 'loader': 'neoforge:fluid_container', 'fluid': f'{MOD}:morgul_ichor'})
+    LANG[f'block.{MOD}.morgul_ichor'] = 'Ichor de Morgul'
+    LANG[f'fluid_type.{MOD}.morgul_ichor'] = 'Ichor de Morgul'
+    LANG[f'item.{MOD}.morgul_ichor_bucket'] = "Seau d'ichor de Morgul"
+    tag('fluid', 'lava', f'{MOD}:morgul_ichor', f'{MOD}:flowing_morgul_ichor')        # brule comme la lave
+
     # --- pierre blanche (elfes / hommes)
     btex('white_stone', stone('#d8d5cb', 11, var=0.35, cell=4, speck=0.35))
     block('white_stone', 'Pierre blanche', copy='STONE', tool='pickaxe')

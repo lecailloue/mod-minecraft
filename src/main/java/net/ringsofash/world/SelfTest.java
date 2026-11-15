@@ -155,6 +155,16 @@ public final class SelfTest {
             topDown(lands, mm[0] - 80, mm[1] - 80, mm[0] + 79, mm[1] + 79, new File(OUT, "morgul_dessus.png"), 5);
             StringBuilder sb = new StringBuilder();
             for (int x = mm[0] - 80; x <= mm[0] + 80; x += 4) sb.append(lands.getHeight(Heightmap.Types.OCEAN_FLOOR, x, mm[1] - 40)).append(' ');
+            int ich = 0, cols = 0;
+            for (int x = mm[0] - 80; x <= mm[0] + 80; x++) {
+                int z = mm[1] - 40, y = lands.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) - 1;
+                cols++;
+                if (lands.getBlockState(new BlockPos(x, y, z)).is(net.ringsofash.fluid.ModFluids.ICHOR_BLOCK.get())) ich++;
+            }
+            var ichor = net.ringsofash.fluid.ModFluids.ICHOR_BLOCK.get().defaultBlockState();
+            log("morgul ichor : " + ich + "/" + cols + " colonnes avec ichor en surface ; lave=" + ichor.getFluidState().is(net.minecraft.tags.FluidTags.LAVA) + " lumiere=" + ichor.getLightEmission());
+            if (!ichor.getFluidState().is(net.minecraft.tags.FluidTags.LAVA)) fail("l'ichor n'est pas dans le tag fluide lave (pas de degats de feu)");
+            if (ich == 0) fail("aucun ichor visible dans le gouffre");
             log("morgul profil sol (z=" + (mm[1] - 40) + ", x de " + (mm[0] - 80) + " a " + (mm[0] + 80) + " pas 4) : " + sb);
         }
         for (int[] pk : new int[][]{cs != null ? cs : new int[]{0, 0}, hi}) {
