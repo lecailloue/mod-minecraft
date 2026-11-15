@@ -149,6 +149,14 @@ public final class SelfTest {
             topDown(lands, px - 40, pz - 40, px + 39, pz + 39, new File(OUT, "carte_" + e.getKey() + ".png"), 4);
             log("carte " + e.getKey() + " (" + px + "," + pz + ") relief " + MapData.height(px, pz) + " biome " + MapData.BIOMES[MapData.biome(px, pz)]);
         }
+        int[] mm = spots.get("minas_morgul");
+        if (mm != null) {                                                    // Minas Morgul entier : vue de dessus et profil du sol le long de l'axe de la porte
+            for (int dx = -6; dx <= 6; dx++) for (int dz = -6; dz <= 6; dz++) lands.getChunk((mm[0] >> 4) + dx, (mm[1] >> 4) + dz);
+            topDown(lands, mm[0] - 80, mm[1] - 80, mm[0] + 79, mm[1] + 79, new File(OUT, "morgul_dessus.png"), 5);
+            StringBuilder sb = new StringBuilder();
+            for (int x = mm[0] - 80; x <= mm[0] + 80; x += 4) sb.append(lands.getHeight(Heightmap.Types.OCEAN_FLOOR, x, mm[1] - 40)).append(' ');
+            log("morgul profil sol (z=" + (mm[1] - 40) + ", x de " + (mm[0] - 80) + " a " + (mm[0] + 80) + " pas 4) : " + sb);
+        }
         for (int[] pk : new int[][]{cs != null ? cs : new int[]{0, 0}, hi}) {
             for (int dx = -10; dx <= 10; dx++) lands.getChunk((pk[0] >> 4) + dx, pk[1] >> 4);
             section(lands, pk[0] - 160, pk[0] + 160, pk[1], 50, 447, new File(OUT, "sommet_coupe_" + pk[0] + ".png"), 2);
