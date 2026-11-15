@@ -169,7 +169,7 @@ public final class ClientTest {
         clear(ow);
         view(p, ow, SX + 0.5, SY, SZ + 0.5, 0F, 12F);
         p.getAbilities().flying = false; p.onUpdateAbilities();
-        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(net.ringsofash.gen.Reg.WIGHT_BLADE.get()));
+        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(net.ringsofash.gen.Reg.VALMOIRE_BLADE.get()));
         p.swing(InteractionHand.MAIN_HAND, true);
     }
 
