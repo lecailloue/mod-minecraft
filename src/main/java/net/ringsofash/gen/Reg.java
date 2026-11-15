@@ -280,6 +280,7 @@ public final class Reg {
     public static final DeferredItem<Item> SHADOW_RIDER_SPAWN_EGG = ITEMS.register("shadow_rider_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.SHADOW_RIDER, 0x0c0a0e, 0x4a4a54, props()));
     public static final DeferredItem<Item> SHADOW_CHIEF_SPAWN_EGG = ITEMS.register("shadow_chief_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.SHADOW_CHIEF, 0x08060a, 0xa8a8b8, props()));
     public static final DeferredItem<Item> SHADOW_DRAGON_SPAWN_EGG = ITEMS.register("shadow_dragon_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.SHADOW_DRAGON, 0x141418, 0xc8c8d8, props()));
+    public static final DeferredItem<Item> SHADOW_MASTER_SPAWN_EGG = ITEMS.register("shadow_master_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.SHADOW_MASTER, 0x08060a, 0xa8a8b8, props()));
     public static final DeferredItem<Item> GIANT_SPIDER_SPAWN_EGG = ITEMS.register("giant_spider_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.GIANT_SPIDER, 0x1a1420, 0xa01828, props()));
     public static final DeferredItem<Item> LURKER_SPAWN_EGG = ITEMS.register("lurker_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.LURKER, 0x27332e, 0x9fe060, props()));
     public static final DeferredItem<Item> CAVE_THIEF_SPAWN_EGG = ITEMS.register("cave_thief_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.CAVE_THIEF, 0xb8b8a8, 0xd8f0ff, props()));

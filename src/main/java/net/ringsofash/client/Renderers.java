@@ -176,6 +176,23 @@ public final class Renderers {
         }
     }
 
+    /** Maitre des ombres : 1 unite du modele = 5 cm, fente du casque lumineuse. */
+    public static class ShadowMaster extends MobRenderer<net.ringsofash.entity.ShadowMasterEntity, GeoModel<net.ringsofash.entity.ShadowMasterEntity>> {
+        public ShadowMaster(EntityRendererProvider.Context ctx) {
+            super(ctx, new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_shadow_master")), "shadow_master"), 0.5F);
+            addLayer(new RenderLayer<net.ringsofash.entity.ShadowMasterEntity, GeoModel<net.ringsofash.entity.ShadowMasterEntity>>(this) {
+                @Override
+                public void render(PoseStack ps, MultiBufferSource buf, int light, net.ringsofash.entity.ShadowMasterEntity e, float a, float b, float c, float d, float f, float g) {
+                    VertexConsumer vc = buf.getBuffer(RenderType.eyes(tex("shadow_master_glow")));
+                    getParentModel().renderToBuffer(ps, vc, 0xF000F0, OverlayTexture.NO_OVERLAY, -1);
+                }
+            });
+        }
+
+        @Override public ResourceLocation getTextureLocation(net.ringsofash.entity.ShadowMasterEntity e) { return tex("shadow_master"); }
+        @Override protected void scale(net.ringsofash.entity.ShadowMasterEntity e, PoseStack ps, float pt) { ps.scale(0.8F, 0.8F, 0.8F); }
+    }
+
     /** Les 5 nouveaux modeles spectraux : translucides (peau et tissus par pixel), squelette visible dessous, yeux lumineux. */
     public static class Wraith extends MobRenderer<FoeEntity, GeoModel<FoeEntity>> {
         public static final String[] NAMES = {"spectre_epee", "spectre_lance", "spectre_hache", "spectre_dague", "spectre_roi"};

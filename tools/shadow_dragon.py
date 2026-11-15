@@ -15,8 +15,10 @@ EYE = W.fx_gem(D.VIO)
 T.MATS.update({
     'dr_cloak': dict(base=(18, 18, 24), n1=4, n2=5, tint=(1, 1, 1.05)),
     'dr_helm': dict(base=(44, 44, 54), n1=5, n2=5, tint=(1, 1, 1.05)),
+    'dr_steel': dict(base=(122, 128, 142), n1=7, n2=6, tint=(1, 1, 1.04)),
+    'dr_blade': dict(base=(168, 174, 190), n1=5, n2=4, tint=(1, 1, 1.05)),
 })
-T.DECOR.update({'dr_cloak': T.d_cloth, 'dr_helm': D.d_bonep})
+T.DECOR.update({'dr_cloak': T.d_cloth, 'dr_helm': D.d_bonep, 'dr_steel': D.d_bonep, 'dr_blade': D.d_bonep})
 
 
 def euler_zyx(R):
@@ -142,6 +144,24 @@ def dragon_parts(rng):
     return body
 
 
+SEAT_TOP = 62      # dessus de la selle (avant decalage au sol)
+
+
+def saddle_parts():
+    """selle en metal sur le dos : assise, pommeau et troussequin, sangles sur les flancs, etriers pendants"""
+    K = [C('seat', -6, 60, -10, 12, 2, 16, 'dr_steel', key='seat'),
+         C('pommel', -4, 62, -11, 8, 3, 2, 'dr_steel', key='pommel'),
+         C('cantle', -5, 62, 4, 10, 4, 2, 'dr_steel', key='cantle'),
+         C('cantle_top', -4, 66, 3.5, 8, 1, 3, 'dr_steel', key='cantle_t'),
+         C('girth', -11, 58, -2, 22, 3, 2, 'dr_steel', key='girth')]
+    for sg in (-1, 1):
+        K.append(C(f'strap{sg}', sg * 11 + (0 if sg > 0 else -2), 40, -2, 2, 19, 2, 'dr_steel', key='strap'))
+        K.append(C(f'buckle{sg}', sg * 11 + (0 if sg > 0 else -2) - .5, 50, -2.5, 3, 3, 1, 'dr_blade', key='buckle'))
+        K.append(bone(f'chain{sg}', P(sg * 6.5, 60, -4), P(sg * 9, 50, -4), 1, 'dr_steel', key='chain'))
+        K.append(C(f'stirrup{sg}', sg * 9 - 2 + (0 if sg > 0 else 0), 48, -6, 4, 1, 5, 'dr_steel', key='stirrup'))
+    return K
+
+
 def rider_parts():
     """le chef des ombres, assis sur le dos du dragon : cape noire qui flotte, casque a pointes, rênes"""
     K = []
@@ -179,7 +199,7 @@ def rider_parts():
 
 def build():
     rng = np.random.default_rng(7)
-    body = dragon_parts(rng) + rider_parts()
+    body = dragon_parts(rng) + saddle_parts()
     root = Group('body', (0, 50, 0), (0, 0, 0), body)
     T._N[0] = 0
     groups = [root]

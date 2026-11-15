@@ -21,6 +21,8 @@ import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
@@ -124,6 +126,7 @@ public final class ClientTest {
                         try { s.setup.accept(server.getPlayerList().getPlayers().get(0)); }
                         catch (Throwable t) { RingsOfAsh.LOGGER.error("[CLIENTTEST] ECHEC scene " + s.name, t); }
                     });
+                    mc.options.setCameraType(s.name.contains("monte") ? net.minecraft.client.CameraType.THIRD_PERSON_BACK : net.minecraft.client.CameraType.FIRST_PERSON);
                     wait = s.ticks; state = 3;
                 }
                 case 3 -> {
@@ -461,6 +464,35 @@ public final class ClientTest {
             view(p, ow, SX + 0.5, SY + 6.0, SZ - 8, 0F, 10F);
             hook = () -> log("DRAGON_VOL avance=" + String.format("%.2f", z0 - dr.getZ()) + " dy=" + String.format("%.2f", dr.getY() - y0) + " distCible=" + String.format("%.2f", dr.distanceTo(bait))
                     + " pvCible=" + bait.getHealth() + " vivant=" + dr.isAlive() + " cible=" + dr.getTarget() + " auSol=" + dr.onGround());
+        }));
+        // maitre tue : le dragon reste sans cavalier, selle de metal nue
+        SCENES.add(new Scene("15a_dragon_libre", 40, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            var dr = actor(ow, ModEntities.SHADOW_DRAGON.get(), SX, SZ + 14, o -> { });
+            dr.setNoGravity(true);
+            dr.moveTo(SX, SY + 1.0, SZ + 14, 90F, 0F); dr.setYBodyRot(90F); dr.setYHeadRot(90F);
+            for (Entity pa : new ArrayList<>(dr.getPassengers())) { pa.stopRiding(); pa.discard(); }
+            view(p, ow, SX + 0.5, SY + 3.5, SZ - 2, 0F, 6F);
+        }));
+        // 64 os : le dragon est apprivoise et le joueur est assis sur la selle (camera derriere)
+        SCENES.add(new Scene("15b_dragon_monte", 60, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            var dr = actor(ow, ModEntities.SHADOW_DRAGON.get(), SX, SZ + 14, o -> { });
+            for (Entity pa : new ArrayList<>(dr.getPassengers())) { pa.stopRiding(); pa.discard(); }
+            dr.setNoGravity(true);
+            dr.moveTo(SX, SY + 3.0, SZ + 14, 180F, 0F);
+            view(p, ow, SX + 0.5, SY + 3.0, SZ + 8, 180F, 15F);
+            p.getAbilities().flying = false; p.onUpdateAbilities();
+            p.getInventory().selected = 0;
+            final int[] poor = {0};
+            p.getInventory().setItem(0, new ItemStack(Items.BONE, 20));
+            log("MONTE_PEU " + dr.interact(p, InteractionHand.MAIN_HAND) + " monte=" + (p.getVehicle() == dr) + " tamed=" + dr.isTamed());
+            p.getInventory().setItem(0, new ItemStack(Items.BONE, 64));
+            var r = dr.interact(p, InteractionHand.MAIN_HAND);
+            log("MONTE_64 " + r + " monte=" + (p.getVehicle() == dr) + " tamed=" + dr.isTamed() + " os=" + p.getInventory().getItem(0).getCount() + " ctrl=" + (dr.getControllingPassenger() == p));
+            hook = () -> log("MONTE_FIN monte=" + (p.getVehicle() == dr) + " dyJoueur=" + String.format("%.2f", p.getY() - dr.getY()) + " dragonY=" + String.format("%.2f", dr.getY()));
         }));
         spectreLine("03b_spectres", 9.0, 3F, 2.2);
         spectreLine("03c_roi_proche", 4.2, 6F, 2.2);

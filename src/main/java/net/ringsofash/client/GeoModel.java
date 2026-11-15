@@ -195,6 +195,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
         if (e instanceof net.ringsofash.entity.GiantSpiderEntity) spiderPose(swing, amount, age, atk);
         if (!sway.isEmpty()) sylvPose(swing, amount, age);
         if (e instanceof net.ringsofash.entity.ShadowDragonEntity) dragonPose(e, age, atk);
+        if (e instanceof net.ringsofash.entity.ShadowMasterEntity) masterPose(e, age, amount);
     }
 
     /**
@@ -249,6 +250,21 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
      * ondule de bas en haut comme un serpent : une onde qui parcourt les 7 segments du cou, plus forte vers la tete. La queue ondule en
      * lacet, la machoire s'ouvre quand il mord, la cape du chef flotte. Le nez se leve quand il monte et se baisse quand il pique.
      */
+    /** Maitre des ombres : cape qui flotte ; assis sur le dragon, jambes ployees de part et d'autre de la selle et bras en avant. */
+    private void masterPose(T e, float age, float amount) {
+        boolean ride = e.isPassenger();
+        for (int i = 0; i < 4; i++) {
+            ModelPart c = p("cape_" + i);
+            if (c != null) c.xRot += 0.10F + (ride ? 0.22F : amount * 0.5F) * (1 + i * 0.4F) + Mth.sin(age * 0.25F - i * 0.9F) * (ride ? 0.12F : 0.05F);
+        }
+        if (!ride) return;
+        ModelPart lr = p("leg_r"), ll = p("leg_l"), ar = p("arm_r"), al = p("arm_l");
+        if (lr != null) { lr.xRot += -0.95F; lr.zRot += 0.32F; }
+        if (ll != null) { ll.xRot += -0.95F; ll.zRot -= 0.32F; }
+        if (ar != null) ar.xRot += -0.8F;
+        if (al != null) al.xRot += -0.8F;
+    }
+
     private void dragonPose(T e, float age, float atk) {
         float beat = age * 0.17F, flap = Mth.sin(beat);
         ModelPart body = p("body");

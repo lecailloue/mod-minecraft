@@ -25,25 +25,57 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.Vec3;
 import net.ringsofash.gen.Reg;
 import net.ringsofash.item.RingItem;
 
 import javax.annotation.Nullable;
 import java.util.EnumSet;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
- * Dragon des ombres : la monture du chef des ombres. Le chef est assis sur son dos (il fait partie du modele, comme le cavalier et son cheval).
+ * Dragon des ombres : la monture du Maitre des ombres, qui est un mob a part assis sur sa selle de metal. Si le maitre meurt, le dragon reste sans cavalier :
+ * contre une pile d'os (64) il se laisse apprivoiser et on peut le chevaucher (regard = direction, Maj = descendre).
  * Vole en permanence (cou qui ondule, ailes qui battent), sent de tres loin quiconque porte un anneau, mord et jette la terreur autour de lui.
  */
 public class ShadowDragonEntity extends Monster {
     public static final double NORMAL_RANGE = 40.0, RING_RANGE = 96.0;
+
+    private static final EntityDataAccessor<Optional<UUID>> OWNER = SynchedEntityData.defineId(ShadowDragonEntity.class, EntityDataSerializers.OPTIONAL_UUID);
+    /** hauteur de la selle au-dessus des griffes (blocs) */
+    public static final double SEAT = 2.35;
 
     public ShadowDragonEntity(EntityType<? extends ShadowDragonEntity> type, Level level) {
         super(type, level);
         this.xpReward = 150;
         this.moveControl = new FlyingMoveControl(this, 12, true);
     }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder b) {
+        super.defineSynchedData(b);
+        b.define(OWNER, Optional.empty());
+    }
+
+    public boolean ridden() { return getFirstPassenger() instanceof Player; }
+    public boolean isTamed() { return entityData.get(OWNER).isPresent(); }
+    public boolean isOwner(Entity e) { return e != null && entityData.get(OWNER).map(u -> u.equals(e.getUUID())).orElse(false); }
 
     public static AttributeSupplier.Builder attributes() {
         return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 260).add(Attributes.ATTACK_DAMAGE, 16).add(Attributes.MOVEMENT_SPEED, 0.3)
@@ -62,7 +94,10 @@ public class ShadowDragonEntity extends Monster {
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(1, new BiteGoal(this));
-        goalSelector.addGoal(5, new WaterAvoidingRandomFlyingGoal(this, 1.0));
+        goalSelector.addGoal(5, new WaterAvoidingRandomFlyingGoal(this, 1.0) {
+            @Override public boolean canUse() { return !isTamed() && !ridden() && super.canUse(); }
+            @Override public boolean canContinueToUse() { return !isTamed() && !ridden() && super.canContinueToUse(); }
+        });
         goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 32.0F));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
         targetSelector.addGoal(2, new RingSenseGoal(this));
@@ -75,7 +110,7 @@ public class ShadowDragonEntity extends Monster {
 
         BiteGoal(ShadowDragonEntity mob) { this.mob = mob; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK)); }
 
-        @Override public boolean canUse() { LivingEntity t = mob.getTarget(); return t != null && t.isAlive(); }
+        @Override public boolean canUse() { LivingEntity t = mob.getTarget(); return t != null && t.isAlive() && !mob.isOwner(t) && mob.getControllingPassenger() == null; }
         @Override public boolean canContinueToUse() { return canUse(); }
 
         @Override
@@ -99,7 +134,7 @@ public class ShadowDragonEntity extends Monster {
         RingSenseGoal(ShadowDragonEntity mob) {
             super(mob, Player.class, 10, false, false, null);
             this.targetConditions = TargetingConditions.forCombat().range(RING_RANGE).ignoreInvisibilityTesting().ignoreLineOfSight()
-                    .selector(e -> e instanceof Player p && (RingItem.wearsRing(p) || mob.distanceToSqr(p) < NORMAL_RANGE * NORMAL_RANGE));
+                    .selector(e -> !mob.isTamed() && e instanceof Player p && (RingItem.wearsRing(p) || mob.distanceToSqr(p) < NORMAL_RANGE * NORMAL_RANGE));
         }
 
         @Override
@@ -113,8 +148,9 @@ public class ShadowDragonEntity extends Monster {
             if (random.nextInt(3) == 0) level().addParticle(ParticleTypes.SMOKE, getRandomX(0.8), getY() + 1.0 + random.nextDouble() * 1.5, getRandomZ(0.8), 0, 0.01, 0);
             return;
         }
-        if (tickCount % 22 == 0) playSound(SoundEvents.ENDER_DRAGON_FLAP, 2.0F, 0.7F + random.nextFloat() * 0.1F);
-        if (tickCount % 40 == 0) {                                       // aura de terreur (comme ses cavaliers)
+        setNoGravity(isTamed() ? ridden() : isNoGravity());       // apprivoise et sans cavalier : il se pose
+        if (tickCount % 22 == 0 && (!isTamed() || ridden() || !onGround())) playSound(SoundEvents.ENDER_DRAGON_FLAP, 2.0F, 0.7F + random.nextFloat() * 0.1F);
+        if (tickCount % 40 == 0 && !isTamed()) {                         // aura de terreur (comme ses cavaliers)
             for (Player p : level().getEntitiesOfClass(Player.class, getBoundingBox().inflate(18))) {
                 if (p.isCreative() || p.isSpectator()) continue;
                 p.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 80, 0, true, false), this);
@@ -151,7 +187,7 @@ public class ShadowDragonEntity extends Monster {
     }
 
     @Override public boolean causeFallDamage(float dist, float mult, DamageSource source) { return false; }
-    @Override public boolean removeWhenFarAway(double dist) { return true; }
+    @Override public boolean removeWhenFarAway(double dist) { return !isTamed(); }
     @Override public boolean isPushedByFluid() { return false; }
     @Override public boolean canBeLeashed() { return false; }
     @Override public int getMaxSpawnClusterSize() { return 1; }
@@ -162,6 +198,117 @@ public class ShadowDragonEntity extends Monster {
     @Override public float getVoicePitch() { return 0.6F + random.nextFloat() * 0.1F; }
     @Override public int getAmbientSoundInterval() { return 240; }
 
-    @Override public void addAdditionalSaveData(CompoundTag tag) { super.addAdditionalSaveData(tag); }
-    @Override public void readAdditionalSaveData(CompoundTag tag) { super.readAdditionalSaveData(tag); }
+
+    // ---------- monte : Maitre des ombres sur la selle au depart ; sans lui, 64 os pour l'apprivoiser, puis on le chevauche
+
+    @Nullable
+    @Override
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData data) {
+        data = super.finalizeSpawn(level, difficulty, reason, data);
+        ShadowMasterEntity m = ModEntities.SHADOW_MASTER.get().create(level.getLevel());
+        if (m != null) {
+            m.moveTo(getX(), getY(), getZ(), getYRot(), 0);
+            m.finalizeSpawn(level, difficulty, MobSpawnType.JOCKEY, null);
+            m.startRiding(this);
+            level.addFreshEntity(m);
+        }
+        return data;
+    }
+
+    @Override
+    protected InteractionResult mobInteract(Player player, InteractionHand hand) {
+        if (isVehicle()) {                                                     // deja occupe (son maitre, ou un joueur)
+            if (!level().isClientSide && getFirstPassenger() instanceof ShadowMasterEntity)
+                player.displayClientMessage(net.minecraft.network.chat.Component.literal("Le Maître des ombres le monte encore. Il faut le tuer d'abord."), true);
+            return InteractionResult.PASS;
+        }
+        if (player.isSecondaryUseActive()) return super.mobInteract(player, hand);
+        if (isTamed()) {
+            if (!isOwner(player)) return InteractionResult.PASS;
+            if (!level().isClientSide) player.startRiding(this);
+            return InteractionResult.sidedSuccess(level().isClientSide);
+        }
+        ItemStack stack = player.getItemInHand(hand);
+        if (stack.is(Items.BONE)) {
+            if (stack.getCount() < 64) {
+                if (!level().isClientSide) player.displayClientMessage(net.minecraft.network.chat.Component.literal("Il lui faut une pile entière d'os (64) pour vous laisser monter."), true);
+                return InteractionResult.sidedSuccess(level().isClientSide);
+            }
+            if (!level().isClientSide) {
+                if (!player.getAbilities().instabuild) stack.shrink(64);
+                entityData.set(OWNER, Optional.of(player.getUUID()));
+                setTarget(null);
+                setPersistenceRequired();
+                getNavigation().stop();
+                ((ServerLevel) level()).sendParticles(ParticleTypes.HEART, getX(), getY() + 2.5, getZ(), 12, 1.2, 0.8, 1.2, 0.02);
+                playSound(SoundEvents.ENDER_DRAGON_GROWL, 2.0F, 0.9F);
+                player.displayClientMessage(net.minecraft.network.chat.Component.literal("Le dragon vous obéit. Regardez où aller, Maj pour descendre."), true);
+                player.startRiding(this);
+            }
+            return InteractionResult.sidedSuccess(level().isClientSide);
+        }
+        return super.mobInteract(player, hand);
+    }
+
+    @Override
+    public boolean canAttack(LivingEntity target) { return !(isTamed() && isOwner(target)) && super.canAttack(target); }
+
+    @Nullable
+    @Override
+    public LivingEntity getControllingPassenger() {
+        return isTamed() && getFirstPassenger() instanceof Player p && isOwner(p) ? p : null;
+    }
+
+    @Override
+    protected void tickRidden(Player player, Vec3 travelVector) {
+        super.tickRidden(player, travelVector);
+        setRot(player.getYRot(), player.getXRot() * 0.4F);
+        this.yRotO = this.yBodyRot = this.yHeadRot = getYRot();
+    }
+
+    /** Il va ou l'on regarde : avancer = monter si l'on vise le haut, descendre si l'on vise le bas ; sans avancer, il plane (et glisse doucement si l'on regarde fort vers le haut ou le bas). */
+    @Override
+    protected Vec3 getRiddenInput(Player player, Vec3 travelVector) {
+        float fwd = player.zza;
+        double pitch = player.getXRot();
+        double up;
+        if (fwd > 0) up = -Math.sin(Math.toRadians(pitch)) * fwd * 1.2;
+        else up = Math.abs(pitch) > 25 ? -Math.signum(pitch) * 0.35 : 0;
+        return new Vec3(player.xxa * 0.4, up, fwd > 0 ? fwd : fwd * 0.3);
+    }
+
+    @Override
+    protected float getRiddenSpeed(Player player) { return (float) getAttributeValue(Attributes.FLYING_SPEED); }
+
+    @Override
+    public void travel(Vec3 input) {
+        if (isVehicle() && getControllingPassenger() != null) {
+            moveRelative(getSpeed() * 0.16F, input);
+            move(MoverType.SELF, getDeltaMovement());
+            setDeltaMovement(getDeltaMovement().scale(0.9));
+            calculateEntityAnimation(false);
+        } else {
+            super.travel(input);
+        }
+    }
+
+    /** La selle : le passager est assis sur l'assise de metal (les pieds pendent sous elle). */
+    @Override
+    protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dims, float scale) {
+        double hip = passenger instanceof Player ? 0.7 : 1.05;                 // hauteur de la hanche au-dessus des pieds
+        double lift = passenger.getVehicleAttachmentPoint(this).y;
+        return new Vec3(0, SEAT - hip + lift, -0.1).yRot(-getYRot() * Mth.DEG_TO_RAD);
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        entityData.get(OWNER).ifPresent(u -> tag.putUUID("Owner", u));
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        entityData.set(OWNER, tag.hasUUID("Owner") ? Optional.of(tag.getUUID("Owner")) : Optional.empty());
+    }
 }
