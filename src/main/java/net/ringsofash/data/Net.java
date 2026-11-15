@@ -31,6 +31,15 @@ public final class Net {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    /** Lieux decouverts, envoyes au client pour la carte. */
+    public record MapSync(List<String> places) implements CustomPacketPayload {
+        public static final CustomPacketPayload.Type<MapSync> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("map_sync"));
+        public static final StreamCodec<FriendlyByteBuf, MapSync> CODEC = StreamCodec.of(
+                (buf, v) -> { buf.writeVarInt(v.places.size()); for (String s : v.places) buf.writeUtf(s); },
+                buf -> { int n = buf.readVarInt(); List<String> l = new java.util.ArrayList<>(); for (int i = 0; i < n; i++) l.add(buf.readUtf()); return new MapSync(l); });
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
     /** Forme de Sylvgarde : clic droit = racines. */
     public record CastRoots() implements CustomPacketPayload {
         public static final CustomPacketPayload.Type<CastRoots> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("roots"));
@@ -80,6 +89,8 @@ public final class Net {
     public static final class ClientLore {
         public static int[] rep = new int[People.values().length];
         public static int corruption, eye, quest;
+        /** Lieux decouverts (cote client) : seuls ceux-la sont marques sur la carte. */
+        public static volatile java.util.Set<String> discovered = new java.util.HashSet<>();
         private ClientLore() {}
     }
 
@@ -97,6 +108,7 @@ public final class Net {
         e.registrar("1").playToClient(LoreSync.TYPE, LoreSync.CODEC, (payload, ctx) -> {
             ClientLore.rep = payload.rep(); ClientLore.corruption = payload.corruption(); ClientLore.eye = payload.eye(); ClientLore.quest = payload.quest();
         });
+        e.registrar("1").playToClient(MapSync.TYPE, MapSync.CODEC, (payload, ctx) -> ClientLore.discovered = new java.util.HashSet<>(payload.places()));
         e.registrar("1").playToServer(MapTeleport.TYPE, MapTeleport.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
             if (ctx.player() instanceof ServerPlayer sp) net.ringsofash.world.MapTravel.teleport(sp, payload.x(), payload.z());
         }));
@@ -109,6 +121,7 @@ public final class Net {
     public static void sync(ServerPlayer p) {
         PlayerLore l = ModData.lore(p);
         PacketDistributor.sendToPlayer(p, new LoreSync(l.rep.clone(), l.corruption, l.eye, l.quest));
+        PacketDistributor.sendToPlayer(p, new MapSync(new java.util.ArrayList<>(l.discovered)));
         l.fixActiveRing();
         PacketDistributor.sendToPlayer(p, new RingSync(java.util.stream.IntStream.range(0, PlayerLore.RING_SLOTS).mapToObj(l.rings::getItem).map(ItemStack::copy).toList(), l.activeRing));
     }

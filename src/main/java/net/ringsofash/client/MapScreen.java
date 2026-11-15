@@ -9,7 +9,9 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.ringsofash.RingsOfAsh;
+import net.ringsofash.data.Net;
 import net.ringsofash.world.MapData;
 
 import java.io.IOException;
@@ -37,6 +39,14 @@ public class MapScreen extends Screen {
     /** Couleurs proposees pour un repere. */
     private static final int[] PALETTE = {0xE03030, 0xF08A20, 0xF0D030, 0x40C040, 0x30C8D0, 0x3060E0, 0xA040E0, 0xF0F0F0};
 
+    /** Lieux qui ont une petite image a la place du point (nom du lieu -> image, largeur, hauteur). */
+    private record Icon(ResourceLocation tex, int w, int h) {}
+    private static final Map<String, Icon> ICONS = Map.of(
+            "minas_morgul", new Icon(ResourceLocation.fromNamespaceAndPath(RingsOfAsh.MODID, "textures/gui/map/minas_morgul.png"), 36, 35));
+
+    /** Un lieu n'est marque que s'il a ete decouvert (donnees recues du serveur, mises a jour en direct). */
+    private static boolean known(String key) { return Net.ClientLore.discovered.contains(key); }
+
     private double zoom = 1, cx = 0, cz = 0;          // vue : facteur de zoom et centre (coordonnees monde)
     private int x0, y0, size;                          // zone de la carte
     private int fx, fy, fw, fh;                        // cadre
@@ -61,6 +71,9 @@ public class MapScreen extends Screen {
         this(legend, zoom, placing);
         this.editInit = edit;
     }
+
+    /** Pour les captures d'essai : centre la vue sur un point du monde. */
+    MapScreen focus(double wx, double wz) { cx = wx; cz = wz; clampView(); return this; }
 
     @Override
     public boolean isPauseScreen() { return false; }
@@ -197,10 +210,12 @@ public class MapScreen extends Screen {
 
     private Map.Entry<String, int[]> placeAt(double mx, double my) {
         Map.Entry<String, int[]> best = null;
-        double bd = 8 * 8;
+        double bd = Double.MAX_VALUE;
         for (Map.Entry<String, int[]> e : MapData.places().entrySet()) {
+            if (!known(e.getKey())) continue;
             double dx = toScreenX(e.getValue()[0]) - mx, dy = toScreenY(e.getValue()[1]) - my;
-            if (dx * dx + dy * dy < bd) { bd = dx * dx + dy * dy; best = e; }
+            double lim = ICONS.containsKey(e.getKey()) ? 14 * 14 : 8 * 8;
+            if (dx * dx + dy * dy < lim && dx * dx + dy * dy < bd) { bd = dx * dx + dy * dy; best = e; }
         }
         return best;
     }
@@ -353,9 +368,17 @@ public class MapScreen extends Screen {
         g.enableScissor(x0, y0, x0 + size, y0 + size);
         Map.Entry<String, int[]> hover = Ui.in(mx, my, x0, y0, size, size) ? placeAt(mx, my) : null;
         for (Map.Entry<String, int[]> e : MapData.places().entrySet()) {
+            if (!known(e.getKey())) continue;
             int px = (int) toScreenX(e.getValue()[0]), py = (int) toScreenY(e.getValue()[1]);
-            if (px < x0 - 40 || px > x0 + size + 40 || py < y0 - 10 || py > y0 + size + 10) continue;
+            if (px < x0 - 40 || px > x0 + size + 40 || py < y0 - 20 || py > y0 + size + 20) continue;
             boolean h = e == hover;
+            Icon ic = ICONS.get(e.getKey());
+            if (ic != null) {
+                RenderSystem.enableBlend();
+                g.blit(ic.tex, px - ic.w / 2, py - ic.h / 2, ic.w, ic.h, 0, 0, ic.w, ic.h, ic.w, ic.h);
+                g.drawString(this.font, pretty(e.getKey()), px - font.width(pretty(e.getKey())) / 2, py + ic.h / 2 + 1, h ? 0xFFFFFFFF : 0xFFF0E0B0, true);
+                continue;
+            }
             g.fill(px - (h ? 2 : 1), py - (h ? 2 : 1), px + (h ? 3 : 2), py + (h ? 3 : 2), h ? 0xFFFFFFFF : 0xFFFFD070);
             g.drawString(this.font, pretty(e.getKey()), px + 4, py - 4, h ? 0xFFFFFFFF : 0xFFF0E0B0, true);
         }

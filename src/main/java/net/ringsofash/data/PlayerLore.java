@@ -24,6 +24,8 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
     public boolean rewarded;
     public int grow;
     public final Set<String> bestiary = new HashSet<>();
+    /** Lieux de la carte deja decouverts (ils n'apparaissent sur la carte qu'ensuite). */
+    public final Set<String> discovered = new HashSet<>();
     /** Onglet d'anneaux : 10 emplacements ; un seul anneau est actif a la fois (-1 = aucun). */
     public static final int RING_SLOTS = 10;
     public final SimpleContainer rings = new SimpleContainer(RING_SLOTS);
@@ -67,6 +69,9 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
         ListTag l = new ListTag();
         for (String s : bestiary) l.add(StringTag.valueOf(s));
         t.put("bestiary", l);
+        ListTag dl = new ListTag();
+        for (String s : discovered) dl.add(StringTag.valueOf(s));
+        t.put("discovered", dl);
         t.put("rings", rings.createTag(provider));
         t.putInt("activeRing", activeRing);
         return t;
@@ -88,6 +93,9 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
         bestiary.clear();
         ListTag l = t.getList("bestiary", Tag.TAG_STRING);
         for (int i = 0; i < l.size(); i++) bestiary.add(l.getString(i));
+        discovered.clear();
+        ListTag dl = t.getList("discovered", Tag.TAG_STRING);
+        for (int i = 0; i < dl.size(); i++) discovered.add(dl.getString(i));
         rings.clearContent();
         if (t.contains("rings", Tag.TAG_LIST)) rings.fromTag(t.getList("rings", Tag.TAG_COMPOUND), provider);
         activeRing = t.contains("activeRing") ? t.getInt("activeRing") : -1;

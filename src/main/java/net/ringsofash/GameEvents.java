@@ -200,6 +200,7 @@ public final class GameEvents {
         Travel.keepInside(p);
         if (p.tickCount % 20 != 0) return;
         PlayerLore lore = ModData.lore(p);
+        if (Travel.isLands(p.level())) net.ringsofash.world.MapDiscover.scan(p, lore);
         RingItem.Kind ring = RingItem.worn(p);
         int corrupt = 0;
         if (ring != null) {
@@ -484,6 +485,12 @@ public final class GameEvents {
                             ctx.getSource().sendSuccess(() -> Component.literal(name + " : x=" + at[0] + " z=" + at[1]).withStyle(ChatFormatting.GOLD), false);
                             return 1;
                         })))
+                .then(Commands.literal("map").requires(s -> s.hasPermission(2)).executes(ctx -> {
+                    ServerPlayer p = ctx.getSource().getPlayerOrException();
+                    int n = net.ringsofash.world.MapDiscover.discoverAll(p);
+                    ctx.getSource().sendSuccess(() -> Component.literal("Carte dévoilée : " + n + " nouveau(x) lieu(x), " + net.ringsofash.world.MapData.places().size() + " au total.").withStyle(ChatFormatting.GOLD), false);
+                    return 1;
+                }))
                 .then(Commands.literal("lieux").requires(s -> s.hasPermission(2)).executes(ctx -> { seeingStone(ctx.getSource().getPlayerOrException()); return 1; }))
                 .then(Commands.literal("rep").requires(s -> s.hasPermission(2)).then(Commands.argument("valeur", IntegerArgumentType.integer(-100, 100)).executes(ctx -> {
                     ServerPlayer p = ctx.getSource().getPlayerOrException();

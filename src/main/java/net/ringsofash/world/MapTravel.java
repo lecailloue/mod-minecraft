@@ -19,7 +19,7 @@ public final class MapTravel {
     public static void teleport(ServerPlayer sp, int x, int z) {
         boolean known = false;
         for (Map.Entry<String, int[]> e : MapData.places().entrySet())
-            if (e.getValue()[0] == x && e.getValue()[1] == z) { known = true; break; }
+            if (e.getValue()[0] == x && e.getValue()[1] == z && net.ringsofash.data.ModData.lore(sp).discovered.contains(e.getKey())) { known = true; break; }
         if (!known) return;                                     // uniquement les lieux de la carte
         ServerLevel lvl = sp.server.getLevel(ModWorldgen.LANDS);
         if (lvl == null) return;

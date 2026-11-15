@@ -4,6 +4,8 @@ from tex import *
 import dwarf
 
 def build():
+    os.makedirs(f'{A}/textures/gui/map', exist_ok=True)
+    shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'map_minas_morgul.png'), f'{A}/textures/gui/map/minas_morgul.png')
     blocks()
     items()
     recipes()
