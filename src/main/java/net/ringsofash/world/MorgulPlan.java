@@ -128,7 +128,7 @@ public final class MorgulPlan {
             int dep = 0;
             double sn = s + 2.4 * noise(x, z);                              // bords irreguliers
             if (s > 1.2 && sn > LEDGE && sn < LEDGE + CHW) {
-                dep = (int) Math.round(Math.min(DEPTH, Math.min((sn - LEDGE) * 8, (LEDGE + CHW - sn) * 5)));
+                dep = (int) Math.round(Math.min(DEPTH, Math.min((sn - LEDGE) * 14, (LEDGE + CHW - sn) * 10)));
                 dep -= (int) Math.round((vn(x / 3.0, z / 3.0, 31) + 1) * 1.2);   // parois et fond un peu accidentes
             }
             chasm[z * W + x] = (byte) Math.max(0, dep);

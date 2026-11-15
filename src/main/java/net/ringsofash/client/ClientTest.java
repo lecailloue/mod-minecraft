@@ -761,6 +761,8 @@ public final class ClientTest {
         spotT("48_morgul_statues", 1368 - 95, 1608, 7, -90F, 3F, 6000);
         spotT("49_morgul_gouffre", 1368, 1608 - 92, 14, 0F, 24F, 6000);
         spotT("50_morgul_gouffre_nuit", 1368, 1608 - 92, 14, 0F, 24F, 18000);
+        spotT("52_morgul_liquide", 1368, 1608 - 80, 26, 0F, 48F, 6000);
+        spotT("53_morgul_liquide_pont", 1368 - 70, 1608 - 14, 24, -90F, 50F, 6000);
         spotT("51_morgul_statue_proche", 1368 - 88, 1608 - 14, 6, -60F, 8F, 18000);
     }
 
