@@ -807,5 +807,31 @@ public final class ClientTest {
         SCENES.add(new Scene("28_suivi", 40, p -> { }));
         SCENES.add(new Scene("29_carte_edition", 40, p -> { }));
         spot("30_boussole", -445, -230, 30, 0F, 10F);
+        // Minas Morgul (centre 1368, 1608, porte a l'ouest) : vues de jour puis de nuit, pour verifier la forme et la lueur verte
+        spotT("40_morgul_loin", 1368 - 112, 1608, 62, -90F, -9F, 6000);
+        spotT("41_morgul_pont", 1368 - 62, 1608, 3, -90F, 2F, 6000);
+        spotT("42_morgul_cour", 1368 - 24, 1608, 2, -90F, -38F, 6000);
+        spotT("43_morgul_aerien", 1368 - 84, 1608 - 84, 100, -45F, 24F, 6000);
+        spotT("44_morgul_nuit_loin", 1368 - 112, 1608, 62, -90F, -9F, 18000);
+        spotT("45_morgul_nuit_pont", 1368 - 62, 1608, 3, -90F, 2F, 18000);
+        spotT("46_morgul_nuit_cour", 1368 - 24, 1608, 2, -90F, -38F, 18000);
+        spotT("47_morgul_nuit_aerien", 1368 - 84, 1608 - 84, 100, -45F, 24F, 18000);
+        spotT("48_morgul_statues", 1368 - 95, 1608, 7, -90F, 3F, 6000);
+        spotT("49_morgul_gouffre", 1368, 1608 - 92, 14, 0F, 24F, 6000);
+        spotT("50_morgul_gouffre_nuit", 1368, 1608 - 92, 14, 0F, 24F, 18000);
+        spotT("54_morgul_fumee", 1368, 1608 - 66, 12, 0F, 38F, 6000);
+        spotT("52_morgul_liquide", 1368, 1608 - 80, 26, 0F, 48F, 6000);
+        spotT("53_morgul_liquide_pont", 1368 - 70, 1608 - 14, 24, -90F, 50F, 6000);
+        spotT("51_morgul_statue_proche", 1368 - 88, 1608 - 14, 6, -60F, 8F, 18000);
+    }
+
+    private static void spotT(String name, int x, int z, int up, float yaw, float pitch, int time) {
+        SCENES.add(new Scene(name, 420, p -> {
+            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+            lands.getChunk(x >> 4, z >> 4);
+            int y = lands.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+            lands.setDayTime(time);
+            view(p, lands, x + 0.5, y + up, z + 0.5, yaw, pitch);
+        }));
     }
 }
