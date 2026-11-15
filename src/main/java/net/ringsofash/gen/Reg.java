@@ -56,6 +56,8 @@ public final class Reg {
     public static final DeferredBlock<Block> DWARVEN_DOOR = BLOCKS.register("dwarven_door", () -> new DwarvenDoorBlock(copy(Blocks.IRON_DOOR).noOcclusion().strength(3.5F)));
     public static final DeferredBlock<Block> DWARVEN_RUNES = BLOCKS.register("dwarven_runes", () -> new Block(copy(Blocks.DEEPSLATE_BRICKS).lightLevel(s -> 7)));
     public static final DeferredBlock<Block> DWARVEN_LAMP = BLOCKS.register("dwarven_lamp", () -> new Block(copy(Blocks.DEEPSLATE_BRICKS).lightLevel(s -> 15)));
+    public static final DeferredBlock<Block> DWARVEN_LIGHT = BLOCKS.register("dwarven_light", () -> new Block(copy(Blocks.DEEPSLATE_BRICKS).lightLevel(s -> 15).strength(2.0F, 6.0F)));
+    public static final DeferredBlock<Block> DWARVEN_TORCH = BLOCKS.register("dwarven_torch", () -> new DwarvenTorchBlock(BlockBehaviour.Properties.of().noCollission().strength(0.6F).sound(SoundType.METAL).lightLevel(s -> 14).pushReaction(PushReaction.DESTROY)));
     public static final DeferredBlock<Block> BLACK_BRICKS = BLOCKS.register("black_bricks", () -> new Block(copy(Blocks.POLISHED_BLACKSTONE_BRICKS)));
     public static final DeferredBlock<Block> BLACK_BRICKS_STAIRS = BLOCKS.register("black_bricks_stairs", () -> new StairBlock(BLACK_BRICKS.get().defaultBlockState(), copy(BLACK_BRICKS.get())));
     public static final DeferredBlock<Block> BLACK_BRICKS_SLAB = BLOCKS.register("black_bricks_slab", () -> new SlabBlock(copy(BLACK_BRICKS.get())));
@@ -121,6 +123,8 @@ public final class Reg {
     public static final DeferredItem<BlockItem> BI_DWARVEN_DOOR = ITEMS.registerSimpleBlockItem("dwarven_door", DWARVEN_DOOR);
     public static final DeferredItem<BlockItem> BI_DWARVEN_RUNES = ITEMS.registerSimpleBlockItem("dwarven_runes", DWARVEN_RUNES);
     public static final DeferredItem<BlockItem> BI_DWARVEN_LAMP = ITEMS.registerSimpleBlockItem("dwarven_lamp", DWARVEN_LAMP);
+    public static final DeferredItem<BlockItem> BI_DWARVEN_LIGHT = ITEMS.registerSimpleBlockItem("dwarven_light", DWARVEN_LIGHT);
+    public static final DeferredItem<BlockItem> BI_DWARVEN_TORCH = ITEMS.registerSimpleBlockItem("dwarven_torch", DWARVEN_TORCH);
     public static final DeferredItem<BlockItem> BI_BLACK_BRICKS = ITEMS.registerSimpleBlockItem("black_bricks", BLACK_BRICKS);
     public static final DeferredItem<BlockItem> BI_BLACK_BRICKS_STAIRS = ITEMS.registerSimpleBlockItem("black_bricks_stairs", BLACK_BRICKS_STAIRS);
     public static final DeferredItem<BlockItem> BI_BLACK_BRICKS_SLAB = ITEMS.registerSimpleBlockItem("black_bricks_slab", BLACK_BRICKS_SLAB);

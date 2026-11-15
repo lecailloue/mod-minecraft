@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","category":"building","pattern":["c","i","#"],"key":{"c":{"item":"minecraft:coal"},"i":{"item":"minecraft:iron_ingot"},"#":{"item":"ringsofash:dwarven_bricks"}},"result":{"id":"ringsofash:dwarven_torch","count":2}}

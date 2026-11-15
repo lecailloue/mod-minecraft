@@ -70,6 +70,69 @@ def blocks():
     btex('dwarven_lamp', lamp)
     block('dwarven_lamp', 'Lampe naine', copy='DEEPSLATE_BRICKS', extra='.lightLevel(s -> 15)', tool='pickaxe')
 
+    # --- lumiere naine : bloc lumineux teinte comme la pierre naine (cadre de pierre teinte, coeur de lumiere) et torche murale
+    fr = dwarf.d_stone().convert('RGBA')
+    for (x0, x1) in ((3, 7), (9, 13)):                       # quatre fenetres separees par une croix de pierre
+        for (y0, y1) in ((3, 7), (9, 13)):
+            for y in range(y0, y1):
+                for x in range(x0, x1): fr.putpixel((x, y), (0, 0, 0, 0))
+    btex('dwarven_light_frame', fr)
+    core = new()
+    for y in range(16):
+        for x in range(16):
+            d = max(abs(x - 7.5), abs(y - 7.5)) / 7.5
+            core.putpixel((x, y), mix(rgb('#fff6cf'), rgb('#f2a62e'), min(1, d)) + (255,))
+    btex('dwarven_light_core', core)
+    block('dwarven_light', 'Bloc de lumière naine', 'custom', java='new Block(copy(Blocks.DEEPSLATE_BRICKS).lightLevel(s -> 15).strength(2.0F, 6.0F))',
+          tool='pickaxe', tintlist=True)
+    els = [box((0, 0, 0), (16, 16, 16), '#frame'), box((1, 1, 1), (15, 15, 15), '#core', tint=False, cull=False)]
+    wjson(f'{A}/models/block/dwarven_light.json', {'parent': 'minecraft:block/block', 'render_type': 'minecraft:cutout',
+          'textures': {'frame': T('dwarven_light_frame'), 'core': T('dwarven_light_core'), 'particle': T('dwarven_light_core')}, 'elements': els})
+    bstate('dwarven_light', {'variants': {'': {'model': T('dwarven_light')}}})
+    imodel('dwarven_light', {'parent': T('dwarven_light')})
+
+    btex('dwarven_torch_iron', stone('#30333b', 61, var=0.25, cell=3, speck=0.25))
+    btex('dwarven_torch_bronze', stone('#b98a35', 62, var=0.18, cell=3, speck=0.2))
+    btex('dwarven_torch_ember', stone('#e2681c', 63, var=0.35, cell=2, speck=0.5))
+    fl = new()
+    for y in range(16):
+        for x in range(16):
+            half = 1 + (y - 2) * 0.42                                   # flamme en goutte : large en bas, pointue en haut
+            if 2 <= y <= 15 and abs(x - 7.5) <= half and not (y > 12 and abs(x - 7.5) > 5.5):
+                t = (y - 2) / 13.0
+                core_ = abs(x - 7.5) <= half * 0.45 and y > 6
+                fl.putpixel((x, y), (mix(rgb('#ffe9a0'), rgb('#fff6d0'), t) if core_ else mix(rgb('#ff8a1e'), rgb('#ffc03a'), t)) + (255,))
+    btex('dwarven_torch_flame', fl)
+    block('dwarven_torch', 'Torche murale naine', 'custom', java='new DwarvenTorchBlock(BlockBehaviour.Properties.of().noCollission().strength(0.6F).sound(SoundType.METAL)'
+          '.lightLevel(s -> 14).pushReaction(PushReaction.DESTROY))', tool='pickaxe', tintlist=True)
+    te = [box((4.5, 2, 14.5), (11.5, 13, 16), '#stone', cull=False),                                           # platine de pierre (teintee)
+          box((4, 12, 14), (12, 13.5, 16), '#bronze', tint=False, cull=False),                                  # bandeau de bronze
+          box((7, 4, 8), (9, 6, 14.5), '#iron', tint=False, cull=False),                                       # bras de fer
+          box((7, 5, 7), (9, 9, 9), '#iron', tint=False, cull=False),                                          # pied de la coupe
+          box((5, 9, 5), (11, 11, 11), '#iron', tint=False, cull=False),                                       # coupe
+          box((4, 11, 4), (12, 12, 5), '#bronze', tint=False, cull=False), box((4, 11, 11), (12, 12, 12), '#bronze', tint=False, cull=False),
+          box((4, 11, 5), (5, 12, 11), '#bronze', tint=False, cull=False), box((11, 11, 5), (12, 12, 11), '#bronze', tint=False, cull=False),
+          box((5.2, 10.9, 5.2), (10.8, 11.1, 10.8), '#ember', tint=False, cull=False)]                         # braises
+    for ax in (0, 1):                                                                                           # flamme : deux plans croises
+        a, b = ((8, 11.5, 5), (8, 16, 11)) if ax == 0 else ((5, 11.5, 8), (11, 16, 8))
+        fcs = ('east', 'west') if ax == 0 else ('north', 'south')
+        te.append({'from': list(a), 'to': list(b), 'faces': {f: {'uv': [0, 0, 16, 16], 'texture': '#flame'} for f in fcs}})
+    wjson(f'{A}/models/block/dwarven_torch.json', {'parent': 'minecraft:block/block', 'render_type': 'minecraft:cutout',
+          'textures': {'stone': T('dwarven_stone'), 'iron': T('dwarven_torch_iron'), 'bronze': T('dwarven_torch_bronze'), 'ember': T('dwarven_torch_ember'),
+                       'flame': T('dwarven_torch_flame'), 'particle': T('dwarven_torch_iron')}, 'elements': te})
+    bstate('dwarven_torch', {'variants': {f'facing={f}': ({'model': T('dwarven_torch')} if y == 0 else {'model': T('dwarven_torch'), 'y': y})
+                                          for f, y in (('north', 0), ('east', 90), ('south', 180), ('west', 270))}})
+    ic = new()
+    for y in range(16):
+        for x in range(16):
+            if 4 <= y <= 14 and 11 <= x <= 13: ic.putpixel((x, y), (86, 92, 104, 255))                          # platine
+            if 8 <= y <= 9 and 6 <= x <= 10: ic.putpixel((x, y), (48, 51, 59, 255))                              # bras
+            if y in (8, 9, 10) and 3 <= x <= 8: ic.putpixel((x, y), (185, 138, 53, 255) if y == 8 else (48, 51, 59, 255))   # coupe
+    for (x, y, c) in ((5, 7, '#ffe9a0'), (6, 7, '#ffc03a'), (5, 6, '#ffc03a'), (5, 5, '#ff8a1e'), (4, 6, '#ff8a1e'), (6, 6, '#ff8a1e'), (5, 4, '#ff8a1e'), (4, 7, '#ff8a1e'), (6, 8, '#ffc03a')):
+        ic.putpixel((x, y), rgb(c) + (255,))
+    itex('dwarven_torch', ic)
+    imodel('dwarven_torch', {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/dwarven_torch'}})
+
     # --- forteresses noires
     bb = bricks('#2c2627', '#141112', 31, var=0.1)
     btex('black_bricks', ore(bb, ['#5a1f1a'], 32, 3))
@@ -235,6 +298,8 @@ def recipes():
     shaped('dwarven_bricks', ['##', '##'], {'#': 'minecraft:deepslate'}, 'dwarven_bricks', 4, 'building')
     shaped('dwarven_pillar', ['#', '#'], {'#': 'dwarven_bricks'}, 'dwarven_pillar', 2, 'building')
     shaped('dwarven_runes', [' # ', '#g#', ' # '], {'#': 'dwarven_bricks', 'g': 'minecraft:gold_nugget'}, 'dwarven_runes', 4, 'building')
+    shaped('dwarven_light', [' # ', '#g#', ' # '], {'#': 'dwarven_stone', 'g': 'minecraft:glowstone'}, 'dwarven_light', 4, 'building')
+    shaped('dwarven_torch', ['c', 'i', '#'], {'c': 'minecraft:coal', 'i': 'minecraft:iron_ingot', '#': 'dwarven_bricks'}, 'dwarven_torch', 2, 'building')
     shaped('dwarven_lamp', [' # ', '#g#', ' # '], {'#': 'dwarven_bricks', 'g': 'minecraft:glowstone'}, 'dwarven_lamp', 4, 'building')
     shaped('black_bricks', ['##', '##'], {'#': 'volcanic_rock'}, 'black_bricks', 4, 'building')
     shaped('thatch', ['##', '##'], {'#': 'minecraft:wheat'}, 'thatch', 2, 'building')

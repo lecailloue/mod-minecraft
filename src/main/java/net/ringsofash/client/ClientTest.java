@@ -457,6 +457,24 @@ public final class ClientTest {
             }
             view(p, ow, SX + 0.5, SY + 3.5, SZ, 0F, 10F);
         }));
+        // pierre lumineuse naine (teinte comme la pierre naine) et torches murales naines
+        SCENES.add(new Scene("18_nain_lumiere", 40, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            var br = net.ringsofash.gen.Reg.DWARVEN_BRICKS.get().defaultBlockState();
+            var st = net.ringsofash.gen.Reg.DWARVEN_STONE.get().defaultBlockState();
+            var li = net.ringsofash.gen.Reg.DWARVEN_LIGHT.get().defaultBlockState();
+            var to = net.ringsofash.gen.Reg.DWARVEN_TORCH.get().defaultBlockState();
+            int bx = (int) SX - 4, bz = (int) SZ + 7, by = (int) SY;
+            for (int x = 0; x < 9; x++) for (int y = 0; y < 5; y++) ow.setBlock(new net.minecraft.core.BlockPos(bx + x, by + y, bz), (x + y) % 3 == 0 ? st : br, 3);
+            for (int x = 1; x < 9; x += 3) {
+                ow.setBlock(new net.minecraft.core.BlockPos(bx + x, by + 2, bz - 1),
+                        to.setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, net.minecraft.core.Direction.NORTH), 3);
+                ow.setBlock(new net.minecraft.core.BlockPos(bx + x + 1, by, bz - 2), li, 3);
+                ow.setBlock(new net.minecraft.core.BlockPos(bx + x + 1, by + 1, bz - 2), x == 4 ? st : li, 3);
+            }
+            view(p, ow, SX + 0.5, SY + 1.7, SZ + 1, 0F, 8F);
+        }));
         SCENES.add(new Scene("03g_chef_pied", 50, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);

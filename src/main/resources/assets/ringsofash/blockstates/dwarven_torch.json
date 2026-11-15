@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"ringsofash:block/dwarven_torch"},"facing=east":{"model":"ringsofash:block/dwarven_torch","y":90},"facing=south":{"model":"ringsofash:block/dwarven_torch","y":180},"facing=west":{"model":"ringsofash:block/dwarven_torch","y":270}}}
