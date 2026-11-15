@@ -176,13 +176,13 @@ public final class Renderers {
         }
     }
 
-    /** Chef des ombres (ancien design du cavalier chef, a pied : 2,4 blocs), fente du casque lumineuse. */
+    /** Chef des ombres (ancien design du cavalier chef, a pied : 3,6 blocs), fente du casque lumineuse. */
     public static class ShadowChief extends MobRenderer<net.ringsofash.entity.ShadowChiefEntity, GeoModel<net.ringsofash.entity.ShadowChiefEntity>> {
         private final float scale;
 
         public ShadowChief(EntityRendererProvider.Context ctx) {
             super(ctx, new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_shadow_chief")), "shadow_chief"), 0.5F);
-            scale = 2.4F * 16F / GeoDef.get("shadow_chief").height;
+            scale = 3.6F * 16F / GeoDef.get("shadow_chief").height;
             addLayer(new RenderLayer<net.ringsofash.entity.ShadowChiefEntity, GeoModel<net.ringsofash.entity.ShadowChiefEntity>>(this) {
                 @Override
                 public void render(PoseStack ps, MultiBufferSource buf, int light, net.ringsofash.entity.ShadowChiefEntity e, float a, float b, float c, float d, float f, float g) {
