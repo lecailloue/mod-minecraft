@@ -167,6 +167,20 @@ public final class SelfTest {
             if (ich == 0) fail("aucun ichor visible dans le gouffre");
             log("morgul profil sol (z=" + (mm[1] - 40) + ", x de " + (mm[0] - 80) + " a " + (mm[0] + 80) + " pas 4) : " + sb);
         }
+        int[] oc = spots.get("orthanc");
+        if (oc != null) {                                                    // Orthanc : vue de dessus, coupe est-ouest, porte de la tour et plateforme du sommet
+            for (int dx = -7; dx <= 7; dx++) for (int dz = -7; dz <= 7; dz++) lands.getChunk((oc[0] >> 4) + dx, (oc[1] >> 4) + dz);
+            topDown(lands, oc[0] - 100, oc[1] - 100, oc[0] + 99, oc[1] + 99, new File(OUT, "orthanc_dessus.png"), 3);
+            int oy = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, oc[0] + 60, oc[1]);
+            section(lands, oc[0] - 110, oc[0] + 110, oc[1], oy - 28, oy + 150, new File(OUT, "orthanc_coupe.png"), 4);
+            var door = lands.getBlockState(new BlockPos(oc[0] + 12, oy + 1, oc[1]));
+            var plat = lands.getBlockState(new BlockPos(oc[0] + 6, oy + 123, oc[1] + 6));
+            var horn = lands.getBlockState(new BlockPos(oc[0] + 9, oy + 130, oc[1] + 9));
+            log("orthanc : sol " + oy + " ; porte " + door + " ; plateforme " + plat + " ; corne " + horn);
+            if (!door.isAir()) fail("orthanc : la porte de la tour est bouchee en " + door);
+            if (plat.isAir()) fail("orthanc : pas de plateforme au sommet de la tour");
+            if (horn.isAir()) fail("orthanc : pas de corne au sommet de la tour");
+        }
         for (int[] pk : new int[][]{cs != null ? cs : new int[]{0, 0}, hi}) {
             for (int dx = -10; dx <= 10; dx++) lands.getChunk((pk[0] >> 4) + dx, pk[1] >> 4);
             section(lands, pk[0] - 160, pk[0] + 160, pk[1], 50, 447, new File(OUT, "sommet_coupe_" + pk[0] + ".png"), 2);

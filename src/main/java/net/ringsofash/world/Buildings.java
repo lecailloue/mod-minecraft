@@ -57,6 +57,7 @@ public final class Buildings {
             case PYRE -> pyre(b);
             case RUIN -> ruin(b, aux);
             case MORGUL -> morgul(b);
+            case ORTHANC -> orthanc(b);
         }
     }
 
@@ -727,6 +728,111 @@ public final class Buildings {
                 for (int y = -MorgulPlan.OFF; y <= top; y++) {
                     byte id = p.get(x, y, z);
                     if (id != MorgulPlan.AIR) b.s(x, y, z, pal[id]);
+                }
+            }
+        }
+        Direction[] dirs = {N, E, S, W};
+        for (int[] c : p.chests) b.chest(c[0], c[1], c[2], dirs[c[3]], "dark_tower");
+    }
+
+    // ================================================================= ORTHANC
+    private static BlockState[] orthancPal;
+
+    private static synchronized BlockState[] orthancPal() {
+        if (orthancPal != null) return orthancPal;
+        BlockState[] p = new BlockState[256];
+        java.util.Arrays.fill(p, Build.AIR);
+        final int A = OrthancPlan.AIR;
+        p[OrthancPlan.PB] = Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
+        p[OrthancPlan.BS] = Blocks.BLACKSTONE.defaultBlockState();
+        p[OrthancPlan.DS] = Blocks.DEEPSLATE_BRICKS.defaultBlockState();
+        p[OrthancPlan.CRACK] = Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
+        p[OrthancPlan.CHISEL] = Blocks.CHISELED_POLISHED_BLACKSTONE.defaultBlockState();
+        p[OrthancPlan.GILD] = Blocks.GILDED_BLACKSTONE.defaultBlockState();
+        p[OrthancPlan.BARS] = Blocks.IRON_BARS.defaultBlockState();
+        p[OrthancPlan.GLASS] = Blocks.BLACK_STAINED_GLASS.defaultBlockState();
+        p[OrthancPlan.LANTERN] = hang(Blocks.LANTERN);
+        p[OrthancPlan.CHAIN] = Blocks.CHAIN.defaultBlockState();
+        p[OrthancPlan.SHELF] = Blocks.BOOKSHELF.defaultBlockState();
+        p[OrthancPlan.SLAB_PB] = slab(Blocks.POLISHED_BLACKSTONE_BRICK_SLAB, false);
+        p[OrthancPlan.SLAB_PB_TOP] = slab(Blocks.POLISHED_BLACKSTONE_BRICK_SLAB, true);
+        p[OrthancPlan.SLAB_BS] = slab(Blocks.BLACKSTONE_SLAB, false);
+        p[OrthancPlan.SLAB_BS_TOP] = slab(Blocks.BLACKSTONE_SLAB, true);
+        p[OrthancPlan.WALL_PB] = Blocks.POLISHED_BLACKSTONE_BRICK_WALL.defaultBlockState();
+        p[OrthancPlan.WALL_BS] = Blocks.BLACKSTONE_WALL.defaultBlockState();
+        stairSet(p, OrthancPlan.STAIR_PB, Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS);
+        stairSet(p, OrthancPlan.STAIR_BS, Blocks.BLACKSTONE_STAIRS);
+        stairSet(p, OrthancPlan.STAIR_SB, Blocks.STONE_BRICK_STAIRS);
+        stairSet(p, OrthancPlan.STAIR_SP, Blocks.SPRUCE_STAIRS);
+        p[OrthancPlan.SB] = Blocks.STONE_BRICKS.defaultBlockState();
+        p[OrthancPlan.SB_CRACK] = Blocks.CRACKED_STONE_BRICKS.defaultBlockState();
+        p[OrthancPlan.SB_MOSS] = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
+        p[OrthancPlan.COBBLE] = Blocks.COBBLESTONE.defaultBlockState();
+        p[OrthancPlan.ANDESITE] = Blocks.ANDESITE.defaultBlockState();
+        p[OrthancPlan.SLAB_SB] = slab(Blocks.STONE_BRICK_SLAB, false);
+        p[OrthancPlan.SLAB_SB_TOP] = slab(Blocks.STONE_BRICK_SLAB, true);
+        p[OrthancPlan.WALL_SB] = Blocks.STONE_BRICK_WALL.defaultBlockState();
+        p[OrthancPlan.MOSSY_COBBLE] = Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+        p[OrthancPlan.GRAVEL] = Blocks.GRAVEL.defaultBlockState();
+        p[OrthancPlan.PACKED_MUD] = Blocks.PACKED_MUD.defaultBlockState();
+        p[OrthancPlan.MUD] = Blocks.COBBLED_DEEPSLATE.defaultBlockState();                  // pas de bloc de l'etiquette "dirt" : l'herbe ne repousserait pas ici
+        p[OrthancPlan.PATH] = Blocks.DIRT_PATH.defaultBlockState();
+        p[OrthancPlan.TUFF] = Blocks.TUFF.defaultBlockState();
+        p[OrthancPlan.COBBLED_DS] = Blocks.COBBLED_DEEPSLATE.defaultBlockState();
+        p[OrthancPlan.BASALT] = Blocks.BASALT.defaultBlockState();
+        p[OrthancPlan.LOG_Y] = log(Blocks.SPRUCE_LOG, Direction.Axis.Y);
+        p[OrthancPlan.LOG_X] = log(Blocks.SPRUCE_LOG, Direction.Axis.X);
+        p[OrthancPlan.LOG_Z] = log(Blocks.SPRUCE_LOG, Direction.Axis.Z);
+        p[OrthancPlan.PLANKS] = Blocks.SPRUCE_PLANKS.defaultBlockState();
+        p[OrthancPlan.SLAB_SP] = slab(Blocks.SPRUCE_SLAB, false);
+        p[OrthancPlan.SLAB_SP_TOP] = slab(Blocks.SPRUCE_SLAB, true);
+        p[OrthancPlan.FENCE] = Blocks.SPRUCE_FENCE.defaultBlockState();
+        p[OrthancPlan.LADDER_N] = ladder(N);
+        p[OrthancPlan.LADDER_E] = ladder(E);
+        p[OrthancPlan.LADDER_S] = ladder(S);
+        p[OrthancPlan.LADDER_W] = ladder(W);
+        p[OrthancPlan.DLOG_Y] = log(Blocks.DARK_OAK_LOG, Direction.Axis.Y);
+        p[OrthancPlan.DLOG_X] = log(Blocks.DARK_OAK_LOG, Direction.Axis.X);
+        p[OrthancPlan.DLOG_Z] = log(Blocks.DARK_OAK_LOG, Direction.Axis.Z);
+        p[OrthancPlan.DPLANKS] = Blocks.DARK_OAK_PLANKS.defaultBlockState();
+        p[OrthancPlan.CAMPFIRE] = Blocks.CAMPFIRE.defaultBlockState();
+        p[OrthancPlan.BARREL] = Blocks.BARREL.defaultBlockState();
+        p[OrthancPlan.CARPET] = Blocks.RED_CARPET.defaultBlockState();
+        p[OrthancPlan.TORCH] = Blocks.TORCH.defaultBlockState();
+        p[OrthancPlan.GOLD] = Blocks.GOLD_BLOCK.defaultBlockState();
+        p[OrthancPlan.COAL] = Blocks.COAL_BLOCK.defaultBlockState();
+        orthancPal = p;
+        return p;
+    }
+
+    /** Orthanc : tour de 30 x 30 x 140, enceinte ruinee de 200 blocs de diametre et zone de guerre ; la forme vient de OrthancPlan. */
+    private static void orthanc(Build b) {
+        OrthancPlan p = OrthancPlan.get();
+        BlockState[] pal = orthancPal();
+        BlockState filler = Blocks.STONE.defaultBlockState(), foot = Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
+        int maxY = OrthancPlan.H - OrthancPlan.OFF - 1;
+        for (int x = 0; x < OrthancPlan.W; x++) {
+            for (int z = 0; z < OrthancPlan.D; z++) {
+                if (!OrthancPlan.disc(x, z) || !b.in(x, 0, z)) continue;
+                int top = p.top(x, z);
+                boolean lv = p.level(x, z);
+                int f = lv ? p.floor(x, z) : -1;
+                int ground = Math.min(b.groundY(x, z), maxY);
+                if (p.get(x, -1, z) != OrthancPlan.AIR) b.foundation(x, z, x, z, foot, 20);        // tour, enceinte : posees sur le sol ferme
+                // on nivelle : tout ce qui depasse le sol de la zone de guerre est rase, les trous sont creuses plus bas
+                int hi = Math.max(ground, f) + 14;
+                for (int y = hi; y > f; y--) {
+                    if (p.get(x, y, z) != OrthancPlan.AIR) continue;
+                    if (y > ground && b.get(x, y, z).isAir()) continue;
+                    b.s(x, y, z, Build.AIR);
+                }
+                if (ground < f) for (int y = ground + 1; y < f; y++) if (p.get(x, y, z) == OrthancPlan.AIR) b.s(x, y, z, filler);
+                byte cv = lv ? p.cover(x, z) : OrthancPlan.AIR;
+                if (cv != OrthancPlan.AIR && p.get(x, f, z) == OrthancPlan.AIR) b.s(x, f, z, pal[cv]);
+                else if (lv && ground < f && p.get(x, f, z) == OrthancPlan.AIR) b.s(x, f, z, filler);
+                for (int y = -OrthancPlan.OFF; y <= top; y++) {
+                    byte id = p.get(x, y, z);
+                    if (id != OrthancPlan.AIR) b.s(x, y, z, pal[id]);
                 }
             }
         }

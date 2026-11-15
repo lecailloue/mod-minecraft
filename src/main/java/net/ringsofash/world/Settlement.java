@@ -30,7 +30,7 @@ public final class Settlement {
         BURROW(11, 11, 9, 4), FARM(9, 9, 4, 4), INN(13, 10, 11, 4), HOUSE(7, 9, 10, 4), HALL(15, 21, 14, 5), SMITHY(7, 7, 6, 4), STALL(5, 4, 5, 4),
         STABLE(9, 7, 6, 4), WATCHTOWER(5, 5, 15, 4), PLAZA(25, 25, 16, 3), PAVILION(9, 9, 13, 4), ETOWER(7, 7, 26, 4),
         GATE(15, 8, 13, 3), POOL(11, 9, 3, 6), STAIR(7, 48, 8, 50), DHALL(33, 27, 12, 2), MINE(21, 17, 9, 10), LAIR(27, 27, 15, 3),
-        FORT(33, 33, 15, 5), DTOWER(13, 13, 46, 5), BARROW(13, 13, 7, 6), HOARD(41, 41, 7, 28), PYRE(5, 5, 13, 5), RUIN(9, 9, 9, 3), MORGUL(150, 150, 150, 50);
+        FORT(33, 33, 15, 5), DTOWER(13, 13, 46, 5), BARROW(13, 13, 7, 6), HOARD(41, 41, 7, 28), PYRE(5, 5, 13, 5), RUIN(9, 9, 9, 3), MORGUL(150, 150, 150, 50), ORTHANC(200, 200, 146, 24);
         public final int w, d, h, below;
         T(int w, int d, int h, int below) { this.w = w; this.d = d; this.h = h; this.below = below; }
     }
@@ -59,6 +59,16 @@ public final class Settlement {
                 if (py < c.chunkGenerator().getSeaLevel()) return Optional.empty();
                 List<Piece> one = new ArrayList<>();
                 single(one, T.MORGUL, pl[0], py, pl[1], 3, c.seed() ^ 0x4d4f5247554cL, 0);      // rot 3 : la porte regarde vers l'ouest
+                return Optional.of(new GenerationStub(new BlockPos(pl[0], py, pl[1]), b -> one.forEach(b::addPiece)));
+            }
+            if (kind.equals("orthanc")) {
+                // une seule instance, au lieu marque sur la carte : tour de 30 x 30 au centre d'une enceinte de 200 blocs de diametre
+                int[] pl = MapData.place("orthanc");
+                if (pl == null || cp.x != (pl[0] >> 4) || cp.z != (pl[1] >> 4)) return Optional.empty();
+                int py = h(c, pl[0], pl[1]);
+                if (py < c.chunkGenerator().getSeaLevel()) return Optional.empty();
+                List<Piece> one = new ArrayList<>();
+                single(one, T.ORTHANC, pl[0], py, pl[1], 0, c.seed() ^ 0x4f525448414eL, 0);
                 return Optional.of(new GenerationStub(new BlockPos(pl[0], py, pl[1]), b -> one.forEach(b::addPiece)));
             }
             int cx = cp.getMiddleBlockX(), cz = cp.getMiddleBlockZ();

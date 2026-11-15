@@ -765,6 +765,47 @@ public final class ClientTest {
         spotT("52_morgul_liquide", 1368, 1608 - 80, 26, 0F, 48F, 6000);
         spotT("53_morgul_liquide_pont", 1368 - 70, 1608 - 14, 24, -90F, 50F, 6000);
         spotT("51_morgul_statue_proche", 1368 - 88, 1608 - 14, 6, -60F, 8F, 18000);
+        // Orthanc (centre 308, 745, porte a l'est) : vues lointaines, enceinte, zone de guerre, echafaudages, interieur
+        spotT("60_orthanc_loin_ouest", 308 - 175, 745, 48, -90F, -14F, 6000);
+        spotT("61_orthanc_loin_est", 308 + 175, 745, 48, 90F, -14F, 6000);
+        spotT("62_orthanc_porte", 308 + 92, 745, 8, 90F, -6F, 6000);
+        spotT("63_orthanc_route", 308 + 70, 745, 5, 90F, -34F, 6000);
+        spotT("64_orthanc_pied", 308 + 34, 745 + 22, 4, 123F, -50F, 6000);
+        spotT("65_orthanc_muraille", 308 - 70, 745 - 44, 9, 90F, 2F, 6000);
+        spotT("66_orthanc_echafaudage", 308 - 100 + 79 - 14, 745 - 100 + 94 + 2, 10, -90F, -6F, 6000);
+        spotT("67_orthanc_aerien", 308 + 60, 745 + 60, 60, 135F, 28F, 6000);
+        spotT("68_orthanc_nuit_loin", 308 - 175, 745, 48, -90F, -14F, 18000);
+        spotT("69_orthanc_nuit_sol", 308 + 70, 745, 5, 90F, -34F, 18000);
+        for (int k = 0; k < 2; k++) {
+            final int kk = k;
+            SCENES.add(new Scene("7" + k + "_orthanc_puits", 420, p -> {
+                ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+                int ox = 308 - 100, oz = 745 - 100;
+                List<double[]> shafts = new ArrayList<>();
+                for (double[] q : net.ringsofash.world.OrthancPlan.get().pits()) if (q[4] > 0) shafts.add(q);
+                double[] q = shafts.get(Math.min(kk * 3, shafts.size() - 1));
+                double tx = ox + q[0], tz = oz + q[1], cx = 308, cz = 745;
+                double len = Math.hypot(tx - cx, tz - cz), ux = (tx - cx) / len, uz = (tz - cz) / len;   // on regarde le puits depuis le cote de la tour
+                double sx = tx - ux * 13, sz = tz - uz * 13;
+                lands.getChunk((int) sx >> 4, (int) sz >> 4);
+                lands.getChunk((int) tx >> 4, (int) tz >> 4);
+                int y = lands.getHeight(Heightmap.Types.MOTION_BLOCKING, (int) sx, (int) sz);
+                lands.setDayTime(6000);
+                float yaw = (float) Math.toDegrees(Math.atan2(-(tx - sx), tz - sz));
+                view(p, lands, sx + 0.5, y + 8, sz + 0.5, yaw, 38F);
+            }));
+        }
+        // interieur : la hauteur du sol vient d'un point degage de la route
+        for (int[] it : new int[][]{{72, 7, 7, 135, -18}, {73, 6, 0, 90, -4}}) {
+            final int[] c = it;
+            SCENES.add(new Scene(c[0] == 72 ? "72_orthanc_rez" : "73_orthanc_salle_trone", 420, p -> {
+                ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+                for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) lands.getChunk((308 >> 4) + dx, (745 >> 4) + dz);
+                int oy = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, 308 + 60, 745);
+                lands.setDayTime(6000);
+                view(p, lands, 308 + c[1] + 0.5, oy + (c[0] == 72 ? 0 : 100), 745 + c[2] + 0.5, c[3], c[4]);
+            }));
+        }
     }
 
     private static void spotT(String name, int x, int z, int up, float yaw, float pitch, int time) {

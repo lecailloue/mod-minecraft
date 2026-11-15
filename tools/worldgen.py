@@ -283,6 +283,9 @@ def structures():
     # Minas Morgul : une seule instance, au lieu marque sur la carte (places.json) ; spacing 1 = chaque chunk est candidat, la structure ne retient que celui du lieu
     settlement('minas_morgul', ['plaines_cendre', 'monts_de_cendre', 'plaines_jaunes', 'plaines_vertes', 'rivieres_de_lave'], 1, 0, 5111, [])
     LANG['structure.ringsofash.minas_morgul'] = 'Minas Morgul'
+    # Orthanc : une seule instance, a la lisiere de la foret (places.json)
+    settlement('orthanc', ['plaines_jaunes', 'plaines_vertes', 'bosquets', 'foret_clairsemee', 'grande_foret'], 1, 0, 5112, [])
+    LANG['structure.ringsofash.orthanc'] = 'Orthanc'
     tag('worldgen/structure', 'volcanoes', R('volcano'), R('mont_funeste'), ns=MOD)
     tag('worldgen/structure', 'doom', R('mont_funeste'), ns=MOD)
     LANG['structure.ringsofash.volcano'] = 'Volcan'
