@@ -280,6 +280,9 @@ def structures():
     settlement('hoard', [], 38, 18, 5108, ['hoards'])
     settlement('pyre_tower', [], 19, 9, 5109, [])
     settlement('ruin', [], 9, 4, 5110, [])
+    # Minas Morgul : une seule instance, au lieu marque sur la carte (places.json) ; spacing 1 = chaque chunk est candidat, la structure ne retient que celui du lieu
+    settlement('minas_morgul', ['plaines_cendre', 'monts_de_cendre', 'plaines_jaunes', 'plaines_vertes', 'rivieres_de_lave'], 1, 0, 5111, [])
+    LANG['structure.ringsofash.minas_morgul'] = 'Minas Morgul'
     tag('worldgen/structure', 'volcanoes', R('volcano'), R('mont_funeste'), ns=MOD)
     tag('worldgen/structure', 'doom', R('mont_funeste'), ns=MOD)
     LANG['structure.ringsofash.volcano'] = 'Volcan'

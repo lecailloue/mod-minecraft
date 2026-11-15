@@ -56,6 +56,7 @@ public final class Buildings {
             case HOARD -> hoard(b);
             case PYRE -> pyre(b);
             case RUIN -> ruin(b, aux);
+            case MORGUL -> morgul(b);
         }
     }
 
@@ -649,5 +650,59 @@ public final class Buildings {
             b.s(4, 5, 4, Blocks.CHISELED_STONE_BRICKS); b.s(4, 6, 4, Blocks.STONE_BRICK_WALL);
             b.s(4, 2, 3, Blocks.SOUL_LANTERN);
         }
+    }
+    // ================================================================= MINAS MORGUL
+    private static BlockState[] morgulPal;
+
+    private static synchronized BlockState[] morgulPal() {
+        if (morgulPal != null) return morgulPal;
+        BlockState[] p = new BlockState[256];
+        java.util.Arrays.fill(p, Build.AIR);
+        p[MorgulPlan.BB] = Reg.BLACK_BRICKS.get().defaultBlockState();
+        p[MorgulPlan.PBB] = Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
+        p[MorgulPlan.CBB] = Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
+        p[MorgulPlan.TILE] = Blocks.DEEPSLATE_TILES.defaultBlockState();
+        p[MorgulPlan.BLACKSTONE] = Blocks.BLACKSTONE.defaultBlockState();
+        p[MorgulPlan.GLOW] = Blocks.VERDANT_FROGLIGHT.defaultBlockState();
+        p[MorgulPlan.GLASS] = Blocks.GREEN_STAINED_GLASS.defaultBlockState();
+        p[MorgulPlan.BARS] = Blocks.IRON_BARS.defaultBlockState();
+        p[MorgulPlan.FIRE] = Blocks.SOUL_FIRE.defaultBlockState();
+        p[MorgulPlan.SOUL_SOIL] = Blocks.SOUL_SOIL.defaultBlockState();
+        p[MorgulPlan.WATER] = Blocks.WATER.defaultBlockState();
+        p[MorgulPlan.LANTERN] = hang(Blocks.SOUL_LANTERN);
+        p[MorgulPlan.SLAB_BOT] = slab(Reg.BLACK_BRICKS_SLAB.get(), false);
+        p[MorgulPlan.SLAB_TOP] = slab(Reg.BLACK_BRICKS_SLAB.get(), true);
+        p[MorgulPlan.WALL] = Reg.BLACK_BRICKS_WALL.get().defaultBlockState();
+        Direction[] dirs = {N, E, S, W};
+        for (int d = 0; d < 4; d++) {
+            p[MorgulPlan.STAIR + d * 2] = stairs(Reg.BLACK_BRICKS_STAIRS.get(), dirs[d], false);
+            p[MorgulPlan.STAIR + d * 2 + 1] = stairs(Reg.BLACK_BRICKS_STAIRS.get(), dirs[d], true);
+        }
+        morgulPal = p;
+        return p;
+    }
+
+    /** Minas Morgul : la forme est calculee par MorgulPlan (grille de blocs), ici on la pose dans le monde, morceau par morceau. */
+    private static void morgul(Build b) {
+        MorgulPlan p = MorgulPlan.get();
+        BlockState[] pal = morgulPal();
+        Block bb = Reg.BLACK_BRICKS.get();
+        b.foundation(3, 16, 93, 96, bb);                                    // le socle repose sur le sol
+        b.foundation(43, 0, 53, 3, bb);                                     // la rampe d'acces
+        int maxY = MorgulPlan.H - MorgulPlan.OFF - 1;
+        for (int x = 0; x < MorgulPlan.W; x++) {
+            for (int z = 0; z < MorgulPlan.D; z++) {
+                if (!b.in(x, 0, z)) continue;
+                int top = p.top(x, z);
+                int ground = Math.min(b.groundY(x, z), maxY);
+                for (int y = 1; y <= ground; y++) if (p.get(x, y, z) == MorgulPlan.AIR) b.s(x, y, z, Build.AIR);   // on rase le relief qui depasse
+                for (int y = -MorgulPlan.OFF; y <= top; y++) {
+                    byte id = p.get(x, y, z);
+                    if (id != MorgulPlan.AIR) b.s(x, y, z, pal[id]);
+                }
+            }
+        }
+        Direction[] dirs = {N, E, S, W};
+        for (int[] c : p.chests) b.chest(c[0], c[1], c[2], dirs[c[3]], "dark_tower");
     }
 }
