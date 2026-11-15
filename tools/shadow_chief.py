@@ -70,10 +70,10 @@ def make():
 if __name__ == '__main__':
     import sys, os, bbimport
     from PIL import Image
-    out = sys.argv[1] if len(sys.argv) > 1 else '/tmp/shadow_master'
+    out = sys.argv[1] if len(sys.argv) > 1 else '/tmp/shadow_chief'
     os.makedirs(out, exist_ok=True)
     groups, cubes, Wd, Ht, tex, glow, lo, hi = make()
-    T.export_bbmodel('shadow_master', groups, cubes, Wd, Ht, tex, os.path.join(out, 'shadow_master.bbmodel'))
-    geo = bbimport.convert(os.path.join(out, 'shadow_master.bbmodel'))
+    T.export_bbmodel('shadow_chief', groups, cubes, Wd, Ht, tex, os.path.join(out, 'shadow_chief.bbmodel'))
+    geo = bbimport.convert(os.path.join(out, 'shadow_chief.bbmodel'))
     print('pieces', len(geo['parts']), 'cubes', len(cubes), 'texture', Wd, Ht, 'etendue', np.round(hi - lo, 1), 'lo', np.round(lo, 1))
     D.preview(groups, tex, os.path.join(out, 'apercu.png'), lo, hi)

@@ -118,10 +118,10 @@ public final class Renderers {
         @Override protected void scale(FoeEntity e, PoseStack ps, float pt) { float s = scales[idx(e)]; ps.scale(s, s, s); }
     }
 
-    /** Etres des ombres : cavalier + cheval en un seul modele (2 cavaliers, 1 chef), yeux du cheval lumineux. */
+    /** Etres des ombres : cavalier + cheval en un seul modele (2 cavaliers), yeux du cheval lumineux. */
     public static class Shadow extends MobRenderer<net.ringsofash.entity.ShadowRiderEntity, GeoModel<net.ringsofash.entity.ShadowRiderEntity>> {
-        public static final String[] NAMES = {"ombre_1", "ombre_2", "ombre_chef"};
-        public static final float[] BLOCKS = {2.8F, 2.8F, 3.8F};
+        public static final String[] NAMES = {"ombre_1", "ombre_2"};
+        public static final float[] BLOCKS = {2.8F, 2.8F};
         private final GeoModel<net.ringsofash.entity.ShadowRiderEntity>[] models;
         private final float[] scales = new float[NAMES.length];
 
@@ -176,21 +176,21 @@ public final class Renderers {
         }
     }
 
-    /** Maitre des ombres : 1 unite du modele = 5 cm, fente du casque lumineuse. */
-    public static class ShadowMaster extends MobRenderer<net.ringsofash.entity.ShadowMasterEntity, GeoModel<net.ringsofash.entity.ShadowMasterEntity>> {
-        public ShadowMaster(EntityRendererProvider.Context ctx) {
-            super(ctx, new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_shadow_master")), "shadow_master"), 0.5F);
-            addLayer(new RenderLayer<net.ringsofash.entity.ShadowMasterEntity, GeoModel<net.ringsofash.entity.ShadowMasterEntity>>(this) {
+    /** Chef des ombres : 1 unite du modele = 5 cm, fente du casque lumineuse. */
+    public static class ShadowChief extends MobRenderer<net.ringsofash.entity.ShadowChiefEntity, GeoModel<net.ringsofash.entity.ShadowChiefEntity>> {
+        public ShadowChief(EntityRendererProvider.Context ctx) {
+            super(ctx, new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_shadow_chief")), "shadow_chief"), 0.5F);
+            addLayer(new RenderLayer<net.ringsofash.entity.ShadowChiefEntity, GeoModel<net.ringsofash.entity.ShadowChiefEntity>>(this) {
                 @Override
-                public void render(PoseStack ps, MultiBufferSource buf, int light, net.ringsofash.entity.ShadowMasterEntity e, float a, float b, float c, float d, float f, float g) {
-                    VertexConsumer vc = buf.getBuffer(RenderType.eyes(tex("shadow_master_glow")));
+                public void render(PoseStack ps, MultiBufferSource buf, int light, net.ringsofash.entity.ShadowChiefEntity e, float a, float b, float c, float d, float f, float g) {
+                    VertexConsumer vc = buf.getBuffer(RenderType.eyes(tex("shadow_chief_glow")));
                     getParentModel().renderToBuffer(ps, vc, 0xF000F0, OverlayTexture.NO_OVERLAY, -1);
                 }
             });
         }
 
-        @Override public ResourceLocation getTextureLocation(net.ringsofash.entity.ShadowMasterEntity e) { return tex("shadow_master"); }
-        @Override protected void scale(net.ringsofash.entity.ShadowMasterEntity e, PoseStack ps, float pt) { ps.scale(0.8F, 0.8F, 0.8F); }
+        @Override public ResourceLocation getTextureLocation(net.ringsofash.entity.ShadowChiefEntity e) { return tex("shadow_chief"); }
+        @Override protected void scale(net.ringsofash.entity.ShadowChiefEntity e, PoseStack ps, float pt) { ps.scale(0.8F, 0.8F, 0.8F); }
     }
 
     /** Les 5 nouveaux modeles spectraux : translucides (peau et tissus par pixel), squelette visible dessous, yeux lumineux. */

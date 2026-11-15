@@ -6,7 +6,7 @@ MOBS = [  # id, nom, constante, couleur1, couleur2
     ('orc', 'Orque', 0x5f7248, 0x2a2622), ('war_orc', 'Orque noir', 0x3a3a34, 0x8a1a14), ('orc_chief', 'Chef orque', 0x4a4034, 0xc02018),
     ('goblin', 'Gobelin', 0x7a8a52, 0xf0e040), ('goblin_king', 'Roi des gobelins', 0xc4a898, 0xd8a838), ('cave_troll', 'Troll des cavernes', 0x6d7868, 0x8a947e), ('stone_troll', 'Troll de pierre', 0x8a8a84, 0x5a5a56), ('troll_chief', 'Troll chef de meute', 0x2b2b30, 0xc02018),
     ('warg', 'Loup de guerre', 0x423c38, 0xc02010), ('wild_man', 'Homme sauvage', 0xa87a58, 0x2a1c12),
-    ('mammoth', 'Mammouth', 0x6a5544, 0xe8dfc4), ('dead_soldier', 'Soldat spectral', 0x7ad8a0, 0xe0fff0), ('shadow_rider', 'Être des ombres', 0x0c0a0e, 0x4a4a54), ('shadow_chief', 'Chef des ombres', 0x08060a, 0xa8a8b8), ('shadow_dragon', 'Dragon des ombres', 0x141418, 0xc8c8d8), ('shadow_master', 'Maître des ombres', 0x08060a, 0xa8a8b8),
+    ('mammoth', 'Mammouth', 0x6a5544, 0xe8dfc4), ('dead_soldier', 'Soldat spectral', 0x7ad8a0, 0xe0fff0), ('shadow_rider', 'Être des ombres', 0x0c0a0e, 0x4a4a54), ('shadow_chief', 'Chef des ombres', 0x08060a, 0xa8a8b8), ('shadow_dragon', 'Dragon des ombres', 0x141418, 0xc8c8d8),
     ('giant_spider', 'Araignée géante', 0x1a1420, 0xa01828), ('lurker', 'Guetteur des profondeurs', 0x27332e, 0x9fe060), ('cave_thief', 'Créature blême', 0xb8b8a8, 0xd8f0ff),
     ('fire_demon', 'Fléau de Braise', 0x1f1717, 0xff7a18), ('ash_lord', 'Seigneur de Cendre', 0x141216, 0xff5a18), ('dragon', 'Vieux Ver', 0x7c211b, 0xc08a3a),
     ('sorcerer', 'Sorcier corrompu', 0xe8e4dc, 0x1c1c20), ('human', 'Villageois', 0xc99a78, 0x8a5a3a), ('elf', 'Elfe', 0xecd8c4, 0x3a6a4a),
@@ -53,7 +53,6 @@ def build():
     loot('mammoth', entry('minecraft:beef', 3, 6), entry('minecraft:leather', 2, 4), entry('minecraft:bone', 2, 4))
     loot('shadow_rider', entry('wight_dust', 2, 4), entry('ring_shadows', 1, 1, 0.08), entry('ring_kings', 1, 1, 0.05))
     loot('shadow_chief', entry('wight_dust', 4, 8), entry('wight_blade', 1, 1, 0.3), entry('ring_shadows', 1, 1, 0.3), entry('ring_kings', 1, 1, 0.15))
-    loot('shadow_master', entry('wight_dust', 4, 8), entry('wight_blade', 1, 1, 0.3), entry('ring_shadows', 1, 1, 0.3), entry('ring_kings', 1, 1, 0.15))
     loot('shadow_dragon', entry('wight_dust', 6, 10), entry('dragon_scale', 2, 4), entry('wight_blade', 1, 1, 0.4), entry('ring_shadows', 1, 1, 0.4), entry('ring_kings', 1, 1, 0.2))
     loot('giant_spider', entry('spider_silk', 1, 3), entry('minecraft:string', 2, 5), entry('minecraft:spider_eye', 1, 2))
     loot('lurker', entry('minecraft:ink_sac', 3, 6), entry('minecraft:prismarine_shard', 2, 5), entry('minecraft:heart_of_the_sea', 1, 1, 0.15), entry('ring_waters', 1, 1, 0.2))

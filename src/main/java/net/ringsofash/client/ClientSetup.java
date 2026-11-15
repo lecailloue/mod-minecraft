@@ -31,8 +31,9 @@ public final class ClientSetup {
 
     public static final KeyMapping REP_KEY = new KeyMapping("key.ringsofash.reputation", InputConstants.KEY_R, "key.categories.ringsofash");
     public static final KeyMapping RINGS_KEY = new KeyMapping("key.ringsofash.rings", InputConstants.KEY_G, "key.categories.ringsofash");
+    public static final KeyMapping DESCEND_KEY = new KeyMapping("key.ringsofash.descend", InputConstants.KEY_C, "key.categories.ringsofash");
     public static final KeyMapping MAP_KEY = new KeyMapping("key.ringsofash.map", InputConstants.KEY_M, "key.categories.ringsofash");
-    private static final String[] GEO = {"troll", "troll_chief", "warg", "stag", "demon", "lurker", "treeman", "eagle", "dragon", "mammoth", "ash_lord", "orc_1_nu", "orc_2_fourrure", "orc_3_mailles", "orc_4_casque", "orc_noir_1_main", "orc_noir_2_fer", "orc_chef", "spectre_epee", "spectre_lance", "spectre_hache", "spectre_dague", "spectre_roi", "ombre_1", "ombre_2", "ombre_chef", "arme_orc_cleaver", "arme_orc_scimitar", "arme_orc_machete", "arme_orc_spear", "arme_orc_mace", "gobelin_1", "gobelin_2", "gobelin_3", "gobelin_roi", "arme_goblin_king_staff", "arme_goblin_pickaxe", "giant_spider", "sylvestre_ancien", "sylvestre_saule", "shadow_dragon", "shadow_master", "arme_lunargent_sword", "arme_elven_blade", "arme_elven_glaive", "arme_frost_blade", "arme_blood_blade", "arme_viper_dagger", "arme_storm_blade", "arme_sentinel_blade", "arme_sun_blade", "arme_halfling_dagger", "arme_ranger_sword", "arme_wight_blade", "arme_kings_blade", "arme_valmoire_blade", "arme_dwarven_axe", "arme_dwarven_hammer", "arme_ash_mace", "arme_rider_spear", "arme_troll_club", "arme_lunargent_pickaxe", "arme_elven_bow", "arme_staff_fire", "arme_staff_light", "arme_staff_storm", "arme_staff_healing"};
+    private static final String[] GEO = {"troll", "troll_chief", "warg", "stag", "demon", "lurker", "treeman", "eagle", "dragon", "mammoth", "ash_lord", "orc_1_nu", "orc_2_fourrure", "orc_3_mailles", "orc_4_casque", "orc_noir_1_main", "orc_noir_2_fer", "orc_chef", "spectre_epee", "spectre_lance", "spectre_hache", "spectre_dague", "spectre_roi", "ombre_1", "ombre_2", "arme_orc_cleaver", "arme_orc_scimitar", "arme_orc_machete", "arme_orc_spear", "arme_orc_mace", "gobelin_1", "gobelin_2", "gobelin_3", "gobelin_roi", "arme_goblin_king_staff", "arme_goblin_pickaxe", "giant_spider", "sylvestre_ancien", "sylvestre_saule", "shadow_dragon", "shadow_chief", "arme_lunargent_sword", "arme_elven_blade", "arme_elven_glaive", "arme_frost_blade", "arme_blood_blade", "arme_viper_dagger", "arme_storm_blade", "arme_sentinel_blade", "arme_sun_blade", "arme_halfling_dagger", "arme_ranger_sword", "arme_wight_blade", "arme_kings_blade", "arme_valmoire_blade", "arme_dwarven_axe", "arme_dwarven_hammer", "arme_ash_mace", "arme_rider_spear", "arme_troll_club", "arme_lunargent_pickaxe", "arme_elven_bow", "arme_staff_fire", "arme_staff_light", "arme_staff_storm", "arme_staff_healing"};
     private static final String[] HUMAN = {"plain", "elf", "orc", "goblin", "dwarf"};
 
     public static ModelLayerLocation layer(String name) { return new ModelLayerLocation(RingsOfAsh.id(name), "main"); }
@@ -42,6 +43,7 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::renderers);
         Atmosphere.init(modBus);
         SwordAura.init();
+        BowDraw.init();
         SylvanRender.init();
         SwordSwing.init();
         RingTabs.init();
@@ -117,7 +119,7 @@ public final class ClientSetup {
         e.registerAboveAll(RingsOfAsh.id("quest_tracker"), (g, dt) -> QuestScreen.renderTracker(g));
     }
 
-    private static void keys(RegisterKeyMappingsEvent e) { e.register(REP_KEY); e.register(MAP_KEY); e.register(RINGS_KEY); }
+    private static void keys(RegisterKeyMappingsEvent e) { e.register(REP_KEY); e.register(MAP_KEY); e.register(RINGS_KEY); e.register(DESCEND_KEY); }
 
     private static void tick(ClientTickEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
@@ -262,9 +264,8 @@ public final class ClientSetup {
         e.registerEntityRenderer(ModEntities.WARG.get(), c -> new Renderers.Geo<FoeEntity>(c, layer("geo_warg"), "warg", 0.8F, 1.15F, f -> "warg", null));
         e.registerEntityRenderer(ModEntities.MAMMOTH.get(), c -> new Renderers.Geo<FoeEntity>(c, layer("geo_mammoth"), "mammoth", 1.8F, 1.0F, f -> "mammoth", null));
         e.registerEntityRenderer(ModEntities.SHADOW_RIDER.get(), Renderers.Shadow::new);
-        e.registerEntityRenderer(ModEntities.SHADOW_CHIEF.get(), Renderers.Shadow::new);
         e.registerEntityRenderer(ModEntities.SHADOW_DRAGON.get(), Renderers.ShadowDragon::new);
-        e.registerEntityRenderer(ModEntities.SHADOW_MASTER.get(), Renderers.ShadowMaster::new);
+        e.registerEntityRenderer(ModEntities.SHADOW_CHIEF.get(), Renderers.ShadowChief::new);
         e.registerEntityRenderer(ModEntities.GIANT_SPIDER.get(), c -> new Renderers.Geo<net.ringsofash.entity.GiantSpiderEntity>(c, layer("geo_giant_spider"), "giant_spider", 2.2F,
                 2.5F * 16F / GeoDef.get("giant_spider").height, f -> "giant_spider", "giant_spider_glow"));
         e.registerEntityRenderer(ModEntities.LURKER.get(), c -> new Renderers.Geo<>(c, layer("geo_lurker"), "lurker", 1.5F, 1.6F, f -> "lurker", "lurker_glow"));

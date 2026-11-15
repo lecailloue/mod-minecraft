@@ -353,9 +353,8 @@ def build_swords():
                                                             gem=('t', (112, 255, 216)), fx=fx_fuller((112, 255, 216), runes=True), pommel='gem')))
     out['kings_blade'] = ('Épée du roi elfe', sword(dict(mat='w_king', L=94, W=11, leaf=True, tip=16, grip=14, grip_mat='w_green', guard_mat='w_gold', guard='up', guard_w=24,
                                                             gem=('k', (64, 224, 128)), fx=fx_fuller((120, 255, 190), runes=True, width=1), pommel='disc')))
-    out['valmoire_blade'] = ('Aubelame', sword(dict(mat='w_dawn', L=100, W=10, tip=14, grip=16, grip_mat='w_blue', guard_mat='w_gold', guard='plain', guard_w=24,
-                                                      gem=('a', (74, 160, 255)), fx=fx_fuller((150, 205, 255), width=1), pommel='disc',
-                                                      extra=lambda: dawn_rays(19))))
+    out['valmoire_blade'] = ('Aubelame', sword(dict(mat='w_steel', L=86, W=7, tip=11, grip=13, grip_mat='w_black', grip_rings=False, guard_mat='w_steel', guard='plain', guard_w=22,
+                                                      pommel='ball', pommel_mat='w_steel')))
     return out
 
 
@@ -528,9 +527,17 @@ def build_bow():
     k.append(curved('limb_d', (0, -12, 0), L, 4, bend, 'w_elfbow', seg=seg, thick=3, prof=.3, flat=.4, rx=180))
     ty, tz = arc_tip(L, seg, bend)
     top = 12 + ty
-    k.append(C('string', -.5, -top, tz * -1 - .5, 1, 2 * top, 1, 'w_gem', key='bstr'))
+    zs = tz * -1                                                                          # z de la corde au repos (a hauteur des encoches)
+    k.append(T.Group('str_u', (0, top, zs), (0, 0, 0), [C('str_u_c', -.5, 0, zs - .5, 1, top, 1, 'w_gem', key='bstr')]))
+    k.append(T.Group('str_l', (0, -top, zs), (0, 0, 0), [C('str_l_c', -.5, -top, zs - .5, 1, top, 1, 'w_gem', key='bstr')]))
     for sg in (1, -1):
         k.append(C(f'nock_{sg}', -2, sg * top - (1 if sg > 0 else 0), -tz - 1.5, 4, 2, 3, 'w_gold', key='bnock'))
+    # fleche encochee (visible seulement quand on bande l'arc) : fut le long de z, pointe vers +z (cote ventre)
+    k.append(T.Group('arrow', (0, 0, 0), (0, 0, 0), [
+        C('arrow_shaft', -.5, -.5, zs - 4, 1, 1, 78, 'w_ewood', key='arsh'),
+        C('arrow_head', -1.5, -1.5, zs + 74, 3, 3, 8, 'w_steel', key='arhd'),
+        C('arrow_f1', -.5, -3.5, zs - 4, 1, 7, 12, 'w_green', key='arfl'),
+        C('arrow_f2', -3.5, -.5, zs - 4, 7, 1, 12, 'w_green', key='arfl')]))
     return {'elven_bow': ('Arc elfique', k)}
 
 

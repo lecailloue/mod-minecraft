@@ -50,8 +50,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Dragon des ombres : la monture du Maitre des ombres, qui est un mob a part assis sur sa selle de metal. Si le maitre meurt, le dragon reste sans cavalier :
- * contre une pile d'os (64) il se laisse apprivoiser et on peut le chevaucher (regard = direction, Maj = descendre).
+ * Dragon des ombres : la monture du Chef des ombres, qui est un mob a part assis sur sa selle de metal. Sans cavalier (oeuf du dragon, ou chef tue),
+ * contre une pile d'os (64) il se laisse apprivoiser et on peut le chevaucher comme en vol creatif (ZQSD, Espace monte, C descend, Maj = pied a terre).
  * Vole en permanence (cou qui ondule, ailes qui battent), sent de tres loin quiconque porte un anneau, mord et jette la terreur autour de lui.
  */
 public class ShadowDragonEntity extends Monster {
@@ -199,27 +199,13 @@ public class ShadowDragonEntity extends Monster {
     @Override public int getAmbientSoundInterval() { return 240; }
 
 
-    // ---------- monte : Maitre des ombres sur la selle au depart ; sans lui, 64 os pour l'apprivoiser, puis on le chevauche
-
-    @Nullable
-    @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData data) {
-        data = super.finalizeSpawn(level, difficulty, reason, data);
-        ShadowMasterEntity m = ModEntities.SHADOW_MASTER.get().create(level.getLevel());
-        if (m != null) {
-            m.moveTo(getX(), getY(), getZ(), getYRot(), 0);
-            m.finalizeSpawn(level, difficulty, MobSpawnType.JOCKEY, null);
-            m.startRiding(this);
-            level.addFreshEntity(m);
-        }
-        return data;
-    }
+    // ---------- monte : Chef des ombres sur la selle au depart ; sans lui, 64 os pour l'apprivoiser, puis on le chevauche
 
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (isVehicle()) {                                                     // deja occupe (son maitre, ou un joueur)
-            if (!level().isClientSide && getFirstPassenger() instanceof ShadowMasterEntity)
-                player.displayClientMessage(net.minecraft.network.chat.Component.literal("Le Maître des ombres le monte encore. Il faut le tuer d'abord."), true);
+            if (!level().isClientSide && getFirstPassenger() instanceof ShadowChiefEntity)
+                player.displayClientMessage(net.minecraft.network.chat.Component.literal("Le Chef des ombres le monte encore. Il faut le tuer d'abord."), true);
             return InteractionResult.PASS;
         }
         if (player.isSecondaryUseActive()) return super.mobInteract(player, hand);
@@ -242,7 +228,7 @@ public class ShadowDragonEntity extends Monster {
                 getNavigation().stop();
                 ((ServerLevel) level()).sendParticles(ParticleTypes.HEART, getX(), getY() + 2.5, getZ(), 12, 1.2, 0.8, 1.2, 0.02);
                 playSound(SoundEvents.ENDER_DRAGON_GROWL, 2.0F, 0.9F);
-                player.displayClientMessage(net.minecraft.network.chat.Component.literal("Le dragon vous obéit. Regardez où aller, Maj pour descendre."), true);
+                player.displayClientMessage(net.minecraft.network.chat.Component.literal("Le dragon vous obéit. ZQSD pour avancer, Espace monte, C descend, Maj pour mettre pied à terre."), true);
                 player.startRiding(this);
             }
             return InteractionResult.sidedSuccess(level().isClientSide);
@@ -262,19 +248,17 @@ public class ShadowDragonEntity extends Monster {
     @Override
     protected void tickRidden(Player player, Vec3 travelVector) {
         super.tickRidden(player, travelVector);
-        setRot(player.getYRot(), player.getXRot() * 0.4F);
+        setRot(player.getYRot(), 0F);
         this.yRotO = this.yBodyRot = this.yHeadRot = getYRot();
     }
 
-    /** Il va ou l'on regarde : avancer = monter si l'on vise le haut, descendre si l'on vise le bas ; sans avancer, il plane (et glisse doucement si l'on regarde fort vers le haut ou le bas). */
+    /** Rempli cote client : +1 Espace (monter), -1 touche C (descendre). */
+    public static java.util.function.ToIntFunction<Player> VERTICAL = p -> 0;
+
+    /** Comme en vol creatif : ZQSD (avant, arriere, cotes) dans le sens du regard a l'horizontale, Espace monte, C descend ; sans touche, il plane. */
     @Override
     protected Vec3 getRiddenInput(Player player, Vec3 travelVector) {
-        float fwd = player.zza;
-        double pitch = player.getXRot();
-        double up;
-        if (fwd > 0) up = -Math.sin(Math.toRadians(pitch)) * fwd * 1.2;
-        else up = Math.abs(pitch) > 25 ? -Math.signum(pitch) * 0.35 : 0;
-        return new Vec3(player.xxa * 0.4, up, fwd > 0 ? fwd : fwd * 0.3);
+        return new Vec3(player.xxa * 0.8, VERTICAL.applyAsInt(player) * 0.8, player.zza);
     }
 
     @Override

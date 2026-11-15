@@ -25,6 +25,8 @@ public final class GeoDef {
     public float ymin, ymax;
     /** armes 3D de tools/weapons3d.py : hauteur de la prise en main (0 = armes d'orques, tenues par le milieu), lueur, translucide */
     public float hold;
+    /** facteur de taille en main / au sol (armes 3D) */
+    public float scale = 1F;
     public boolean glow, translucent;
     public Part[] parts;
 

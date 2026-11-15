@@ -39,8 +39,7 @@ import javax.annotation.Nullable;
 
 /**
  * Etre des ombres : cavalier noir sous une grande cape, rien sous la capuche. Ne sort que la nuit, tres rapide, et sent de tres loin
- * quiconque porte un anneau. Le cheval fait partie du modele (une seule entite). Le chef (casque a pointes) est un autre type d'entite ;
- * plus tard il chevauchera un dragon.
+ * quiconque porte un anneau. Le cheval fait partie du modele (une seule entite). Le chef (casque a pointes) est un autre type d'entite, qui chevauche un dragon.
  */
 public class ShadowRiderEntity extends Monster {
     public static final double NORMAL_RANGE = 20.0, RING_RANGE = 96.0;
@@ -49,12 +48,11 @@ public class ShadowRiderEntity extends Monster {
 
     public ShadowRiderEntity(EntityType<? extends ShadowRiderEntity> type, Level level) {
         super(type, level);
-        this.xpReward = type == ModEntities.SHADOW_CHIEF.get() ? 80 : 30;
+        this.xpReward = 30;
     }
 
-    public boolean isChief() { return getType() == ModEntities.SHADOW_CHIEF.get(); }
-    /** Modele : 0 et 1 = deux cavaliers (cape et pose differentes), 2 = chef casque. */
-    public int shadowModel() { return isChief() ? 2 : Math.max(0, Math.min(1, entityData.get(VARIANT))); }
+    /** Modele : 0 et 1 = deux cavaliers (cape et pose differentes), tous deux sur le cheval cuirasse. */
+    public int shadowModel() { return Math.max(0, Math.min(1, entityData.get(VARIANT))); }
     public void testVariant(int v) { entityData.set(VARIANT, v); dayGrace = 1_000_000; }
 
     @Override
@@ -107,7 +105,7 @@ public class ShadowRiderEntity extends Monster {
         if (dayGrace > 0) dayGrace--;
         if (tickCount % 40 == 0) {
             // aura de terreur
-            for (Player p : level().getEntitiesOfClass(Player.class, getBoundingBox().inflate(isChief() ? 14 : 9))) {
+            for (Player p : level().getEntitiesOfClass(Player.class, getBoundingBox().inflate(9))) {
                 if (p.isCreative() || p.isSpectator()) continue;
                 p.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 80, 0, true, false), this);
                 if (RingItem.wearsRing(p)) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 0, true, false), this);

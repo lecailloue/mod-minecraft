@@ -205,20 +205,24 @@ def geo_extent(geo):
     return round(lo, 2), round(hi, 2)
 
 # armes 3D du jeu (tools/weapons3d.py) : memes items qu'avant, rendus comme les armes d'orques (WeaponItemRenderer)
-ITEM_3D = {'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0, 4.0, 0.5], 'scale': [0.85, 0.85, 0.85]},
-           'thirdperson_lefthand': {'rotation': [0, 90, -55], 'translation': [0, 4.0, 0.5], 'scale': [0.85, 0.85, 0.85]},
-           'firstperson_righthand': {'rotation': [0, -90, 25], 'translation': [1.13, 3.2, 1.13], 'scale': [0.68, 0.68, 0.68]},
-           'firstperson_lefthand': {'rotation': [0, 90, -25], 'translation': [1.13, 3.2, 1.13], 'scale': [0.68, 0.68, 0.68]},
+ITEM_3D = {'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0, 0.5, 0.5], 'scale': [0.85, 0.85, 0.85]},
+           'thirdperson_lefthand': {'rotation': [0, 90, -55], 'translation': [0, 0.5, 0.5], 'scale': [0.85, 0.85, 0.85]},
+           'firstperson_righthand': {'rotation': [0, -90, 25], 'translation': [1.13, 1.0, 1.13], 'scale': [0.68, 0.68, 0.68]},
+           'firstperson_lefthand': {'rotation': [0, 90, -25], 'translation': [1.13, 1.0, 1.13], 'scale': [0.68, 0.68, 0.68]},
            'ground': {'rotation': [0, 0, 0], 'translation': [0, 2, 0], 'scale': [0.6, 0.6, 0.6]},
            'head': {'rotation': [0, 180, 0], 'translation': [0, 13, 7], 'scale': [1, 1, 1]},
            'gui': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]},
            'fixed': {'rotation': [0, 180, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]}}
-BOW_3D = dict(ITEM_3D, thirdperson_righthand={'rotation': [-80, 260, -40], 'translation': [-1, -2, 2.5], 'scale': [0.9, 0.9, 0.9]},
+_NEUTRAL = {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]}
+BOW_3D = dict(ITEM_3D, firstperson_righthand=_NEUTRAL, firstperson_lefthand=_NEUTRAL, thirdperson_righthand={'rotation': [-80, 260, -40], 'translation': [-1, -2, 2.5], 'scale': [0.9, 0.9, 0.9]},
               thirdperson_lefthand={'rotation': [-80, -280, 40], 'translation': [-1, -2, 2.5], 'scale': [0.9, 0.9, 0.9]})
 # hauteur (unites du modele, pommeau = 0) a laquelle la main tient l'arme : poignee des epees, ou fraction de la longueur
 HOLD_3D = {'viper_dagger': 8, 'halfling_dagger': 8}
-HOLD_FRAC = {'elven_glaive': .30, 'rider_spear': .30, 'dwarven_axe': .25, 'dwarven_hammer': .25, 'troll_club': .22, 'ash_mace': .25, 'lunargent_pickaxe': .25,
-             'staff_fire': .38, 'staff_light': .38, 'staff_storm': .38, 'staff_healing': .38, 'elven_bow': .5}
+HOLD_FRAC = {'elven_glaive': .45, 'rider_spear': .5, 'dwarven_axe': .3, 'dwarven_hammer': .3, 'troll_club': .3, 'ash_mace': .3, 'lunargent_pickaxe': .4,
+             'staff_fire': .5, 'staff_light': .5, 'staff_storm': .5, 'staff_healing': .5, 'elven_bow': .5}
+# facteur de taille en main / au sol (1 = taille du modele : 1 unite = 1 cm)
+SCALE_3D = {'staff_fire': 1.4, 'staff_light': 1.4, 'staff_storm': 1.4, 'staff_healing': 1.4, 'rider_spear': 1.25, 'elven_glaive': 1.25, 'lunargent_pickaxe': 1.8,
+            'dwarven_hammer': 2.1, 'dwarven_axe': 2.1, 'ash_mace': 1.3, 'troll_club': 4.4, 'valmoire_blade': 1.75, 'elven_bow': 1.15}
 NO_ITEM_3D = {'medieval_sword', 'morning_star'}               # pas (encore) d'objets dans le jeu
 
 
@@ -242,6 +246,7 @@ def weapons_3d():
         geo['ymin'], geo['ymax'] = geo_extent(geo)
         geo['height'] = geo['ymax']
         geo['hold'] = float(HOLD_3D.get(id, 11 if id not in HOLD_FRAC else geo['ymin'] + HOLD_FRAC[id] * (geo['ymax'] - geo['ymin'])))
+        geo['scale'] = float(SCALE_3D.get(id, 1.0))
         geo['glow'] = bool(glow[..., 3].any())
         geo['translucent'] = bool(((tex[..., 3] > 0) & (tex[..., 3] < 255)).any())
         wjson(f'{A}/geo/{name}.json', geo)
@@ -263,10 +268,10 @@ def orc_weapons():
     import goblins as GB
     ws = {'orc_cleaver': O.w_cleaver, 'orc_scimitar': O.w_scimitar, 'orc_machete': O.w_notched, 'orc_spear': O.w_spear, 'orc_mace': O.w_mace, 'goblin_king_staff': GB.w_kstaff}
     item_model = {'parent': 'minecraft:builtin/entity', 'display': {
-        'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0, 4.0, 0.5], 'scale': [0.85, 0.85, 0.85]},
-        'thirdperson_lefthand': {'rotation': [0, 90, -55], 'translation': [0, 4.0, 0.5], 'scale': [0.85, 0.85, 0.85]},
-        'firstperson_righthand': {'rotation': [0, -90, 25], 'translation': [1.13, 3.2, 1.13], 'scale': [0.68, 0.68, 0.68]},
-        'firstperson_lefthand': {'rotation': [0, 90, -25], 'translation': [1.13, 3.2, 1.13], 'scale': [0.68, 0.68, 0.68]},
+        'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0, 0.5, 0.5], 'scale': [0.85, 0.85, 0.85]},
+        'thirdperson_lefthand': {'rotation': [0, 90, -55], 'translation': [0, 0.5, 0.5], 'scale': [0.85, 0.85, 0.85]},
+        'firstperson_righthand': {'rotation': [0, -90, 25], 'translation': [1.13, 1.0, 1.13], 'scale': [0.68, 0.68, 0.68]},
+        'firstperson_lefthand': {'rotation': [0, 90, -25], 'translation': [1.13, 1.0, 1.13], 'scale': [0.68, 0.68, 0.68]},
         'ground': {'rotation': [0, 0, 0], 'translation': [0, 2, 0], 'scale': [0.6, 0.6, 0.6]},
         'head': {'rotation': [0, 180, 0], 'translation': [0, 13, 7], 'scale': [1, 1, 1]},
         'gui': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]},
@@ -419,22 +424,22 @@ def shadow_dragon():
     print(f'shadow_dragon: {len(geo["parts"])} pieces, {len(cubes)} cubes, hauteur {geo["height"]} px, texture {W}x{H}')
 
 
-def shadow_master():
-    """Maitre des ombres (tools/shadow_master.py) : le chef, humanoide a casque a pointes, mob a part du dragon"""
+def shadow_chief():
+    """Chef des ombres (tools/shadow_chief.py) : le chef, humanoide a casque a pointes, mob a part du dragon"""
     import bbimport, tempfile
     import trollcore as T
-    import shadow_master as SM
+    import shadow_chief as SM
     from genlib import wjson, save
     from PIL import Image
     groups, cubes, W, H, tex, glow, lo, hi = SM.make()
     tmp = tempfile.mkdtemp()
-    T.export_bbmodel('shadow_master', groups, cubes, W, H, tex, os.path.join(tmp, 'shadow_master.bbmodel'))
-    geo = bbimport.convert(os.path.join(tmp, 'shadow_master.bbmodel'))
+    T.export_bbmodel('shadow_chief', groups, cubes, W, H, tex, os.path.join(tmp, 'shadow_chief.bbmodel'))
+    geo = bbimport.convert(os.path.join(tmp, 'shadow_chief.bbmodel'))
     geo['height'] = geo_height(geo)
-    wjson(f'{A}/geo/shadow_master.json', geo)
-    save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/shadow_master.png')
-    save(Image.fromarray(glow, 'RGBA'), f'{A}/textures/entity/shadow_master_glow.png')
-    print(f'shadow_master: {len(geo["parts"])} pieces, {len(cubes)} cubes, hauteur {geo["height"]} px, texture {W}x{H}')
+    wjson(f'{A}/geo/shadow_chief.json', geo)
+    save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/shadow_chief.png')
+    save(Image.fromarray(glow, 'RGBA'), f'{A}/textures/entity/shadow_chief_glow.png')
+    print(f'shadow_chief: {len(geo["parts"])} pieces, {len(cubes)} cubes, hauteur {geo["height"]} px, texture {W}x{H}')
 
 
 def glow(m, name, chars):
@@ -588,4 +593,4 @@ def skins():
     skin('cave_thief', 'goblin', skin='#b8b8a8', hair='#b8b8a8', hair_style='bald', eyes='#d8f0ff', top='#b0b0a0', legs='#6a6050', boots='#b8b8a8', sleeves=False, seed=55)
 
 def build():
-    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); orc_weapons(); lurker(); treeman_bb(); sylvestres(); shadow_dragon(); shadow_master(); weapons_3d(); eagle(); dragon(); mammoth(); skins()
+    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); orc_weapons(); lurker(); treeman_bb(); sylvestres(); shadow_dragon(); shadow_chief(); weapons_3d(); eagle(); dragon(); mammoth(); skins()

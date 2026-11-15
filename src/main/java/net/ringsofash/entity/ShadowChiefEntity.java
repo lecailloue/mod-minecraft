@@ -33,20 +33,20 @@ import net.ringsofash.item.RingItem;
 import javax.annotation.Nullable;
 
 /**
- * Maitre des ombres : le chef qui chevauche le dragon. Mob a part : on peut le tuer sans toucher au dragon (qui reste alors sans cavalier).
+ * Chef des ombres : il apparait sur son dragon (un autre mob : on peut le tuer sans toucher au dragon, qui reste alors sans cavalier).
  * Assis sur la selle tant que le dragon vole ; a pied, il se bat a l'epee comme un etre des ombres, en plus robuste.
  */
-public class ShadowMasterEntity extends Monster {
+public class ShadowChiefEntity extends Monster {
     public static final double NORMAL_RANGE = 40.0, RING_RANGE = 96.0;
 
-    public ShadowMasterEntity(EntityType<? extends ShadowMasterEntity> type, Level level) {
+    public ShadowChiefEntity(EntityType<? extends ShadowChiefEntity> type, Level level) {
         super(type, level);
-        this.xpReward = 80;
+        this.xpReward = 90;
     }
 
     public static AttributeSupplier.Builder attributes() {
-        return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 120).add(Attributes.ATTACK_DAMAGE, 12).add(Attributes.MOVEMENT_SPEED, 0.36)
-                .add(Attributes.ARMOR, 8).add(Attributes.FOLLOW_RANGE, RING_RANGE).add(Attributes.KNOCKBACK_RESISTANCE, 0.6);
+        return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 150).add(Attributes.ATTACK_DAMAGE, 14).add(Attributes.MOVEMENT_SPEED, 0.38)
+                .add(Attributes.ARMOR, 10).add(Attributes.FOLLOW_RANGE, RING_RANGE).add(Attributes.KNOCKBACK_RESISTANCE, 0.6);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class ShadowMasterEntity extends Monster {
 
     /** Cible les joueurs : 40 blocs en temps normal, 96 blocs (meme invisibles, meme a travers les murs) s'ils portent un anneau. */
     static class RingSenseGoal extends NearestAttackableTargetGoal<Player> {
-        RingSenseGoal(ShadowMasterEntity mob) {
+        RingSenseGoal(ShadowChiefEntity mob) {
             super(mob, Player.class, 10, false, false, null);
             this.targetConditions = TargetingConditions.forCombat().range(RING_RANGE).ignoreInvisibilityTesting().ignoreLineOfSight()
                     .selector(e -> e instanceof Player p && (RingItem.wearsRing(p) || mob.distanceToSqr(p) < NORMAL_RANGE * NORMAL_RANGE));
@@ -77,6 +77,16 @@ public class ShadowMasterEntity extends Monster {
         data = super.finalizeSpawn(level, difficulty, reason, data);
         setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.WIGHT_BLADE.get()));
         setDropChance(EquipmentSlot.MAINHAND, 0.15F);
+        if (reason != MobSpawnType.JOCKEY && level.getLevel().getEntitiesOfClass(ShadowDragonEntity.class, getBoundingBox().inflate(1.5)).isEmpty()) {
+            // il arrive toujours sur son dragon (oeuf, apparition naturelle, commande)
+            ShadowDragonEntity d = ModEntities.SHADOW_DRAGON.get().create(level.getLevel());
+            if (d != null) {
+                d.moveTo(getX(), getY(), getZ(), getYRot(), 0);
+                d.finalizeSpawn(level, difficulty, MobSpawnType.JOCKEY, null);
+                level.addFreshEntity(d);
+                startRiding(d);
+            }
+        }
         return data;
     }
 

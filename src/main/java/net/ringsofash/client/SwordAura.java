@@ -45,7 +45,6 @@ public final class SwordAura {
 
     private static float[] color(SpecialSword.Kind k) {
         return switch (k) {
-            case ROYAL -> new float[]{0.30F, 0.65F, 1.0F};
             case FROST -> new float[]{0.70F, 0.92F, 1.0F};
             case STORM -> new float[]{1.0F, 0.92F, 0.30F};
             case SUN -> new float[]{1.0F, 0.78F, 0.28F};

@@ -89,7 +89,7 @@ public class SpecialSword extends SwordItem {
     }
 
     @Override
-    public boolean isFoil(ItemStack stack) { return kind == Kind.KING || kind == Kind.ROYAL || kind == Kind.MACE || kind == Kind.STORM || super.isFoil(stack); }
+    public boolean isFoil(ItemStack stack) { return kind == Kind.KING || kind == Kind.MACE || kind == Kind.STORM || super.isFoil(stack); }
 
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext ctx, List<Component> tip, TooltipFlag flag) {

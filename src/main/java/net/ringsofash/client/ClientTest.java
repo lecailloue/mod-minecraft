@@ -174,6 +174,7 @@ public final class ClientTest {
     }
 
     private static void clear(ServerLevel level) {
+        net.ringsofash.entity.ShadowDragonEntity.VERTICAL = pl -> 0;
         List<Entity> all = new ArrayList<>();
         level.getAllEntities().forEach(all::add);
         for (Entity e : all) if (!(e instanceof Player)) e.discard();
@@ -433,21 +434,27 @@ public final class ClientTest {
         SCENES.add(new Scene("03e_ombres", 70, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
-            int[] vs = {0, 1, 2};
-            double x = SX + 4.4;
-            for (int v : vs) {
+            double x = SX + 2.4;
+            for (int v = 0; v < 2; v++) {
                 final int vv = v;
-                actor(ow, v == 2 ? ModEntities.SHADOW_CHIEF.get() : ModEntities.SHADOW_RIDER.get(), x, SZ + 11, o -> o.testVariant(vv));
-                x -= 4.4;
+                actor(ow, ModEntities.SHADOW_RIDER.get(), x, SZ + 9, o -> o.testVariant(vv));
+                x -= 4.8;
             }
             view(p, ow, SX + 0.5, SY + 1.6, SZ, 0F, 4F);
         }));
-        SCENES.add(new Scene("03f_ombres_cote", 70, p -> {
+        // le chef des ombres arrive sur son dragon (un seul oeuf) : vue de cote, puis chef tue -> dragon libre
+        SCENES.add(new Scene("03f_chef_dragon", 70, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
-            ShadowRiderEntity c = actor(ow, ModEntities.SHADOW_CHIEF.get(), SX, SZ + 8, o -> o.testVariant(2));
-            c.moveTo(SX, SY, SZ + 8, 90F, 0F); c.setYBodyRot(90F); c.setYHeadRot(90F);
-            view(p, ow, SX + 0.5, SY + 2.2, SZ, 0F, 8F);
+            var c = actor(ow, ModEntities.SHADOW_CHIEF.get(), SX, SZ + 16, o -> { });
+            Entity dr = c.getVehicle();
+            log("CHEF_DRAGON monte=" + (dr instanceof net.ringsofash.entity.ShadowDragonEntity) + " chefPV=" + c.getMaxHealth());
+            if (dr instanceof net.ringsofash.entity.ShadowDragonEntity d) {
+                d.setNoAi(true); d.setNoGravity(true);
+                d.moveTo(SX, SY + 1.5, SZ + 16, 90F, 0F); d.setYBodyRot(90F); d.setYHeadRot(90F);
+                c.setYRot(90F); c.setYBodyRot(90F); c.setYHeadRot(90F);
+            }
+            view(p, ow, SX + 0.5, SY + 4.0, SZ - 2, 0F, 8F);
         }));
         // dragon des ombres : profil a deux instants (le cou ondule, les ailes battent), vue de face, puis vrai vol avec IA (on mesure qu'il rejoint et mord sa cible)
         for (int[] d : new int[][]{{60, 0}, {81, 1}}) {
@@ -514,6 +521,21 @@ public final class ClientTest {
             log("MONTE_64 " + r + " monte=" + (p.getVehicle() == dr) + " tamed=" + dr.isTamed() + " os=" + p.getInventory().getItem(0).getCount() + " ctrl=" + (dr.getControllingPassenger() == p));
             hook = () -> log("MONTE_FIN monte=" + (p.getVehicle() == dr) + " dyJoueur=" + String.format("%.2f", p.getY() - dr.getY()) + " dragonY=" + String.format("%.2f", dr.getY()));
         }));
+        // monte + Espace maintenu (monter) : le dragon doit prendre de l'altitude sans avancer
+        SCENES.add(new Scene("15c_dragon_monte_vol", 80, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            var dr = actor(ow, ModEntities.SHADOW_DRAGON.get(), SX, SZ + 14, o -> { });
+            dr.moveTo(SX, SY + 3.0, SZ + 14, 180F, 0F);
+            view(p, ow, SX + 0.5, SY + 3.0, SZ + 8, 180F, 15F);
+            p.getAbilities().flying = false; p.onUpdateAbilities();
+            p.getInventory().selected = 0;
+            p.getInventory().setItem(0, new ItemStack(Items.BONE, 64));
+            dr.interact(p, InteractionHand.MAIN_HAND);
+            net.ringsofash.entity.ShadowDragonEntity.VERTICAL = pl -> 1;
+            final double y0 = dr.getY();
+            hook = () -> log("DRAGON_MONTE_VOL monte=" + (p.getVehicle() == dr) + " dy=" + String.format("%.2f", dr.getY() - y0) + " ctrl=" + (dr.getControllingPassenger() == p));
+        }));
         // coup d'epee : vue subjective puis troisieme personne de face, a quelques ticks du debut du geste
         for (int n : new int[]{3, 4, 5, 6}) SCENES.add(new Scene("16a_coup_1p_" + n, n, p -> swingScene(p)));
         for (int n : new int[]{3, 4, 5, 6, 7}) SCENES.add(new Scene("16b_coup_face_" + n, n, p -> swingScene(p)));
@@ -534,6 +556,13 @@ public final class ClientTest {
         }));
         for (String id : new String[]{"valmoire_blade", "elven_bow", "staff_storm", "dwarven_hammer"}) SCENES.add(new Scene("17b_arme_1p_" + id, 20, p -> heldScene(p, id, false)));
         for (String id : new String[]{"valmoire_blade", "elven_bow", "staff_fire", "dwarven_hammer", "rider_spear"}) SCENES.add(new Scene("17c_arme_face_" + id, 20, p -> heldScene(p, id, true)));
+        // arc elfique bande : vue subjective, de face, de dos
+        for (String nm : new String[]{"17e_arc_bande_1p", "17f_arc_bande_face", "17g_arc_bande_monte"}) SCENES.add(new Scene(nm, 24, p -> {
+            heldScene(p, "elven_bow", false);
+            p.getInventory().setItem(1, new ItemStack(Items.ARROW, 16));
+            p.startUsingItem(InteractionHand.MAIN_HAND);
+        }));
+        SCENES.add(new Scene("17h_arc_repos_1p", 20, p -> heldScene(p, "elven_bow", false)));
         // armes tenues vues de profil (mannequins), pour juger l'orientation et la taille en main
         String[][] profils = {{"valmoire_blade", "kings_blade", "elven_glaive", "rider_spear", "dwarven_axe", "dwarven_hammer", "ash_mace", "troll_club"},
                 {"lunargent_pickaxe", "elven_bow", "staff_fire", "staff_light", "staff_storm", "staff_healing", "viper_dagger", "frost_blade"}};

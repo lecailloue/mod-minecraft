@@ -38,6 +38,29 @@ public class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
         };
     }
 
+    /** 0 (au repos) a 1 (pleinement bande) : meme courbe que l'arc du jeu */
+    static float drawAmount(ItemStack stack) {
+        net.minecraft.world.entity.player.Player p = Minecraft.getInstance().player;
+        if (p == null || !p.isUsingItem() || !p.getUseItem().is(stack.getItem())) return 0F;
+        float f = Math.min(1F, p.getTicksUsingItem() / 20F);
+        return Math.min(1F, (f * f + f * 2F) / 3F);
+    }
+
+    /** corde en deux moities qui se plient vers l'archer (+ allongees pour rester jointes) et fleche encochee tant que l'arc est bande */
+    private static void bowPose(GeoModel<Entity> m, GeoDef d, float pull) {
+        var su = m.part("str_u"); var sl = m.part("str_l"); var ar = m.part("arrow");
+        if (su == null || sl == null || ar == null) return;
+        float top = 59F;
+        for (GeoDef.Part p : d.parts) if (p.name.equals("str_u")) top = p.boxes[0].s[1];
+        float back = 26F * pull;
+        float th = (float) Math.atan2(back, top);
+        float stretch = 1F / (float) Math.cos(th);
+        su.xRot = -th; sl.xRot = th;
+        su.yScale = stretch; sl.yScale = stretch;
+        ar.visible = pull > 0F;
+        ar.z = -back;
+    }
+
     @Override
     public void renderByItem(ItemStack stack, ItemDisplayContext ctx, PoseStack ps, MultiBufferSource buf, int light, int overlay) {
         String name = "arme_" + BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
@@ -48,7 +71,7 @@ public class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
                 || ctx == ItemDisplayContext.THIRD_PERSON_LEFT_HAND || ctx == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
         // en main et au sol : taille reelle (la lance et la masse sont longues) ; en inventaire : on ramene l'arme dans la case
         float s = 0.55F;
-        if (d.hold > 0) { s = 0.152F; if (hand) mid = d.hold; }          // armes de weapons3d : 1 unite du modele = 1 cm, tenues par la poignee
+        if (d.hold > 0) { s = 0.152F * d.scale; if (hand) mid = d.hold; }          // armes de weapons3d : 1 unite du modele = 1 cm, tenues par la poignee
         if (name.contains("goblin")) s = Math.min(s, (name.contains("pickaxe") ? 1.2F : 1.9F) / (len / 16F));   // baton du roi : 1,9 bloc ; pioche du gobelin : 1,2 bloc
         if (ctx == ItemDisplayContext.GUI || ctx == ItemDisplayContext.FIXED) s = Math.min(s, 1.25F / (len / 16F));
         ps.pushPose();
@@ -57,6 +80,11 @@ public class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
         ps.scale(s, s, s);
         boolean icon = d.hold > 0 && ctx == ItemDisplayContext.GUI;      // icone : face large de la lame vers nous
         if (!icon) ps.mulPose(Axis.YP.rotationDegrees(90F));
+        boolean bow = name.equals("arme_elven_bow");
+        if (bow) {
+            if (!ctx.firstPerson() && hand) ps.mulPose(Axis.YP.rotationDegrees(180F));     // la corde vers l'archer
+            bowPose(m, d, hand ? drawAmount(stack) : 0F);
+        }
         ps.translate(0F, 1.5F - mid / 16F, 0F);
         ps.scale(-1F, -1F, 1F);
         if (icon) ps.scale(2.4F, 1F, 1F);                                  // proportions reelles = trait de 1 px : on epaissit pour l'icone
