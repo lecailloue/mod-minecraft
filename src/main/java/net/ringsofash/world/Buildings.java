@@ -706,6 +706,17 @@ public final class Buildings {
                 int cd = p.chasm(x, z);
                 int ground = Math.min(b.groundY(x, z), maxY);
                 if (p.get(x, -1, z) != MorgulPlan.AIR) b.foundation(x, z, x, z, base);          // le socle repose sur le sol
+                float sw = p.soft(x, z);
+                if (cd == 0 && sw > 0.01F) {                                                      // raccord progressif : le relief monte ou descend doucement vers le niveau du pont
+                    int target = Math.round(ground * (1 - sw) - sw);
+                    if (target > ground) {
+                        BlockState surf = b.get(x, ground, z);
+                        if (surf.isAir() || !surf.getFluidState().isEmpty()) surf = Blocks.STONE.defaultBlockState();
+                        for (int y = ground + 1; y <= target; y++) if (p.get(x, y, z) == MorgulPlan.AIR) b.s(x, y, z, surf);
+                    } else {
+                        for (int y = ground; y > target; y--) if (p.get(x, y, z) == MorgulPlan.AIR) b.s(x, y, z, Build.AIR);
+                    }
+                }
                 int lo = cd > 0 ? -cd + 1 : p.flat(x, z) ? 0 : Integer.MAX_VALUE;                // on rase le relief des cours et on creuse le gouffre
                 for (int y = ground; y >= lo; y--) if (p.get(x, y, z) == MorgulPlan.AIR) b.s(x, y, z, Build.AIR);
                 if (cd > 0) {

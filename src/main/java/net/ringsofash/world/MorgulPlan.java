@@ -15,7 +15,7 @@ public final class MorgulPlan {
     public static final int W = 150, D = 150, OFF = 48, H = 200;        // y local de -OFF a H - OFF - 1
     public static final int CX = 75, CZ = 75;                           // centre : axe de la tour
     public static final int DECK = 95;                                  // plateforme du sommet de la tour (sol plein a y = 95)
-    public static final int DEPTH = 44, CHW = 14, LEDGE = 2, WATER_TOP = -DEPTH + 10;            // gouffre : profondeur, largeur, corniche au pied de la muraille
+    public static final int DEPTH = 44, CHW = 14, LEDGE = 2, WATER_TOP = -10;            // gouffre : profondeur, largeur, corniche au pied de la muraille
     public static final double R1 = 55, R2 = 36, SHARP = 0.52;          // rayons des pointes ; creux = SHARP * pointe
 
     public static final byte AIR = 0, STONE = 1, DARK = 2, DETAIL = 3, PALE = 4, VEIN = 5, HOT = 6, GLOW = 7, GLASS = 8, BARS = 9,
@@ -51,6 +51,27 @@ public final class MorgulPlan {
     public int chasm(int x, int z) { return x < 0 || x >= W || z < 0 || z >= D ? 0 : chasm[z * W + x]; }
     /** colonne dont le relief naturel est rase au niveau du chateau (cours, corniche, chemin d'acces) */
     public boolean flat(int x, int z) { return x >= 0 && x < W && z >= 0 && z < D && flat[z * W + x]; }
+    private final float[] soft = new float[W * D];
+    /** poids du raccord progressif avec le relief naturel (1 = plat comme le pont, 0 = relief intact) ; s'annule vers le bord de la zone (z=0) */
+    public float soft(int x, int z) {
+        if (x < 0 || x >= W || z < 0 || z >= D) return 0F;
+        float e = Math.min(1F, z / 6F);
+        return soft[z * W + x] * e * e * (3 - 2 * e);
+    }
+    /** zone plate (x0..x1, z0..z1) entouree d'une pente douce de largeur m, au contour irregulier et arrondi */
+    private void markSoft(int x0, int z0, int x1, int z1, int m) {
+        for (int x = Math.max(0, x0 - m - 4); x <= Math.min(W - 1, x1 + m + 4); x++) {
+            for (int z = Math.max(0, z0 - m - 4); z <= Math.min(D - 1, z1 + m + 4); z++) {
+                double dx = x < x0 ? x0 - x : x > x1 ? x - x1 : 0, dz = z < z0 ? z0 - z : z > z1 ? z - z1 : 0;
+                double d = Math.sqrt(dx * dx + dz * dz), w = 1;
+                if (d > 0) {
+                    double t = Math.min(1.0, Math.max(0.0, d + 2.2 * vn(x / 4.0, z / 4.0, 77)) / m);
+                    w = 1 - t * t * (3 - 2 * t);
+                }
+                soft[z * W + x] = Math.max(soft[z * W + x], (float) w);
+            }
+        }
+    }
     private void markFlat(int x0, int z0, int x1, int z1) {
         for (int x = Math.max(0, x0); x <= Math.min(W - 1, x1); x++) for (int z = Math.max(0, z0); z <= Math.min(D - 1, z1); z++) flat[z * W + x] = true;
     }
@@ -445,13 +466,14 @@ public final class MorgulPlan {
             }
         }
         // chemin d'acces sur la terre ferme (relief rase autour)
-        for (z = zA - 1; z >= 4; z--) {
+        for (z = zA - 1; z >= 6; z--) {
             for (int x = CX - 4; x <= CX + 4; x++) {
                 for (int y = -3; y <= -1; y++) set(x, y, z, y == -1 && Math.abs(x - CX) < 2 ? PALE : STONE);
             }
             if (z % 4 == 0) for (int sx = -1; sx <= 1; sx += 2) { int x = CX + sx * 4; set(x, 0, z, DARK); set(x, 1, z, DARK); set(x, 2, z, GLOW); set(x, 3, z, SLAB_P); }
         }
-        markFlat(CX - 7, 4, CX + 7, zA);
+        markFlat(CX - 6, 6, CX + 6, zA);
+        markSoft(CX - 6, 6, CX + 6, zA, 10);
         // deux grandes statues devant le pont, sur la terre ferme
         int zc = zA - 2;
         for (; zc > 12; zc--) {
@@ -462,6 +484,7 @@ public final class MorgulPlan {
         statue(CX - 9, zc);
         statue(CX + 9, zc);
         markFlat(CX - 16, zc - 7, CX + 16, zc + 7);
+        markSoft(CX - 16, zc - 7, CX + 16, zc + 7, 10);
     }
 
     /** grande gargouille assise sur un piedestal pale, dans les couleurs du chateau, qui regarde vers l'exterieur (z negatif) */
