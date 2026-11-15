@@ -119,6 +119,7 @@ def blocks():
     wjson(f'{A}/textures/block/morgul_ichor_still.png.mcmeta', {'animation': {'frametime': 3, 'interpolate': True}})
     save(ichor_frames(32, 32, 12), f'{A}/textures/block/morgul_ichor_flow.png')
     wjson(f'{A}/textures/block/morgul_ichor_flow.png.mcmeta', {'animation': {'frametime': 2, 'interpolate': True}})
+    wjson(f'{A}/particles/ichor_smoke.json', {'textures': [f'minecraft:big_smoke_{i}' for i in range(8)]})
     bstate('morgul_ichor', {'variants': {'': {'model': f'{MOD}:block/morgul_ichor'}}})
     wjson(f'{A}/models/block/morgul_ichor.json', {'textures': {'particle': f'{MOD}:block/morgul_ichor_still'}})
     imodel('morgul_ichor_bucket', {'parent': 'neoforge:item/bucket_drip', 'loader': 'neoforge:fluid_container', 'fluid': f'{MOD}:morgul_ichor'})

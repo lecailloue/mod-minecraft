@@ -55,6 +55,7 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::itemColors);
         modBus.addListener(ClientSetup::setup);
         modBus.addListener(ClientSetup::itemExtensions);
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent e) -> e.registerSpriteSet(net.ringsofash.fluid.ModFluids.ICHOR_SMOKE.get(), IchorSmokeParticle.Provider::new));
         NeoForge.EVENT_BUS.addListener(ClientSetup::tick);
         if (System.getProperty("roa.clienttest") != null) ClientTest.init();
     }

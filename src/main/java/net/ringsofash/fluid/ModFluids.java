@@ -28,6 +28,9 @@ public final class ModFluids {
     public static final DeferredRegister<FluidType> TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.FLUID_TYPES, MODID);
     public static final DeferredRegister<Fluid> FLUIDS = DeferredRegister.create(Registries.FLUID, MODID);
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
+    public static final DeferredRegister<net.minecraft.core.particles.ParticleType<?>> PARTICLES = DeferredRegister.create(Registries.PARTICLE_TYPE, MODID);
+    public static final DeferredHolder<net.minecraft.core.particles.ParticleType<?>, net.minecraft.core.particles.SimpleParticleType> ICHOR_SMOKE =
+            PARTICLES.register("ichor_smoke", () -> new net.minecraft.core.particles.SimpleParticleType(false));
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
 
     public static final DeferredHolder<FluidType, FluidType> ICHOR_TYPE = TYPES.register("morgul_ichor", () -> new FluidType(FluidType.Properties.create()
@@ -52,6 +55,7 @@ public final class ModFluids {
     private ModFluids() {}
 
     public static void register(IEventBus bus) {
+        PARTICLES.register(bus);
         TYPES.register(bus);
         FLUIDS.register(bus);
         BLOCKS.register(bus);
