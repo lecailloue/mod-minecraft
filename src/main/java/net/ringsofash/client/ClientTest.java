@@ -110,8 +110,8 @@ public final class ClientTest {
                             MapScreen.addMarker(-445, -230, "Refuge", 0x3060E0); MapScreen.addMarker(250, -297, "", 0xE03030);
                             MapScreen.addMarker(-400, -150, "Tour du guet", 0x40C040);
                         }
-                        MapScreen ms = new MapScreen(s.name.contains("legende"), s.name.contains("legende") ? 1 : s.name.contains("minas") ? 5 : 2.5, s.name.contains("legende"), s.name.contains("edition") ? 2 : -1);
-                        if (s.name.contains("minas")) ms.focus(1300, 1600);
+                        MapScreen ms = new MapScreen(s.name.contains("legende"), s.name.contains("legende") ? 1 : s.name.contains("minas") ? 8 : 2.5, s.name.contains("legende"), s.name.contains("edition") ? 2 : -1);
+                        if (s.name.contains("minas")) ms.focus(1368, 1640);
                         mc.setScreen(ms);
                     }
                     if (s.name.contains("boussole")) {
@@ -798,7 +798,7 @@ public final class ClientTest {
             net.ringsofash.data.Net.sync(p);
             lands.getChunk(1368 >> 4, 1608 >> 4);
             int y = lands.getHeight(Heightmap.Types.MOTION_BLOCKING, 1368, 1608);
-            view(p, lands, 1368.5, y + 40, 1700.5, 180F, 20F);          // a ~90 blocs de Minas Morgul : decouverte par proximite
+            view(p, lands, 1368.5, y + 40, 1660.5, 180F, 20F);          // a ~50 blocs de Minas Morgul : decouverte par proximite
         }));
         SCENES.add(new Scene("26c_carte_legende_tout", 60, p -> {
             net.ringsofash.world.MapDiscover.discoverAll(p);                 // comme /anneaux map

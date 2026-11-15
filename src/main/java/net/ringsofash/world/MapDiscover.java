@@ -14,7 +14,7 @@ import java.util.Map;
 /** Decouverte des lieux : un lieu apparait sur la carte quand son chunk est charge autour du joueur (ou par la commande /anneaux map). */
 public final class MapDiscover {
     /** Distance (en blocs) a laquelle un lieu est decouvert, si son chunk est charge. */
-    public static final int RADIUS = 128;
+    public static final int RADIUS = 96;
     private MapDiscover() {}
 
     public static String pretty(String key) {
