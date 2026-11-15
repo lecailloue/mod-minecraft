@@ -70,6 +70,36 @@ def blocks():
     btex('dwarven_lamp', lamp)
     block('dwarven_lamp', 'Lampe naine', copy='DEEPSLATE_BRICKS', extra='.lightLevel(s -> 15)', tool='pickaxe')
 
+    # --- autres briques naines : appareil different, version plus claire, dessus dore, et palette de briques dorees
+    btex('dwarven_bricks_small', dwarf.d_bricks_small())
+    block('dwarven_bricks_small', 'Petites briques naines', copy='DEEPSLATE_BRICKS', tool='pickaxe', tint=True)
+    family('dwarven_bricks_small', 'dwarven', 'petites briques naines', tint=True)
+    btex('dwarven_bricks_light', dwarf.d_bricks_light())
+    block('dwarven_bricks_light', 'Briques naines claires', copy='DEEPSLATE_BRICKS', tool='pickaxe', tint=True)
+    family('dwarven_bricks_light', 'dwarven', 'briques naines claires', tint=True)
+    GOLD, GOLD_MORTAR = '#8c5001', '#4a2800'
+    gb = bricks(GOLD, GOLD_MORTAR, 91, var=0.1)
+    for (gx, gy) in ((2, 1), (5, 2), (10, 1), (13, 2), (3, 5), (9, 6), (14, 5), (6, 9), (1, 10), (11, 10), (4, 13), (12, 14)):
+        if gb.getpixel((gx, gy))[:3] != rgb(GOLD_MORTAR): gb.putpixel((gx, gy), rgb('#d79a2c') + (255,))      # eclats d'or
+    btex('dwarven_gold_bricks', gb)
+    block('dwarven_gold_bricks', "Briques d'or nain", copy='GOLD_BLOCK', tool='pickaxe')
+    family('dwarven_gold_bricks', 'dwarven', "briques d'or nain")
+    btex('dwarven_gold_smooth', stone('#96590a', 93, var=0.16, cell=4, speck=0.3))
+    block('dwarven_gold_smooth', "Pierre d'or naine lisse", copy='GOLD_BLOCK', tool='pickaxe')
+    gc = framed(GOLD, 97)
+    for y in range(4, 12):
+        for x in range(4, 12):
+            e = max(abs(x - 7.5), abs(y - 7.5))
+            gc.putpixel((x, y), shade(rgb(GOLD), 1.35 if e > 2.5 else 0.7) + (255,))
+    btex('dwarven_gold_chiseled', gc)
+    block('dwarven_gold_chiseled', "Brique d'or nain ciselée", copy='GOLD_BLOCK', tool='pickaxe')
+    btex('dwarven_gold_pillar', pillar_side(GOLD, 95)); btex('dwarven_gold_pillar_top', framed(GOLD, 96))
+    block('dwarven_gold_pillar', "Pilier d'or nain", 'pillar', copy='GOLD_BLOCK', tool='pickaxe')
+    # briques naines au dessus dore (cotes teintes comme la pierre naine, dessus = briques d'or)
+    btex('dwarven_gilded_bricks', dwarf.d_bricks())
+    block('dwarven_gilded_bricks', 'Briques naines à sommet doré', copy='DEEPSLATE_BRICKS', tool='pickaxe', tint=True, goldtop='dwarven_gold_bricks')
+    family('dwarven_gilded_bricks', 'dwarven', 'briques naines à sommet doré', kinds=('stairs', 'slab'), tint=True, goldtop='dwarven_gold_bricks')
+
     # --- lumiere naine : bloc lumineux teinte comme la pierre naine (cadre de pierre teinte, coeur de lumiere) et torche murale
     fr = dwarf.d_stone().convert('RGBA')
     for (x0, x1) in ((3, 7), (9, 13)):                       # quatre fenetres separees par une croix de pierre
@@ -287,12 +317,20 @@ def recipes():
         shaped(f'{wood}_planks_stairs', ['#  ', '## ', '###'], {'#': f'{wood}_planks'}, f'{wood}_planks_stairs', 4, 'building')
         shaped(f'{wood}_planks_slab', ['###'], {'#': f'{wood}_planks'}, f'{wood}_planks_slab', 6, 'building')
         shaped(f'{wood}_planks_fence', ['#s#', '#s#'], {'#': f'{wood}_planks', 's': 'minecraft:stick'}, f'{wood}_planks_fence', 3)
-    for st in ('white_bricks', 'dwarven_bricks', 'black_bricks'):
+    for st, kinds in (('white_bricks', 3), ('dwarven_bricks', 3), ('black_bricks', 3), ('dwarven_bricks_small', 3), ('dwarven_bricks_light', 3),
+                      ('dwarven_gold_bricks', 3), ('dwarven_gilded_bricks', 2)):
         shaped(f'{st}_stairs', ['#  ', '## ', '###'], {'#': st}, f'{st}_stairs', 4, 'building')
         shaped(f'{st}_slab', ['###'], {'#': st}, f'{st}_slab', 6, 'building')
-        shaped(f'{st}_wall', ['###', '###'], {'#': st}, f'{st}_wall', 6)
-        for k in ('stairs', 'slab', 'wall'):
+        if kinds == 3: shaped(f'{st}_wall', ['###', '###'], {'#': st}, f'{st}_wall', 6)
+        for k in ('stairs', 'slab', 'wall')[:kinds]:
             stonecut(st, f'{st}_{k}', 2 if k == 'slab' else 1)
+    shaped('dwarven_bricks_small', ['##', '##'], {'#': 'dwarven_stone'}, 'dwarven_bricks_small', 4, 'building')
+    shapeless('dwarven_bricks_light', ['dwarven_bricks', 'minecraft:quartz'], 'dwarven_bricks_light', 2, 'building')
+    shapeless('dwarven_gilded_bricks', ['dwarven_bricks', 'minecraft:gold_nugget'], 'dwarven_gilded_bricks', 1, 'building')
+    shapeless('dwarven_gold_bricks', ['dwarven_bricks'] * 4 + ['minecraft:gold_ingot'], 'dwarven_gold_bricks', 4, 'building')
+    shaped('dwarven_gold_smooth', ['##', '##'], {'#': 'dwarven_gold_bricks'}, 'dwarven_gold_smooth', 4, 'building')
+    shaped('dwarven_gold_chiseled', ['#', '#'], {'#': 'dwarven_gold_bricks_slab'}, 'dwarven_gold_chiseled', 1, 'building')
+    shaped('dwarven_gold_pillar', ['#', '#'], {'#': 'dwarven_gold_smooth'}, 'dwarven_gold_pillar', 2, 'building')
     shaped('white_bricks', ['##', '##'], {'#': 'white_stone'}, 'white_bricks', 4, 'building')
     shaped('white_pillar', ['#', '#'], {'#': 'white_bricks'}, 'white_pillar', 2, 'building')
     shaped('dwarven_bricks', ['##', '##'], {'#': 'minecraft:deepslate'}, 'dwarven_bricks', 4, 'building')

@@ -475,6 +475,23 @@ public final class ClientTest {
             }
             view(p, ow, SX + 0.5, SY + 1.7, SZ + 1, 0F, 8F);
         }));
+        SCENES.add(new Scene("18b_briques_naines", 40, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            net.minecraft.world.level.block.Block[] bl = {net.ringsofash.gen.Reg.DWARVEN_BRICKS.get(), net.ringsofash.gen.Reg.DWARVEN_BRICKS_SMALL.get(), net.ringsofash.gen.Reg.DWARVEN_BRICKS_LIGHT.get(),
+                    net.ringsofash.gen.Reg.DWARVEN_GILDED_BRICKS.get(), net.ringsofash.gen.Reg.DWARVEN_GOLD_BRICKS.get(), net.ringsofash.gen.Reg.DWARVEN_GOLD_SMOOTH.get(),
+                    net.ringsofash.gen.Reg.DWARVEN_GOLD_CHISELED.get(), net.ringsofash.gen.Reg.DWARVEN_GOLD_PILLAR.get()};
+            int bx = (int) SX - 6, bz = (int) SZ + 5, by = (int) SY;
+            for (int i = 0; i < bl.length; i++) {
+                for (int y = 0; y < 2; y++) ow.setBlock(new net.minecraft.core.BlockPos(bx + i * 2, by + y, bz), bl[i].defaultBlockState(), 3);
+            }
+            var stairs = net.ringsofash.gen.Reg.DWARVEN_GILDED_BRICKS_STAIRS.get().defaultBlockState();
+            for (int i = 0; i < 3; i++) {
+                ow.setBlock(new net.minecraft.core.BlockPos(bx + 2 * i, by, bz - 2), stairs.setValue(net.minecraft.world.level.block.StairBlock.FACING, net.minecraft.core.Direction.EAST), 3);
+                ow.setBlock(new net.minecraft.core.BlockPos(bx + 2 * i + 1, by, bz - 2), net.ringsofash.gen.Reg.DWARVEN_GILDED_BRICKS_SLAB.get().defaultBlockState(), 3);
+            }
+            view(p, ow, SX + 0.5, SY + 2.5, SZ - 3, 0F, 22F);
+        }));
         SCENES.add(new Scene("03g_chef_pied", 50, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);

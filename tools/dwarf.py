@@ -31,11 +31,11 @@ def d_cobble(seed=102):
             im.putpixel((x, y), shade(rgb(G), f) + (255,))
     return im
 
-def d_bricks(seed=103):
+def d_bricks(seed=103, courses=None, base='#d6d6d6'):
     """grands blocs taillés irréguliers, SANS cadre : les joints ne tombent jamais sur le bord du bloc (les briques se prolongent d'un bloc a l'autre)"""
     rnd = random.Random(seed)
-    courses = [(0, 5, [2, 10]), (5, 6, [6, 12]), (11, 5, [1, 8])]      # (y, hauteur, departs de briques ; elles se referment en boucle)
-    base = rgb('#d6d6d6')
+    courses = courses or [(0, 5, [2, 10]), (5, 6, [6, 12]), (11, 5, [1, 8])]      # (y, hauteur, departs de briques ; elles se referment en boucle)
+    base = rgb(base)
     im = new(16)
     for (y0, h, starts) in courses:
         bricks = []
@@ -121,3 +121,12 @@ def d_door():
     for y in range(0, 16):
         icon.putpixel((3, y), gray(130) + (255,)); icon.putpixel((12, y), gray(130) + (255,))
     return low, up, icon
+
+
+def d_bricks_small(seed=107):
+    """autre appareil : quatre rangs de briques plus petites et regulieres (memes couleurs que les grandes briques)"""
+    return d_bricks(seed, [(0, 4, [0, 8]), (4, 4, [4, 12]), (8, 4, [0, 8]), (12, 4, [4, 12])])
+
+def d_bricks_light(seed=103):
+    """memes briques que d_bricks, legerement plus claires"""
+    return d_bricks(seed, None, '#f0f0f0')

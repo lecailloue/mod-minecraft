@@ -111,6 +111,19 @@ DOOR_STATES = {('east', 'left', False): ('left', 0), ('east', 'left', True): ('l
                ('west', 'left', False): ('left', 180), ('west', 'left', True): ('left_open', 270), ('west', 'right', False): ('right', 180), ('west', 'right', True): ('right_open', 90)}
 
 def gen_tinted(b):
+    if b.get('goldtop'):                       # dessus (faces 'up') en texture doree non teintee ; les cotes restent teintes comme la pierre naine
+        g = globals(); orig = g['tmodel']
+        def gold_tmodel(name, elements, textures, particle):
+            for e in elements:
+                f = e['faces'].get('up')
+                if f: f['texture'] = '#top'; f.pop('tintindex', None)
+            orig(name, elements, dict(textures, top=T(b['goldtop'])), particle)
+        g['tmodel'] = gold_tmodel
+        try:
+            b2 = dict(b); b2['goldtop'] = None
+            return gen_tinted(b2)
+        finally:
+            g['tmodel'] = orig
     id, kind = b['id'], b['kind']
     tx = b.get('tex', id)
     if kind in ('cube', 'custom_cube'):
@@ -310,11 +323,11 @@ def block_java(b):
     t = JAVA_KIND[b['kind']]
     return t.format(copy=b.get('copy', 'STONE'), extra=b.get('extra', ''), BASE=(b.get('base') or '').upper())
 
-def family(base_id, fr_base, fr_plural_fem, kinds=('stairs', 'slab', 'wall'), tool='pickaxe', tags=(), tint=False):
+def family(base_id, fr_base, fr_plural_fem, kinds=('stairs', 'slab', 'wall'), tool='pickaxe', tags=(), tint=False, **kw):
     names = {'stairs': ('Escalier en ' + fr_plural_fem), 'slab': ('Dalle en ' + fr_plural_fem),
              'wall': ('Muret en ' + fr_plural_fem), 'fence': ('Barrière en ' + fr_plural_fem)}
     for k in kinds:
-        block(f'{base_id}_{k}', names[k], k, base=base_id, tex=base_id, tool=tool, tags=list(tags), tint=tint)
+        block(f'{base_id}_{k}', names[k], k, base=base_id, tex=base_id, tool=tool, tags=list(tags), tint=tint, **kw)
 
 # ------------------------------------------------------------------ objets
 def item(id, fr, java='new Item(props())', model='generated', tex=None, tags=(), tex_name=None):
