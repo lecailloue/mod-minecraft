@@ -481,7 +481,7 @@ public final class ClientTest {
             net.minecraft.world.level.block.Block[] bl = {net.ringsofash.gen.Reg.DWARVEN_BRICKS.get(), net.ringsofash.gen.Reg.DWARVEN_BRICKS_SMALL.get(), net.ringsofash.gen.Reg.DWARVEN_BRICKS_LIGHT.get(),
                     net.ringsofash.gen.Reg.DWARVEN_GILDED_BRICKS.get(), net.ringsofash.gen.Reg.DWARVEN_GOLD_BRICKS.get(), net.ringsofash.gen.Reg.DWARVEN_GOLD_SMOOTH.get(),
                     net.ringsofash.gen.Reg.DWARVEN_GOLD_CHISELED.get(), net.ringsofash.gen.Reg.DWARVEN_GOLD_PILLAR.get()};
-            int bx = (int) SX + 40, bz = (int) SZ + 5, by = (int) SY;
+            int bx = (int) SX + 20, bz = (int) SZ + 5, by = (int) SY;
             for (int i = 0; i < bl.length; i++) {
                 for (int y = -1; y < 4; y++) for (int z = -4; z < 3; z++) ow.setBlock(new net.minecraft.core.BlockPos(bx + i * 2, by + y, bz + z), y == -1 ? net.minecraft.world.level.block.Blocks.STONE.defaultBlockState() : net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
                 for (int y = 0; y < 2; y++) ow.setBlock(new net.minecraft.core.BlockPos(bx + i * 2, by + y, bz), bl[i].defaultBlockState(), 3);
