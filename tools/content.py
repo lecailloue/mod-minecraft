@@ -1,6 +1,7 @@
 """Contenu : blocs, objets, recettes, textures."""
 from genlib import *
 from tex import *
+import random
 import dwarf
 
 def build():
@@ -11,6 +12,61 @@ def build():
         'itemGroup.ringsofash': 'Les Anneaux de Cendre',
         'dimension.ringsofash.hautemarche': 'La Hautemarche',
     })
+
+
+def morgul_veins(seed, hot):
+    """calque lumineux : les joints des briques (et, pour la version chaude, une rangee de briques) en vert vif"""
+    import random as _r
+    rnd = _r.Random(seed)
+    im = new()
+    for r in range(4):
+        off = 4 if r % 2 else 0
+        for bx in range(-1, 3):
+            for yy in range(4):
+                for xx in range(8):
+                    x = bx * 8 + off + xx; y = r * 4 + yy
+                    if not (0 <= x < 16): continue
+                    joint = yy == 3 or xx == 7
+                    if joint and rnd.random() < (0.97 if hot else 0.78):
+                        c = mix(rgb('#a6ffb0'), rgb('#2fd46c'), rnd.random() * 0.75)
+                    elif hot and yy == 2 and rnd.random() < 0.85:
+                        c = mix(rgb('#33c46b'), rgb('#1c8a4a'), rnd.random())
+                    elif hot and yy == 1 and rnd.random() < 0.35:
+                        c = rgb('#1c8a4a')
+                    else:
+                        continue
+                    im.putpixel((x, y), c + (255,))
+    return im
+
+def morgul_crystal(seed):
+    """bloc entierement lumineux : cristal vert degrade"""
+    rnd = random.Random(seed)
+    im = new()
+    for y in range(16):
+        for x in range(16):
+            d = max(abs(x - 7.5), abs(y - 7.5)) / 7.5
+            c = mix(rgb('#d4ffd8'), rgb('#27b85c'), min(1.0, d * 0.9 + rnd.random() * 0.18))
+            if min(x, y, 15 - x, 15 - y) == 0: c = shade(c, 0.78)
+            im.putpixel((x, y), c + (255,))
+    return im
+
+def glow_block(id, fr, base_tex, glow_tex, light):
+    """bloc de pierre dont un calque de pixels est emissif (lumiere pleine, meme dans le noir), avec une vraie lumiere en jeu"""
+    block(id, fr, 'custom', java=f'new Block(copy(Blocks.POLISHED_BLACKSTONE_BRICKS).lightLevel(s -> {light}))', tool='pickaxe')
+    faces = ('down', 'up', 'north', 'south', 'west', 'east')
+    def els(tex, lo, hi, light_data):
+        e = {'from': [lo] * 3, 'to': [hi] * 3,
+             'faces': {f: {'uv': [0, 0, 16, 16], 'texture': tex, 'cullface': f} for f in faces}}
+        if light_data: e['neoforge_data'] = {'block_light': 15, 'sky_light': 15, 'ambient_occlusion': False}
+        return e
+    textures = {'base': T(base_tex), 'particle': T(base_tex)}
+    elements = [els('#base', 0, 16, glow_tex is None)]
+    if glow_tex:
+        textures['glow'] = T(glow_tex)
+        elements.append(els('#glow', -0.02, 16.02, True))
+    wjson(f'{A}/models/block/{id}.json', {'render_type': 'minecraft:cutout', 'textures': textures, 'elements': elements})
+    bstate(id, {'variants': {'': {'model': T(id)}}})
+    imodel(id, {'parent': T(id)})
 
 # ============================================================ BLOCS
 def blocks():
@@ -75,6 +131,25 @@ def blocks():
     btex('black_bricks', ore(bb, ['#5a1f1a'], 32, 3))
     block('black_bricks', 'Briques noires', copy='POLISHED_BLACKSTONE_BRICKS', tool='pickaxe')
     family('black_bricks', 'black', 'briques noires')
+
+    # --- Minas Morgul : pierre gris-vert (#343D38 base, #252A29 extremites, #596B55 details, #77766B reflets) et lueur verte emissive
+    btex('morgul_bricks', ore(bricks('#343D38', '#252A29', 51, var=0.07), ['#596B55'], 52, 4))
+    block('morgul_bricks', 'Briques de Morgul', copy='POLISHED_BLACKSTONE_BRICKS', tool='pickaxe')
+    family('morgul_bricks', 'morgul', 'briques de Morgul')
+    btex('morgul_dark_bricks', bricks('#252A29', '#171B1A', 53, var=0.08))
+    block('morgul_dark_bricks', 'Briques sombres de Morgul', copy='POLISHED_BLACKSTONE_BRICKS', tool='pickaxe')
+    family('morgul_dark_bricks', 'morgul', 'briques sombres de Morgul')
+    btex('morgul_pale_bricks', bricks('#77766B', '#4f5a4c', 54, var=0.06))
+    block('morgul_pale_bricks', 'Briques pâles de Morgul', copy='POLISHED_BLACKSTONE_BRICKS', tool='pickaxe')
+    family('morgul_pale_bricks', 'morgul', 'briques pâles de Morgul')
+    btex('morgul_detail', framed('#596B55', 55))
+    block('morgul_detail', 'Pierre verte ciselée de Morgul', copy='POLISHED_BLACKSTONE_BRICKS', tool='pickaxe')
+    btex('morgul_vein_glow', morgul_veins(56, False))
+    btex('morgul_vein_hot_glow', morgul_veins(57, True))
+    btex('morgul_glow_tex', morgul_crystal(58))
+    glow_block('morgul_vein', 'Briques de Morgul veinées', 'morgul_bricks', 'morgul_vein_glow', 9)
+    glow_block('morgul_vein_hot', 'Briques de Morgul incandescentes', 'morgul_bricks', 'morgul_vein_hot_glow', 13)
+    glow_block('morgul_glow', 'Cristal vert de Morgul', 'morgul_glow_tex', None, 15)
 
     # --- bois doreal (elfes)
     btex('golden_log', log_side('#bdb8aa', 41)); btex('golden_log_top', log_top('#bdb8aa', '#ead79e', 42))
@@ -237,6 +312,19 @@ def recipes():
     shaped('dwarven_runes', [' # ', '#g#', ' # '], {'#': 'dwarven_bricks', 'g': 'minecraft:gold_nugget'}, 'dwarven_runes', 4, 'building')
     shaped('dwarven_lamp', [' # ', '#g#', ' # '], {'#': 'dwarven_bricks', 'g': 'minecraft:glowstone'}, 'dwarven_lamp', 4, 'building')
     shaped('black_bricks', ['##', '##'], {'#': 'volcanic_rock'}, 'black_bricks', 4, 'building')
+    shaped('morgul_bricks', ['##', '##'], {'#': 'minecraft:deepslate_bricks'}, 'morgul_bricks', 4, 'building')
+    shapeless('morgul_dark_bricks', ['morgul_bricks', 'minecraft:coal'], 'morgul_dark_bricks', 1, 'building')
+    shapeless('morgul_pale_bricks', ['morgul_bricks', 'minecraft:bone_meal'], 'morgul_pale_bricks', 1, 'building')
+    shapeless('morgul_detail', ['morgul_bricks', 'minecraft:green_dye'], 'morgul_detail', 1, 'building')
+    shapeless('morgul_vein', ['morgul_bricks', 'minecraft:slime_ball'], 'morgul_vein', 1, 'building')
+    shapeless('morgul_vein_hot', ['morgul_vein', 'minecraft:glowstone_dust'], 'morgul_vein_hot', 1, 'building')
+    shaped('morgul_glow', [' # ', '#g#', ' # '], {'#': 'morgul_vein', 'g': 'minecraft:emerald'}, 'morgul_glow', 2, 'building')
+    for st in ('morgul_bricks', 'morgul_dark_bricks', 'morgul_pale_bricks'):
+        shaped(f'{st}_stairs', ['#  ', '## ', '###'], {'#': st}, f'{st}_stairs', 4, 'building')
+        shaped(f'{st}_slab', ['###'], {'#': st}, f'{st}_slab', 6, 'building')
+        shaped(f'{st}_wall', ['###', '###'], {'#': st}, f'{st}_wall', 6)
+        for k in ('stairs', 'slab', 'wall'):
+            stonecut(st, f'{st}_{k}', 2 if k == 'slab' else 1)
     shaped('thatch', ['##', '##'], {'#': 'minecraft:wheat'}, 'thatch', 2, 'building')
     shaped('thatch_stairs', ['#  ', '## ', '###'], {'#': 'thatch'}, 'thatch_stairs', 4, 'building')
     shaped('thatch_slab', ['###'], {'#': 'thatch'}, 'thatch_slab', 6, 'building')

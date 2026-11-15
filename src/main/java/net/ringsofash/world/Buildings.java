@@ -654,30 +654,40 @@ public final class Buildings {
     // ================================================================= MINAS MORGUL
     private static BlockState[] morgulPal;
 
+    private static BlockState[] stairSet(BlockState[] p, int base, Block stairs) {
+        Direction[] dirs = {N, E, S, W};
+        for (int d = 0; d < 4; d++) {
+            p[base + d * 2] = stairs(stairs, dirs[d], false);
+            p[base + d * 2 + 1] = stairs(stairs, dirs[d], true);
+        }
+        return p;
+    }
+
     private static synchronized BlockState[] morgulPal() {
         if (morgulPal != null) return morgulPal;
         BlockState[] p = new BlockState[256];
         java.util.Arrays.fill(p, Build.AIR);
-        p[MorgulPlan.BB] = Reg.BLACK_BRICKS.get().defaultBlockState();
-        p[MorgulPlan.PBB] = Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
-        p[MorgulPlan.CBB] = Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
-        p[MorgulPlan.TILE] = Blocks.DEEPSLATE_TILES.defaultBlockState();
-        p[MorgulPlan.BLACKSTONE] = Blocks.BLACKSTONE.defaultBlockState();
-        p[MorgulPlan.GLOW] = Blocks.VERDANT_FROGLIGHT.defaultBlockState();
+        p[MorgulPlan.STONE] = Reg.MORGUL_BRICKS.get().defaultBlockState();
+        p[MorgulPlan.DARK] = Reg.MORGUL_DARK_BRICKS.get().defaultBlockState();
+        p[MorgulPlan.DETAIL] = Reg.MORGUL_DETAIL.get().defaultBlockState();
+        p[MorgulPlan.PALE] = Reg.MORGUL_PALE_BRICKS.get().defaultBlockState();
+        p[MorgulPlan.VEIN] = Reg.MORGUL_VEIN.get().defaultBlockState();
+        p[MorgulPlan.HOT] = Reg.MORGUL_VEIN_HOT.get().defaultBlockState();
+        p[MorgulPlan.GLOW] = Reg.MORGUL_GLOW.get().defaultBlockState();
         p[MorgulPlan.GLASS] = Blocks.GREEN_STAINED_GLASS.defaultBlockState();
         p[MorgulPlan.BARS] = Blocks.IRON_BARS.defaultBlockState();
-        p[MorgulPlan.FIRE] = Blocks.SOUL_FIRE.defaultBlockState();
-        p[MorgulPlan.SOUL_SOIL] = Blocks.SOUL_SOIL.defaultBlockState();
-        p[MorgulPlan.WATER] = Blocks.WATER.defaultBlockState();
-        p[MorgulPlan.LANTERN] = hang(Blocks.SOUL_LANTERN);
-        p[MorgulPlan.SLAB_BOT] = slab(Reg.BLACK_BRICKS_SLAB.get(), false);
-        p[MorgulPlan.SLAB_TOP] = slab(Reg.BLACK_BRICKS_SLAB.get(), true);
-        p[MorgulPlan.WALL] = Reg.BLACK_BRICKS_WALL.get().defaultBlockState();
-        Direction[] dirs = {N, E, S, W};
-        for (int d = 0; d < 4; d++) {
-            p[MorgulPlan.STAIR + d * 2] = stairs(Reg.BLACK_BRICKS_STAIRS.get(), dirs[d], false);
-            p[MorgulPlan.STAIR + d * 2 + 1] = stairs(Reg.BLACK_BRICKS_STAIRS.get(), dirs[d], true);
-        }
+        p[MorgulPlan.BLACKSTONE] = Blocks.BLACKSTONE.defaultBlockState();
+        p[MorgulPlan.SLAB_S] = slab(Reg.MORGUL_BRICKS_SLAB.get(), false);
+        p[MorgulPlan.SLAB_S_TOP] = slab(Reg.MORGUL_BRICKS_SLAB.get(), true);
+        p[MorgulPlan.SLAB_P] = slab(Reg.MORGUL_PALE_BRICKS_SLAB.get(), false);
+        p[MorgulPlan.SLAB_P_TOP] = slab(Reg.MORGUL_PALE_BRICKS_SLAB.get(), true);
+        p[MorgulPlan.SLAB_D] = slab(Reg.MORGUL_DARK_BRICKS_SLAB.get(), false);
+        p[MorgulPlan.SLAB_D_TOP] = slab(Reg.MORGUL_DARK_BRICKS_SLAB.get(), true);
+        p[MorgulPlan.WALL_S] = Reg.MORGUL_BRICKS_WALL.get().defaultBlockState();
+        p[MorgulPlan.WALL_D] = Reg.MORGUL_DARK_BRICKS_WALL.get().defaultBlockState();
+        stairSet(p, MorgulPlan.STAIR_S, Reg.MORGUL_BRICKS_STAIRS.get());
+        stairSet(p, MorgulPlan.STAIR_P, Reg.MORGUL_PALE_BRICKS_STAIRS.get());
+        stairSet(p, MorgulPlan.STAIR_D, Reg.MORGUL_DARK_BRICKS_STAIRS.get());
         morgulPal = p;
         return p;
     }
@@ -686,16 +696,22 @@ public final class Buildings {
     private static void morgul(Build b) {
         MorgulPlan p = MorgulPlan.get();
         BlockState[] pal = morgulPal();
-        Block bb = Reg.BLACK_BRICKS.get();
-        b.foundation(3, 16, 93, 96, bb);                                    // le socle repose sur le sol
-        b.foundation(43, 0, 53, 3, bb);                                     // la rampe d'acces
+        Block base = Reg.MORGUL_DARK_BRICKS.get();
+        BlockState bottom = Blocks.BLACKSTONE.defaultBlockState(), lit = Reg.MORGUL_GLOW.get().defaultBlockState();
         int maxY = MorgulPlan.H - MorgulPlan.OFF - 1;
         for (int x = 0; x < MorgulPlan.W; x++) {
             for (int z = 0; z < MorgulPlan.D; z++) {
                 if (!b.in(x, 0, z)) continue;
                 int top = p.top(x, z);
+                int cd = p.chasm(x, z);
                 int ground = Math.min(b.groundY(x, z), maxY);
-                for (int y = 1; y <= ground; y++) if (p.get(x, y, z) == MorgulPlan.AIR) b.s(x, y, z, Build.AIR);   // on rase le relief qui depasse
+                if (p.get(x, -1, z) != MorgulPlan.AIR) b.foundation(x, z, x, z, base);          // le socle repose sur le sol
+                int lo = cd > 0 ? -cd + 1 : 1;                                                    // on rase le relief qui depasse, et on creuse le gouffre
+                for (int y = ground; y >= lo; y--) if (p.get(x, y, z) == MorgulPlan.AIR) b.s(x, y, z, Build.AIR);
+                if (cd > 0) {
+                    b.s(x, -cd, z, (x * 7 + z * 13) % 11 == 0 ? lit : bottom);
+                    b.s(x, -cd - 1, z, bottom);
+                }
                 for (int y = -MorgulPlan.OFF; y <= top; y++) {
                     byte id = p.get(x, y, z);
                     if (id != MorgulPlan.AIR) b.s(x, y, z, pal[id]);
