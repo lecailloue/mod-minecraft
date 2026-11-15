@@ -172,10 +172,10 @@ public final class SelfTest {
             for (int dx = -7; dx <= 7; dx++) for (int dz = -7; dz <= 7; dz++) lands.getChunk((oc[0] >> 4) + dx, (oc[1] >> 4) + dz);
             topDown(lands, oc[0] - 100, oc[1] - 100, oc[0] + 99, oc[1] + 99, new File(OUT, "orthanc_dessus.png"), 3);
             int oy = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, oc[0] + 60, oc[1]);
-            section(lands, oc[0] - 110, oc[0] + 110, oc[1], oy - 28, oy + 150, new File(OUT, "orthanc_coupe.png"), 4);
+            section(lands, oc[0] - 110, oc[0] + 110, oc[1], oy - 28, oy + 210, new File(OUT, "orthanc_coupe.png"), 3);
             var door = lands.getBlockState(new BlockPos(oc[0] + 12, oy + 1, oc[1]));
-            var plat = lands.getBlockState(new BlockPos(oc[0] + 6, oy + 123, oc[1] + 6));
-            var horn = lands.getBlockState(new BlockPos(oc[0] + 9, oy + 130, oc[1] + 9));
+            var plat = lands.getBlockState(new BlockPos(oc[0] + 6, oy + 183, oc[1] + 6));
+            var horn = lands.getBlockState(new BlockPos(oc[0] + 5, oy + 195, oc[1] + 5));
             log("orthanc : sol " + oy + " ; porte " + door + " ; plateforme " + plat + " ; corne " + horn);
             if (!door.isAir()) fail("orthanc : la porte de la tour est bouchee en " + door);
             if (plat.isAir()) fail("orthanc : pas de plateforme au sommet de la tour");

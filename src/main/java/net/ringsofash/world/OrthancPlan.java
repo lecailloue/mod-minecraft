@@ -5,14 +5,16 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Plan d'Orthanc : tour de 30 x 30 sur 140 de haut au centre d'un cercle de 200 blocs de diametre ferme par une enceinte
+ * Plan d'Orthanc : tour de 30 x 30 a la base, haute d'environ 200 et qui s'affine vers le sommet, au centre d'un cercle de 200 blocs de diametre ferme par une enceinte
  * a moitie detruite ; entre les deux, une zone de guerre (cratères, puits a echafaudages, gravats, chemins).
  * Grille de blocs abstraits (identifiants de palette), sans dependance a Minecraft ; {@link Buildings} la traduit en blocs.
  * Repere local : x, z de 0 a 199, axe de la tour en (100, 100) (la tour occupe x, z de 85 a 114), y = 0 est le premier niveau d'air
  * au-dessus du sol, y negatif = sous le sol. La porte de l'enceinte et celle de la tour regardent vers +x.
  */
 public final class OrthancPlan {
-    public static final int W = 200, D = 200, OFF = 24, H = 170;       // y local de -OFF a H - OFF - 1
+    public static final int TOPY = 182;                                   // y de la dalle du sommet ; la surface est a TOPY + 2, les cornes montent a TOPY + 18
+    public static final int COL0 = 118;                                  // base de la collerette de pointes
+    public static final int W = 200, D = 200, OFF = 24, H = OFF + TOPY + 22;       // y local de -OFF a H - OFF - 1
     public static final int CX = 100, CZ = 100;
     public static final double R_WALL = 100.0, R_LEVEL = 92.5;         // rayon exterieur de l'enceinte, rayon nivele
 
@@ -254,30 +256,34 @@ public final class OrthancPlan {
     }
 
     // ------------------------------------------------------------------ tour
-    private static int hwAt(int y) {
+    /** demi-largeur du fut sans collerette ni corniche : 14 au pied, 9 au sommet, affinement continu */
+    private static double base(int y) {
+        double t = Math.min(1.0, Math.max(0.0, (y - 4.0) / (TOPY - 5.0)));
+        return 9.0 + 5.0 * Math.pow(1 - t, 1.15);
+    }
+    private static boolean collar(int y) { return y >= COL0 && y <= COL0 + 9; }
+    private static boolean ledge(int y) { return y >= 11 && y <= TOPY - 3 && y % 12 == 11 && !collar(y); }
+    private static double wAt(int y) {
         if (y <= 3) return 15;
-        if (y <= 47) return 13;
-        if (y <= 93) return 12;
-        if (y <= 99) return 14;                                                  // collerette
-        if (y <= 103) return 13;
-        if (y <= 121) return 11;
-        return 13;                                                               // balcon
+        if (y >= TOPY) return base(TOPY - 1) + 2;
+        if (y >= COL0 && y <= COL0 + 5) return base(y) + 2.5;
+        if (y > COL0 + 5 && y <= COL0 + 9) return base(y) + 1.5;
+        return base(y) + (ledge(y) ? 1 : 0);
     }
     /** demi-largeur du volume interieur : murs de 3 d'epaisseur */
-    private static int hinAt(int y) { return y <= 47 ? 10 : y <= 103 ? 9 : 8; }
-    private static boolean ledge(int y) { return y >= 11 && y <= 119 && y % 12 == 11 && !(y >= 94 && y <= 103); }
-    private static final int[] FLOORS = {0, 20, 40, 60, 80, 100};
+    private static int hinAt(int y) { return Math.max(6, (int) Math.round(base(Math.max(4, y))) - 3); }
+    private static final int[] FLOORS = {0, 20, 40, 60, 80, 100, 120, 140, 160};
 
     private void tower() {
         // fondations
         for (int y = -4; y <= -1; y++) for (int x = CX - 15; x < CX + 15; x++) for (int z = CZ - 15; z < CZ + 15; z++)
             set(x, y, z, rnd(x, y, z) < 0.15 ? BS : PB);
-        for (int y = 0; y <= 123; y++) {
-            int hw = hwAt(y) + (ledge(y) ? 1 : 0);
+        for (int y = 0; y <= TOPY + 1; y++) {
+            double hw = wAt(y);
             boolean plinth = y <= 3;
-            int cham = plinth || y >= 122 ? 0 : 2;
+            int cham = plinth || y >= TOPY ? 0 : 2;
             int hin = hinAt(y);
-            boolean solidRoof = y >= 122;
+            boolean solidRoof = y >= TOPY;
             for (int x = CX - 17; x < CX + 17; x++) for (int z = CZ - 17; z < CZ + 17; z++) {
                 double ox = x + 0.5 - CX, oz = z + 0.5 - CZ, ax = Math.abs(ox), az = Math.abs(oz), m = Math.max(ax, az);
                 double dcD = hw - 0.5 - m;
@@ -295,38 +301,25 @@ public final class OrthancPlan {
                     if (cav) { set(x, y, z, AIR); continue; }
                     id = skin(x, y, z, d, iu);
                     // fenetres : fente de 1 x 5 traversant le mur, barreaux a l'exterieur
-                    if (!plinth && !solidRoof && y >= 13 && y <= 117 && !(y >= 94 && y <= 103) && faceMid && d <= 2 && d >= 0 && Math.floorMod(iu, 4) == 2) {
+                    if (!plinth && !solidRoof && y >= 13 && y <= TOPY - 6 && !collar(y) && faceMid && d <= 2 && d >= 0 && Math.floorMod(iu, 4) == 2) {
                         int s = y % 12;
                         if (s >= 3 && s <= 7 && !ledge(y)) id = d == 0 ? BARS : AIR;
                     }
                     set(x, y, z, id);
-                } else if (d == -1 && !plinth && !solidRoof && faceMid && dc == -1 && Math.floorMod(iu, 4) == 0 && !(y >= 94 && y <= 103) && y <= 121) {
+                } else if (d == -1 && !plinth && !solidRoof && faceMid && dc == -1 && Math.floorMod(iu, 4) == 0 && !collar(y) && y <= TOPY - 2) {
                     set(x, y, z, BS);                 // pilastres en relief
                 }
             }
         }
-        // ailerons evases au pied de la tour : contreforts qui s'amincissent vers le haut (jusqu'a 15 de demi-largeur)
-        for (int y = 4; y <= 21; y++) {
-            int ext = y <= 11 ? 2 : 1;
-            for (int x = CX - 17; x < CX + 17; x++) for (int z = CZ - 17; z < CZ + 17; z++) {
-                double ox = x + 0.5 - CX, oz = z + 0.5 - CZ, ax = Math.abs(ox), az = Math.abs(oz), m = Math.max(ax, az);
-                int d = (int) Math.round(13 - 0.5 - m);
-                if (d >= 0 || d < -ext) continue;
-                int iu = ax >= az ? (int) Math.floor(oz) : (int) Math.floor(ox);
-                double other = Math.min(ax, az);
-                if (other > 10.5 || Math.floorMod(iu, 4) != 0) continue;
-                if (ox > 0 && ax >= az && Math.abs(oz) < 3.5) continue;                // laisse la porte libre
-                set(x, y, z, d == -ext && y % 4 == 3 ? SLAB_BS_TOP : BS);
-            }
-        }
-        // collerette de pointes
-        for (int x = CX - 17; x < CX + 17; x++) for (int z = CZ - 17; z < CZ + 17; z++) {
+        // collerette de pointes : une rangee de dents sur le bord de la corniche
+        int ih = (int) Math.round(wAt(COL0 + 9));
+        for (int x = CX - 20; x < CX + 20; x++) for (int z = CZ - 20; z < CZ + 20; z++) {
             double ox = x + 0.5 - CX, oz = z + 0.5 - CZ, m = Math.max(Math.abs(ox), Math.abs(oz));
-            if (m != 13.5) continue;
+            if (m != ih - 0.5) continue;
             int iu = Math.abs(ox) >= Math.abs(oz) ? (int) Math.floor(oz) : (int) Math.floor(ox);
             if (Math.floorMod(iu, 2) != 0) continue;
-            int len = 2 + (int) (rnd(x, 31, z) * 5);
-            for (int y = 100; y < 100 + len; y++) set(x, y, z, y > 100 + len - 2 ? SLAB_BS : BS);
+            int len = 3 + (int) (rnd(x, 31, z) * 6);
+            for (int y = COL0 + 10; y < COL0 + 10 + len; y++) set(x, y, z, y > COL0 + 8 + len ? SLAB_BS : BS);
         }
         // sommets : plateforme, parapet, cornes
         crown();
@@ -337,8 +330,8 @@ public final class OrthancPlan {
     private int skin(int x, int y, int z, int d, int iu) {
         if (ledge(y)) return d == 0 ? DS : (rnd(x, y, z) < 0.5 ? DS : PB);
         double q = rnd(x, y, z);
-        if (y >= 122) return d == 0 ? DS : PB;
-        if (y >= 94 && y <= 99) return d <= 1 ? BS : PB;
+        if (y >= TOPY) return d == 0 ? DS : PB;
+        if (collar(y)) return d <= 1 ? BS : PB;
         if (d == 0 && Math.floorMod(iu, 4) == 0) return BS;                       // fut du pilastre
         return q < 0.05 ? CRACK : q < 0.09 ? DS : q < 0.11 ? CHISEL : PB;
     }
@@ -348,9 +341,10 @@ public final class OrthancPlan {
         // surface a y = 124 (dalle 122..123 deja posee par la boucle) : parapet sur le bord
         for (int x = CX - 15; x < CX + 15; x++) for (int z = CZ - 15; z < CZ + 15; z++) {
             double ox = x + 0.5 - CX, oz = z + 0.5 - CZ, m = Math.max(Math.abs(ox), Math.abs(oz));
-            if (m > 12.5 || m < 11.5) continue;
-            set(x, 124, z, WALL_BS);
-            if (((x + z) & 1) == 0) set(x, 125, z, WALL_BS);
+            double pm = wAt(TOPY) - 0.5;
+            if (m > pm || m < pm - 1) continue;
+            set(x, TOPY + 2, z, WALL_BS);
+            if (((x + z) & 1) == 0) set(x, TOPY + 3, z, WALL_BS);
         }
         // quatre cornes aux angles, deux hautes et deux plus courtes, un peu penchees vers l'axe
         int[][] hornC = {{-1, -1, 16}, {1, -1, 12}, {-1, 1, 12}, {1, 1, 16}};
@@ -359,11 +353,11 @@ public final class OrthancPlan {
             for (int h = 0; h < len; h++) {
                 int size = h < len * 0.45 ? 4 : h < len * 0.7 ? 3 : h < len - 2 ? 2 : 1;
                 int lean = h >= len * 0.8 ? 2 : h >= len * 0.5 ? 1 : 0;
-                double cxh = CX + hc[0] * (9 - lean), czh = CZ + hc[1] * (9 - lean);
+                double cxh = CX + hc[0] * (6.5 - lean), czh = CZ + hc[1] * (6.5 - lean);
                 int x0 = (int) Math.round(cxh - size / 2.0), z0 = (int) Math.round(czh - size / 2.0);
                 for (int a = 0; a < size; a++) for (int b = 0; b < size; b++) {
                     if (size == 4 && (a == 0 || a == 3) && (b == 0 || b == 3) && h > 2) continue;      // section arrondie
-                    set(x0 + a, 124 + h, z0 + b, h > len - 3 ? BS : (rnd(x0 + a, h, z0 + b) < 0.12 ? DS : PB));
+                    set(x0 + a, TOPY + 2 + h, z0 + b, h > len - 3 ? BS : (rnd(x0 + a, h, z0 + b) < 0.12 ? DS : PB));
                 }
             }
         }
@@ -372,14 +366,14 @@ public final class OrthancPlan {
     // ------------------------------------------------------------------ interieur
     private void interior() {
         // noyau : pilier 4 x 4 et escalier en spirale (puits de 8 x 8)
-        for (int y = 0; y <= 121; y++) for (int dx = -2; dx <= 1; dx++) for (int dz = -2; dz <= 1; dz++)
+        for (int y = 0; y <= TOPY - 1; y++) for (int dx = -2; dx <= 1; dx++) for (int dz = -2; dz <= 1; dz++)
             set(CX + dx, y, CZ + dz, y % 10 == 9 ? CHISEL : (rnd(CX + dx, y, CZ + dz) < 0.1 ? CRACK : DS));
         // planchers : tout le volume sauf le puits de l'escalier
         for (int fy : FLOORS) {
             if (fy == 0) continue;
             for (int x = CX - 15; x < CX + 15; x++) for (int z = CZ - 15; z < CZ + 15; z++) {
                 double ox = x + 0.5 - CX, oz = z + 0.5 - CZ, m = Math.max(Math.abs(ox), Math.abs(oz));
-                int hin = hinAt(fy);
+                int hin = hinAt(fy - 1);
                 if (m > hin - 0.5) continue;
                 if (x >= CX - 4 && x <= CX + 3 && z >= CZ - 4 && z <= CZ + 3) continue;        // puits
                 set(x, fy - 1, z, ((x + z) & 1) == 0 ? PB : BS);
@@ -400,7 +394,7 @@ public final class OrthancPlan {
         }
         int startIdx = 0;                                        // la premiere marche part au pied de la porte (cote +x), en bas
         for (int i = 0; i < n; i++) if (ring.get(i)[0] == 2 && ring.get(i)[1] == -1) startIdx = i;
-        for (int k = 0; k < 124; k++) {
+        for (int k = 0; k <= TOPY + 1; k++) {
             int i = (startIdx + k) % n;
             int[] c = ring.get(i);
             int dr = dirs[i];
@@ -429,7 +423,7 @@ public final class OrthancPlan {
             }
             int[][] lampsAt = {{CX - 6, CZ - 6}, {CX + 5, CZ - 6}, {CX - 6, CZ + 5}, {CX + 5, CZ + 5}};
             for (int[] lp : lampsAt) {
-                if (fy < 100) {
+                if (fy < FLOORS[FLOORS.length - 1] && get(lp[0], fy + 18, lp[1]) == AIR) {
                     for (int h = 0; h < 3; h++) set(lp[0], fy + 18 - h, lp[1], CHAIN);
                     set(lp[0], fy + 15, lp[1], LANTERN);
                 }
@@ -440,23 +434,23 @@ public final class OrthancPlan {
         }
         // salle du trone tout en haut : estrade et siege face a l'escalier
         int fy = FLOORS[FLOORS.length - 1];
-        int tx = CX - 8;
-        box(tx, fy, CZ - 3, tx + 2, fy, CZ + 2, BS);
+        int hinT = hinAt(fy), tx = CX - hinT;
+        box(tx, fy, CZ - 3, tx + 1, fy, CZ + 2, BS);
         box(tx, fy + 1, CZ - 2, tx, fy + 4, CZ + 1, DS);
         set(tx + 1, fy + 1, CZ - 1, stair(STAIR_BS, W_, false)); set(tx + 1, fy + 1, CZ, stair(STAIR_BS, W_, false));
         set(tx + 1, fy + 1, CZ - 2, SLAB_BS); set(tx + 1, fy + 1, CZ + 1, SLAB_BS);
         set(tx + 1, fy + 2, CZ - 2, WALL_BS); set(tx + 1, fy + 2, CZ + 1, WALL_BS);
-        box(tx + 3, fy, CZ - 1, CX - 5, fy, CZ, CARPET);
-        chests.add(new int[]{tx + 2, fy + 1, CZ + 2, E});
+        box(tx + 2, fy, CZ - 1, CX - 5, fy, CZ, CARPET);
+        chests.add(new int[]{tx + 1, fy + 1, CZ + 2, E});
         // balustrade autour du puits sur la plateforme : barreaux, sauf la ou l'escalier debouche
         for (int x = CX - 4; x <= CX + 3; x++) for (int z = CZ - 4; z <= CZ + 3; z++) {
             boolean border = x == CX - 4 || x == CX + 3 || z == CZ - 4 || z == CZ + 3;
             boolean pillar = x >= CX - 2 && x <= CX + 1 && z >= CZ - 2 && z <= CZ + 1;
-            if (pillar || get(x, 123, z) != AIR) continue;
-            if (border) set(x, 123, z, BARS);
+            if (pillar || get(x, TOPY + 1, z) != AIR) continue;
+            if (border) set(x, TOPY + 1, z, BARS);
         }
         // les derniers escaliers doivent rester libres : on re-pose la fin de la vis et son degagement
-        for (int k = 120; k < 124; k++) {
+        for (int k = TOPY - 2; k <= TOPY + 1; k++) {
             int i = (startIdx + k) % n;
             int[] c = ring.get(i);
             set(CX + c[0], k, CZ + c[1], stair(STAIR_BS, dirs[i], false));
@@ -467,13 +461,13 @@ public final class OrthancPlan {
             }
         }
         // le pilier se termine par un brasero sur la plateforme
-        box(CX - 2, 122, CZ - 2, CX + 1, 123, CZ + 1, DS);
-        box(CX - 1, 124, CZ - 1, CX, 124, CZ, BS);
-        set(CX - 1, 125, CZ - 1, LANTERN); set(CX, 125, CZ, LANTERN);
+        box(CX - 2, TOPY, CZ - 2, CX + 1, TOPY + 1, CZ + 1, DS);
+        box(CX - 1, TOPY + 2, CZ - 1, CX, TOPY + 2, CZ, BS);
+        set(CX - 1, TOPY + 3, CZ - 1, LANTERN); set(CX, TOPY + 3, CZ, LANTERN);
     }
 
     private void setAirIfRoof(int x, int y, int z) {
-        if (y >= 122 && y <= 123) set(x, y, z, AIR);
+        if (y >= TOPY && y <= TOPY + 1) set(x, y, z, AIR);
     }
 
     private static int[][] outward(int[] c) {
