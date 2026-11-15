@@ -126,6 +126,8 @@ public final class ClientTest {
                         try { s.setup.accept(server.getPlayerList().getPlayers().get(0)); }
                         catch (Throwable t) { RingsOfAsh.LOGGER.error("[CLIENTTEST] ECHEC scene " + s.name, t); }
                     });
+                    if (s.name.contains("_1p")) mc.options.hideGui = false;      // F1 cache aussi la main
+                    if (s.name.contains("coup_face")) mc.options.hideGui = true;
                     mc.options.setCameraType(s.name.contains("monte") ? net.minecraft.client.CameraType.THIRD_PERSON_BACK : s.name.contains("face") ? net.minecraft.client.CameraType.THIRD_PERSON_FRONT : net.minecraft.client.CameraType.FIRST_PERSON);
                     wait = s.ticks; state = 3;
                 }
