@@ -40,9 +40,9 @@ public class MapScreen extends Screen {
     private static final int[] PALETTE = {0xE03030, 0xF08A20, 0xF0D030, 0x40C040, 0x30C8D0, 0x3060E0, 0xA040E0, 0xF0F0F0};
 
     /** Lieux qui ont une petite image a la place du point (nom du lieu -> image, largeur, hauteur). */
-    private record Icon(ResourceLocation tex, int w, int h) {}
+    private record Icon(ResourceLocation tex, int w, int h, int tw, int th) {}
     private static final Map<String, Icon> ICONS = Map.of(
-            "minas_morgul", new Icon(ResourceLocation.fromNamespaceAndPath(RingsOfAsh.MODID, "textures/gui/map/minas_morgul.png"), 36, 35));
+            "minas_morgul", new Icon(ResourceLocation.fromNamespaceAndPath(RingsOfAsh.MODID, "textures/gui/map/minas_morgul.png"), 24, 23, 36, 35));
 
     /** Un lieu n'est marque que s'il a ete decouvert (donnees recues du serveur, mises a jour en direct). */
     private static boolean known(String key) { return Net.ClientLore.discovered.contains(key); }
@@ -214,7 +214,7 @@ public class MapScreen extends Screen {
         for (Map.Entry<String, int[]> e : MapData.places().entrySet()) {
             if (!known(e.getKey())) continue;
             double dx = toScreenX(e.getValue()[0]) - mx, dy = toScreenY(e.getValue()[1]) - my;
-            double lim = ICONS.containsKey(e.getKey()) ? 14 * 14 : 8 * 8;
+            double lim = ICONS.containsKey(e.getKey()) ? 10 * 10 : 8 * 8;
             if (dx * dx + dy * dy < lim && dx * dx + dy * dy < bd) { bd = dx * dx + dy * dy; best = e; }
         }
         return best;
@@ -375,7 +375,7 @@ public class MapScreen extends Screen {
             Icon ic = ICONS.get(e.getKey());
             if (ic != null) {
                 RenderSystem.enableBlend();
-                g.blit(ic.tex, px - ic.w / 2, py - ic.h / 2, ic.w, ic.h, 0, 0, ic.w, ic.h, ic.w, ic.h);
+                g.blit(ic.tex, px - ic.w / 2, py - ic.h / 2, ic.w, ic.h, 0, 0, ic.tw, ic.th, ic.tw, ic.th);
                 g.drawString(this.font, pretty(e.getKey()), px - font.width(pretty(e.getKey())) / 2, py + ic.h / 2 + 1, h ? 0xFFFFFFFF : 0xFFF0E0B0, true);
                 continue;
             }
