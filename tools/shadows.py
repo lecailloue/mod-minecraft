@@ -320,7 +320,30 @@ def shadow(variant=0, chief=False, armored=False):
     return groups
 
 
+def chief_figure():
+    """Chef des ombres : l'ancien cavalier chef (robe, casque a pointes, epaulieres, epee) sans son cheval, avec des jambes pour marcher ;
+    assis sur le dragon, GeoModel plie les jambes. Pieces animees : head, rarm_r (epee), leg_r/leg_l, cape_*."""
+    r = [c for c in rider(2, True) if getattr(c, 'name', '') != 'lap']
+    def cape(i):
+        top = 85 - i * 14
+        kids = [C(f'capep{i}', -9 + i * .8, top - 14, 8.2 + i * 1.3, 18 - i * 1.6, 14, 1.6, 'h_cape', key=f'chcape{i}')]
+        if i < 3:
+            kids.append(cape(i + 1))
+        return Group(f'cape_{i}', (0, top, 8.2 + i * 1.3), (0, 0, 0), kids)
+    groups = [Group('body', (0, 58, 0), (0, 0, 0), r + [cape(0)])]
+    for sg_ in (-1, 1):
+        n = 'l' if sg_ < 0 else 'r'
+        legs = [C('pant_' + n, sg_ * 4.6 - 4, 9, -4, 8, 49, 8, 'h_cloth2', key='ch_pant'),
+                C('kneep_' + n, sg_ * 4.6 - 4.5, 30, -5.5, 9, 6, 3, 'h_steel', key='ch_knee'),
+                C('boot_' + n, sg_ * 4.6 - 4.6, 0, -6, 9.2, 12, 11, 'h_leather', key='ch_boot'),
+                C('boot_cap_' + n, sg_ * 4.6 - 4.8, 11, -4.4, 9.6, 2, 8.8, 'h_iron', key='ch_bcap')]
+        groups.append(Group('leg_' + n, (sg_ * 4.6, 58, 0), (0, 0, 0), legs))
+    unique_names(groups)
+    return groups
+
+
 MODELS = {
+    'chief_figure': (chief_figure, 1.0),
     'ombre_1': (lambda: shadow(0, False, True), 1.0),
     'ombre_2': (lambda: shadow(1, False, True), 1.0),
     'ombre_chef': (lambda: shadow(2, True), 1.12),

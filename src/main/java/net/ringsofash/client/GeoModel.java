@@ -195,7 +195,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
         if (e instanceof net.ringsofash.entity.GiantSpiderEntity) spiderPose(swing, amount, age, atk);
         if (!sway.isEmpty()) sylvPose(swing, amount, age);
         if (e instanceof net.ringsofash.entity.ShadowDragonEntity) dragonPose(e, age, atk);
-        if (e instanceof net.ringsofash.entity.ShadowChiefEntity) masterPose(e, age, amount);
+        if (e instanceof net.ringsofash.entity.ShadowChiefEntity) masterPose(e, age, amount, atk);
     }
 
     /**
@@ -251,18 +251,19 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
      * lacet, la machoire s'ouvre quand il mord, la cape du chef flotte. Le nez se leve quand il monte et se baisse quand il pique.
      */
     /** Chef des ombres : cape qui flotte ; assis sur le dragon, jambes ployees de part et d'autre de la selle et bras en avant. */
-    private void masterPose(T e, float age, float amount) {
+    private void masterPose(T e, float age, float amount, float atk) {
         boolean ride = e.isPassenger();
         for (int i = 0; i < 4; i++) {
             ModelPart c = p("cape_" + i);
             if (c != null) c.xRot += 0.10F + (ride ? 0.22F : amount * 0.5F) * (1 + i * 0.4F) + Mth.sin(age * 0.25F - i * 0.9F) * (ride ? 0.12F : 0.05F);
         }
+        ModelPart rr = p("rarm_r");
+        if (rr != null) rr.xRot -= atk * 1.5F;                                   // l'epee se leve a l'attaque
         if (!ride) return;
-        ModelPart lr = p("leg_r"), ll = p("leg_l"), ar = p("arm_r"), al = p("arm_l");
-        if (lr != null) { lr.xRot += -0.95F; lr.zRot += 0.32F; }
-        if (ll != null) { ll.xRot += -0.95F; ll.zRot -= 0.32F; }
-        if (ar != null) ar.xRot += -0.8F;
-        if (al != null) al.xRot += -0.8F;
+        root.y += 54F;                                                            // assis : les hanches sur la selle
+        ModelPart lr = p("leg_r"), ll = p("leg_l");
+        if (lr != null) { lr.xRot = -1.3F; lr.zRot = 0.5F; }
+        if (ll != null) { ll.xRot = -1.3F; ll.zRot = -0.5F; }
     }
 
     private void dragonPose(T e, float age, float atk) {

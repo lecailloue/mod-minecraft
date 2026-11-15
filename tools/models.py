@@ -213,11 +213,11 @@ ITEM_3D = {'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0
            'head': {'rotation': [0, 180, 0], 'translation': [0, 13, 7], 'scale': [1, 1, 1]},
            'gui': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]},
            'fixed': {'rotation': [0, 180, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]}}
-# armes d'hast (batons, lance, glaive) : tenues a la verticale, au milieu du manche (bras le long du corps : l'arme monte derriere la main)
-POLE_3D = dict(ITEM_3D, thirdperson_righthand={'rotation': [0, -90, -45], 'translation': [0, 0.5, 0.5], 'scale': [0.85, 0.85, 0.85]},
-               thirdperson_lefthand={'rotation': [0, 90, 45], 'translation': [0, 0.5, 0.5], 'scale': [0.85, 0.85, 0.85]},
-               firstperson_righthand={'rotation': [0, 0, 45], 'translation': [1.13, 1.0, 1.13], 'scale': [0.68, 0.68, 0.68]},
-               firstperson_lefthand={'rotation': [0, 0, -45], 'translation': [1.13, 1.0, 1.13], 'scale': [0.68, 0.68, 0.68]})
+# armes d'hast (batons, lance, glaive) : meme prise que le baton du roi gobelin (tenues par le milieu)
+POLE_3D = dict(ITEM_3D, thirdperson_righthand={'rotation': [0, -90, 55], 'translation': [0, 4.0, 0.5], 'scale': [0.85, 0.85, 0.85]},
+               thirdperson_lefthand={'rotation': [0, 90, -55], 'translation': [0, 4.0, 0.5], 'scale': [0.85, 0.85, 0.85]},
+               firstperson_righthand={'rotation': [0, -90, 25], 'translation': [1.13, 3.2, 1.13], 'scale': [0.68, 0.68, 0.68]},
+               firstperson_lefthand={'rotation': [0, 90, -25], 'translation': [1.13, 3.2, 1.13], 'scale': [0.68, 0.68, 0.68]})
 POLE_IDS = {'staff_fire', 'staff_light', 'staff_storm', 'staff_healing', 'rider_spear', 'elven_glaive'}
 _NEUTRAL = {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]}
 BOW_3D = dict(ITEM_3D, firstperson_righthand=_NEUTRAL, firstperson_lefthand=_NEUTRAL, thirdperson_righthand={'rotation': [-80, 260, -40], 'translation': [-1, -2, 2.5], 'scale': [0.9, 0.9, 0.9]},
@@ -274,10 +274,10 @@ def orc_weapons():
     import goblins as GB
     ws = {'orc_cleaver': O.w_cleaver, 'orc_scimitar': O.w_scimitar, 'orc_machete': O.w_notched, 'orc_spear': O.w_spear, 'orc_mace': O.w_mace, 'goblin_king_staff': GB.w_kstaff}
     item_model = {'parent': 'minecraft:builtin/entity', 'display': {
-        'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0, 0.5, 0.5], 'scale': [0.85, 0.85, 0.85]},
-        'thirdperson_lefthand': {'rotation': [0, 90, -55], 'translation': [0, 0.5, 0.5], 'scale': [0.85, 0.85, 0.85]},
-        'firstperson_righthand': {'rotation': [0, -90, 25], 'translation': [1.13, 1.0, 1.13], 'scale': [0.68, 0.68, 0.68]},
-        'firstperson_lefthand': {'rotation': [0, 90, -25], 'translation': [1.13, 1.0, 1.13], 'scale': [0.68, 0.68, 0.68]},
+        'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0, 4.0, 0.5], 'scale': [0.85, 0.85, 0.85]},
+        'thirdperson_lefthand': {'rotation': [0, 90, -55], 'translation': [0, 4.0, 0.5], 'scale': [0.85, 0.85, 0.85]},
+        'firstperson_righthand': {'rotation': [0, -90, 25], 'translation': [1.13, 3.2, 1.13], 'scale': [0.68, 0.68, 0.68]},
+        'firstperson_lefthand': {'rotation': [0, 90, -25], 'translation': [1.13, 3.2, 1.13], 'scale': [0.68, 0.68, 0.68]},
         'ground': {'rotation': [0, 0, 0], 'translation': [0, 2, 0], 'scale': [0.6, 0.6, 0.6]},
         'head': {'rotation': [0, 180, 0], 'translation': [0, 13, 7], 'scale': [1, 1, 1]},
         'gui': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]},
@@ -431,13 +431,13 @@ def shadow_dragon():
 
 
 def shadow_chief():
-    """Chef des ombres (tools/shadow_chief.py) : le chef, humanoide a casque a pointes, mob a part du dragon"""
+    """Chef des ombres : l'ancien design du cavalier chef (tools/shadows.py, chief_figure), a pied ou assis sur le dragon"""
     import bbimport, tempfile
     import trollcore as T
-    import shadow_chief as SM
+    import shadows as SH
     from genlib import wjson, save
     from PIL import Image
-    groups, cubes, W, H, tex, glow, lo, hi = SM.make()
+    groups, cubes, W, H, tex, glow = SH.build('chief_figure')
     tmp = tempfile.mkdtemp()
     T.export_bbmodel('shadow_chief', groups, cubes, W, H, tex, os.path.join(tmp, 'shadow_chief.bbmodel'))
     geo = bbimport.convert(os.path.join(tmp, 'shadow_chief.bbmodel'))

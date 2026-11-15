@@ -457,6 +457,15 @@ public final class ClientTest {
             }
             view(p, ow, SX + 0.5, SY + 3.5, SZ, 0F, 10F);
         }));
+        SCENES.add(new Scene("03g_chef_pied", 50, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            var c = actor(ow, ModEntities.SHADOW_CHIEF.get(), SX, SZ + 7, o -> { });
+            Entity dr = c.getVehicle();
+            c.stopRiding(); if (dr != null) dr.discard();
+            c.moveTo(SX, SY, SZ + 7, 180F, 0F);
+            view(p, ow, SX + 0.5, SY + 1.8, SZ, 0F, 6F);
+        }));
         // dragon des ombres : profil a deux instants (le cou ondule, les ailes battent), vue de face, puis vrai vol avec IA (on mesure qu'il rejoint et mord sa cible)
         for (int[] d : new int[][]{{60, 0}, {81, 1}}) {
             final int dd = d[1];

@@ -43,6 +43,12 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::renderers);
         Atmosphere.init(modBus);
         SwordAura.init();
+        // dragon des ombres : Espace = monter, C = descendre (en altitude)
+        net.ringsofash.entity.ShadowDragonEntity.VERTICAL = pl -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (pl != mc.player) return 0;
+            return (mc.options.keyJump.isDown() ? 1 : 0) - (DESCEND_KEY.isDown() ? 1 : 0);
+        };
         BowDraw.init();
         SylvanRender.init();
         SwordSwing.init();

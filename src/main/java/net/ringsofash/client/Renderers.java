@@ -176,10 +176,13 @@ public final class Renderers {
         }
     }
 
-    /** Chef des ombres : 1 unite du modele = 5 cm, fente du casque lumineuse. */
+    /** Chef des ombres (ancien design du cavalier chef, a pied : 2,4 blocs), fente du casque lumineuse. */
     public static class ShadowChief extends MobRenderer<net.ringsofash.entity.ShadowChiefEntity, GeoModel<net.ringsofash.entity.ShadowChiefEntity>> {
+        private final float scale;
+
         public ShadowChief(EntityRendererProvider.Context ctx) {
             super(ctx, new GeoModel<>(ctx.bakeLayer(ClientSetup.layer("geo_shadow_chief")), "shadow_chief"), 0.5F);
+            scale = 2.4F * 16F / GeoDef.get("shadow_chief").height;
             addLayer(new RenderLayer<net.ringsofash.entity.ShadowChiefEntity, GeoModel<net.ringsofash.entity.ShadowChiefEntity>>(this) {
                 @Override
                 public void render(PoseStack ps, MultiBufferSource buf, int light, net.ringsofash.entity.ShadowChiefEntity e, float a, float b, float c, float d, float f, float g) {
@@ -190,7 +193,7 @@ public final class Renderers {
         }
 
         @Override public ResourceLocation getTextureLocation(net.ringsofash.entity.ShadowChiefEntity e) { return tex("shadow_chief"); }
-        @Override protected void scale(net.ringsofash.entity.ShadowChiefEntity e, PoseStack ps, float pt) { ps.scale(0.8F, 0.8F, 0.8F); }
+        @Override protected void scale(net.ringsofash.entity.ShadowChiefEntity e, PoseStack ps, float pt) { ps.scale(scale, scale, scale); }
     }
 
     /** Les 5 nouveaux modeles spectraux : translucides (peau et tissus par pixel), squelette visible dessous, yeux lumineux. */

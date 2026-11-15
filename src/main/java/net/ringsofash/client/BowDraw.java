@@ -33,7 +33,7 @@ public final class BowDraw {
         PoseStack ps = e.getPoseStack();
         ps.pushPose();
         ps.translate(i * 0.56F, -0.52F + e.getEquipProgress() * -0.6F, -0.72F);
-        ps.translate(-i * 0.34F, 0.36F, 0F);
+        ps.translate(-i * 0.20F, 0.36F, 0F);
         ps.scale(0.62F, 0.62F, 0.62F);
         ps.translate(0F, 0F, pull * 0.03F);                    // le bras se tend un peu
         ps.mulPose(Axis.YP.rotationDegrees(90F));              // la corde vers la camera, le ventre vers l'avant
