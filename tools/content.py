@@ -85,13 +85,9 @@ def blocks():
           java='new PaleLavaBlock(BlockBehaviour.Properties.of().mapColor(MapColor.SAND).noCollission().forceSolidOn()'
                '.strength(-1.0F, 3600000.0F).lightLevel(s -> 15).noLootTable().pushReaction(PushReaction.BLOCK))')
 
-    # --- ichor de Morgul : liquide vert lumineux (fluide de type lave, code dans fluid/ModFluids.java)
-    save(lava_frames('#0f5a2a', '#2fd45a', '#c4ff9a', frames=16, size=16, seed=11), f'{A}/textures/block/morgul_ichor_still.png')
-    wjson(f'{A}/textures/block/morgul_ichor_still.png.mcmeta', {'animation': {'frametime': 3, 'interpolate': True}})
-    save(lava_frames('#0f5a2a', '#2fd45a', '#c4ff9a', frames=16, size=32, seed=12), f'{A}/textures/block/morgul_ichor_flow.png')
-    wjson(f'{A}/textures/block/morgul_ichor_flow.png.mcmeta', {'animation': {'frametime': 3, 'interpolate': True}})
+    # --- ichor de Morgul : liquide vert lumineux (fluide de type lave, code dans fluid/ModFluids.java ; texture = lave vanilla teintee en vert cote client)
     bstate('morgul_ichor', {'variants': {'': {'model': f'{MOD}:block/morgul_ichor'}}})
-    wjson(f'{A}/models/block/morgul_ichor.json', {'textures': {'particle': f'{MOD}:block/morgul_ichor_still'}})
+    wjson(f'{A}/models/block/morgul_ichor.json', {'textures': {'particle': 'minecraft:block/lava_still'}})
     imodel('morgul_ichor_bucket', {'parent': 'neoforge:item/bucket_drip', 'loader': 'neoforge:fluid_container', 'fluid': f'{MOD}:morgul_ichor'})
     LANG[f'block.{MOD}.morgul_ichor'] = 'Ichor de Morgul'
     LANG[f'fluid_type.{MOD}.morgul_ichor'] = 'Ichor de Morgul'
