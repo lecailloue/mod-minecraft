@@ -23,6 +23,9 @@ public final class GeoDef {
     public float height;
     /** etendue verticale (px) autour du point de prise : armes rendues comme objets */
     public float ymin, ymax;
+    /** armes 3D de tools/weapons3d.py : hauteur de la prise en main (0 = armes d'orques, tenues par le milieu), lueur, translucide */
+    public float hold;
+    public boolean glow, translucent;
     public Part[] parts;
 
     private static final Map<String, GeoDef> CACHE = new HashMap<>();

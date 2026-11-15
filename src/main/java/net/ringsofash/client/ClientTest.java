@@ -126,9 +126,10 @@ public final class ClientTest {
                         try { s.setup.accept(server.getPlayerList().getPlayers().get(0)); }
                         catch (Throwable t) { RingsOfAsh.LOGGER.error("[CLIENTTEST] ECHEC scene " + s.name, t); }
                     });
-                    if (s.name.contains("_1p")) mc.options.hideGui = false;      // F1 cache aussi la main
+                    if (s.name.contains("_1p")) mc.options.hideGui = false;
+                    if (s.name.contains("arme_face")) mc.options.hideGui = true;      // F1 cache aussi la main
                     if (s.name.contains("coup_face")) mc.options.hideGui = true;
-                    mc.options.setCameraType(s.name.contains("monte") ? net.minecraft.client.CameraType.THIRD_PERSON_BACK : s.name.contains("face") ? net.minecraft.client.CameraType.THIRD_PERSON_FRONT : net.minecraft.client.CameraType.FIRST_PERSON);
+                    mc.options.setCameraType(s.name.contains("monte") ? net.minecraft.client.CameraType.THIRD_PERSON_BACK : (s.name.contains("face")) ? net.minecraft.client.CameraType.THIRD_PERSON_FRONT : net.minecraft.client.CameraType.FIRST_PERSON);
                     wait = s.ticks; state = 3;
                 }
                 case 3 -> {
@@ -153,6 +154,14 @@ public final class ClientTest {
         p.getAbilities().flying = true;
         p.onUpdateAbilities();
         p.teleportTo(level, x, y, z, yaw, pitch);
+    }
+
+    private static void heldScene(ServerPlayer p, String id, boolean face) {
+        ServerLevel ow = p.server.overworld();
+        clear(ow);
+        view(p, ow, SX + 0.5, SY, SZ + 0.5, 0F, 8F);
+        p.getAbilities().flying = false; p.onUpdateAbilities();
+        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.get(RingsOfAsh.id(id))));
     }
 
     private static void swingScene(ServerPlayer p) {
@@ -508,6 +517,23 @@ public final class ClientTest {
         // coup d'epee : vue subjective puis troisieme personne de face, a quelques ticks du debut du geste
         for (int n : new int[]{3, 4, 5, 6}) SCENES.add(new Scene("16a_coup_1p_" + n, n, p -> swingScene(p)));
         for (int n : new int[]{3, 4, 5, 6, 7}) SCENES.add(new Scene("16b_coup_face_" + n, n, p -> swingScene(p)));
+        // armes en 3D : au sol (toutes), puis tenues en main en vue subjective (avec la barre d'objets : icones) et en troisieme personne
+        SCENES.add(new Scene("17a_armes_sol", 40, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            String[] ids = {"lunargent_sword", "elven_blade", "elven_glaive", "frost_blade", "blood_blade", "viper_dagger", "storm_blade", "sentinel_blade", "sun_blade", "halfling_dagger",
+                    "ranger_sword", "wight_blade", "kings_blade", "valmoire_blade", "dwarven_axe", "dwarven_hammer", "ash_mace", "rider_spear", "troll_club", "lunargent_pickaxe", "elven_bow",
+                    "staff_fire", "staff_light", "staff_storm", "staff_healing"};
+            for (int i = 0; i < ids.length; i++) {
+                var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(RingsOfAsh.id(ids[i]));
+                var ie = new net.minecraft.world.entity.item.ItemEntity(ow, SX - 6 + (i % 9) * 1.5, SY + 0.6 + (i / 9) * 1.6, SZ + 7.0, new ItemStack(item));
+                ie.setNoGravity(true); ie.setPickUpDelay(32767); ie.setDeltaMovement(0, 0, 0);
+                ow.addFreshEntity(ie);
+            }
+            view(p, ow, SX + 0.5, SY + 3.0, SZ - 2, 0F, 12F);
+        }));
+        for (String id : new String[]{"valmoire_blade", "elven_bow", "staff_storm", "dwarven_hammer"}) SCENES.add(new Scene("17b_arme_1p_" + id, 20, p -> heldScene(p, id, false)));
+        for (String id : new String[]{"valmoire_blade", "elven_bow", "staff_fire", "dwarven_hammer", "rider_spear"}) SCENES.add(new Scene("17c_arme_face_" + id, 20, p -> heldScene(p, id, true)));
         spectreLine("03b_spectres", 9.0, 3F, 2.2);
         spectreLine("03c_roi_proche", 4.2, 6F, 2.2);
         orcLine("01b_orques_modeles", 11.0, 3F, 2.3, new int[]{0, 5, 10, 15, 2, 3, 0}, true);

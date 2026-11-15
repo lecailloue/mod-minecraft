@@ -204,6 +204,55 @@ def geo_extent(geo):
                         lo, hi = min(lo, y), max(hi, y)
     return round(lo, 2), round(hi, 2)
 
+# armes 3D du jeu (tools/weapons3d.py) : memes items qu'avant, rendus comme les armes d'orques (WeaponItemRenderer)
+ITEM_3D = {'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0, 4.0, 0.5], 'scale': [0.85, 0.85, 0.85]},
+           'thirdperson_lefthand': {'rotation': [0, 90, -55], 'translation': [0, 4.0, 0.5], 'scale': [0.85, 0.85, 0.85]},
+           'firstperson_righthand': {'rotation': [0, -90, 25], 'translation': [1.13, 3.2, 1.13], 'scale': [0.68, 0.68, 0.68]},
+           'firstperson_lefthand': {'rotation': [0, 90, -25], 'translation': [1.13, 3.2, 1.13], 'scale': [0.68, 0.68, 0.68]},
+           'ground': {'rotation': [0, 0, 0], 'translation': [0, 2, 0], 'scale': [0.6, 0.6, 0.6]},
+           'head': {'rotation': [0, 180, 0], 'translation': [0, 13, 7], 'scale': [1, 1, 1]},
+           'gui': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]},
+           'fixed': {'rotation': [0, 180, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]}}
+BOW_3D = dict(ITEM_3D, thirdperson_righthand={'rotation': [-80, 260, -40], 'translation': [-1, -2, 2.5], 'scale': [0.9, 0.9, 0.9]},
+              thirdperson_lefthand={'rotation': [-80, -280, 40], 'translation': [-1, -2, 2.5], 'scale': [0.9, 0.9, 0.9]})
+# hauteur (unites du modele, pommeau = 0) a laquelle la main tient l'arme : poignee des epees, ou fraction de la longueur
+HOLD_3D = {'viper_dagger': 8, 'halfling_dagger': 8}
+HOLD_FRAC = {'elven_glaive': .30, 'rider_spear': .30, 'dwarven_axe': .25, 'dwarven_hammer': .25, 'troll_club': .22, 'ash_mace': .25, 'lunargent_pickaxe': .25,
+             'staff_fire': .38, 'staff_light': .38, 'staff_storm': .38, 'staff_healing': .38, 'elven_bow': .5}
+NO_ITEM_3D = {'medieval_sword', 'morning_star'}               # pas (encore) d'objets dans le jeu
+
+
+def weapons_3d():
+    """les modeles 3D d'armes (tools/weapons3d.py) remplacent les icones plates : geo + texture (+ lueur) + modele d'objet 'builtin/entity'"""
+    import bbimport, tempfile
+    import trollcore as T
+    import weapons3d as WP
+    from genlib import wjson, save
+    from PIL import Image
+    ws = WP.all_weapons()
+    n = 0
+    for id in ws:
+        if id in NO_ITEM_3D:
+            continue
+        label, groups, cubes, W, H, tex, glow = WP.build(id, ws)
+        name = 'arme_' + id
+        tmp = tempfile.mkdtemp()
+        T.export_bbmodel(name, groups, cubes, W, H, tex, os.path.join(tmp, name + '.bbmodel'))
+        geo = bbimport.convert(os.path.join(tmp, name + '.bbmodel'))
+        geo['ymin'], geo['ymax'] = geo_extent(geo)
+        geo['height'] = geo['ymax']
+        geo['hold'] = float(HOLD_3D.get(id, 11 if id not in HOLD_FRAC else geo['ymin'] + HOLD_FRAC[id] * (geo['ymax'] - geo['ymin'])))
+        geo['glow'] = bool(glow[..., 3].any())
+        geo['translucent'] = bool((tex[..., 3] < 255).any())
+        wjson(f'{A}/geo/{name}.json', geo)
+        save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}.png')
+        if geo['glow']:
+            save(Image.fromarray(glow, 'RGBA'), f'{A}/textures/entity/{name}_glow.png')
+        wjson(f'{A}/models/item/{id}.json', {'parent': 'minecraft:builtin/entity', 'display': BOW_3D if id == 'elven_bow' else ITEM_3D})
+        n += 1
+    print(f'armes 3D : {n} objets')
+
+
 def orc_weapons():
     """les armes d'orques en 3D (memes cubes que celles que portent les orques) : modele + texture, rendus comme objets (WeaponItemRenderer)"""
     import bbimport, tempfile
@@ -539,4 +588,4 @@ def skins():
     skin('cave_thief', 'goblin', skin='#b8b8a8', hair='#b8b8a8', hair_style='bald', eyes='#d8f0ff', top='#b0b0a0', legs='#6a6050', boots='#b8b8a8', sleeves=False, seed=55)
 
 def build():
-    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); orc_weapons(); lurker(); treeman_bb(); sylvestres(); shadow_dragon(); shadow_master(); eagle(); dragon(); mammoth(); skins()
+    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); orc_weapons(); lurker(); treeman_bb(); sylvestres(); shadow_dragon(); shadow_master(); weapons_3d(); eagle(); dragon(); mammoth(); skins()
