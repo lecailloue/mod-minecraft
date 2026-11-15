@@ -150,7 +150,7 @@ public final class ClientSetup {
             // texture de lave vanilla (animee, sans motif carre) teintee en vert
             @Override public net.minecraft.resources.ResourceLocation getStillTexture() { return net.minecraft.resources.ResourceLocation.withDefaultNamespace("block/lava_still"); }
             @Override public net.minecraft.resources.ResourceLocation getFlowingTexture() { return net.minecraft.resources.ResourceLocation.withDefaultNamespace("block/lava_flow"); }
-            @Override public int getTintColor() { return 0xFF33FF59; }
+            @Override public int getTintColor() { return 0xFF80FF8C; }
         }, net.ringsofash.fluid.ModFluids.ICHOR_TYPE.get());
         e.registerItem(ext, Reg.ORC_CLEAVER.get(), Reg.ORC_SCIMITAR.get(), Reg.ORC_MACHETE.get(), Reg.ORC_SPEAR.get(), Reg.ORC_MACE.get(), Reg.GOBLIN_KING_STAFF.get(), Reg.GOBLIN_PICKAXE.get(),
                 Reg.LUNARGENT_SWORD.get(), Reg.ELVEN_BLADE.get(), Reg.ELVEN_GLAIVE.get(), Reg.FROST_BLADE.get(), Reg.BLOOD_BLADE.get(), Reg.VIPER_DAGGER.get(), Reg.STORM_BLADE.get(), Reg.SENTINEL_BLADE.get(), Reg.SUN_BLADE.get(), Reg.HALFLING_DAGGER.get(), Reg.RANGER_SWORD.get(), Reg.WIGHT_BLADE.get(), Reg.KINGS_BLADE.get(), Reg.VALMOIRE_BLADE.get(), Reg.DWARVEN_AXE.get(), Reg.DWARVEN_HAMMER.get(), Reg.ASH_MACE.get(), Reg.RIDER_SPEAR.get(), Reg.TROLL_CLUB.get(), Reg.LUNARGENT_PICKAXE.get(), Reg.ELVEN_BOW.get(), Reg.STAFF_FIRE.get(), Reg.STAFF_LIGHT.get(), Reg.STAFF_STORM.get(), Reg.STAFF_HEALING.get());

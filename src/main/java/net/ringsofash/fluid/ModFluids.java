@@ -41,7 +41,7 @@ public final class ModFluids {
     public static final DeferredHolder<Fluid, BaseFlowingFluid.Source> ICHOR = FLUIDS.register("morgul_ichor", () -> new BaseFlowingFluid.Source(ModFluids.PROPS));
     public static final DeferredHolder<Fluid, BaseFlowingFluid.Flowing> FLOWING_ICHOR = FLUIDS.register("flowing_morgul_ichor", () -> new BaseFlowingFluid.Flowing(ModFluids.PROPS));
 
-    public static final DeferredBlock<LiquidBlock> ICHOR_BLOCK = BLOCKS.register("morgul_ichor", () -> new LiquidBlock(ICHOR.get(),
+    public static final DeferredBlock<LiquidBlock> ICHOR_BLOCK = BLOCKS.register("morgul_ichor", () -> new IchorBlock(ICHOR.get(),
             BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(MapColor.EMERALD).lightLevel(s -> 15)));
     public static final DeferredItem<BucketItem> ICHOR_BUCKET = ITEMS.register("morgul_ichor_bucket", () -> new BucketItem(ICHOR.get(),
             new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
