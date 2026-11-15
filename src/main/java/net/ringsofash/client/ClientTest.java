@@ -534,6 +534,24 @@ public final class ClientTest {
         }));
         for (String id : new String[]{"valmoire_blade", "elven_bow", "staff_storm", "dwarven_hammer"}) SCENES.add(new Scene("17b_arme_1p_" + id, 20, p -> heldScene(p, id, false)));
         for (String id : new String[]{"valmoire_blade", "elven_bow", "staff_fire", "dwarven_hammer", "rider_spear"}) SCENES.add(new Scene("17c_arme_face_" + id, 20, p -> heldScene(p, id, true)));
+        // armes tenues vues de profil (mannequins), pour juger l'orientation et la taille en main
+        String[][] profils = {{"valmoire_blade", "kings_blade", "elven_glaive", "rider_spear", "dwarven_axe", "dwarven_hammer", "ash_mace", "troll_club"},
+                {"lunargent_pickaxe", "elven_bow", "staff_fire", "staff_light", "staff_storm", "staff_healing", "viper_dagger", "frost_blade"}};
+        for (int k = 0; k < profils.length; k++) {
+            final String[] set = profils[k];
+            SCENES.add(new Scene("17d_arme_profil_" + k, 25, p -> {
+                ServerLevel ow = p.server.overworld();
+                clear(ow);
+                for (int i = 0; i < set.length; i++) {
+                    var as = EntityType.ARMOR_STAND.create(ow);
+                    as.moveTo(SX - 5.6 + i * 1.6, SY, SZ + 7, 90F, 0F);
+                    as.setShowArms(true);
+                    as.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.get(RingsOfAsh.id(set[i]))));
+                    ow.addFreshEntity(as);
+                }
+                view(p, ow, SX + 0.5, SY + 1.6, SZ + 0.5, 0F, 5F);
+            }));
+        }
         spectreLine("03b_spectres", 9.0, 3F, 2.2);
         spectreLine("03c_roi_proche", 4.2, 6F, 2.2);
         orcLine("01b_orques_modeles", 11.0, 3F, 2.3, new int[]{0, 5, 10, 15, 2, 3, 0}, true);

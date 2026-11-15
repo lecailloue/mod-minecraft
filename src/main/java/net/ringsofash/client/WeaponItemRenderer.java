@@ -55,9 +55,11 @@ public class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
         ps.translate(0.5F, 0.5F, 0.5F);
         ps.mulPose(Axis.ZP.rotationDegrees(-45F));
         ps.scale(s, s, s);
-        ps.mulPose(Axis.YP.rotationDegrees(90F));
+        boolean icon = d.hold > 0 && ctx == ItemDisplayContext.GUI;      // icone : face large de la lame vers nous
+        if (!icon) ps.mulPose(Axis.YP.rotationDegrees(90F));
         ps.translate(0F, 1.5F - mid / 16F, 0F);
         ps.scale(-1F, -1F, 1F);
+        if (icon) ps.scale(2.4F, 1F, 1F);                                  // proportions reelles = trait de 1 px : on epaissit pour l'icone
         VertexConsumer vc = buf.getBuffer(d.translucent ? RenderType.entityTranslucent(Renderers.tex(name)) : RenderType.entityCutoutNoCull(Renderers.tex(name)));
         m.renderToBuffer(ps, vc, light, overlay, -1);
         if (d.glow && glowing(BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath()))

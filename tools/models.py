@@ -243,7 +243,7 @@ def weapons_3d():
         geo['height'] = geo['ymax']
         geo['hold'] = float(HOLD_3D.get(id, 11 if id not in HOLD_FRAC else geo['ymin'] + HOLD_FRAC[id] * (geo['ymax'] - geo['ymin'])))
         geo['glow'] = bool(glow[..., 3].any())
-        geo['translucent'] = bool((tex[..., 3] < 255).any())
+        geo['translucent'] = bool(((tex[..., 3] > 0) & (tex[..., 3] < 255)).any())
         wjson(f'{A}/geo/{name}.json', geo)
         save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}.png')
         if geo['glow']:
