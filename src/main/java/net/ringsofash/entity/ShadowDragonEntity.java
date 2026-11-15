@@ -258,7 +258,7 @@ public class ShadowDragonEntity extends Monster {
     /** Comme en vol creatif : ZQSD (avant, arriere, cotes) dans le sens du regard a l'horizontale, Espace monte, C descend ; sans touche, il plane. */
     @Override
     protected Vec3 getRiddenInput(Player player, Vec3 travelVector) {
-        return new Vec3(player.xxa * 0.8, VERTICAL.applyAsInt(player) * 0.8, player.zza);
+        return new Vec3(player.xxa * 0.8, VERTICAL.applyAsInt(player) * 0.5, player.zza);
     }
 
     @Override

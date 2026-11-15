@@ -127,6 +127,7 @@ public final class ClientTest {
                         catch (Throwable t) { RingsOfAsh.LOGGER.error("[CLIENTTEST] ECHEC scene " + s.name, t); }
                     });
                     if (s.name.contains("_1p")) mc.options.hideGui = false;
+                    mc.options.keyUse.setDown(s.name.contains("arc_bande"));            // clic droit maintenu : l'arc reste bande
                     if (s.name.contains("arme_face")) mc.options.hideGui = true;      // F1 cache aussi la main
                     if (s.name.contains("coup_face")) mc.options.hideGui = true;
                     mc.options.setCameraType(s.name.contains("monte") ? net.minecraft.client.CameraType.THIRD_PERSON_BACK : (s.name.contains("face")) ? net.minecraft.client.CameraType.THIRD_PERSON_FRONT : net.minecraft.client.CameraType.FIRST_PERSON);
@@ -446,15 +447,15 @@ public final class ClientTest {
         SCENES.add(new Scene("03f_chef_dragon", 70, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
-            var c = actor(ow, ModEntities.SHADOW_CHIEF.get(), SX, SZ + 16, o -> { });
+            var c = actor(ow, ModEntities.SHADOW_CHIEF.get(), SX, SZ + 9, o -> { });
             Entity dr = c.getVehicle();
             log("CHEF_DRAGON monte=" + (dr instanceof net.ringsofash.entity.ShadowDragonEntity) + " chefPV=" + c.getMaxHealth());
             if (dr instanceof net.ringsofash.entity.ShadowDragonEntity d) {
                 d.setNoAi(true); d.setNoGravity(true);
-                d.moveTo(SX, SY + 1.5, SZ + 16, 90F, 0F); d.setYBodyRot(90F); d.setYHeadRot(90F);
+                d.moveTo(SX, SY + 1.5, SZ + 9, 90F, 0F); d.setYBodyRot(90F); d.setYHeadRot(90F);
                 c.setYRot(90F); c.setYBodyRot(90F); c.setYHeadRot(90F);
             }
-            view(p, ow, SX + 0.5, SY + 4.0, SZ - 2, 0F, 8F);
+            view(p, ow, SX + 0.5, SY + 3.5, SZ, 0F, 10F);
         }));
         // dragon des ombres : profil a deux instants (le cou ondule, les ailes battent), vue de face, puis vrai vol avec IA (on mesure qu'il rejoint et mord sa cible)
         for (int[] d : new int[][]{{60, 0}, {81, 1}}) {

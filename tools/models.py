@@ -213,6 +213,12 @@ ITEM_3D = {'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0
            'head': {'rotation': [0, 180, 0], 'translation': [0, 13, 7], 'scale': [1, 1, 1]},
            'gui': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]},
            'fixed': {'rotation': [0, 180, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]}}
+# armes d'hast (batons, lance, glaive) : tenues a la verticale, au milieu du manche (bras le long du corps : l'arme monte derriere la main)
+POLE_3D = dict(ITEM_3D, thirdperson_righthand={'rotation': [0, -90, -45], 'translation': [0, 0.5, 0.5], 'scale': [0.85, 0.85, 0.85]},
+               thirdperson_lefthand={'rotation': [0, 90, 45], 'translation': [0, 0.5, 0.5], 'scale': [0.85, 0.85, 0.85]},
+               firstperson_righthand={'rotation': [0, 0, 45], 'translation': [1.13, 1.0, 1.13], 'scale': [0.68, 0.68, 0.68]},
+               firstperson_lefthand={'rotation': [0, 0, -45], 'translation': [1.13, 1.0, 1.13], 'scale': [0.68, 0.68, 0.68]})
+POLE_IDS = {'staff_fire', 'staff_light', 'staff_storm', 'staff_healing', 'rider_spear', 'elven_glaive'}
 _NEUTRAL = {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]}
 BOW_3D = dict(ITEM_3D, firstperson_righthand=_NEUTRAL, firstperson_lefthand=_NEUTRAL, thirdperson_righthand={'rotation': [-80, 260, -40], 'translation': [-1, -2, 2.5], 'scale': [0.9, 0.9, 0.9]},
               thirdperson_lefthand={'rotation': [-80, -280, 40], 'translation': [-1, -2, 2.5], 'scale': [0.9, 0.9, 0.9]})
@@ -253,7 +259,7 @@ def weapons_3d():
         save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}.png')
         if geo['glow']:
             save(Image.fromarray(glow, 'RGBA'), f'{A}/textures/entity/{name}_glow.png')
-        wjson(f'{A}/models/item/{id}.json', {'parent': 'minecraft:builtin/entity', 'display': BOW_3D if id == 'elven_bow' else ITEM_3D})
+        wjson(f'{A}/models/item/{id}.json', {'parent': 'minecraft:builtin/entity', 'display': BOW_3D if id == 'elven_bow' else POLE_3D if id in POLE_IDS else ITEM_3D})
         n += 1
     print(f'armes 3D : {n} objets')
 
