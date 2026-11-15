@@ -19,7 +19,7 @@ public class IchorBlock extends LiquidBlock {
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         super.animateTick(state, level, pos, random);
         if (!level.getBlockState(pos.above()).isAir()) return;                       // seulement la surface
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 4; i++) {
             double x = pos.getX() + random.nextDouble(), z = pos.getZ() + random.nextDouble();
             level.addParticle(ModFluids.ICHOR_SMOKE.get(), x, pos.getY() + 1.0 + random.nextDouble() * 0.3, z,
                     (random.nextDouble() - 0.5) * 0.02, 0.03 + random.nextDouble() * 0.04, (random.nextDouble() - 0.5) * 0.02);
