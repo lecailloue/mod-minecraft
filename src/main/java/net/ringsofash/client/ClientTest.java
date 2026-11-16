@@ -935,6 +935,10 @@ public final class ClientTest {
         spotT("87_barad_douve", BX + 85, BZ + 85, 25, 135F, 18F, 6000);
         spotT("88_barad_aerien", BX + 140, BZ + 140, 130, 135F, 20F, 6000);
         spotT("89_barad_mi_hauteur", BX + 70, BZ, 120, 90F, -10F, 6000);
+        spotT("95_oeil_sud", BX, BZ + 40, 233, 180F, 0F, 6000);
+        spotT("96_oeil_est", BX + 40, BZ, 233, 90F, 0F, 6000);
+        spotT("97_oeil_loin", BX, BZ + 150, 200, 180F, 6F, 6000);
+        spotT("98_oeil_nuit", BX, BZ + 60, 233, 180F, 0F, 18000);
         spotT("90_barad_nuit_loin", BX, BZ + 235, 110, 180F, -20F, 18000);
         for (int[] it : new int[][]{{91, -30, 0, -90, -3, 0}, {92, -6, -7, -62, 5, 200}}) {
             final int[] c = it;

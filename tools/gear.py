@@ -321,6 +321,18 @@ def build():
     item_img = sprite(FOODS['dust'], mat('#6a6a72'))
     itex('smoke_vent', item_img)
     imodel('smoke_vent', {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/smoke_vent'}})
+    # ---- Oeil de Sauron : bloc invisible (point d'ancrage du rendu 3D, voir client/EyeOfSauronRenderer), pose par Barad-dur
+    block('eye_of_sauron', 'Œil de Sauron', 'custom', drop='none',
+          java='new EyeOfSauronBlock(BlockBehaviour.Properties.of().noCollission().noOcclusion().strength(-1.0F, 3600000.0F).noLootTable().lightLevel(s -> 15).pushReaction(PushReaction.BLOCK))')
+    bstate('eye_of_sauron', {'variants': {'': {'model': 'minecraft:block/air'}}})
+    itex('eye_of_sauron', sprite(FOODS['dust'], mat('#ff8a1a')))
+    imodel('eye_of_sauron', {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/eye_of_sauron'}})
+    import shutil as _sh
+    _src = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'eye_of_sauron')
+    for _f, _dst in (('eye_of_sauron.geo.json', 'geo/eye_of_sauron.geo.json'), ('eye_of_sauron.animation.json', 'animations/eye_of_sauron.animation.json'),
+                     ('eye_of_sauron.png', 'textures/entity/eye_of_sauron.png')):
+        os.makedirs(os.path.dirname(os.path.join(A, _dst)), exist_ok=True)
+        _sh.copyfile(os.path.join(_src, _f), os.path.join(A, _dst))
     shaped('ranger_cloak', ['PPP', 'LLL', 'L L'], {'P': 'warg_pelt', 'L': 'minecraft:leather'}, 'ranger_cloak')
     shaped('ash_cloak', ['DDD', '#H#', '# #'], {'D': 'dragon_scale', 'H': 'demon_heart', '#': 'black_steel_ingot'}, 'ash_cloak')
     shaped('halfling_boots', ['S S', 'L L'], {'S': 'spider_silk', 'L': 'minecraft:leather'}, 'halfling_boots')

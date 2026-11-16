@@ -736,6 +736,8 @@ public final class Buildings {
         }
         Direction[] dirs = {N, E, S, W};
         for (int[] c : p.chests) b.chest(c[0], c[1], c[2], dirs[c[3]], "dark_tower");
+        // l'Oeil : un bloc d'ancrage invisible au centre de la couronne ; le client y dessine le modele 3D, qui suit le joueur du regard
+        b.s(BaradPlan.CX, BaradPlan.TOP + 14, BaradPlan.CZ, Reg.EYE_OF_SAURON.get().defaultBlockState());
     }
 
     // ================================================================= ORTHANC
