@@ -151,6 +151,17 @@ public final class ClientTest {
     }
 
     // ------------------------------------------------------------------ outils de mise en scene (cote serveur)
+    /** premier bloc plein a partir de y0 avec 3 blocs d'air au-dessus : le sol ou l'on peut se tenir */
+    private static int floorY(ServerLevel lv, int x, int z, int y0) {
+        for (int y = y0; y < y0 + 90; y++) {
+            if (!lv.getBlockState(new net.minecraft.core.BlockPos(x, y, z)).isAir()
+                && lv.getBlockState(new net.minecraft.core.BlockPos(x, y + 1, z)).isAir()
+                && lv.getBlockState(new net.minecraft.core.BlockPos(x, y + 2, z)).isAir()
+                && lv.getBlockState(new net.minecraft.core.BlockPos(x, y + 3, z)).isAir()) return y + 1;
+        }
+        return y0 + 40;
+    }
+
     private static void look(ServerPlayer p, ServerLevel level, double x, double y, double z, double tx, double ty, double tz) {
         float yaw = (float) Math.toDegrees(Math.atan2(-(tx - x), tz - z)), pitch = (float) -Math.toDegrees(Math.atan2(ty - y, Math.hypot(tx - x, tz - z)));
         view(p, level, x, y, z, yaw, pitch);
@@ -386,10 +397,14 @@ public final class ClientTest {
                     case 13 -> {                                                          // l'entree d'une maison, vue de face
                         java.util.List<int[]> dl = ep.doorList();
                         int[] dr = dl.get(Math.max(0, dl.size() / 2));
-                        int fx = dr[0] + dr[3] * 3, fz = dr[1] + dr[4] * 3;
-                        look(p, lands, ox + fx + 0.5, py + dr[2] + 2.2, oz + fz + 0.5, ox + dr[0] - dr[3] * 3 + 0.5, py + dr[2] + 1.6, oz + dr[1] - dr[4] * 3 + 0.5);
+                        int fx = ox + dr[0] + dr[3] * 3, fz = oz + dr[1] + dr[4] * 3;
+                        int fy = floorY(lands, fx, fz, py - 10);
+                        look(p, lands, fx + 0.5, fy + 1.7, fz + 0.5, ox + dr[0] - dr[3] * 3 + 0.5, fy + 1.4, oz + dr[1] - dr[4] * 3 + 0.5);
                     }
-                    default -> look(p, lands, hx + 3.5, py + 34.8, hz - 19.5, hx - 8, py + 35.5, hz - 19.5);   // dans la grande salle, vers la porte d'une aile
+                    default -> {                                                          // dans la grande salle, vers la porte d'une aile
+                        int fy = floorY(lands, hx + 3, hz - 19, py - 10);
+                        look(p, lands, hx + 3.5, fy + 1.7, hz - 19.5, hx - 8, fy + 1.9, hz - 19.5);
+                    }
                 }
             }));
         }
