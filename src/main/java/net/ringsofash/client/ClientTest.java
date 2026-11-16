@@ -848,7 +848,7 @@ public final class ClientTest {
                     case 1 -> view(p, lands, hx + 40.5, py + 36, hz - 4.5, 90F, 8F);
                     case 2 -> view(p, lands, tx - 14.5, py + 36, tz + 24.5, -150F, -8F);
                     case 3 -> view(p, lands, EX - 20.5, py + 60, EZ + 70.5, 160F, 20F);
-                    case 4 -> view(p, lands, hx + 0.5, py + 35, hz + 3.5, 180F, 2F);
+                    case 4 -> view(p, lands, hx + 0.5, py + 28, hz + 3.5, 180F, 2F);
                     case 5 -> look(p, lands, ox + ep.lowFieldX - 7.5, py + 7, oz + ep.lowFieldZ + 10.5, ox + ep.lowFieldX, py + 1, oz + ep.lowFieldZ);
                     case 6 -> look(p, lands, ox + ep.stallX - 6.5, py + ep.stallL + 3, oz + ep.stallZ + 8.5, ox + ep.stallX, py + ep.stallL + 1, oz + ep.stallZ);
                     default -> look(p, lands, ox + ep.smithX - 7.5, py + ep.smithL + 3, oz + ep.smithZ + 9.5, ox + ep.smithX, py + ep.smithL + 1, oz + ep.smithZ);
