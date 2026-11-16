@@ -175,7 +175,7 @@ public final class SelfTest {
             section(lands, oc[0] - 110, oc[0] + 110, oc[1], oy - 28, oy + 210, new File(OUT, "orthanc_coupe.png"), 3);
             var door = lands.getBlockState(new BlockPos(oc[0] + 12, oy + 1, oc[1]));
             var plat = lands.getBlockState(new BlockPos(oc[0] + 6, oy + 183, oc[1] + 6));
-            var horn = lands.getBlockState(new BlockPos(oc[0] + 15, oy + 212, oc[1] - 10));
+            var horn = lands.getBlockState(new BlockPos(oc[0] + 12, oy + 186, oc[1] - 12));
             log("orthanc : sol " + oy + " ; porte " + door + " ; plateforme " + plat + " ; crete est " + horn);
             if (!door.isAir()) fail("orthanc : la porte de la tour est bouchee en " + door);
             if (plat.isAir()) fail("orthanc : pas de plateforme au sommet de la tour");

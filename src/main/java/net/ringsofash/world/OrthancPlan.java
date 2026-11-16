@@ -12,10 +12,10 @@ import java.util.Random;
  * au-dessus du sol, y negatif = sous le sol. La porte de l'enceinte et celle de la tour regardent vers +x.
  */
 public final class OrthancPlan {
-    public static final int TOPY = 182;                                   // y de la dalle du sommet ; la surface est a TOPY + 2, les cretes montent a TOPY + 59
+    public static final int TOPY = 182;                                   // y de la dalle du sommet ; la surface est a TOPY + 2, les cretes montent a TOPY + 48
     public static final int COL0 = 118;
     public static final int CREST_H = 52;                               // hauteur de la partie haute des cretes au-dessus de la surface                                  // base de la collerette de pointes
-    public static final int W = 200, D = 200, OFF = 24, H = OFF + TOPY + 60;       // y local de -OFF a H - OFF - 1
+    public static final int W = 200, D = 200, OFF = 24, H = OFF + TOPY + 54;       // y local de -OFF a H - OFF - 1
     public static final int CX = 100, CZ = 100;
     public static final double R_WALL = 100.0, R_LEVEL = 92.5;         // rayon exterieur de l'enceinte, rayon nivele
 
@@ -369,32 +369,46 @@ public final class OrthancPlan {
             if (m > 5.5 || m < 4.5) continue;
             if (((x + z) & 1) == 0) set(x, ty + 10, z, SLAB_BS);
         }
-        // quatre cretes en croix : grandes plaques de 3 d'epaisseur, posees sur chaque face de la plateforme. Chacune est haute et verticale
-        // a une extremite, et son bord superieur redescend en courbe concave vers l'autre bout ; le bas remonte du cote haut (disposition en moulinet)
-        double pe = wAt(TOPY) + 0.5;                                                                // premiere case hors de la plateforme
-        for (int side = 0; side < 4; side++) {
-            for (int u = -11; u <= 10; u++) {
-                double sp = (u + 11.5) / 22.0;                                                      // 0 : bout haut, 1 : bout bas
-                int top = TOPY + 2 + 5 + (int) Math.round((CREST_H - 5) * Math.pow(1 - sp, 2.1));
-                int bot = TOPY - 2 + (int) Math.round(15 * Math.pow(1 - sp, 0.9));
-                for (int y = bot; y <= top; y++) {
-                    int lean = Math.max(0, (int) Math.round(0.09 * (y - TOPY)));
-                    for (int t = 0; t < 3; t++) {
-                        int mm = (int) Math.round(pe - 0.5) + lean + t;                            // distance a l'axe (cases)
-                        int x, z;
-                        switch (side) {
-                            case 0 -> { x = CX + u; z = CZ - mm - 1; }
-                            case 1 -> { x = CX + mm; z = CZ + u; }
-                            case 2 -> { x = CX - u - 1; z = CZ + mm; }
-                            default -> { x = CX - mm - 1; z = CZ - u - 1; }
-                        }
-                        boolean edge = y >= top - 1 || y <= bot + 0 || u == -11 || t == 2 && (u + 11) % 6 == 0;
-                        double q = rnd(x, y, z);
-                        set(x, y, z, edge ? BS : ((u + 11) % 5 == 2 ? DS : q < 0.08 ? CRACK : PB));
-                    }
+        // quatre cretes, une a chaque coin de la plateforme, dans le plan vertical de la diagonale et tournees vers l'exterieur (croquis de l'utilisateur) :
+        // plaque de 3 d'epaisseur, a bord haut concave qui monte en pointe vers l'exterieur, bord exterieur presque vertical,
+        // bas oblique qui redescend le long de l'angle de la tour
+        double c0 = wAt(TOPY);                                                                       // demi-largeur de la plateforme : le coin est en (+-c0, +-c0)
+        double[][] poly = CREST;
+        for (int sx = -1; sx <= 1; sx += 2) for (int sz = -1; sz <= 1; sz += 2) {
+            for (int x = CX - 40; x < CX + 40; x++) for (int z = CZ - 40; z < CZ + 40; z++) {
+                double dx = (x + 0.5 - CX) - sx * c0, dz = (z + 0.5 - CZ) - sz * c0;
+                double r = (dx * sx + dz * sz) / Math.sqrt(2), p = (dx * sx - dz * sz) / Math.sqrt(2);
+                if (Math.abs(p) > 1.7 || r < -3.2 || r > 20) continue;
+                for (int y = TOPY - 30; y <= TOPY + 2 + 48; y++) {
+                    if (!inPoly(poly, r, y - (TOPY + 2))) continue;
+                    boolean edge = !inPoly(poly, r - 1.2, y - (TOPY + 2)) || !inPoly(poly, r + 1.2, y - (TOPY + 2)) || !inPoly(poly, r, y - (TOPY + 2) + 1.2) || !inPoly(poly, r, y - (TOPY + 2) - 1.2);
+                    double q = rnd(x, y, z);
+                    set(x, y, z, edge ? BS : (Math.abs(p) > 1.1 ? DS : q < 0.08 ? CRACK : PB));
                 }
             }
         }
+    }
+
+    /** profil de la crete dans le plan de la diagonale : r = distance au coin vers l'exterieur, y = hauteur au-dessus de la surface de la plateforme */
+    private static final double[][] CREST = crestProfile();
+    private static double[][] crestProfile() {
+        // croquis de depart (r, y) ; on l'etire en hauteur (x1,7 au-dessus de la plateforme) et on l'etrecit vers l'exterieur (x0,62)
+        double[][] base = {{-3.2, -28}, {-3.2, 0}, {0, 0.6}, {3, 3}, {6, 6}, {9.75, 10.5}, {12.75, 16.5}, {15, 23}, {15.75, 27}, {16.4, 23},
+                {17.2, 12}, {18, 4}, {19.5, -15.5}, {1.5, -28}};
+        double[][] o = new double[base.length][2];
+        for (int i = 0; i < base.length; i++) {
+            o[i][0] = base[i][0] > 0 ? base[i][0] * 0.62 : base[i][0];
+            o[i][1] = base[i][1] > 0 ? base[i][1] * 1.7 : base[i][1] * 0.9;
+        }
+        return o;
+    }
+
+    private static boolean inPoly(double[][] poly, double x, double y) {
+        boolean in = false;
+        for (int i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+            if ((poly[i][1] > y) != (poly[j][1] > y) && x < (poly[j][0] - poly[i][0]) * (y - poly[i][1]) / (poly[j][1] - poly[i][1]) + poly[i][0]) in = !in;
+        }
+        return in;
     }
 
     // ------------------------------------------------------------------ interieur
