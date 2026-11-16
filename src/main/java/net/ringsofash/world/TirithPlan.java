@@ -13,14 +13,14 @@ public final class TirithPlan {
     public static final int W = 320, D = 270, OFF = 8, TOP = 280, H = OFF + TOP + 1, CX = 160, CZ = 130;
     public static final double[] R = {125, 107, 89, 71, 53, 35, 17};              // rayon exterieur de chaque niveau (largeur 18)
     public static final int[] FL = {18, 36, 54, 72, 90, 108, 126};                // niveau debout de chaque terrasse
-    public static final int PROW_TOP = 126, PROW_TIP = 57;                         // sommet de l'eperon, longueur de l'eperon vers le sud
+    public static final int PROW_TOP = 126, PROW_TIP = 100;                         // sommet de l'eperon, longueur de l'eperon vers le sud
 
     public static final int AIR = 0, STONE = 1, ANDESITE = 2, TUFF = 3, CALCITE = 4, DIORITE = 5, GRASS = 6, DIRT = 7, SNOW = 8, COBBLE = 9, GRAVEL = 10,
             WB = 20, WB_STAIR = 24, WB_SLAB = 32, WB_SLAB_TOP = 33, WB_WALL = 34, QB = 35, SQ = 36, PD = 37, SBR = 38, QPILLAR_Y = 40, CHISEL = 41, PAVE = 42, PAVE2 = 43,
             GLASS = 50, BARS = 51, DPLANKS = 52, DLOG_Y = 53, LANTERN = 54, CHAIN = 55, FENCE_B = 56, WATER = 57, BIRCH_Y = 58, BIRCH_FENCE = 59,
             SLATE = 60, SLATE_STAIR = 64, SLATE_SLAB = 72, SLATE_SLAB_TOP = 73, COPPER = 74, COPPER_STAIR = 80, COPPER_SLAB = 88, COPPER_SLAB_TOP = 89,
             LEAF = 90, FLOWER1 = 91, FLOWER2 = 92, GRASS_S = 93, DWALL = 94, BANNER_G = 95, WOOL_W = 96, WOOL_G = 97, TORCH_B = 98, LAMPBLOCK = 99, SLAB_STONE = 100,
-            QUARTZ_SLAB = 101, QUARTZ_SLAB_TOP = 102, GOLD = 103, DOOR_PL = 104, HLANTERN = 105;
+            QUARTZ_SLAB = 101, QUARTZ_SLAB_TOP = 102, GOLD = 103, DOOR_PL = 104, HLANTERN = 105, KEEL = 111, YB = 44;
     public static final int N = 0, E = 1, S = 2, W_ = 3;
 
     private final byte[] g = new byte[W * H * D];
@@ -71,6 +71,7 @@ public final class TirithPlan {
         columns();
         materialize();
         ramps();
+        keelTunnels();
         parapets();
         terraces();
         citadel();
@@ -99,13 +100,13 @@ public final class TirithPlan {
     private static int prowTop(int z) {
         double dz = z + 0.5 - CZ;
         if (dz <= 26) return PROW_TOP - 1;
-        return (int) Math.max(FL[3] - 1, PROW_TOP - 1 - (dz - 26) * 1.75);
+        return (int) Math.max(FL[1] + 3, PROW_TOP - 1 - (dz - 26) * 1.15);
     }
 
     private static boolean inProw(int x, int z) {
         double dz = z + 0.5 - CZ;
         if (dz < -14 || dz > PROW_TIP + 1) return false;
-        double hw = dz < 0 ? 21 : 21 - 8 * dz / PROW_TIP;
+        double hw = dz < 0 ? 21 : 21 - 13 * dz / PROW_TIP;
         if (dz > PROW_TIP - 9) hw *= Math.sqrt(Math.max(0, 1 - Math.pow((dz - (PROW_TIP - 9)) / 10.0, 2)));
         hw += 1.6 * vn(z / 8.0, 3.3, 5);
         return Math.abs(x + 0.5 - CX) <= hw;
@@ -141,7 +142,7 @@ public final class TirithPlan {
         }
         // rampe du flanc de l'eperon (niveau 5 -> 6), au bord est de l'eperon
         for (int z = CZ + 7; z <= CZ + 25; z++) {
-            double dz = z + 0.5 - CZ, hw = 21 - 8 * dz / PROW_TIP;
+            double dz = z + 0.5 - CZ, hw = 21 - 13 * dz / PROW_TIP;
             for (int x = CX + (int) hw; x <= CX + (int) hw + 4; x++) {
                 int i = z * W + x;
                 if (kind[i] == 3) continue;
@@ -164,6 +165,27 @@ public final class TirithPlan {
         }
     }
 
+
+    /** chaque rue des niveaux 2 a 5 traverse l'eperon par un tunnel voute */
+    private void keelTunnels() {
+        for (int k = 1; k <= 4; k++) {
+            int b = FL[k];
+            for (int x = CX - 26; x <= CX + 26; x++) for (int z = CZ + 10; z <= CZ + 110; z++) {
+                if (!area(x, z) || kind[z * W + x] != 3) continue;
+                double r = Math.hypot(x + 0.5 - CX, z + 0.5 - CZ), rel = R[k] - r;
+                if (rel < 7.0 || rel > 13.0) continue;
+                int f = fill[z * W + x];
+                int h = Math.min(5, f - b - 2);
+                if (h < 3) continue;
+                boolean inside = rel >= 8.0 && rel <= 12.0;
+                for (int y = b; y <= b + h; y++) set(x, y, z, inside ? (y == b + h ? WB : AIR) : WB);
+                set(x, b - 1, z, inside ? PAVE : WB);
+                if (inside && (x + z) % 9 == 0) set(x, b + h - 1, z, HLANTERN);
+                if (inside && (x + z) % 9 == 0) set(x, b + h, z, CHAIN);
+            }
+        }
+    }
+
     private int nbMin(int x, int z, int d) {
         int mn = fill[z * W + x];
         int[][] o = {{d, 0}, {-d, 0}, {0, d}, {0, -d}, {d, d}, {d, -d}, {-d, d}, {-d, -d}};
@@ -182,13 +204,14 @@ public final class TirithPlan {
             if (f == -99) continue;
             int mn = nbMin(x, z, 4), mn1 = nbMin(x, z, 1);
             int k = kind[i];
-            boolean rock = k == 2 || k == 5;
+            boolean rock = k == 2 || k == 5, keel = k == 3;
             for (int y = -6; y <= f; y++) {
                 boolean solid = y <= 2 || y >= f - 3 || y > mn;
                 if (!solid) continue;
                 boolean exposed = y > mn1 && y < f;
                 int id;
-                if (rock) id = rockBlock(x, y, z, f, k, y == f || y > mn1);
+                if (keel) id = y == f ? WB : (rnd(x, y, z) < 0.12 ? DIORITE : KEEL);
+                else if (rock) id = rockBlock(x, y, z, f, k, y == f || y > mn1);
                 else if (y == f) id = paving(x, z);
                 else if (exposed || y > mn) id = wallBlock(x, y, z);
                 else id = STONE;
@@ -211,7 +234,7 @@ public final class TirithPlan {
     }
 
     private int wallBlock(int x, int y, int z) {
-        if (y % 7 == 0) return QB;
+        if (y % 7 == 0) return YB;
         double q = rnd(x, y, z);
         return q < 0.04 ? CALCITE : q < 0.08 ? PD : WB;
     }
@@ -375,7 +398,8 @@ public final class TirithPlan {
         if (cells.size() < 16) return false;
         int base = FL[k];
         int hh = 5 + (int) (rnd(ix, iz, seed) * 4) + (k >= 4 ? 1 : 0);
-        int roofKind = rnd(iz, ix, 5) < 0.28 ? 1 : 0;
+        int roofKind = rnd(iz, ix, 5) < 0.35 ? 1 : 0;
+        int wallMat = rnd(ix, iz, 6) < 0.38 ? YB : WB, bandMat = wallMat == WB ? YB : WB;
         for (int[] c : cells) {
             int x = c[0], z = c[1];
             double ax = x + 0.5 - hx, az = z + 0.5 - hz;
@@ -395,10 +419,10 @@ public final class TirithPlan {
                 if (!edge) id = y == 0 ? WB : AIR;
                 else if (door && y >= 1 && y <= 2) id = AIR;
                 else if (door && y == 3) id = DPLANKS;
-                else if (y % 4 == 0 && y > 0) id = QB;
+                else if (y % 4 == 0 && y > 0) id = bandMat;
                 else if (y >= 2 && y <= 3 && ((x * 3 + z * 5) % 3 == 0) && !doorFace) id = GLASS;
                 else if (y >= 2 && y <= 3 && doorFace && Math.abs(a) > 1.5 && ((int) Math.floor(a * 2)) % 3 == 0) id = GLASS;
-                else id = WB;
+                else id = wallMat;
                 if (id != AIR) set(x, base + y, z, id);
             }
             if (door) set(x, base, z, WB);
@@ -484,7 +508,7 @@ public final class TirithPlan {
                 int id = WB;
                 if (edge) {
                     if (corner) id = QPILLAR_Y;
-                    else if (y == top[s] - 1 || y == prev + 1 || (y - prev) % 12 == 11) id = QB;
+                    else if (y == top[s] - 1 || y == prev + 1 || (y - prev) % 12 == 11) id = YB;
                     else if (y > prev + 4 && y < top[s] - 3 && (y - prev) % 12 >= 5 && (y - prev) % 12 <= 8 && ((Math.abs(x - cx) + Math.abs(z - cz)) % 4 == 1) && !nearCorner) id = BARS;
                 } else if (s == 3 && y > top[2] + 2) { id = AIR; }
                 if (s == 3 && y > top[2] + 1 && !edge) id = AIR;
@@ -512,9 +536,9 @@ public final class TirithPlan {
         set(cx, yb, cz, LANTERN);
         for (int j = 0; j < 20; j++) {
             int hr = Math.max(0, 3 - j / 2);
-            if (hr <= 0) { set(cx, yb + 9 + j, cz, j > 14 ? FENCE_B : COPPER); continue; }
+            if (hr <= 0) { set(cx, yb + 9 + j, cz, j > 14 ? FENCE_B : SLATE); continue; }
             for (int dx = -hr; dx <= hr; dx++) for (int dz = -hr; dz <= hr; dz++) {
-                if (Math.max(Math.abs(dx), Math.abs(dz)) == hr) set(cx + dx, yb + 9 + j, cz + dz, COPPER);
+                if (Math.max(Math.abs(dx), Math.abs(dz)) == hr) set(cx + dx, yb + 9 + j, cz + dz, SLATE);
             }
         }
         set(cx, yb + 30, cz, GOLD); set(cx, yb + 31, cz, LANTERN);
@@ -548,7 +572,7 @@ public final class TirithPlan {
                 // toit en pavillon : pente nord-sud
                 double dd = Math.min(Math.min(x - xa, xb - x), Math.min(z - za, zb - z) * 0.5);
                 int rh = (int) Math.floor(dd);
-                for (int j = 0; j <= Math.min(rh, 4); j++) set(x, y0 + hh + 1 + j, z, j == Math.min(rh, 4) && rh > 4 ? COPPER_SLAB : COPPER);
+                for (int j = 0; j <= Math.min(rh, 4); j++) set(x, y0 + hh + 1 + j, z, j == Math.min(rh, 4) && rh > 4 ? SLATE_SLAB : SLATE);
             }
             // porche a colonnes sur le cote cour
             int xc = sd < 0 ? xb + 1 : xa - 1;

@@ -144,6 +144,12 @@ def blocks():
     family('white_bricks', 'white', 'briques blanches')
     btex('white_pillar', pillar_side('#e6e3da', 13)); btex('white_pillar_top', framed('#e6e3da', 14))
     block('white_pillar', 'Pilier blanc', 'pillar', copy='STONE_BRICKS', tool='pickaxe')
+    # --- Minas Tirith : calcaire jaune pale (bandeaux, toits, murs) et roche de la Crete (eperon)
+    btex('limestone_bricks', bricks('#ecdfae', '#bcae7e', 31, var=0.06))
+    block('limestone_bricks', 'Briques de calcaire pâle', copy='STONE_BRICKS', tool='pickaxe')
+    family('limestone_bricks', 'calcaire', 'briques de calcaire')
+    btex('keel_stone', stone('#c4bda8', 32, var=0.55, cell=5, speck=0.45))
+    block('keel_stone', 'Roche de la Crête', copy='STONE', tool='pickaxe')
 
     # --- nains : pierre grise, teinte en jeu = degrade entre deux couleurs (voir DwarvenTint.java)
     btex('dwarven_bricks_plain', bricks('#4b505b', '#2a2d34', 21, var=0.09))
@@ -377,7 +383,7 @@ def recipes():
         shaped(f'{wood}_planks_stairs', ['#  ', '## ', '###'], {'#': f'{wood}_planks'}, f'{wood}_planks_stairs', 4, 'building')
         shaped(f'{wood}_planks_slab', ['###'], {'#': f'{wood}_planks'}, f'{wood}_planks_slab', 6, 'building')
         shaped(f'{wood}_planks_fence', ['#s#', '#s#'], {'#': f'{wood}_planks', 's': 'minecraft:stick'}, f'{wood}_planks_fence', 3)
-    for st in ('white_bricks', 'dwarven_bricks', 'black_bricks'):
+    for st in ('white_bricks', 'limestone_bricks', 'dwarven_bricks', 'black_bricks'):
         shaped(f'{st}_stairs', ['#  ', '## ', '###'], {'#': st}, f'{st}_stairs', 4, 'building')
         shaped(f'{st}_slab', ['###'], {'#': st}, f'{st}_slab', 6, 'building')
         shaped(f'{st}_wall', ['###', '###'], {'#': st}, f'{st}_wall', 6)
@@ -385,6 +391,7 @@ def recipes():
             stonecut(st, f'{st}_{k}', 2 if k == 'slab' else 1)
     shaped('white_bricks', ['##', '##'], {'#': 'white_stone'}, 'white_bricks', 4, 'building')
     shaped('white_pillar', ['#', '#'], {'#': 'white_bricks'}, 'white_pillar', 2, 'building')
+    shapeless('limestone_bricks', ['white_bricks', 'minecraft:sand'], 'limestone_bricks', 2, 'building')
     shaped('dwarven_bricks', ['##', '##'], {'#': 'minecraft:deepslate'}, 'dwarven_bricks', 4, 'building')
     shaped('dwarven_pillar', ['#', '#'], {'#': 'dwarven_bricks'}, 'dwarven_pillar', 2, 'building')
     shaped('dwarven_runes', [' # ', '#g#', ' # '], {'#': 'dwarven_bricks', 'g': 'minecraft:gold_nugget'}, 'dwarven_runes', 4, 'building')

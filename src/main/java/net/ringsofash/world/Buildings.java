@@ -1060,14 +1060,17 @@ public final class Buildings {
         p[TirithPlan.WATER] = Blocks.WATER.defaultBlockState();
         p[TirithPlan.BIRCH_Y] = log(Blocks.BIRCH_LOG, Direction.Axis.Y);
         p[TirithPlan.BIRCH_FENCE] = Blocks.BIRCH_FENCE.defaultBlockState();
-        p[TirithPlan.SLATE] = Blocks.DEEPSLATE_TILES.defaultBlockState();
-        stairSet(p, TirithPlan.SLATE_STAIR, Blocks.DEEPSLATE_TILE_STAIRS);
-        p[TirithPlan.SLATE_SLAB] = slab(Blocks.DEEPSLATE_TILE_SLAB, false);
-        p[TirithPlan.SLATE_SLAB_TOP] = slab(Blocks.DEEPSLATE_TILE_SLAB, true);
-        p[TirithPlan.COPPER] = Blocks.OXIDIZED_CUT_COPPER.defaultBlockState();
-        stairSet(p, TirithPlan.COPPER_STAIR, Blocks.OXIDIZED_CUT_COPPER_STAIRS);
-        p[TirithPlan.COPPER_SLAB] = slab(Blocks.OXIDIZED_CUT_COPPER_SLAB, false);
-        p[TirithPlan.COPPER_SLAB_TOP] = slab(Blocks.OXIDIZED_CUT_COPPER_SLAB, true);
+        // toits et ornements : calcaire jaune pale (SLATE) et pierre blanche (COPPER)
+        p[TirithPlan.SLATE] = Reg.LIMESTONE_BRICKS.get().defaultBlockState();
+        stairSet(p, TirithPlan.SLATE_STAIR, Reg.LIMESTONE_BRICKS_STAIRS.get());
+        p[TirithPlan.SLATE_SLAB] = slab(Reg.LIMESTONE_BRICKS_SLAB.get(), false);
+        p[TirithPlan.SLATE_SLAB_TOP] = slab(Reg.LIMESTONE_BRICKS_SLAB.get(), true);
+        p[TirithPlan.COPPER] = Reg.WHITE_BRICKS.get().defaultBlockState();
+        stairSet(p, TirithPlan.COPPER_STAIR, Reg.WHITE_BRICKS_STAIRS.get());
+        p[TirithPlan.COPPER_SLAB] = slab(Reg.WHITE_BRICKS_SLAB.get(), false);
+        p[TirithPlan.COPPER_SLAB_TOP] = slab(Reg.WHITE_BRICKS_SLAB.get(), true);
+        p[TirithPlan.YB] = Reg.LIMESTONE_BRICKS.get().defaultBlockState();
+        p[TirithPlan.KEEL] = Reg.KEEL_STONE.get().defaultBlockState();
         p[TirithPlan.LEAF] = Blocks.BIRCH_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
         p[TirithPlan.FLOWER1] = Blocks.WHITE_TULIP.defaultBlockState();
         p[TirithPlan.FLOWER2] = Blocks.LILY_OF_THE_VALLEY.defaultBlockState();

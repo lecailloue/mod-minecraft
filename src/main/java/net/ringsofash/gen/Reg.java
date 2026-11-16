@@ -44,6 +44,11 @@ public final class Reg {
     public static final DeferredBlock<Block> WHITE_BRICKS_SLAB = BLOCKS.register("white_bricks_slab", () -> new SlabBlock(copy(WHITE_BRICKS.get())));
     public static final DeferredBlock<Block> WHITE_BRICKS_WALL = BLOCKS.register("white_bricks_wall", () -> new WallBlock(copy(WHITE_BRICKS.get()).forceSolidOn()));
     public static final DeferredBlock<Block> WHITE_PILLAR = BLOCKS.register("white_pillar", () -> new RotatedPillarBlock(copy(Blocks.STONE_BRICKS)));
+    public static final DeferredBlock<Block> LIMESTONE_BRICKS = BLOCKS.register("limestone_bricks", () -> new Block(copy(Blocks.STONE_BRICKS)));
+    public static final DeferredBlock<Block> LIMESTONE_BRICKS_STAIRS = BLOCKS.register("limestone_bricks_stairs", () -> new StairBlock(LIMESTONE_BRICKS.get().defaultBlockState(), copy(LIMESTONE_BRICKS.get())));
+    public static final DeferredBlock<Block> LIMESTONE_BRICKS_SLAB = BLOCKS.register("limestone_bricks_slab", () -> new SlabBlock(copy(LIMESTONE_BRICKS.get())));
+    public static final DeferredBlock<Block> LIMESTONE_BRICKS_WALL = BLOCKS.register("limestone_bricks_wall", () -> new WallBlock(copy(LIMESTONE_BRICKS.get()).forceSolidOn()));
+    public static final DeferredBlock<Block> KEEL_STONE = BLOCKS.register("keel_stone", () -> new Block(copy(Blocks.STONE)));
     public static final DeferredBlock<Block> DWARVEN_STONE = BLOCKS.register("dwarven_stone", () -> new Block(copy(Blocks.DEEPSLATE)));
     public static final DeferredBlock<Block> DWARVEN_STONE_STAIRS = BLOCKS.register("dwarven_stone_stairs", () -> new StairBlock(DWARVEN_STONE.get().defaultBlockState(), copy(DWARVEN_STONE.get())));
     public static final DeferredBlock<Block> DWARVEN_STONE_SLAB = BLOCKS.register("dwarven_stone_slab", () -> new SlabBlock(copy(DWARVEN_STONE.get())));
@@ -140,6 +145,11 @@ public final class Reg {
     public static final DeferredItem<BlockItem> BI_WHITE_BRICKS_SLAB = ITEMS.registerSimpleBlockItem("white_bricks_slab", WHITE_BRICKS_SLAB);
     public static final DeferredItem<BlockItem> BI_WHITE_BRICKS_WALL = ITEMS.registerSimpleBlockItem("white_bricks_wall", WHITE_BRICKS_WALL);
     public static final DeferredItem<BlockItem> BI_WHITE_PILLAR = ITEMS.registerSimpleBlockItem("white_pillar", WHITE_PILLAR);
+    public static final DeferredItem<BlockItem> BI_LIMESTONE_BRICKS = ITEMS.registerSimpleBlockItem("limestone_bricks", LIMESTONE_BRICKS);
+    public static final DeferredItem<BlockItem> BI_LIMESTONE_BRICKS_STAIRS = ITEMS.registerSimpleBlockItem("limestone_bricks_stairs", LIMESTONE_BRICKS_STAIRS);
+    public static final DeferredItem<BlockItem> BI_LIMESTONE_BRICKS_SLAB = ITEMS.registerSimpleBlockItem("limestone_bricks_slab", LIMESTONE_BRICKS_SLAB);
+    public static final DeferredItem<BlockItem> BI_LIMESTONE_BRICKS_WALL = ITEMS.registerSimpleBlockItem("limestone_bricks_wall", LIMESTONE_BRICKS_WALL);
+    public static final DeferredItem<BlockItem> BI_KEEL_STONE = ITEMS.registerSimpleBlockItem("keel_stone", KEEL_STONE);
     public static final DeferredItem<BlockItem> BI_DWARVEN_STONE = ITEMS.registerSimpleBlockItem("dwarven_stone", DWARVEN_STONE);
     public static final DeferredItem<BlockItem> BI_DWARVEN_STONE_STAIRS = ITEMS.registerSimpleBlockItem("dwarven_stone_stairs", DWARVEN_STONE_STAIRS);
     public static final DeferredItem<BlockItem> BI_DWARVEN_STONE_SLAB = ITEMS.registerSimpleBlockItem("dwarven_stone_slab", DWARVEN_STONE_SLAB);
