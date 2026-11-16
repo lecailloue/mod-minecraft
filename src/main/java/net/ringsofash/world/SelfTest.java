@@ -208,7 +208,7 @@ public final class SelfTest {
             }
             topDown(lands, rx - 64, rz - 64, rx + 63, rz + 63, new File(OUT, "rochers_cendre.png"), 4);
             log("rochers de cendre : " + rocks + " colonnes de roche en surface sur 128 x 128");
-            if (rocks < 150) fail("trop peu de rochers dans la plaine de cendre (" + rocks + ")");
+            if (rocks < 400 || rocks > 9000) fail("trop peu de rochers dans la plaine de cendre (" + rocks + ")");
         }
         for (int[] pk : new int[][]{cs != null ? cs : new int[]{0, 0}, hi}) {
             for (int dx = -10; dx <= 10; dx++) lands.getChunk((pk[0] >> 4) + dx, pk[1] >> 4);
