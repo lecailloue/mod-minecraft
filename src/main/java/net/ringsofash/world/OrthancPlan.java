@@ -12,9 +12,10 @@ import java.util.Random;
  * au-dessus du sol, y negatif = sous le sol. La porte de l'enceinte et celle de la tour regardent vers +x.
  */
 public final class OrthancPlan {
-    public static final int TOPY = 182;                                   // y de la dalle du sommet ; la surface est a TOPY + 2, les crêtes montent a TOPY + 46
-    public static final int COL0 = 118;                                  // base de la collerette de pointes
-    public static final int W = 200, D = 200, OFF = 24, H = OFF + TOPY + 52;       // y local de -OFF a H - OFF - 1
+    public static final int TOPY = 182;                                   // y de la dalle du sommet ; la surface est a TOPY + 2, les cretes montent a TOPY + 59
+    public static final int COL0 = 118;
+    public static final int CREST_H = 52;                               // hauteur de la partie haute des cretes au-dessus de la surface                                  // base de la collerette de pointes
+    public static final int W = 200, D = 200, OFF = 24, H = OFF + TOPY + 60;       // y local de -OFF a H - OFF - 1
     public static final int CX = 100, CZ = 100;
     public static final double R_WALL = 100.0, R_LEVEL = 92.5;         // rayon exterieur de l'enceinte, rayon nivele
 
@@ -368,29 +369,28 @@ public final class OrthancPlan {
             if (m > 5.5 || m < 4.5) continue;
             if (((x + z) & 1) == 0) set(x, ty + 10, z, SLAB_BS);
         }
-        // quatre crêtes en croix : grandes lames minces, larges a la base, qui s'affinent en pointe et s'ecartent vers l'exterieur
-        int[] hb = {44, 40, 44, 40};                                                                 // N, E, S, W
+        // quatre cretes en croix : grandes plaques de 3 d'epaisseur, posees sur chaque face de la plateforme. Chacune est haute et verticale
+        // a une extremite, et son bord superieur redescend en courbe concave vers l'autre bout ; le bas remonte du cote haut (disposition en moulinet)
+        double pe = wAt(TOPY) + 0.5;                                                                // premiere case hors de la plateforme
         for (int side = 0; side < 4; side++) {
-            int hh = hb[side];
-            for (int h = 0; h < hh; h++) {
-                double f = (double) h / hh;
-                double halfw = Math.max(0.6, 8.2 * Math.pow(1 - f, 1.25));
-                int off = (int) Math.round(7.5 + 0.22 * h);                                          // decalage vers l'exterieur (m de la face interieure)
-                int thick = h < hh * 0.45 ? 3 : h < hh * 0.78 ? 2 : 1;
-                for (int u = -9; u <= 8; u++) {
-                    if (Math.abs(u + 0.5) > halfw) continue;
-                    for (int t = 0; t < thick; t++) {
-                        int mm = off + t;
+            for (int u = -11; u <= 10; u++) {
+                double sp = (u + 11.5) / 22.0;                                                      // 0 : bout haut, 1 : bout bas
+                int top = TOPY + 2 + 5 + (int) Math.round((CREST_H - 5) * Math.pow(1 - sp, 2.1));
+                int bot = TOPY - 2 + (int) Math.round(15 * Math.pow(1 - sp, 0.9));
+                for (int y = bot; y <= top; y++) {
+                    int lean = Math.max(0, (int) Math.round(0.09 * (y - TOPY)));
+                    for (int t = 0; t < 3; t++) {
+                        int mm = (int) Math.round(pe - 0.5) + lean + t;                            // distance a l'axe (cases)
                         int x, z;
                         switch (side) {
                             case 0 -> { x = CX + u; z = CZ - mm - 1; }
                             case 1 -> { x = CX + mm; z = CZ + u; }
-                            case 2 -> { x = CX + u; z = CZ + mm; }
-                            default -> { x = CX - mm - 1; z = CZ + u; }
+                            case 2 -> { x = CX - u - 1; z = CZ + mm; }
+                            default -> { x = CX - mm - 1; z = CZ - u - 1; }
                         }
-                        boolean edge = Math.abs(u + 0.5) > halfw - 1.1 || h > hh - 4;
-                        double q = rnd(x, TOPY + 2 + h, z);
-                        set(x, TOPY + 2 + h, z, edge ? BS : (u % 4 == 0 ? DS : q < 0.08 ? CRACK : PB));
+                        boolean edge = y >= top - 1 || y <= bot + 0 || u == -11 || t == 2 && (u + 11) % 6 == 0;
+                        double q = rnd(x, y, z);
+                        set(x, y, z, edge ? BS : ((u + 11) % 5 == 2 ? DS : q < 0.08 ? CRACK : PB));
                     }
                 }
             }
