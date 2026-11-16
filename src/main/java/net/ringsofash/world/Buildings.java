@@ -875,25 +875,25 @@ public final class Buildings {
                 int f;
                 if (lv) f = p.floor(x, z);
                 else f = (int) Math.round(-1 + (ground + 1) * BaradPlan.band(x, z));
-                if (p.get(x, -1, z) != BaradPlan.AIR) b.foundation(x, z, x, z, foot, 20);
+                if (p.get(x, -1, z) != OrthancPlan.AIR) b.foundation(x, z, x, z, foot, 20);
                 int hi = Math.max(ground, f) + 14;
                 for (int y = hi; y > f; y--) {
-                    if (p.get(x, y, z) != BaradPlan.AIR) continue;
+                    if (p.get(x, y, z) != OrthancPlan.AIR) continue;
                     if (y > ground && b.get(x, y, z).isAir()) continue;
                     b.s(x, y, z, Build.AIR);
                 }
-                if (ground < f) for (int y = ground + 1; y < f; y++) if (p.get(x, y, z) == BaradPlan.AIR) b.s(x, y, z, filler);
-                if (p.get(x, f, z) == BaradPlan.AIR) {
+                if (ground < f) for (int y = ground + 1; y < f; y++) if (p.get(x, y, z) == OrthancPlan.AIR) b.s(x, y, z, filler);
+                if (p.get(x, f, z) == OrthancPlan.AIR) {
                     if (lv) {
                         byte cv = p.cover(x, z);
-                        if (cv != BaradPlan.AIR) b.s(x, f, z, pal[cv]);
+                        if (cv != OrthancPlan.AIR) b.s(x, f, z, pal[cv]);
                     } else if (ground != f) {
                         b.s(x, f, z, ash[(x * 7 + z * 13 + (x ^ z)) & 3]);
                     }
                 }
                 for (int y = -BaradPlan.OFF; y <= top; y++) {
                     byte id = p.get(x, y, z);
-                    if (id != BaradPlan.AIR) b.s(x, y, z, pal[id]);
+                    if (id != OrthancPlan.AIR) b.s(x, y, z, pal[id]);
                 }
             }
         }
