@@ -232,6 +232,33 @@ def blocks():
     block('thatch', 'Chaume', copy='HAY_BLOCK', tool='hoe')
     family('thatch', 'thatch', 'chaume', ('stairs', 'slab'), tool='hoe')
 
+    # --- Rohan : bois patine du rempart, planches sculptees, torchis a colombages, gerbes de ble, terre battue
+    btex('weathered_log', log_side('#6b6357', 81)); btex('weathered_log_top', log_top('#6b6357', '#b3a48a', 82))
+    block('weathered_log', 'Bûche patinée', 'pillar', copy='OAK_LOG', tool='axe', tags=['logs', 'logs_that_burn'], itags=['logs', 'logs_that_burn'])
+    btex('weathered_planks', planks('#8c8272', 83))
+    block('weathered_planks', 'Planches patinées', copy='OAK_PLANKS', tool='axe', tags=['planks'], itags=['planks'])
+    family('weathered_planks', 'patiné', 'bois patiné', ('stairs', 'slab', 'fence'), tool='axe')
+    cp = planks('#46301f', 84)
+    stamp(cp, ['g.g.g.g.g.g.g.g.', '.g.g.g.g.g.g.g.g'], {'g': '#d9a93a'}, 0, 4)
+    stamp(cp, ['.g.g.g.g.g.g.g.g', 'g.g.g.g.g.g.g.g.'], {'g': '#d9a93a'}, 0, 10)
+    btex('carved_planks', cp)
+    block('carved_planks', 'Planches sculptées', copy='DARK_OAK_PLANKS', tool='axe', tags=['planks'], itags=['planks'])
+    tp = stone('#d8cdb0', 85, var=0.35, cell=3, speck=0.3)
+    for i in range(16):
+        for (x, y) in ((i, 0), (i, 15), (0, i), (15, i), (7, i), (8, i)):
+            tp.putpixel((x, y), rgb('#4d3826') + (255,))
+        tp.putpixel((i, i), rgb('#5a4230') + (255,)); tp.putpixel((15 - i, i), rgb('#5a4230') + (255,))
+    btex('timber_plaster', tp)
+    block('timber_plaster', 'Torchis à colombages', copy='TERRACOTTA', tool='pickaxe')
+    btex('rohan_plaster', stone('#d8cdb0', 86, var=0.4, cell=3, speck=0.35))
+    block('rohan_plaster', 'Torchis', copy='TERRACOTTA', tool='pickaxe')
+    sh = log_side('#dfbd52', 87)
+    stamp(sh, ['bbbbbbbbbbbbbbbb', 'dddddddddddddddd'], {'b': '#8a622a', 'd': '#5e4220'}, 0, 7)
+    btex('sheaf', sh); btex('sheaf_top', log_top('#c99a32', '#f0d37c', 88))
+    block('sheaf', 'Gerbe de blé', 'pillar', copy='HAY_BLOCK', tool='hoe')
+    btex('packed_earth', stone('#8a7358', 89, var=0.5, cell=3, speck=0.6))
+    block('packed_earth', 'Terre battue', copy='COARSE_DIRT', tool='shovel')
+
     # --- lunargent
     ds = stone('#4e4e56', 71, var=0.6, cell=4, speck=0.4)
     btex('lunargent_ore', ore(ds, ['#e6f6ff', '#a6dcf2', '#ffffff', '#7fc4e6'], 72, 7))

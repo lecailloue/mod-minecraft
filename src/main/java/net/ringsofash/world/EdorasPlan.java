@@ -52,6 +52,10 @@ public final class EdorasPlan {
     public static final byte STONE = 100, DIRT = 101, GRASS = 102, COARSE = 103, GRANITE = 104, HAY = 105, MOSAIC = 106, GLASSPANE = 107, DFENCE = 108,
             BELL = 109, LAMP = 110, SLAB_MO = 111, SLAB_MO_TOP = 112, SLAB_DP = 113, SLAB_DP_TOP = 114, WALL_COBBLE = 115, DSTRIP_Y = 116, DSTRIP_X = 117,
             DSTRIP_Z = 118, STAIR_MO = 120;                                // STAIR_MO + dir * 2 + (haut ? 1 : 0)
+    public static final int WLOG_Y = 128, WLOG_X = 129, WLOG_Z = 130, WPLANKS = 131, WSLAB = 132, WSLAB_TOP = 133, WFENCE = 134, CARVED = 135, TIMBER = 136, PLASTER = 137,
+            SHEAF_Y = 138, SHEAF_X = 139, EARTH = 140, FARM = 160, WHEAT_R = 161, WHEAT_Y = 162, CARROT_R = 163, CARROT_Y = 164, POTATO_R = 165, POTATO_Y = 166, WATER = 167,
+            CAULDRON_W = 168, COMPOSTER = 169, CRAFT = 170, ANVIL = 171, LAVA_CAULD = 172, POT_TULIP = 173, POT_DAND = 174, POT_CORN = 175, WOOL_G = 176, WOOL_W = 177,
+            PLATE = 178, CARPET_G = 179, CARPET_W = 180;
     public static final int N = 0, E = 1, S = 2, W_ = 3;
 
     private final byte[] g = new byte[W * H * D];
@@ -176,14 +180,15 @@ public final class EdorasPlan {
             boolean onRoad = roadD[i] <= 3.2 && s <= H0;
             boolean steep = slope[i] >= 2;
             double nz = vn(x / 6.0, z / 6.0, 8);
-            byte topB;
-            if (onRoad) topB = rnd(x, 5, z) < 0.45 ? PATH : rnd(x, 6, z) < 0.5 ? GRAVEL : COARSE;
+            int topB;
+            if (onRoad) topB = rnd(x, 5, z) < 0.45 ? PATH : rnd(x, 6, z) < 0.5 ? GRAVEL : EARTH;
             else if (steep) topB = rnd(x, 7, z) < 0.35 ? STONE : rnd(x, 8, z) < 0.45 ? ANDESITE : rnd(x, 9, z) < 0.5 ? COBBLE : rnd(x, 10, z) < 0.5 ? TUFF : rnd(x, 11, z) < 0.5 ? GRANITE : MOSSY_COBBLE;
+            else if (s == 1 && Math.abs(ringR(x, z) - 1.095) < 0.022) topB = rnd(x, 14, z) < 0.65 ? EARTH : rnd(x, 15, z) < 0.6 ? PATH : COARSE;   // chemin de ronde du bas du village
             else topB = nz > 0.55 ? COARSE : GRASS;
             for (int y = 0; y < s; y++) {
-                byte b;
+                int b;
                 if (y == s - 1) b = topB;
-                else if (y >= s - 4 && (topB == GRASS || topB == COARSE || topB == PATH || topB == GRAVEL)) b = DIRT;
+                else if (y >= s - 4 && (topB == GRASS || topB == COARSE || topB == PATH || topB == GRAVEL || topB == EARTH)) b = DIRT;
                 else if (y >= s - 3 && steep) b = rnd(x, y, z) < 0.5 ? STONE : ANDESITE;
                 else b = rnd(x, y, z) < 0.12 ? ANDESITE : STONE;
                 set(x, y, z, b);
@@ -266,22 +271,26 @@ public final class EdorasPlan {
         // puits et torches de la place
         int px = (int) Math.round(wx(10, 16)), pz = (int) Math.round(wz(10, 16));
         if (free(px - 1, pz - 1, px + 1, pz + 1, 0)) well(px, pz);
+        life(new Random(913));
         lowVillage();
         outerWall();
+        gate();
+        lampPosts();
     }
 
     /** bas du village : maisons et enclos au pied de la colline, dans l'anneau entre le pied et la muraille */
     private void lowVillage() {
         lvl = 1;
         Random r = new Random(311);
-        int n = 44;
+        int n = 64;
         for (int k = 0; k < n; k++) {
             double th = (k + 0.5) * 2 * Math.PI / n + (r.nextDouble() - 0.5) * 0.06;
+            if (inFarm(th)) continue;
             double rad = 1.17 + r.nextDouble() * 0.10;
             double u = A * rad * Math.cos(th), v = B * rad * Math.sin(th);
             int type = r.nextDouble() < 0.18 ? 1 : r.nextDouble() < 0.12 ? 3 : 0;
             int w = type == 1 ? 9 : type == 3 ? 11 : 7, d = type == 1 ? 13 : type == 3 ? 15 : 11;
-            for (int att = 0; att < 12; att++) {
+            for (int att = 0; att < 20; att++) {
                 double jr = att == 0 ? 0 : (r.nextDouble() - 0.5) * 8;
                 int cx = (int) Math.round(wx(u + jr, v + jr)), cz = (int) Math.round(wz(u + jr, v - jr));
                 int rot = r.nextInt(4);
@@ -308,23 +317,181 @@ public final class EdorasPlan {
             int px = (int) Math.round(wx(A * 1.1 * Math.cos(th), B * 1.1 * Math.sin(th))), pz = (int) Math.round(wz(A * 1.1 * Math.cos(th), B * 1.1 * Math.sin(th)));
             if (free(px - 1, pz - 1, px + 1, pz + 1, 1)) { well(px, pz); take(px - 1, pz - 1, px + 1, pz + 1); }
         }
+        lowLife(r);
         lvl = H0;
     }
 
-    /** muraille de troncs pointus qui fait tout le tour du village, ouverte a la route, tours de guet aux quatre coins */
+    /** cherche un emplacement libre de w x d sur l'ellipse (angle th0..th1, rayon relatif rad0..rad1) ; renvoie {x0, z0} ou null */
+    private int[] findSpot(Random r, int w, int d, double th0, double th1, double rad0, double rad1, int tries) {
+        for (int k = 0; k < tries; k++) {
+            double th = th0 + r.nextDouble() * (th1 - th0), rad = rad0 + r.nextDouble() * (rad1 - rad0);
+            int cx = (int) Math.round(wx(A * rad * Math.cos(th), B * rad * Math.sin(th))), cz = (int) Math.round(wz(A * rad * Math.cos(th), B * rad * Math.sin(th)));
+            int x0 = cx - w / 2, z0 = cz - d / 2;
+            if (free(x0 - 1, z0 - 1, x0 + w, z0 + d, 1)) { take(x0 - 1, z0 - 1, x0 + w, z0 + d); return new int[]{x0, z0}; }
+        }
+        return null;
+    }
+
+    private static final double TAU = Math.PI * 2;
+
+    /** la vie du village sur la colline : etals, forge, tas de bois, meules, jardins */
+    private void life(Random r) {
+        for (int k = 0; k < 3; k++) { int[] sp = findSpot(r, 7, 5, 0, TAU, 0.05, 0.72, 250); if (sp != null) stall(sp[0] + 3, sp[1] + 2, k % 2 == 0); }
+        int[] sm = findSpot(r, 9, 7, 0, TAU, 0.1, 0.7, 300);
+        if (sm != null) smithy(sm[0] + 1, sm[1] + 1);
+        for (int k = 0; k < 5; k++) { int[] sp = findSpot(r, 6, 3, 0, TAU, 0.05, 0.74, 250); if (sp != null) woodpile(sp[0] + 1, sp[1] + 1); }
+        for (int k = 0; k < 3; k++) { int[] sp = findSpot(r, 5, 5, 0, TAU, 0.05, 0.74, 250); if (sp != null) haystack(sp[0] + 2, sp[1] + 2); }
+        for (int k = 0; k < 3; k++) { int[] sp = findSpot(r, 8, 7, 0, TAU, 0.05, 0.72, 300); if (sp != null) field(sp[0], sp[1], 8, 7, k, r.nextDouble() < 0.7); }
+    }
+
+    private static boolean inFarm(double th) {
+        double d = Math.toDegrees(th) % 360;
+        if (d < 0) d += 360;
+        return (d >= 300 && d <= 346) || (d >= 56 && d <= 112) || (d >= 214 && d <= 250);
+    }
+
+    /** la vie du bas du village : champs dans les secteurs cultives, etals pres de la porte, forge, bois, meules */
+    private void lowLife(Random r) {
+        double[][] farm = {{300, 346}, {56, 112}, {214, 250}};
+        int fields = 0;
+        for (double[] f : farm) for (int k = 0; k < 4; k++) {
+            int[] sp = findSpot(r, 9, 8, Math.toRadians(f[0]), Math.toRadians(f[1]), 1.14, 1.30, 120);
+            if (sp != null) { field(sp[0], sp[1], 9, 8, fields++, r.nextDouble() < 0.7); }
+        }
+        for (int k = 0; k < 2; k++) { int[] sp = findSpot(r, 7, 5, Math.toRadians(150), Math.toRadians(205), 1.14, 1.30, 120); if (sp != null) stall(sp[0] + 3, sp[1] + 2, k % 2 == 0); }
+        int[] sm = findSpot(r, 9, 7, Math.toRadians(112), Math.toRadians(150), 1.14, 1.30, 200);
+        if (sm != null) smithy(sm[0] + 1, sm[1] + 1);
+        for (int k = 0; k < 7; k++) { int[] sp = findSpot(r, 6, 3, 0, TAU, 1.14, 1.32, 150); if (sp != null) woodpile(sp[0] + 1, sp[1] + 1); }
+        for (int k = 0; k < 5; k++) {
+            double[] f = farm[k % 3];
+            int[] sp = findSpot(r, 5, 5, Math.toRadians(f[0] - 6), Math.toRadians(f[1] + 6), 1.14, 1.32, 120);
+            if (sp != null) haystack(sp[0] + 2, sp[1] + 2);
+        }
+        lvl = 1;
+    }
+
+    /** petit champ clos : rangs de culture separes par des rigoles, cloture ajouree, epouvantail au coin */
+    private void field(int x0, int z0, int w, int d, int crop, boolean ripe) {
+        int y0 = lvl - 1;
+        for (int x = x0; x < x0 + w; x++) for (int z = z0; z < z0 + d; z++) {
+            boolean edge = x == x0 || x == x0 + w - 1 || z == z0 || z == z0 + d - 1;
+            if (edge) { if (!(z == z0 + d - 1 && x == x0 + w / 2)) set(x, lvl, z, WFENCE); continue; }
+            int iz = z - z0 - 1;
+            if (iz % 3 == 1) { set(x, y0, z, WATER); continue; }
+            set(x, y0, z, FARM);
+            int id;
+            switch ((crop + (iz / 3)) % 3) {
+                case 0 -> id = ripe ? WHEAT_R : WHEAT_Y;
+                case 1 -> id = ripe ? CARROT_R : CARROT_Y;
+                default -> id = ripe ? POTATO_R : POTATO_Y;
+            }
+            set(x, lvl, z, id);
+        }
+        scarecrow(x0 + w - 1, z0);
+        if (rnd(x0, 24, z0) < 0.6) { set(x0, lvl, z0 + d - 1, SHEAF_Y); set(x0, lvl + 1, z0 + d - 1, SHEAF_Y); }
+    }
+
+    private void scarecrow(int x, int z) {
+        set(x, lvl, z, WLOG_Y); set(x, lvl + 1, z, WLOG_Y);
+        set(x - 1, lvl + 1, z, WFENCE); set(x + 1, lvl + 1, z, WFENCE);
+        set(x, lvl + 2, z, HAY); set(x, lvl + 3, z, WSLAB); set(x - 1, lvl + 3, z, WSLAB_TOP); set(x + 1, lvl + 3, z, WSLAB_TOP);
+    }
+
+    /** etal de marche 5 x 3 : auvent de laine verte et blanche, comptoir, marchandises */
+    private void stall(int cx, int cz, boolean alongX) {
+        int hx = alongX ? 2 : 1, hz = alongX ? 1 : 2;
+        for (int x = cx - hx; x <= cx + hx; x++) for (int z = cz - hz; z <= cz + hz; z++) {
+            int k = alongX ? x - cx + hx : z - cz + hz;
+            set(x, lvl + 4, z, k % 2 == 0 ? WOOL_G : WOOL_W);
+            boolean corner = (x == cx - hx || x == cx + hx) && (z == cz - hz || z == cz + hz);
+            if (corner) { for (int y = 0; y < 4; y++) set(x, lvl + y, z, WLOG_Y); continue; }
+            boolean front = alongX ? z == cz + hz : x == cx + hx;
+            boolean back = alongX ? z == cz - hz : x == cx - hx;
+            if (front) {
+                int[] cyc = {WSLAB, BARREL, COMPOSTER, HAY, WSLAB};
+                int c = cyc[k % 5];
+                set(x, lvl, z, c);
+                if (c == WSLAB) set(x, lvl + 1, z, (hash(x, 9, z) & 1) == 0 ? POT_CORN : POT_TULIP);
+                if (c == HAY || c == BARREL) set(x, lvl + 1, z, SHEAF_Y);
+            } else if (back) { set(x, lvl, z, k % 2 == 0 ? BARREL : SHEAF_Y); }
+        }
+        set(cx, lvl + 3, cz, CHAIN); set(cx, lvl + 2, cz, LAMP);
+    }
+
+    /** forge ouverte : mur de pierre et cheminee au nord, foyer de lave, enclume, etabli, toit de chaume */
+    private void smithy(int x0, int z0) {
+        for (int x = x0 - 1; x <= x0 + 7; x++) for (int z = z0 - 1; z <= z0 + 5; z++) {
+            boolean in = x >= x0 && x <= x0 + 6 && z >= z0 && z <= z0 + 4;
+            if (in) set(x, lvl - 1, z, rnd(x, 25, z) < 0.6 ? COBBLE : GRAVEL);
+            set(x, lvl + 4, z, SLAB_MO);
+        }
+        for (int x = x0; x <= x0 + 6; x++) for (int y = 0; y <= 3; y++) set(x, lvl + y, z0, y == 3 && x % 2 == 0 ? CARVED : COBBLE);
+        for (int y = 4; y <= 8; y++) set(x0 + 1, lvl + y, z0, COBBLE);
+        set(x0 + 1, lvl + 9, z0, CAMPFIRE);
+        for (int[] c : new int[][]{{0, 4}, {6, 4}}) for (int y = 0; y < 4; y++) set(x0 + c[0], lvl + y, z0 + c[1], WLOG_Y);
+        set(x0 + 1, lvl, z0 + 1, LAVA_CAULD); set(x0 + 3, lvl, z0 + 2, ANVIL);
+        set(x0 + 5, lvl, z0 + 1, BARREL); set(x0 + 6, lvl, z0 + 1, CRAFT); set(x0 + 5, lvl, z0 + 3, WSLAB); set(x0 + 5, lvl + 1, z0 + 3, POT_CORN);
+        set(x0 + 3, lvl + 3, z0 + 3, CHAIN); set(x0 + 3, lvl + 2, z0 + 3, LAMP);
+    }
+
+    private void woodpile(int x, int z) {
+        for (int dz = 0; dz < 2; dz++) {
+            for (int dx = 0; dx < 4; dx++) set(x + dx, lvl, z + dz, WLOG_X);
+            for (int dx = 1; dx < 3; dx++) set(x + dx, lvl + 1, z + dz, WLOG_X);
+        }
+        set(x + 1, lvl + 2, z, WLOG_X); set(x + 2, lvl + 2, z, WLOG_X);
+        set(x + 4, lvl, z + 1, WLOG_Y);                                    // billot
+        set(x + 5, lvl, z, WLOG_Y); set(x + 5, lvl + 1, z, WSLAB);
+    }
+
+    private void haystack(int x, int z) {
+        for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) set(x + dx, lvl, z + dz, HAY);
+        for (int[] c : new int[][]{{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}}) set(x + c[0], lvl + 1, z + c[1], HAY);
+        set(x, lvl + 2, z, HAY);
+        set(x + 2, lvl, z, SHEAF_Y); set(x + 2, lvl, z + 1, SHEAF_Y); set(x + 2, lvl + 1, z, SHEAF_Y); set(x - 2, lvl, z - 1, SHEAF_Y);
+    }
+
+    /** lampadaires (poteau de bois patine, lanterne) le long de la route et sur la place */
+    private void lampPosts() {
+        double acc = 6;
+        for (int i = 1; i < road.size(); i++) {
+            double[] a = road.get(i - 1), b = road.get(i);
+            double dx = b[0] - a[0], dz = b[1] - a[1], len = Math.hypot(dx, dz), nx = -dz / len, nz = dx / len;
+            for (double t = 0; t < len; t += 1) {
+                acc += 1;
+                if (acc < 15) continue;
+                acc = 0;
+                double side = (i + (int) (t / 15)) % 2 == 0 ? 3.8 : -3.8;
+                int x = (int) Math.round(a[0] + dx * t / len + nx * side), z = (int) Math.round(a[1] + dz * t / len + nz * side);
+                if (!area(x, z)) continue;
+                int sv = surf[z * W + x], rs = surf[(int) Math.round(a[1] + dz * t / len) * W + (int) Math.round(a[0] + dx * t / len)];
+                if (sv < 1 || Math.abs(sv - rs) > 1 || ringR(x, z) > RW - 0.05) continue;
+                boolean taken = false;
+                for (int[] bx : boxes) if (x >= bx[0] - 1 && x <= bx[2] + 1 && z >= bx[1] - 1 && z <= bx[3] + 1) taken = true;
+                if (taken) continue;
+                for (int y = 0; y < 3; y++) set(x, sv + y, z, WFENCE);
+                set(x, sv + 3, z, LAMP);
+            }
+        }
+    }
+
+    /** muraille de rondins patines tout autour du village, ouverte a la route */
     private void outerWall() {
         boolean[] in = new boolean[W * D];
-        for (int x = 1; x < W - 1; x++) for (int z = 1; z < D - 1; z++) in[z * W + x] = ringR(x, z) < RW && surf[z * W + x] == 1 || (ringR(x, z) < RW && surf[z * W + x] > 1);
+        for (int x = 1; x < W - 1; x++) for (int z = 1; z < D - 1; z++) in[z * W + x] = ringR(x, z) < RW;
         for (int x = 1; x < W - 1; x++) for (int z = 1; z < D - 1; z++) {
             int i = z * W + x;
             if (!in[i] || (in[i + 1] && in[i - 1] && in[i + W] && in[i - W])) continue;
             if (surf[i] != 1) continue;
             if (roadD[i] < 5.0) continue;
-            boolean gateEdge = roadD[i] < 7.0;
-            int h = gateEdge ? 9 : ((x + z) % 2 == 0 ? 6 : 5);
-            if (!gateEdge && rnd(x, 31, z) < 0.15) h--;
-            for (int y = 0; y < h; y++) set(x, 1 + y, z, gateEdge ? DLOG_Y : LOG_Y);
-            if (gateEdge) set(x, 1 + h, z, LAMP); else set(x, 1 + h, z, SLAB_SP);
+            int h = (x + z) % 2 == 0 ? 6 : 5;
+            boolean tall = (x * 7 + z * 13) % 17 == 0;
+            if (tall) h = 8;
+            else if (rnd(x, 31, z) < 0.15) h--;
+            set(x, 0, z, rnd(x, 32, z) < 0.5 ? COBBLE : MOSSY_COBBLE);
+            for (int y = 0; y < h; y++) set(x, 1 + y, z, y == 3 && !tall ? WLOG_Y : WLOG_Y);
+            set(x, 1 + h, z, tall ? LAMP : WSLAB);
+            if (tall) { set(x, 1 + h - 1, z, CARVED); set(x, 1 + h - 3, z, CARVED); }
             wallCells++;
         }
         // tours de guet : aux quatre coins de l'ellipse
@@ -332,16 +499,73 @@ public final class EdorasPlan {
             double th = Math.toRadians(45 + 90 * k + 8), rad = RW - 0.075;
             int cx = (int) Math.round(wx(A * rad * Math.cos(th), B * rad * Math.sin(th))), cz = (int) Math.round(wz(A * rad * Math.cos(th), B * rad * Math.sin(th)));
             if (!area(cx - 3, cz - 3) || !area(cx + 3, cz + 3) || surf[cz * W + cx] != 1) continue;
-            for (int[] c : new int[][]{{-2, -2}, {2, -2}, {-2, 2}, {2, 2}}) for (int y = 0; y < 10; y++) set(cx + c[0], 1 + y, cz + c[1], DLOG_Y);
+            for (int x = cx - 3; x <= cx + 3; x++) for (int z = cz - 3; z <= cz + 3; z++) set(x, 0, z, COBBLE);
+            for (int[] c : new int[][]{{-2, -2}, {2, -2}, {-2, 2}, {2, 2}}) for (int y = 0; y < 10; y++) set(cx + c[0], 1 + y, cz + c[1], y >= 4 && y <= 5 ? DLOG_Y : WLOG_Y);
             for (int x = cx - 3; x <= cx + 3; x++) for (int z = cz - 3; z <= cz + 3; z++) {
-                set(x, 1 + 7, z, DPLANKS);
-                if (Math.abs(x - cx) == 3 || Math.abs(z - cz) == 3) set(x, 1 + 8, z, FENCE);
-                if (Math.abs(x - cx) <= 2 && Math.abs(z - cz) <= 2) set(x, 1 + 11, z, SLAB_SP);
+                set(x, 1 + 7, z, WPLANKS);
+                if (Math.abs(x - cx) == 3 || Math.abs(z - cz) == 3) set(x, 1 + 8, z, WFENCE);
+                if (Math.abs(x - cx) <= 2 && Math.abs(z - cz) <= 2) set(x, 1 + 11, z, SLAB_MO);
             }
-            for (int[] c : new int[][]{{-2, -2}, {2, -2}, {-2, 2}, {2, 2}}) set(cx + c[0], 1 + 10, cz + c[1], DLOG_Y);
-            for (int y = 1; y <= 7; y++) set(cx, 1 + y, cz + 3 > 0 ? cz : cz, AIR);
+            for (int x = cx - 2; x <= cx + 2; x++) for (int z = cz - 2; z <= cz + 2; z++) {
+                boolean ring = Math.abs(x - cx) == 2 || Math.abs(z - cz) == 2;
+                if (ring && !(Math.abs(x - cx) == 2 && Math.abs(z - cz) == 2) && !(x == cx || z == cz)) set(x, 1 + 12, z, SLAB_MO);
+            }
+            for (int[] c : new int[][]{{-2, -2}, {2, -2}, {-2, 2}, {2, 2}}) set(cx + c[0], 1 + 10, cz + c[1], WLOG_Y);
+            for (int y = 1; y <= 6; y++) for (int x = cx - 1; x <= cx + 1; x++) for (int z = cz - 1; z <= cz + 1; z++) set(x, y, z, AIR);
+            for (int x = cx - 2; x <= cx + 2; x++) for (int z = cz - 2; z <= cz + 2; z++) {
+                boolean edge = Math.abs(x - cx) == 2 || Math.abs(z - cz) == 2;
+                boolean cornr = Math.abs(x - cx) == 2 && Math.abs(z - cz) == 2;
+                if (edge && !cornr) for (int y = 1; y <= 6; y++) set(x, y, z, y == 4 && ((x + z) & 1) == 0 ? AIR : WPLANKS);
+            }
             set(cx, 1 + 8, cz, LAMP);
         }
+    }
+
+    /** porte fortifiee : deux tours de bois de part et d'autre de la route, linteau sculpte, lanternes suspendues */
+    private void gate() {
+        double[] cp = null;
+        double acc = 0;
+        outer:
+        for (int i = 1; i < road.size(); i++) {
+            double[] a = road.get(i - 1), b = road.get(i);
+            double dx = b[0] - a[0], dz = b[1] - a[1], len = Math.hypot(dx, dz);
+            for (double t = 0; t < len; t += 0.5) {
+                double px = a[0] + dx * t / len, pz = a[1] + dz * t / len;
+                if (ringR((int) px, (int) pz) < RW) { cp = new double[]{px, pz, dx, dz}; break outer; }
+            }
+        }
+        if (cp == null) return;
+        int gx = (int) Math.round(cp[0]), gz = (int) Math.round(cp[1]);
+        boolean alongX = Math.abs(cp[2]) >= Math.abs(cp[3]);          // la route traverse la muraille le long de x (sinon le long de z)
+        for (int a = -4; a <= 4; a++) for (int b = -11; b <= 11; b++) {
+            int x = alongX ? gx + a : gx + b, z = alongX ? gz + b : gz + a;
+            if (!area(x, z)) continue;
+            int bb = Math.abs(b);
+            // on degage la muraille dans l'emprise
+            for (int y = 1; y <= 12; y++) set(x, y, z, AIR);
+            if (bb <= 5) { set(x, 0, z, rnd(x, 33, z) < 0.5 ? PATH : EARTH); continue; }
+            if (bb > 10 || Math.abs(a) > 3) continue;
+            set(x, 0, z, COBBLE);
+            boolean cornerT = (bb == 6 || bb == 10) && Math.abs(a) == 3;
+            boolean edgeT = bb == 6 || bb == 10 || Math.abs(a) == 3;
+            for (int y = 1; y <= 8; y++) {
+                if (cornerT) set(x, y, z, y == 1 ? COBBLE : DLOG_Y);
+                else if (edgeT) set(x, y, z, y == 1 ? COBBLE : y == 4 || y == 8 ? CARVED : (y == 5 && ((a + b) & 1) == 0 ? AIR : WPLANKS));
+            }
+            set(x, 9, z, WPLANKS);
+            if (edgeT) set(x, 10, z, WFENCE);
+            if (cornerT) { set(x, 10, z, DLOG_Y); set(x, 11, z, DLOG_Y); set(x, 12, z, LAMP); }
+        }
+        // linteau : poutre maitresse sculptee au-dessus du passage, lanternes
+        for (int b = -10; b <= 10; b++) for (int a = -1; a <= 1; a++) {
+            int x = alongX ? gx + a : gx + b, z = alongX ? gz + b : gz + a;
+            if (Math.abs(b) <= 5) {
+                set(x, 8, z, a == 0 ? (alongX ? WLOG_Z : WLOG_X) : CARVED);
+                set(x, 9, z, WPLANKS);
+                if (a == 0) set(x, 10, z, WSLAB);
+            }
+        }
+        for (int b : new int[]{-3, 3}) { int x = alongX ? gx : gx + b, z = alongX ? gz + b : gz; set(x, 7, z, CHAIN); set(x, 6, z, LAMP); }
     }
 
     private void well(int x, int z) {
@@ -354,14 +578,24 @@ public final class EdorasPlan {
     private void corral(int x0, int z0, int w, int d) {
         for (int x = x0; x < x0 + w; x++) for (int z = z0; z < z0 + d; z++) {
             boolean edge = x == x0 || z == z0 || x == x0 + w - 1 || z == z0 + d - 1;
-            if (edge) { if (!(x == x0 + w / 2 && z == z0 + d - 1)) { set(x, lvl, z, FENCE); } }
-            else if (rnd(x, 20, z) < 0.12) set(x, lvl, z, HAY);
-            else if (rnd(x, 21, z) < 0.08) set(x, lvl - 1, z, COARSE);
+            if (edge) { if (!(z == z0 + d - 1 && Math.abs(x - (x0 + w / 2)) <= 1)) set(x, lvl, z, WFENCE); }
+            else {
+                if (rnd(x, 22, z) < 0.3) set(x, lvl - 1, z, COARSE);                       // sol pietine
+                else if (rnd(x, 23, z) < 0.07) set(x, lvl - 1, z, EARTH);
+                if (rnd(x, 20, z) < 0.07) set(x, lvl, z, HAY);
+            }
         }
-        set(x0, lvl + 1, z0, LOG_Y); set(x0 + w - 1, lvl + 1, z0, LOG_Y);
-        set(x0, lvl, z0, LOG_Y); set(x0 + w - 1, lvl, z0, LOG_Y);
-        set(x0, lvl, z0 + d - 1, LOG_Y); set(x0 + w - 1, lvl, z0 + d - 1, LOG_Y);
-        set(x0 + w / 2 + 2, lvl, z0 + 2, BARREL);
+        for (int[] c : new int[][]{{0, 0}, {w - 1, 0}, {0, d - 1}, {w - 1, d - 1}}) { set(x0 + c[0], lvl, z0 + c[1], WLOG_Y); set(x0 + c[0], lvl + 1, z0 + c[1], WLOG_Y); set(x0 + c[0], lvl + 2, z0 + c[1], LAMP); }
+        set(x0 + w / 2 - 2, lvl, z0 + d - 1, WLOG_Y); set(x0 + w / 2 + 2, lvl, z0 + d - 1, WLOG_Y);
+        // abri a toit de chaume dans l'angle nord-ouest, foin dessous
+        int sw = Math.min(5, w - 4);
+        for (int x = x0 + 1; x <= x0 + sw; x++) for (int z = z0 + 1; z <= z0 + 3; z++) { set(x, lvl, z, AIR); set(x, lvl + 3, z, SLAB_MO); }
+        for (int[] c : new int[][]{{1, 1}, {sw, 1}, {1, 3}, {sw, 3}}) for (int y = 0; y < 3; y++) set(x0 + c[0], lvl + y, z0 + c[1], WLOG_Y);
+        for (int x = x0 + 2; x < x0 + sw; x++) { set(x, lvl, z0 + 1, HAY); set(x, lvl + 1, z0 + 1, x == x0 + 3 ? SHEAF_Y : AIR); }
+        // abreuvoir, tonneau et ratelier
+        set(x0 + w - 3, lvl, z0 + d - 3, CAULDRON_W); set(x0 + w - 4, lvl, z0 + d - 3, CAULDRON_W);
+        set(x0 + w - 2, lvl, z0 + d - 3, BARREL);
+        set(x0 + w - 2, lvl, z0 + 2, SHEAF_Y); set(x0 + w - 2, lvl, z0 + 3, HAY); set(x0 + w - 3, lvl, z0 + 2, HAY);
     }
 
     private void palisade() {
@@ -372,8 +606,8 @@ public final class EdorasPlan {
             for (int k = 0; k <= n; k++) {
                 int x = (int) Math.round(ax + (bx - ax) * k / n), z = (int) Math.round(az + (bz - az) * k / n);
                 if (!area(x, z) || surf[z * W + x] != H0 || roadD[z * W + x] < 4.5) continue;
-                if (k % 2 == 0) { for (int y = 0; y < 4; y++) set(x, H0 + y, z, LOG_Y); set(x, H0 + 4, z, SLAB_SP); }
-                else { set(x, H0, z, FENCE); set(x, H0 + 1, z, FENCE); set(x, H0 + 2, z, FENCE); }
+                if (k % 2 == 0) { for (int y = 0; y < 5; y++) set(x, H0 + y, z, WLOG_Y); set(x, H0 + 5, z, WSLAB); }
+                else { for (int y = 0; y < 4; y++) set(x, H0 + y, z, WLOG_Y); set(x, H0 + 4, z, WSLAB); }
             }
         }
     }
@@ -436,6 +670,8 @@ public final class EdorasPlan {
             v = base + ((dir + r) & 3) * 2 + top;
         } else if (id == LOG_X || id == LOG_Z) {
             if (r % 2 == 1) v = id == LOG_X ? LOG_Z : LOG_X;
+        } else if (id == WLOG_X || id == WLOG_Z) {
+            if (r % 2 == 1) v = id == WLOG_X ? WLOG_Z : WLOG_X;
         } else if (id == DLOG_X || id == DLOG_Z) {
             if (r % 2 == 1) v = id == DLOG_X ? DLOG_Z : DLOG_X;
         }
@@ -449,6 +685,7 @@ public final class EdorasPlan {
         if (w % 2 == 0) w++;
         int hh = style == 3 ? wh + 1 : wh;
         int cxl = w / 2;
+        int wm = (hash(x0, 3, z0) >>> 4) % 3;                                    // 0 torchis a colombages, 1 torchis uni, 2 planches patinees
         for (int lx = -1; lx <= w; lx++) for (int lz = -1; lz <= d; lz++) {
             boolean inside = lx >= 0 && lx < w && lz >= 0 && lz < d;
             if (inside) {
@@ -466,7 +703,8 @@ public final class EdorasPlan {
                 int id;
                 if (y == 1) id = rnd(x0 + lx, y, z0 + lz) < 0.2 ? MOSSY_COBBLE : COBBLE;
                 else if (corner || postX) id = DLOG_Y;
-                else id = rnd(x0 + lx, y, z0 + lz) < 0.25 ? PLANKS : DPLANKS;
+                else if (y == hh) id = style >= 1 ? CARVED : WPLANKS;                                  // poutre sous l'avant-toit
+                else id = wm == 0 ? TIMBER : wm == 1 ? PLASTER : (rnd(x0 + lx, y, z0 + lz) < 0.2 ? PLANKS : WPLANKS);
                 boolean winRow = y == 3 || (hh >= 5 && y == 4);
                 boolean longSide = lx == 0 || lx == w - 1;
                 if (winRow && !corner && !postX && ((longSide && lz % 4 == 0) || (!longSide && lx == cxl - 2 || (!longSide && lx == cxl + 2 && lz == 0)))) id = GLASSPANE;
@@ -503,14 +741,14 @@ public final class EdorasPlan {
                     int id = (k == layers) ? DPLANKS : DPLANKS;
                     if (lx >= k && lx <= w - 1 - k && !(k < layers && (lx == k || lx == w - 1 - k) && false)) {
                         if (get(map(r, x0, z0, w, d, lx, lzp)[0], lvl + yy, map(r, x0, z0, w, d, lx, lzp)[1]) == AIR || true) {
-                            if (k >= 1 && lx > k && lx < w - 1 - k) put(r, x0, z0, w, d, lx, yy, lzp, DPLANKS, false);
+                            if (k >= 1 && lx > k && lx < w - 1 - k) put(r, x0, z0, w, d, lx, yy, lzp, WPLANKS, false);
                         }
                     }
                 }
             }
         }
         // pignon : plein sous le toit
-        for (int k = 0; k < layers; k++) for (int lx = k + 1; lx <= w - 2 - k; lx++) for (int lzp : new int[]{0, d - 1}) put(r, x0, z0, w, d, lx, hh + 1 + k, lzp, DPLANKS, false);
+        for (int k = 0; k < layers; k++) for (int lx = k + 1; lx <= w - 2 - k; lx++) for (int lzp : new int[]{0, d - 1}) put(r, x0, z0, w, d, lx, hh + 1 + k, lzp, WPLANKS, false);
         // ornements : poutres croisees en V (tetes de chevaux) a chaque bout du faitage, lanterne au plafond
         if (!sub) {
             int yr = hh + 1 + layers;
@@ -527,6 +765,22 @@ public final class EdorasPlan {
             put(r, x0, z0, w, d, 1, 1, d - 2, BARREL, false);
             put(r, x0, z0, w, d, w - 2, 1, 1, SHELF, false);
             put(r, x0, z0, w, d, w - 2, 2, 1, SHELF, false);
+            // interieur habite : table, tapis, etabli, jarre
+            put(r, x0, z0, w, d, cxl, 1, d / 2 + 1, WFENCE, false); put(r, x0, z0, w, d, cxl, 2, d / 2 + 1, PLATE, false);
+            for (int dx = -1; dx <= 1; dx += 2) { put(r, x0, z0, w, d, cxl + dx, 1, d / 2 + 1, CARPET_G, false); put(r, x0, z0, w, d, cxl + dx, 1, d / 2 - 1 + 2 * 0, CARPET_G, false); }
+            put(r, x0, z0, w, d, w - 2, 1, d - 3, CRAFT, false);
+            put(r, x0, z0, w, d, 1, 1, 1, COMPOSTER, false);
+            // cheminee de pierre contre le pignon ouest : un feu de camp au sommet laisse monter la fumee
+            int chz = Math.max(2, d / 2 - 2);
+            for (int y = 1; y <= hh + 3; y++) put(r, x0, z0, w, d, -2, y, chz, y % 3 == 0 ? MOSSY_COBBLE : COBBLE, false);
+            put(r, x0, z0, w, d, -2, hh + 4, chz, CAMPFIRE, false);
+            // devant : pot de fleurs, tonneau, tas de bois contre le mur est
+            put(r, x0, z0, w, d, cxl + 2, 1, d, (hash(x0, 5, z0) & 1) == 0 ? POT_TULIP : POT_DAND, false);
+            put(r, x0, z0, w, d, cxl - 2, 1, d, BARREL, false);
+            for (int lz = 2; lz <= Math.min(d - 3, 6); lz++) {
+                put(r, x0, z0, w, d, w + 1, 1, lz, WLOG_Z, false); put(r, x0, z0, w, d, w + 2, 1, lz, WLOG_Z, false);
+                if (lz >= 3 && lz <= Math.min(d - 4, 5)) put(r, x0, z0, w, d, w + 1, 2, lz, WLOG_Z, false);
+            }
         }
     }
 
@@ -566,7 +820,7 @@ public final class EdorasPlan {
                 int id;
                 if (y <= 2) id = rnd(x, y, z) < 0.18 ? MOSSY_COBBLE : (rnd(x, y, z) < 0.5 ? SB : COBBLE);
                 else if (corner || pillar) id = DSTRIP_Y;
-                else id = rnd(x, y, z) < 0.3 ? PLANKS : DPLANKS;
+                else id = y == 3 || y == wh ? CARVED : rnd(x, y, z) < 0.3 ? PLANKS : DPLANKS;
                 if ((lx == 0 || lx == hw - 1) && lz % 4 == 0 && (y == 4 || y == 5) && !pillar && !corner) id = GLASSPANE;
                 set(x, ty + y, z, id);
             }

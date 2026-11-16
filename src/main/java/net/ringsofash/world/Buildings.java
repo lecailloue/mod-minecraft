@@ -927,7 +927,47 @@ public final class Buildings {
         p[EdorasPlan.DSTRIP_Y] = log(Blocks.STRIPPED_DARK_OAK_LOG, Direction.Axis.Y);
         p[EdorasPlan.DSTRIP_X] = log(Blocks.STRIPPED_DARK_OAK_LOG, Direction.Axis.X);
         p[EdorasPlan.DSTRIP_Z] = log(Blocks.STRIPPED_DARK_OAK_LOG, Direction.Axis.Z);
-        stairSet(p, EdorasPlan.STAIR_MO, Blocks.BAMBOO_MOSAIC_STAIRS);
+        // chaume du mod pour les toits, bois patine, torchis, bois sculpte, gerbes, terre battue
+        p[EdorasPlan.MOSAIC] = Reg.THATCH.get().defaultBlockState();
+        p[EdorasPlan.SLAB_MO] = slab(Reg.THATCH_SLAB.get(), false);
+        p[EdorasPlan.SLAB_MO_TOP] = slab(Reg.THATCH_SLAB.get(), true);
+        stairSet(p, EdorasPlan.STAIR_MO, Reg.THATCH_STAIRS.get());
+        p[EdorasPlan.WLOG_Y] = log(Reg.WEATHERED_LOG.get(), Direction.Axis.Y);
+        p[EdorasPlan.WLOG_X] = log(Reg.WEATHERED_LOG.get(), Direction.Axis.X);
+        p[EdorasPlan.WLOG_Z] = log(Reg.WEATHERED_LOG.get(), Direction.Axis.Z);
+        p[EdorasPlan.WPLANKS] = Reg.WEATHERED_PLANKS.get().defaultBlockState();
+        p[EdorasPlan.WSLAB] = slab(Reg.WEATHERED_PLANKS_SLAB.get(), false);
+        p[EdorasPlan.WSLAB_TOP] = slab(Reg.WEATHERED_PLANKS_SLAB.get(), true);
+        p[EdorasPlan.WFENCE] = Reg.WEATHERED_PLANKS_FENCE.get().defaultBlockState();
+        p[OrthancPlan.FENCE] = Reg.WEATHERED_PLANKS_FENCE.get().defaultBlockState();
+        p[EdorasPlan.CARVED] = Reg.CARVED_PLANKS.get().defaultBlockState();
+        p[EdorasPlan.TIMBER] = Reg.TIMBER_PLASTER.get().defaultBlockState();
+        p[EdorasPlan.PLASTER] = Reg.ROHAN_PLASTER.get().defaultBlockState();
+        p[EdorasPlan.SHEAF_Y] = log(Reg.SHEAF.get(), Direction.Axis.Y);
+        p[EdorasPlan.SHEAF_X] = log(Reg.SHEAF.get(), Direction.Axis.X);
+        p[EdorasPlan.EARTH] = Reg.PACKED_EARTH.get().defaultBlockState();
+        // vie du village : cultures, eau, cuves, etabli, enclume, fleurs, laine, tapis
+        p[EdorasPlan.FARM] = Blocks.FARMLAND.defaultBlockState().setValue(net.minecraft.world.level.block.FarmBlock.MOISTURE, 7);
+        p[EdorasPlan.WHEAT_R] = Blocks.WHEAT.defaultBlockState().setValue(net.minecraft.world.level.block.CropBlock.AGE, 7);
+        p[EdorasPlan.WHEAT_Y] = Blocks.WHEAT.defaultBlockState().setValue(net.minecraft.world.level.block.CropBlock.AGE, 3);
+        p[EdorasPlan.CARROT_R] = Blocks.CARROTS.defaultBlockState().setValue(net.minecraft.world.level.block.CarrotBlock.AGE, 7);
+        p[EdorasPlan.CARROT_Y] = Blocks.CARROTS.defaultBlockState().setValue(net.minecraft.world.level.block.CarrotBlock.AGE, 3);
+        p[EdorasPlan.POTATO_R] = Blocks.POTATOES.defaultBlockState().setValue(net.minecraft.world.level.block.PotatoBlock.AGE, 7);
+        p[EdorasPlan.POTATO_Y] = Blocks.POTATOES.defaultBlockState().setValue(net.minecraft.world.level.block.PotatoBlock.AGE, 3);
+        p[EdorasPlan.WATER] = Blocks.WATER.defaultBlockState();
+        p[EdorasPlan.CAULDRON_W] = Blocks.WATER_CAULDRON.defaultBlockState().setValue(net.minecraft.world.level.block.LayeredCauldronBlock.LEVEL, 3);
+        p[EdorasPlan.COMPOSTER] = Blocks.COMPOSTER.defaultBlockState().setValue(net.minecraft.world.level.block.ComposterBlock.LEVEL, 6);
+        p[EdorasPlan.CRAFT] = Blocks.CRAFTING_TABLE.defaultBlockState();
+        p[EdorasPlan.ANVIL] = Blocks.ANVIL.defaultBlockState();
+        p[EdorasPlan.LAVA_CAULD] = Blocks.LAVA_CAULDRON.defaultBlockState();
+        p[EdorasPlan.POT_TULIP] = Blocks.POTTED_RED_TULIP.defaultBlockState();
+        p[EdorasPlan.POT_DAND] = Blocks.POTTED_DANDELION.defaultBlockState();
+        p[EdorasPlan.POT_CORN] = Blocks.POTTED_CORNFLOWER.defaultBlockState();
+        p[EdorasPlan.WOOL_G] = Blocks.GREEN_WOOL.defaultBlockState();
+        p[EdorasPlan.WOOL_W] = Blocks.WHITE_WOOL.defaultBlockState();
+        p[EdorasPlan.PLATE] = Blocks.OAK_PRESSURE_PLATE.defaultBlockState();
+        p[EdorasPlan.CARPET_G] = Blocks.GREEN_CARPET.defaultBlockState();
+        p[EdorasPlan.CARPET_W] = Blocks.WHITE_CARPET.defaultBlockState();
         edorasPal = p;
         return p;
     }
@@ -936,14 +976,14 @@ public final class Buildings {
     private static void edoras(Build b) {
         EdorasPlan p = EdorasPlan.get();
         BlockState[] pal = edorasPal();
-        BlockState foot = Blocks.STONE.defaultBlockState();
+        BlockState foot = Blocks.STONE.defaultBlockState(), dirt = Blocks.DIRT.defaultBlockState();
         int maxY = EdorasPlan.H - EdorasPlan.OFF - 1;
         for (int x = 0; x < EdorasPlan.W; x++) {
             for (int z = 0; z < EdorasPlan.D; z++) {
                 int top = p.top(x, z);
                 if (top < 0 || !b.in(x, 0, z)) continue;
                 int ground = Math.min(b.groundY(x, z), maxY);
-                if (p.get(x, 0, z) != OrthancPlan.AIR) b.foundation(x, z, x, z, foot, 24);            // la colline repose sur le sol ferme
+                if (p.get(x, 0, z) != OrthancPlan.AIR) b.foundation(x, z, x, z, (p.get(x, 0, z) & 255) == EdorasPlan.GRASS || (p.get(x, 0, z) & 255) == EdorasPlan.COARSE || (p.get(x, 0, z) & 255) == EdorasPlan.EARTH || (p.get(x, 0, z) & 255) == OrthancPlan.PATH ? dirt : foot, 24);   // la colline repose sur le sol ferme
                 for (int y = ground; y > top; y--) {                                                     // on rase ce qui depasse du terrain naturel
                     if (y > ground || b.get(x, y, z).isAir()) continue;
                     if (p.get(x, y, z) == OrthancPlan.AIR) b.s(x, y, z, Build.AIR);
