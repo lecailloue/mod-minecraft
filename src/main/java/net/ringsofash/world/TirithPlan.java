@@ -631,9 +631,9 @@ public final class TirithPlan {
         }
         for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) set(fx + dx, y0, fz + dz, QB);
         for (int y = 1; y <= 4; y++) set(fx, y0 + y, fz, QPILLAR_Y);
-        set(fx, y0 + 5, fz, WATER);
-        for (int[] b : br) { set(fx + b[0], y0 + 5, fz + b[1], QB); set(fx + b[0], y0 + 6, fz + b[1], WATER); }
-        set(fx, y0 + 6, fz, WATER);
+        set(fx, y0 + 5, fz, QB);
+        for (int[] b : br) set(fx + b[0], y0 + 5, fz + b[1], QUARTZ_SLAB);
+        set(fx, y0 + 6, fz, GOLD); set(fx, y0 + 7, fz, LANTERN);
         // bancs : face a la cour, dossier vers l'exterieur
         for (int z = cz - 8; z <= cz + 20; z += 4) {
             if (Math.abs(z - fz) <= 5 && false) continue;
