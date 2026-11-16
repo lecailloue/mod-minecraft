@@ -365,7 +365,7 @@ public final class ClientTest {
         // palais d'Or, tour de cloche, village, interieur, champs, etal, forge : positions tirees du plan
         for (int k = 0; k < 15; k++) {
             final int kk = k;
-            if (k != 1 && k != 9 && k != 13 && k != 14) continue;                // les autres vues d'Edoras sont deja validees
+            if (k != 1 && k != 8 && k != 9 && k != 13 && k != 14) continue;                // les autres vues d'Edoras sont deja validees
             SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle", "110_edoras_champs", "111_edoras_etal", "112_edoras_forge", "113_edoras_entree", "114_edoras_entree_dessus", "115_edoras_sol", "116_edoras_place", "117_edoras_fontaine", "118_edoras_porte_maison", "119_edoras_porte_aile"}[k], 420, p -> {
                 ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
                 for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((EX >> 4) + dx, (EZ >> 4) + dz);
@@ -384,8 +384,11 @@ public final class ClientTest {
                     case 6 -> look(p, lands, ox + ep.stallX - 6.5, py + ep.stallL + 3, oz + ep.stallZ + 8.5, ox + ep.stallX, py + ep.stallL + 1, oz + ep.stallZ);
                     case 7 -> look(p, lands, ox + ep.smithX - 7.5, py + ep.smithL + 3, oz + ep.smithZ + 9.5, ox + ep.smithX, py + ep.smithL + 1, oz + ep.smithZ);
                     case 8 -> {                                                           // l'entree : la porte fortifiee vue de la route
-                        int gx = ox + ep.gateX, gz = oz + ep.gateZ, sx = gx - 20, sz = gz + 4;
-                        look(p, lands, sx + 0.5, lands.getHeight(Heightmap.Types.MOTION_BLOCKING, sx, sz) + 3, sz + 0.5, gx, py + 7, gz);
+                        int gx = ox + ep.gateX, gz = oz + ep.gateZ;
+                        int sg = ep.get(ep.gateX, 0, ep.gateZ + 14) == 0 ? 1 : -1;      // cote du passage qui donne sur l'exterieur
+                        int sx = gx + 6, sz = gz + sg * 26;
+                        int fy = floorY(lands, sx, sz, py - 20);
+                        look(p, lands, sx + 0.5, fy + 4, sz + 0.5, gx, fy - 3, gz + sg * 10);
                     }
                     case 9 -> {                                                           // l'entree vue de l'interieur du village, un peu en hauteur
                         int gx = ox + ep.gateX, gz = oz + ep.gateZ;
