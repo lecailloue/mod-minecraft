@@ -935,10 +935,11 @@ public final class ClientTest {
         spotT("87_barad_douve", BX + 85, BZ + 85, 25, 135F, 18F, 6000);
         spotT("88_barad_aerien", BX + 140, BZ + 140, 130, 135F, 20F, 6000);
         spotT("89_barad_mi_hauteur", BX + 70, BZ, 120, 90F, -10F, 6000);
-        spotT("95_oeil_sud", BX, BZ + 40, 233, 180F, 0F, 6000);
-        spotT("96_oeil_est", BX + 40, BZ, 233, 90F, 0F, 6000);
-        spotT("97_oeil_loin", BX, BZ + 150, 200, 180F, 6F, 6000);
-        spotT("98_oeil_nuit", BX, BZ + 60, 233, 180F, 0F, 18000);
+        eyeT("95_oeil_sud", BX, BZ, 0, 0, 40, 180F, 0F, 6000);
+        eyeT("96_oeil_est", BX, BZ, 40, 0, 0, 90F, 0F, 6000);
+        eyeT("97_oeil_loin", BX, BZ, 0, -35, 150, 180F, 14F, 6000);
+        eyeT("98_oeil_nuit", BX, BZ, 0, 0, 60, 180F, 0F, 18000);
+        eyeT("99_oeil_haut", BX, BZ, 20, 25, 30, 150F, 35F, 6000);
         spotT("90_barad_nuit_loin", BX, BZ + 235, 110, 180F, -20F, 18000);
         for (int[] it : new int[][]{{91, -30, 0, -90, -3, 0}, {92, -6, -7, -62, 5, 200}}) {
             final int[] c = it;
@@ -950,6 +951,20 @@ public final class ClientTest {
                 view(p, lands, BX + c[1] + 0.5, by + c[5], BZ + c[2] + 0.5, c[3], c[4]);
             }));
         }
+    }
+
+    /** vue relative a l'Oeil de Sauron (cherche le bloc d'ancrage au centre de Barad-dur) : dx, dy, dz depuis l'oeil */
+    private static void eyeT(String name, int bx, int bz, int dx, int dy, int dz, float yaw, float pitch, int time) {
+        SCENES.add(new Scene(name, 420, p -> {
+            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+            lands.getChunk(bx >> 4, bz >> 4);
+            int ey = -1;
+            for (int y = 400; y > 60; y--) if (lands.getBlockState(new net.minecraft.core.BlockPos(bx, y, bz)).is(net.ringsofash.gen.Reg.EYE_OF_SAURON.get())) { ey = y; break; }
+            if (ey < 0) ey = lands.getHeight(Heightmap.Types.MOTION_BLOCKING, bx, bz) + 236;
+            lands.getChunk((bx + dx) >> 4, (bz + dz) >> 4);
+            lands.setDayTime(time);
+            view(p, lands, bx + dx + 0.5, ey + 0.5 + dy, bz + dz + 0.5, yaw, pitch);
+        }));
     }
 
     private static void spotT(String name, int x, int z, int up, float yaw, float pitch, int time) {
