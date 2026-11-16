@@ -100,7 +100,7 @@ public final class TirithPlan {
     private static int prowTop(int z) {
         double dz = z + 0.5 - CZ;
         if (dz <= 26) return PROW_TOP - 1;
-        return (int) (PROW_TOP - 1 - (dz - 26) * 0.45);
+        return PROW_TOP - 1;                                                   // la crete reste au niveau de la cour et de l'Arbre Blanc sur toute sa longueur
     }
 
     /** demi-largeur de l'eperon : large au plateau, puis une lame etroite qui fend la cite jusqu'au premier mur */
@@ -476,7 +476,7 @@ public final class TirithPlan {
         int cx = CX, cz = CZ, y0 = PROW_TOP;
         tower_x = cx; tower_z = cz - 5; court_x = cx; court_z = cz + 14;
         // parapet autour du plateau
-        for (int x = cx - 24; x <= cx + 24; x++) for (int z = cz - 18; z <= cz + 28; z++) {
+        for (int x = cx - 24; x <= cx + 24; x++) for (int z = cz - 18; z <= cz + PROW_TIP + 2; z++) {
             if (!area(x, z) || kind[z * W + x] != 3 || fill[z * W + x] != PROW_TOP - 1) continue;
             boolean edge = false;
             for (int[] o : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
