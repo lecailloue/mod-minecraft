@@ -12,9 +12,9 @@ import java.util.Random;
  * au-dessus du sol, y negatif = sous le sol. La porte de l'enceinte et celle de la tour regardent vers +x.
  */
 public final class OrthancPlan {
-    public static final int TOPY = 182;                                   // y de la dalle du sommet ; la surface est a TOPY + 2, les cornes montent a TOPY + 18
+    public static final int TOPY = 182;                                   // y de la dalle du sommet ; la surface est a TOPY + 2, les crêtes montent a TOPY + 46
     public static final int COL0 = 118;                                  // base de la collerette de pointes
-    public static final int W = 200, D = 200, OFF = 24, H = OFF + TOPY + 22;       // y local de -OFF a H - OFF - 1
+    public static final int W = 200, D = 200, OFF = 24, H = OFF + TOPY + 52;       // y local de -OFF a H - OFF - 1
     public static final int CX = 100, CZ = 100;
     public static final double R_WALL = 100.0, R_LEVEL = 92.5;         // rayon exterieur de l'enceinte, rayon nivele
 
@@ -321,7 +321,7 @@ public final class OrthancPlan {
             int len = 3 + (int) (rnd(x, 31, z) * 6);
             for (int y = COL0 + 10; y < COL0 + 10 + len; y++) set(x, y, z, y > COL0 + 8 + len ? SLAB_BS : BS);
         }
-        // sommets : plateforme, parapet, cornes
+        // sommets : plateforme, parapet, chapelle, cretes
         crown();
         interior();
         door();
@@ -336,7 +336,7 @@ public final class OrthancPlan {
         return q < 0.05 ? CRACK : q < 0.09 ? DS : q < 0.11 ? CHISEL : PB;
     }
 
-    /** plateforme, parapet crenele et quatre cornes */
+    /** plateforme, parapet crenele, chapelle centrale et quatre cretes en croix */
     private void crown() {
         // surface a y = 124 (dalle 122..123 deja posee par la boucle) : parapet sur le bord
         for (int x = CX - 15; x < CX + 15; x++) for (int z = CZ - 15; z < CZ + 15; z++) {
@@ -346,18 +346,52 @@ public final class OrthancPlan {
             set(x, TOPY + 2, z, WALL_BS);
             if (((x + z) & 1) == 0) set(x, TOPY + 3, z, WALL_BS);
         }
-        // quatre cornes aux angles, deux hautes et deux plus courtes, un peu penchees vers l'axe
-        int[][] hornC = {{-1, -1, 16}, {1, -1, 12}, {-1, 1, 12}, {1, 1, 16}};
-        for (int[] hc : hornC) {
-            int len = hc[2];
-            for (int h = 0; h < len; h++) {
-                int size = h < len * 0.45 ? 4 : h < len * 0.7 ? 3 : h < len - 2 ? 2 : 1;
-                int lean = h >= len * 0.8 ? 2 : h >= len * 0.5 ? 1 : 0;
-                double cxh = CX + hc[0] * (6.5 - lean), czh = CZ + hc[1] * (6.5 - lean);
-                int x0 = (int) Math.round(cxh - size / 2.0), z0 = (int) Math.round(czh - size / 2.0);
-                for (int a = 0; a < size; a++) for (int b = 0; b < size; b++) {
-                    if (size == 4 && (a == 0 || a == 3) && (b == 0 || b == 3) && h > 2) continue;      // section arrondie
-                    set(x0 + a, TOPY + 2 + h, z0 + b, h > len - 3 ? BS : (rnd(x0 + a, h, z0 + b) < 0.12 ? DS : PB));
+        // petite chapelle carree au centre de la plateforme (elle coiffe la sortie de l'escalier), toit plat
+        int ty = TOPY + 2;
+        for (int x = CX - 6; x < CX + 6; x++) for (int z = CZ - 6; z < CZ + 6; z++) {
+            double ox = x + 0.5 - CX, oz = z + 0.5 - CZ, m = Math.max(Math.abs(ox), Math.abs(oz));
+            if (m > 5.5) continue;
+            boolean ring = m > 4.5;
+            boolean corner = Math.abs(ox) > 4.5 && Math.abs(oz) > 4.5;
+            for (int y = ty; y <= ty + 9; y++) {
+                if (y == ty + 9) { set(x, y, z, corner || ring ? BS : PB); continue; }          // toit
+                if (!ring) continue;
+                boolean door = Math.min(Math.abs(ox), Math.abs(oz)) < 1.6 && y <= ty + 3 && y >= ty;
+                int iuT = Math.abs(ox) >= Math.abs(oz) ? (int) Math.floor(oz) : (int) Math.floor(ox);
+                boolean slit = Math.floorMod(iuT, 3) == 0 && !corner && y >= ty + 5 && y <= ty + 7;
+                if (door) { set(x, y, z, AIR); continue; }
+                set(x, y, z, corner ? DS : slit ? BARS : (rnd(x, y, z) < 0.1 ? CRACK : PB));
+            }
+        }
+        for (int x = CX - 6; x < CX + 6; x++) for (int z = CZ - 6; z < CZ + 6; z++) {                // corniche du toit
+            double m = Math.max(Math.abs(x + 0.5 - CX), Math.abs(z + 0.5 - CZ));
+            if (m > 5.5 || m < 4.5) continue;
+            if (((x + z) & 1) == 0) set(x, ty + 10, z, SLAB_BS);
+        }
+        // quatre crêtes en croix : grandes lames minces, larges a la base, qui s'affinent en pointe et s'ecartent vers l'exterieur
+        int[] hb = {44, 40, 44, 40};                                                                 // N, E, S, W
+        for (int side = 0; side < 4; side++) {
+            int hh = hb[side];
+            for (int h = 0; h < hh; h++) {
+                double f = (double) h / hh;
+                double halfw = Math.max(0.6, 8.2 * Math.pow(1 - f, 1.25));
+                int off = (int) Math.round(7.5 + 0.22 * h);                                          // decalage vers l'exterieur (m de la face interieure)
+                int thick = h < hh * 0.45 ? 3 : h < hh * 0.78 ? 2 : 1;
+                for (int u = -9; u <= 8; u++) {
+                    if (Math.abs(u + 0.5) > halfw) continue;
+                    for (int t = 0; t < thick; t++) {
+                        int mm = off + t;
+                        int x, z;
+                        switch (side) {
+                            case 0 -> { x = CX + u; z = CZ - mm - 1; }
+                            case 1 -> { x = CX + mm; z = CZ + u; }
+                            case 2 -> { x = CX + u; z = CZ + mm; }
+                            default -> { x = CX - mm - 1; z = CZ + u; }
+                        }
+                        boolean edge = Math.abs(u + 0.5) > halfw - 1.1 || h > hh - 4;
+                        double q = rnd(x, TOPY + 2 + h, z);
+                        set(x, TOPY + 2 + h, z, edge ? BS : (u % 4 == 0 ? DS : q < 0.08 ? CRACK : PB));
+                    }
                 }
             }
         }

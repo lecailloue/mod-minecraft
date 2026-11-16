@@ -766,15 +766,18 @@ public final class ClientTest {
         spotT("53_morgul_liquide_pont", 1368 - 70, 1608 - 14, 24, -90F, 50F, 6000);
         spotT("51_morgul_statue_proche", 1368 - 88, 1608 - 14, 6, -60F, 8F, 18000);
         // Orthanc (centre 308, 745, porte a l'est) : vues lointaines, enceinte, zone de guerre, echafaudages, interieur
-        spotT("60_orthanc_loin_ouest", 308 - 150, 745, 60, -90F, -18F, 6000);
-        spotT("61_orthanc_loin_est", 308 + 150, 745, 60, 90F, -18F, 6000);
+        spotT("60_orthanc_loin_ouest", 308 - 165, 745, 70, -90F, -26F, 6000);
+        spotT("61_orthanc_loin_est", 308 + 165, 745, 70, 90F, -26F, 6000);
+        spotT("74_orthanc_sommet_est", 308 + 105, 745, 150, 90F, -28F, 6000);
+        spotT("75_orthanc_sommet_diag", 308 + 80, 745 + 80, 170, 135F, -26F, 6000);
+        spotT("76_orthanc_sommet_nord", 308, 745 - 95, 150, 0F, -28F, 6000);
         spotT("62_orthanc_porte", 308 + 92, 745, 8, 90F, -6F, 6000);
         spotT("63_orthanc_route", 308 + 70, 745, 5, 90F, -34F, 6000);
         spotT("64_orthanc_pied", 308 + 34, 745 + 22, 4, 123F, -50F, 6000);
         spotT("65_orthanc_muraille", 308 - 70, 745 - 44, 9, 90F, 2F, 6000);
         spotT("66_orthanc_echafaudage", 308 - 100 + 79 - 14, 745 - 100 + 94 + 2, 10, -90F, -6F, 6000);
         spotT("67_orthanc_aerien", 308 + 70, 745 + 70, 80, 135F, 22F, 6000);
-        spotT("68_orthanc_nuit_loin", 308 + 150, 745, 60, 90F, -18F, 18000);
+        spotT("68_orthanc_nuit_loin", 308 + 165, 745, 70, 90F, -26F, 18000);
         spotT("69_orthanc_nuit_sol", 308 + 70, 745, 5, 90F, -34F, 18000);
         for (int k = 0; k < 2; k++) {
             final int kk = k;

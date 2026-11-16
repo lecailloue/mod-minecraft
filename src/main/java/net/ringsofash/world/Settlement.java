@@ -30,7 +30,7 @@ public final class Settlement {
         BURROW(11, 11, 9, 4), FARM(9, 9, 4, 4), INN(13, 10, 11, 4), HOUSE(7, 9, 10, 4), HALL(15, 21, 14, 5), SMITHY(7, 7, 6, 4), STALL(5, 4, 5, 4),
         STABLE(9, 7, 6, 4), WATCHTOWER(5, 5, 15, 4), PLAZA(25, 25, 16, 3), PAVILION(9, 9, 13, 4), ETOWER(7, 7, 26, 4),
         GATE(15, 8, 13, 3), POOL(11, 9, 3, 6), STAIR(7, 48, 8, 50), DHALL(33, 27, 12, 2), MINE(21, 17, 9, 10), LAIR(27, 27, 15, 3),
-        FORT(33, 33, 15, 5), DTOWER(13, 13, 46, 5), BARROW(13, 13, 7, 6), HOARD(41, 41, 7, 28), PYRE(5, 5, 13, 5), RUIN(9, 9, 9, 3), MORGUL(150, 150, 150, 50), ORTHANC(200, 200, 204, 24);
+        FORT(33, 33, 15, 5), DTOWER(13, 13, 46, 5), BARROW(13, 13, 7, 6), HOARD(41, 41, 7, 28), PYRE(5, 5, 13, 5), RUIN(9, 9, 9, 3), MORGUL(150, 150, 150, 50), ORTHANC(200, 200, 234, 24);
         public final int w, d, h, below;
         T(int w, int d, int h, int below) { this.w = w; this.d = d; this.h = h; this.below = below; }
     }
