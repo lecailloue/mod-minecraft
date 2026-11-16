@@ -321,12 +321,7 @@ def build():
     item_img = sprite(FOODS['dust'], mat('#6a6a72'))
     itex('smoke_vent', item_img)
     imodel('smoke_vent', {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/smoke_vent'}})
-    # ---- Oeil de Sauron : bloc invisible (point d'ancrage du rendu 3D, voir client/EyeOfSauronRenderer), pose par Barad-dur
-    block('eye_of_sauron', 'Œil de Sauron', 'custom', drop='none',
-          java='new EyeOfSauronBlock(BlockBehaviour.Properties.of().noCollission().noOcclusion().strength(-1.0F, 3600000.0F).noLootTable().lightLevel(s -> 15).pushReaction(PushReaction.BLOCK))')
-    bstate('eye_of_sauron', {'variants': {'': {'model': 'minecraft:block/air'}}})
-    itex('eye_of_sauron', sprite(FOODS['dust'], mat('#ff8a1a')))
-    imodel('eye_of_sauron', {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/eye_of_sauron'}})
+    # ---- Oeil de Sauron : modele 3D (entite eye_of_sauron, dessinee par client/EyeOfSauronRenderer)
     import shutil as _sh
     _src = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'eye_of_sauron')
     for _f, _dst in (('eye_of_sauron.geo.json', 'geo/eye_of_sauron.geo.json'), ('eye_of_sauron.animation.json', 'animations/eye_of_sauron.animation.json'),

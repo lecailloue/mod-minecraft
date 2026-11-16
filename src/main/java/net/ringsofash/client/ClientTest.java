@@ -959,7 +959,7 @@ public final class ClientTest {
             ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
             lands.getChunk(bx >> 4, bz >> 4);
             int ey = -1;
-            for (int y = 400; y > 60; y--) if (lands.getBlockState(new net.minecraft.core.BlockPos(bx, y, bz)).is(net.ringsofash.gen.Reg.EYE_OF_SAURON.get())) { ey = y; break; }
+            for (var eye : lands.getEntitiesOfClass(net.ringsofash.entity.EyeOfSauronEntity.class, new net.minecraft.world.phys.AABB(bx - 30, 60, bz - 30, bx + 30, 440, bz + 30))) ey = (int) (eye.getY() + 6);
             if (ey < 0) ey = lands.getHeight(Heightmap.Types.MOTION_BLOCKING, bx, bz) + 236;
             lands.getChunk((bx + dx) >> 4, (bz + dz) >> 4);
             lands.setDayTime(time);

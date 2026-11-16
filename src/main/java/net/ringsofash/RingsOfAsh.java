@@ -41,7 +41,6 @@ public class RingsOfAsh {
         ModWorldgen.register(modBus);
         ModData.ATTACHMENTS.register(modBus);
         net.ringsofash.entity.ModEntities.register(modBus);
-        net.ringsofash.block.ModBlockEntities.register(modBus);
         net.ringsofash.item.ModGear.ARMOR_MATERIALS.register(modBus);
         GameEvents.init(modBus);
         if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) net.ringsofash.client.ClientSetup.init(modBus);

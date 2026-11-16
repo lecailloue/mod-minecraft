@@ -10,14 +10,14 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.ringsofash.RingsOfAsh;
-import net.ringsofash.block.EyeOfSauronBlockEntity;
+import net.ringsofash.entity.EyeOfSauronEntity;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,11 +29,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Oeil de Sauron (modele Blockbench eye_of_sauron) : dessine au centre du bloc d'ancrage, a pleine lumiere, et tourne en permanence vers la
+ * Oeil de Sauron (modele Blockbench eye_of_sauron) : dessine au centre de la boite de l'entite, a pleine lumiere, et tourne en permanence vers la
  * camera du joueur (lacet et inclinaison). Animations lues dans animations/eye_of_sauron.animation.json : flammes qui pulsent, flottement,
  * pupille qui se dilate, et un clignement de temps en temps.
  */
-public class EyeOfSauronRenderer implements BlockEntityRenderer<EyeOfSauronBlockEntity> {
+public class EyeOfSauronRenderer extends EntityRenderer<EyeOfSauronEntity> {
     private static final ResourceLocation TEX = RingsOfAsh.id("textures/entity/eye_of_sauron.png");
     /** facteur de taille : le modele fait 9,5 blocs de large, la couronne de Barad-dur laisse environ 18 blocs libres entre les pointes */
     private static final float SCALE = 1.6F;
@@ -161,35 +161,30 @@ public class EyeOfSauronRenderer implements BlockEntityRenderer<EyeOfSauronBlock
     }
 
     // ------------------------------------------------------------------ rendu
-    public EyeOfSauronRenderer(BlockEntityRendererProvider.Context ctx) { load(); }
+    public EyeOfSauronRenderer(EntityRendererProvider.Context ctx) { super(ctx); load(); }
 
     @Override
-    public boolean shouldRenderOffScreen(EyeOfSauronBlockEntity be) { return true; }
-
-    /** visible de tres loin : on le voit depuis toute la zone de rendu */
-    @Override
-    public int getViewDistance() { return 1024; }
-
-    /** l'oeil depasse largement le cube du bloc : sans cela il disparaitrait des que le bloc sort du champ de vision */
-    @Override
-    public net.minecraft.world.phys.AABB getRenderBoundingBox(EyeOfSauronBlockEntity be) { return new net.minecraft.world.phys.AABB(be.getBlockPos()).inflate(14.0); }
+    public ResourceLocation getTextureLocation(EyeOfSauronEntity e) { return TEX; }
 
     @Override
-    public void render(EyeOfSauronBlockEntity be, float partial, PoseStack ps, MultiBufferSource buf, int light, int overlay) {
+    public boolean shouldRender(EyeOfSauronEntity e, net.minecraft.client.renderer.culling.Frustum frustum, double x, double y, double z) { return true; }
+
+    @Override
+    public void render(EyeOfSauronEntity e, float yawIgnored, float partial, PoseStack ps, MultiBufferSource buf, int light) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || ROOT == null) return;
         Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
-        double cx = be.getBlockPos().getX() + 0.5, cy = be.getBlockPos().getY() + 0.5, cz = be.getBlockPos().getZ() + 0.5;
+        double cx = Mth.lerp(partial, e.xo, e.getX()), cy = Mth.lerp(partial, e.yo, e.getY()) + e.getBbHeight() / 2.0, cz = Mth.lerp(partial, e.zo, e.getZ());
         double dx = cam.x - cx, dy = cam.y - cy, dz = cam.z - cz, flat = Math.sqrt(dx * dx + dz * dz), dist = Math.sqrt(flat * flat + dy * dy);
         float yaw = dist < 1.0E-3 ? 0F : (float) Math.atan2(-dx, -dz);        // l'avant du modele (nord, -z) fait face a la camera
         float pitch = dist < 1.0E-3 ? 0F : (float) Math.asin(Mth.clamp(dy / dist, -1.0, 1.0));
-        float time = (mc.level.getGameTime() + partial) / 20F;
-        long seed = be.getBlockPos().asLong();
+        float time = (e.tickCount + partial) / 20F;
+        long seed = e.getUUID().getLeastSignificantBits();
         float phase = (seed & 1023) / 1023F * 4F;
         float blinkT = blinkTime(time, seed);
 
         ps.pushPose();
-        ps.translate(0.5, 0.5, 0.5);                                           // le bloc d'ancrage est au centre de l'oeil
+        ps.translate(0, e.getBbHeight() / 2.0, 0);                             // centre de l'oeil = centre de la boite
         ps.mulPose(Axis.YP.rotation(yaw));
         ps.mulPose(Axis.XP.rotation(pitch));
         ps.scale(SCALE, SCALE, SCALE);
@@ -201,7 +196,7 @@ public class EyeOfSauronRenderer implements BlockEntityRenderer<EyeOfSauronBlock
 
     /** temps ecoule dans le clignement en cours (0..0,4 s), ou -1 : un clignement toutes les 5 a 9 secondes, decale d'un oeil a l'autre */
     private static float blinkTime(float time, long seed) {
-        float period = 7F + ((seed >> 10) & 7) * 0.4F, t = (time + ((seed >> 4) & 15)) % period;
+        float period = 7F + ((seed >>> 10) & 7) * 0.4F, t = (time + ((seed >>> 4) & 15)) % period;
         return t < BLINK.length ? t : -1F;
     }
 

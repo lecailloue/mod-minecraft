@@ -129,7 +129,6 @@ public final class Reg {
     public static final DeferredBlock<Block> PIPEWEED = BLOCKS.register("pipeweed", () -> new FlowerBlock(MobEffects.SLOW_FALLING, 5.0F, copy(Blocks.DANDELION)));
     public static final DeferredBlock<Block> SPIDER_WEB = BLOCKS.register("spider_web", () -> new WebBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOL).sound(SoundType.COBWEB).noCollission().noOcclusion().strength(0.6F).pushReaction(PushReaction.DESTROY)));
     public static final DeferredBlock<Block> SMOKE_VENT = BLOCKS.register("smoke_vent", () -> new SmokeVentBlock(BlockBehaviour.Properties.of().noCollission().noOcclusion().strength(-1.0F, 3600000.0F).noLootTable().pushReaction(PushReaction.BLOCK)));
-    public static final DeferredBlock<Block> EYE_OF_SAURON = BLOCKS.register("eye_of_sauron", () -> new EyeOfSauronBlock(BlockBehaviour.Properties.of().noCollission().noOcclusion().strength(-1.0F, 3600000.0F).noLootTable().lightLevel(s -> 15).pushReaction(PushReaction.BLOCK)));
     public static final DeferredBlock<Block> ROPE = BLOCKS.register("rope", () -> new RopeBlock(BlockBehaviour.Properties.of().noCollission().strength(0.2F).sound(SoundType.WOOL).noOcclusion()));
     public static final DeferredBlock<Block> DWARVEN_FORGE = BLOCKS.register("dwarven_forge", () -> new ForgeBlock(copy(Blocks.DEEPSLATE_BRICKS).noOcclusion().strength(5.0F, 8.0F).lightLevel(s -> ForgeBlock.isCenter(s) ? 13 : 0)));
     public static final DeferredBlock<Block> ALARM_PYRE = BLOCKS.register("alarm_pyre", () -> new AlarmPyreBlock(copy(Blocks.OAK_PLANKS).lightLevel(s -> s.getValue(AlarmPyreBlock.LIT) ? 15 : 0)));
@@ -234,7 +233,6 @@ public final class Reg {
     public static final DeferredItem<BlockItem> BI_PIPEWEED = ITEMS.registerSimpleBlockItem("pipeweed", PIPEWEED);
     public static final DeferredItem<BlockItem> BI_SPIDER_WEB = ITEMS.registerSimpleBlockItem("spider_web", SPIDER_WEB);
     public static final DeferredItem<BlockItem> BI_SMOKE_VENT = ITEMS.registerSimpleBlockItem("smoke_vent", SMOKE_VENT);
-    public static final DeferredItem<BlockItem> BI_EYE_OF_SAURON = ITEMS.registerSimpleBlockItem("eye_of_sauron", EYE_OF_SAURON);
     public static final DeferredItem<Item> BI_DWARVEN_FORGE = ITEMS.register("dwarven_forge", () -> new ForgeItem(DWARVEN_FORGE.get(), props()));
     public static final DeferredItem<BlockItem> BI_ALARM_PYRE = ITEMS.registerSimpleBlockItem("alarm_pyre", ALARM_PYRE);
 
@@ -377,5 +375,6 @@ public final class Reg {
     public static final DeferredItem<Item> EAGLE_SPAWN_EGG = ITEMS.register("eagle_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.EAGLE, 0x6b4a2c, 0xefe9dc, props()));
     public static final DeferredItem<Item> STAG_SPAWN_EGG = ITEMS.register("stag_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.STAG, 0xf2efe6, 0xc9b48a, props()));
     public static final DeferredItem<Item> CROW_SPAWN_EGG = ITEMS.register("crow_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.CROW, 0x1a181e, 0x3c3832, props()));
+    public static final DeferredItem<Item> EYE_OF_SAURON_SPAWN_EGG = ITEMS.register("eye_of_sauron_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.EYE_OF_SAURON, 0x1a0a06, 0xff8a1a, props()));
     private Reg() {}
 }

@@ -13,6 +13,7 @@ MOBS = [  # id, nom, constante, couleur1, couleur2
     ('dwarf', 'Nain', 0xc89070, 0x8a3a1a), ('halfling', 'Semi-homme', 0xd8a888, 0x5a7a3a), ('ranger', 'Rôdeur', 0x2f3d2a, 0xc09070),
     ('mage', 'Mage errant', 0x7a7a80, 0xe0e0e0), ('treeman', 'Sylvegarde', 0x5c4832, 0x3f7a34), ('eagle', 'Aigle géant', 0x6b4a2c, 0xefe9dc),
     ('stag', 'Cerf blanc', 0xf2efe6, 0xc9b48a), ('crow', 'Corbeau espion', 0x1a181e, 0x3c3832),
+    ('eye_of_sauron', 'Œil de Sauron', 0x1a0a06, 0xff8a1a),
 ]
 
 def entry(name, lo=1, hi=1, chance=None):

@@ -901,8 +901,8 @@ public final class Buildings {
         }
         Direction[] dirs = {N, E, S, W};
         for (int[] c : p.chests) b.chest(c[0], c[1], c[2], dirs[c[3]], "dark_tower");
-        // l'Oeil : un bloc d'ancrage invisible au centre de la couronne ; le client y dessine le modele 3D, qui suit le joueur du regard
-        b.s(BaradPlan.CX, BaradPlan.TOP + 14, BaradPlan.CZ, Reg.EYE_OF_SAURON.get().defaultBlockState());
+        // l'Oeil : une creature immobile au centre de la couronne (boite de 12 blocs : son centre est a TOP + 14) ; le client le tourne vers le joueur
+        b.mob(net.ringsofash.entity.ModEntities.EYE_OF_SAURON.get(), BaradPlan.CX, BaradPlan.TOP + 8, BaradPlan.CZ, 0, null);
     }
 
     // ================================================================= EDORAS

@@ -255,7 +255,7 @@ public final class ClientSetup {
     }
 
     private static void renderers(EntityRenderersEvent.RegisterRenderers e) {
-        e.registerBlockEntityRenderer(net.ringsofash.block.ModBlockEntities.EYE_OF_SAURON.get(), EyeOfSauronRenderer::new);
+        e.registerEntityRenderer(ModEntities.EYE_OF_SAURON.get(), EyeOfSauronRenderer::new);
         ModelLayerLocation plain = layer("human_plain"), elf = layer("human_elf"), orc = layer("human_orc"), goblin = layer("human_goblin"), dwarf = layer("human_dwarf");
         e.registerEntityRenderer(ModEntities.ORC.get(), c -> new Renderers.Orc(c, 0, 4, 0.5F));
         e.registerEntityRenderer(ModEntities.WAR_ORC.get(), c -> new Renderers.Orc(c, 4, 2, 0.6F));

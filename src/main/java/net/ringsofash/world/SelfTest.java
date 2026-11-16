@@ -197,11 +197,9 @@ public final class SelfTest {
             if (!lava.is(net.minecraft.world.level.block.Blocks.LAVA)) fail("barad_dur : pas de lave dans la douve (" + lava + ")");
             if (deck.isAir()) fail("barad_dur : pas de plateforme au sommet de la tour");
             if (prong.isAir()) fail("barad_dur : pas de pointe a la couronne");
-            BlockPos eyePos = null;
-            for (int y = by; y < by + 340 && eyePos == null; y++) if (lands.getBlockState(new BlockPos(bd[0], y, bd[1])).is(net.ringsofash.gen.Reg.EYE_OF_SAURON.get())) eyePos = new BlockPos(bd[0], y, bd[1]);
-            log("barad_dur : oeil en " + eyePos + " (sol " + by + ")");
-            if (eyePos == null) fail("barad_dur : pas d'Oeil de Sauron au centre de la couronne");
-            else if (lands.getBlockEntity(eyePos) == null) fail("barad_dur : le bloc de l'Oeil n'a pas d'entite de bloc");
+            var eyes = lands.getEntitiesOfClass(net.ringsofash.entity.EyeOfSauronEntity.class, new net.minecraft.world.phys.AABB(bd[0] - 30, by, bd[1] - 30, bd[0] + 30, by + 400, bd[1] + 30));
+            log("barad_dur : yeux de Sauron " + eyes.size() + (eyes.isEmpty() ? "" : " en " + eyes.get(0).blockPosition()) + " (sol " + by + ")");
+            if (eyes.size() != 1) fail("barad_dur : il devrait y avoir exactement un Oeil de Sauron au sommet (" + eyes.size() + ")");
         }
         int[] ed = spots.get("edoras");
         if (ed != null) {                                                    // Edoras : colline, palais d'Or, tour de cloche

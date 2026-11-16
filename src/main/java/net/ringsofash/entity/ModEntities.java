@@ -71,6 +71,10 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<BeastEntity>> STAG = reg("stag", BeastEntity::new, MobCategory.CREATURE, 0.9F, 1.5F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<BeastEntity>> CROW = reg("crow", BeastEntity::new, MobCategory.AMBIENT, 0.4F, 0.5F, false);
 
+    /** l'Oeil : boite de 12 blocs (il mesure environ 15 blocs de large une fois dessine), visible de tres loin */
+    public static final DeferredHolder<EntityType<?>, EntityType<EyeOfSauronEntity>> EYE_OF_SAURON = ENTITIES.register("eye_of_sauron",
+            () -> EntityType.Builder.<EyeOfSauronEntity>of(EyeOfSauronEntity::new, MobCategory.MISC).sized(12.0F, 12.0F).clientTrackingRange(32).updateInterval(20).fireImmune().build("eye_of_sauron"));
+
     public static FoeEntity.Kind kindOf(EntityType<?> t) {
         if (t == WAR_ORC.get()) return FoeEntity.Kind.WAR_ORC;
         if (t == ORC_CHIEF.get()) return FoeEntity.Kind.ORC_CHIEF;
@@ -131,6 +135,7 @@ public final class ModEntities {
         e.put(EAGLE.get(), mob(40, 6, 0.25, 0.3));
         e.put(STAG.get(), mob(12, 1, 0.3, 0));
         e.put(CROW.get(), mob(4, 1, 0.25, 0));
+        e.put(EYE_OF_SAURON.get(), Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 20).build());
     }
 
     private static boolean ash(ServerLevelAccessor l, BlockPos p) { return l.getBiome(p).is(ModWorldgen.ASH_BIOME); }
