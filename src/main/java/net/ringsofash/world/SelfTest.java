@@ -186,7 +186,7 @@ public final class SelfTest {
         if (bd != null) {                                                    // Barad-dur : vue de dessus, coupe, porte, douve de lave, couronne
             for (int dx = -7; dx <= 7; dx++) for (int dz = -7; dz <= 7; dz++) lands.getChunk((bd[0] >> 4) + dx, (bd[1] >> 4) + dz);
             topDown(lands, bd[0] - 100, bd[1] - 100, bd[0] + 99, bd[1] + 99, new File(OUT, "barad_dessus.png"), 3);
-            int by = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, bd[0] - 100, bd[1]);
+            int by = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, bd[0] - 65, bd[1]);
             section(lands, bd[0] - 100, bd[0] + 100, bd[1], by - 20, by + 262, new File(OUT, "barad_coupe.png"), 2);
             var gate = lands.getBlockState(new BlockPos(bd[0] - 24, by + 3, bd[1]));
             var lava = lands.getBlockState(new BlockPos(bd[0], by - 9, bd[1] - (int) (BaradPlan.outline(-Math.PI / 2) + 12)));

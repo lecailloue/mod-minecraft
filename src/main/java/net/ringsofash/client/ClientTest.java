@@ -827,7 +827,7 @@ public final class ClientTest {
             SCENES.add(new Scene(c[0] == 91 ? "91_barad_tunnel" : "92_barad_salle_trone", 420, p -> {
                 ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
                 for (int dx = -7; dx <= 7; dx++) for (int dz = -7; dz <= 7; dz++) lands.getChunk((BX >> 4) + dx, (BZ >> 4) + dz);
-                int by = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, BX - 100, BZ);
+                int by = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, BX - 65, BZ);
                 lands.setDayTime(6000);
                 view(p, lands, BX + c[1] + 0.5, by + c[5], BZ + c[2] + 0.5, c[3], c[4]);
             }));
