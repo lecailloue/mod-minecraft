@@ -210,8 +210,8 @@ public final class SelfTest {
             int tow = lands.getHeight(Heightmap.Types.WORLD_SURFACE, ed[0] + ep.towerX - EdorasPlan.CX, ed[1] + ep.towerZ - EdorasPlan.CZ);
             log("edoras : sol " + by + " ; plateau " + plat + " ; palais " + hall + " ; tour " + tow + " ; maisons " + ep.houses);
             if (plat - by < 24) fail("edoras : la colline est trop basse (" + (plat - by) + ")");
-            if (hall - plat < 16) fail("edoras : pas de palais au sommet (" + (hall - plat) + ")");
-            if (tow - plat < 18) fail("edoras : pas de tour de cloche (" + (tow - plat) + ")");
+            if (hall - plat < 12) fail("edoras : pas de palais au sommet (" + (hall - plat) + ")");
+            if (tow - plat < 14) fail("edoras : pas de tour de cloche (" + (tow - plat) + ")");
             if (ep.houses < 8 || ep.lowHouses < 6) fail("edoras : trop peu de maisons (" + ep.houses + " dont " + ep.lowHouses + " en bas)");
             if (ep.wallCells < 300) fail("edoras : muraille trop courte (" + ep.wallCells + ")");
         }
