@@ -190,7 +190,7 @@ public final class SelfTest {
             section(lands, bd[0] - 100, bd[0] + 100, bd[1], by - 20, by + 262, new File(OUT, "barad_coupe.png"), 2);
             var gate = lands.getBlockState(new BlockPos(bd[0] - 24, by + 3, bd[1]));
             var lava = lands.getBlockState(new BlockPos(bd[0], by - 9, bd[1] - (int) (BaradPlan.outline(-Math.PI / 2) + 12)));
-            var deck = lands.getBlockState(new BlockPos(bd[0] + 8, by + 224, bd[1] + 8));
+            var deck = lands.getBlockState(new BlockPos(bd[0] + 8, by + 223, bd[1] + 8));
             var prong = lands.getBlockState(new BlockPos(bd[0] + 11, by + 227, bd[1] + 11));
             log("barad_dur : sol " + by + " ; porte " + gate + " ; douve " + lava + " ; plateforme " + deck + " ; pointe " + prong);
             if (!gate.isAir()) fail("barad_dur : le tunnel de la porte est bouche en " + gate);
