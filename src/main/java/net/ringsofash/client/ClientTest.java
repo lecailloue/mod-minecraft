@@ -309,6 +309,11 @@ public final class ClientTest {
         Object[][] tv = {{"200_tirith_loin_sud", 0, 200, 70, 180F, -22F, 6000}, {"201_tirith_sud_ouest", -150, 140, 45, -135F, -16F, 6000}, {"202_tirith_porte", 0, 150, 6, 180F, -4F, 6000},
                 {"203_tirith_rue", 0, 112, 24, 180F, -8F, 6000}, {"204_tirith_cour", 0, 0, 0, 0F, 0F, 6000}, {"205_tirith_tour", 0, 0, 0, 0F, 0F, 6000},
                 {"206_tirith_fontaine", 0, 0, 0, 0F, 0F, 6000}, {"207_tirith_nuit", 0, 200, 70, 180F, -22F, 18000}, {"208_tirith_est", 200, 40, 120, 90F, -14F, 6000}};
+        SCENES.add(new Scene("199_tirith_chargement", 100, p -> {
+            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+            for (int dx = -11; dx <= 11; dx++) for (int dz = -9; dz <= 15; dz++) lands.getChunk((TX >> 4) + dx, (TZ >> 4) + dz);
+            view(p, lands, TX + 0.5, 200, TZ + 0.5, 180F, 0F);
+        }));
         for (int k = 0; k < tv.length; k++) {
             final int kk = k;
             final Object[] c = tv[k];
@@ -316,10 +321,13 @@ public final class ClientTest {
                 ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
                 for (int dx = -11; dx <= 11; dx++) for (int dz = -9; dz <= 15; dz++) lands.getChunk((TX >> 4) + dx, (TZ >> 4) + dz);
                 net.ringsofash.world.TirithPlan tp = net.ringsofash.world.TirithPlan.get();
-                int py = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, TX - 50, TZ + 135);
+                int py = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, TX - 40, TZ + 100) - 18;               // le premier niveau est a 18 blocs au-dessus de la plaine
                 int top = py + net.ringsofash.world.TirithPlan.PROW_TOP;
                 int ox = TX - 160, oz = TZ - 135;                                    // origine du plan : x_plan = x_monde - ox
                 lands.setDayTime((Integer) c[6]);
+                int rd = (kk == 0 || kk == 1 || kk == 7 || kk == 8) ? 20 : 12;
+                p.server.getPlayerList().setViewDistance(rd);
+                net.minecraft.client.Minecraft.getInstance().options.renderDistance().set(rd);
                 switch (kk) {
                     case 4 -> look(p, lands, TX + 7.5, top + 5, oz + tp.court_z + 8.5, TX, top + 8, oz + tp.tower_z + 6);                       // la cour, du portail vers la tour
                     case 5 -> look(p, lands, TX - 30.5, top + 34, oz + tp.court_z + 22.5, TX, top + 70, oz + tp.tower_z);                         // la tour d'Ecthelion
