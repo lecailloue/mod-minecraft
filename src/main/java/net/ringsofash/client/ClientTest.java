@@ -352,10 +352,10 @@ public final class ClientTest {
             }));
         }
         // palais d'Or, tour de cloche, village, interieur, champs, etal, forge : positions tirees du plan
-        for (int k = 0; k < 13; k++) {
+        for (int k = 0; k < 15; k++) {
             final int kk = k;
-            if (k != 0 && k != 11 && k != 12) continue;                // les autres vues d'Edoras sont deja validees
-            SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle", "110_edoras_champs", "111_edoras_etal", "112_edoras_forge", "113_edoras_entree", "114_edoras_entree_dessus", "115_edoras_sol", "116_edoras_place", "117_edoras_fontaine"}[k], 420, p -> {
+            if (k != 1 && k != 9 && k != 13 && k != 14) continue;                // les autres vues d'Edoras sont deja validees
+            SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle", "110_edoras_champs", "111_edoras_etal", "112_edoras_forge", "113_edoras_entree", "114_edoras_entree_dessus", "115_edoras_sol", "116_edoras_place", "117_edoras_fontaine", "118_edoras_porte_maison", "119_edoras_porte_aile"}[k], 420, p -> {
                 ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
                 for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((EX >> 4) + dx, (EZ >> 4) + dz);
                 net.ringsofash.world.EdorasPlan ep = net.ringsofash.world.EdorasPlan.get();
@@ -382,7 +382,14 @@ public final class ClientTest {
                     }
                     case 10 -> look(p, lands, ox + ep.gateX + 14.5, py + 6, oz + ep.gateZ + 16.5, ox + ep.gateX + 22, py + 1, oz + ep.gateZ + 8);   // le sol du bas du village
                     case 11 -> look(p, lands, ox + ep.plazaX + 0.5, py + 40, oz + ep.plazaZ + 22.5, ox + ep.plazaX, py + 31, oz + ep.plazaZ - 6);   // la place devant le palais
-                    default -> look(p, lands, ox + ep.plazaX + 11.5, py + 34, oz + ep.plazaZ + 7.5, ox + ep.plazaX - 1, py + 31, oz + ep.plazaZ);
+                    case 12 -> look(p, lands, ox + ep.plazaX + 11.5, py + 34, oz + ep.plazaZ + 7.5, ox + ep.plazaX - 1, py + 31, oz + ep.plazaZ);
+                    case 13 -> {                                                          // l'entree d'une maison, vue de face
+                        java.util.List<int[]> dl = ep.doorList();
+                        int[] dr = dl.get(Math.max(0, dl.size() / 2));
+                        int fx = dr[0] + dr[3] * 3, fz = dr[1] + dr[4] * 3;
+                        look(p, lands, ox + fx + 0.5, py + dr[2] + 2.2, oz + fz + 0.5, ox + dr[0] - dr[3] * 3 + 0.5, py + dr[2] + 1.6, oz + dr[1] - dr[4] * 3 + 0.5);
+                    }
+                    default -> look(p, lands, hx + 3.5, py + 34.8, hz - 19.5, hx - 8, py + 35.5, hz - 19.5);   // dans la grande salle, vers la porte d'une aile
                 }
             }));
         }

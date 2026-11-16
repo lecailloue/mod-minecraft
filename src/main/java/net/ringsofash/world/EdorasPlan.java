@@ -67,6 +67,7 @@ public final class EdorasPlan {
     private final double[] roadS = new double[W * D];
     private final List<double[]> road = new ArrayList<>();                  // sommets de la route (x, z)
     private double roadLen, roadExt;
+    public List<int[]> doorList() { return doors; }
     private final List<int[]> doors = new ArrayList<>();                    // portes des maisons : x, z, niveau
     public boolean gateAlongX = true;
     private int lvl = H0;                                                   // niveau debout du groupe de batiments en cours (colline : H0, bas du village : 1)
@@ -922,7 +923,7 @@ public final class EdorasPlan {
             put(r, x0, z0, w, d, cxl - 1, 1, d - 1, DLOG_Y, false); put(r, x0, z0, w, d, cxl + 1, 1, d - 1, DLOG_Y, false);
             put(r, x0, z0, w, d, cxl - 1, 2, d - 1, DLOG_Y, false); put(r, x0, z0, w, d, cxl + 1, 2, d - 1, DLOG_Y, false);
             for (int sd = -1; sd <= 1; sd += 2) { put(r, x0, z0, w, d, cxl + sd, 1, d, WFENCE, false); put(r, x0, z0, w, d, cxl + sd, 2, d, LAMP, false); }
-            { int[] dp = map(r, x0, z0, w, d, cxl, d + 2); doors.add(new int[]{dp[0], dp[1], lvl}); }
+            { int[] dp = map(r, x0, z0, w, d, cxl, d + 2); int[][] od = {{0, 1}, {-1, 0}, {0, -1}, {1, 0}}; doors.add(new int[]{dp[0], dp[1], lvl, od[r & 3][0], od[r & 3][1]}); }
         } else {
             for (int y = 1; y <= hh; y++) put(r, x0, z0, w, d, cxl, y, d - 1, AIR, false);
         }
