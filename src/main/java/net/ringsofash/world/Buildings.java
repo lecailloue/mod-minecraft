@@ -983,6 +983,7 @@ public final class Buildings {
         p[EdorasPlan.TALL_U] = Blocks.TALL_GRASS.defaultBlockState().setValue(net.minecraft.world.level.block.DoublePlantBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER);
         p[EdorasPlan.LEAF] = Blocks.OAK_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
         p[EdorasPlan.LEAF_AZ] = Blocks.FLOWERING_AZALEA_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+        stairSet(p, EdorasPlan.STAIR_W, Reg.WEATHERED_PLANKS_STAIRS.get());
         p[EdorasPlan.BERRY] = Blocks.SWEET_BERRY_BUSH.defaultBlockState().setValue(net.minecraft.world.level.block.SweetBerryBushBlock.AGE, 3);
         edorasPal = p;
         return p;

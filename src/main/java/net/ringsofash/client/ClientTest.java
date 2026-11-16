@@ -833,9 +833,9 @@ public final class ClientTest {
             }));
         }
         // palais d'Or, tour de cloche, village, interieur, champs, etal, forge : positions tirees du plan
-        for (int k = 0; k < 11; k++) {
+        for (int k = 0; k < 13; k++) {
             final int kk = k;
-            SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle", "110_edoras_champs", "111_edoras_etal", "112_edoras_forge", "113_edoras_entree", "114_edoras_entree_dessus", "115_edoras_sol"}[k], 600, p -> {
+            SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle", "110_edoras_champs", "111_edoras_etal", "112_edoras_forge", "113_edoras_entree", "114_edoras_entree_dessus", "115_edoras_sol", "116_edoras_place", "117_edoras_fontaine"}[k], 600, p -> {
                 ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
                 for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((EX >> 4) + dx, (EZ >> 4) + dz);
                 net.ringsofash.world.EdorasPlan ep = net.ringsofash.world.EdorasPlan.get();
@@ -860,7 +860,9 @@ public final class ClientTest {
                         int gx = ox + ep.gateX, gz = oz + ep.gateZ;
                         look(p, lands, gx + 22.5, py + 12, gz - 6.5, gx, py + 5, gz);
                     }
-                    default -> look(p, lands, ox + ep.gateX + 14.5, py + 6, oz + ep.gateZ + 16.5, ox + ep.gateX + 22, py + 1, oz + ep.gateZ + 8);   // le sol du bas du village
+                    case 10 -> look(p, lands, ox + ep.gateX + 14.5, py + 6, oz + ep.gateZ + 16.5, ox + ep.gateX + 22, py + 1, oz + ep.gateZ + 8);   // le sol du bas du village
+                    case 11 -> look(p, lands, ox + ep.plazaX + 0.5, py + 40, oz + ep.plazaZ + 22.5, ox + ep.plazaX, py + 31, oz + ep.plazaZ - 6);   // la place devant le palais
+                    default -> look(p, lands, ox + ep.plazaX + 11.5, py + 34, oz + ep.plazaZ + 7.5, ox + ep.plazaX - 1, py + 31, oz + ep.plazaZ);
                 }
             }));
         }

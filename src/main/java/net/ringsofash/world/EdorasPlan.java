@@ -56,7 +56,7 @@ public final class EdorasPlan {
             SHEAF_Y = 138, SHEAF_X = 139, EARTH = 140, FARM = 160, WHEAT_R = 161, WHEAT_Y = 162, CARROT_R = 163, CARROT_Y = 164, POTATO_R = 165, POTATO_Y = 166, WATER = 167,
             CAULDRON_W = 168, COMPOSTER = 169, CRAFT = 170, ANVIL = 171, LAVA_CAULD = 172, POT_TULIP = 173, POT_DAND = 174, POT_CORN = 175, WOOL_G = 176, WOOL_W = 177,
             PLATE = 178, CARPET_G = 179, CARPET_W = 180, PODZOL = 181, ROOTED = 182, MOSSB = 183, GRASS_S = 184, FERN = 185, DANDELION = 186, POPPY = 187, CORNFL = 188,
-            DAISY = 189, TALL_L = 190, TALL_U = 191, LEAF = 192, LEAF_AZ = 193, BERRY = 194, FARM_DRY = 195, MUD = 196;
+            DAISY = 189, TALL_L = 190, TALL_U = 191, LEAF = 192, LEAF_AZ = 193, BERRY = 194, FARM_DRY = 195, MUD = 196, STAIR_W = 200;                      // STAIR_W + dir * 2 + haut : escalier de bois patine
     public static final int N = 0, E = 1, S = 2, W_ = 3;
 
     private final byte[] g = new byte[W * H * D];
@@ -69,7 +69,7 @@ public final class EdorasPlan {
     private final List<int[]> doors = new ArrayList<>();                    // portes des maisons : x, z, niveau
     public boolean gateAlongX = true;
     private int lvl = H0;                                                   // niveau debout du groupe de batiments en cours (colline : H0, bas du village : 1)
-    public int gateX = -1, gateZ, lowHouses, wallCells, lowFieldX = -1, lowFieldZ, stallX = -1, stallZ, smithX = -1, smithZ, stallL, smithL;
+    public int plazaX = -1, plazaZ, gateX = -1, gateZ, lowHouses, wallCells, lowFieldX = -1, lowFieldZ, stallX = -1, stallZ, smithX = -1, smithZ, stallL, smithL;
     private final List<int[]> boxes = new ArrayList<>();                    // emprises deja prises : x0, z0, x1, z1
     public int houses, hallX, hallZ, towerX, towerZ;
 
@@ -240,6 +240,7 @@ public final class EdorasPlan {
         hallX = hx; hallZ = hz;
         hall(hx, hz);
         take(hx - 22, hz - 25, hx + 22, hz + 25);
+        plaza(hx, hz + 31);
         // tour de cloche
         int tx = (int) Math.round(wx(10, -36)), tz = (int) Math.round(wz(10, -36));
         towerX = tx; towerZ = tz;
@@ -469,6 +470,93 @@ public final class EdorasPlan {
         for (int[] c : new int[][]{{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}}) set(x + c[0], lvl + 1, z + c[1], HAY);
         set(x, lvl + 2, z, HAY);
         set(x + 2, lvl, z, SHEAF_Y); set(x + 2, lvl, z + 1, SHEAF_Y); set(x + 2, lvl + 1, z, SHEAF_Y); set(x - 2, lvl, z - 1, SHEAF_Y);
+    }
+
+    private boolean plazaOk(int x, int z) {
+        if (!area(x, z) || surf[z * W + x] != H0 || roadD[z * W + x] < 2.5) return false;
+        return Math.hypot(ux(x, z) / A, vx(x, z) / B) < RP - 0.04;
+    }
+    private boolean plazaOk(int x0, int z0, int x1, int z1) {
+        for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++) if (!plazaOk(x, z)) return false;
+        return true;
+    }
+
+    /** la place devant le palais : dallage, fontaine, bancs, bacs fleuris, buissons, mats a banderoles, braseros */
+    private void plaza(int cx, int cz) {
+        plazaX = cx; plazaZ = cz;
+        Random r = new Random(4242);
+        int y = H0;
+        take(cx - 17, cz - 10, cx + 17, cz + 10);
+        for (int x = cx - 16; x <= cx + 16; x++) for (int z = cz - 9; z <= cz + 9; z++) {
+            if (!plazaOk(x, z)) continue;
+            double dx = (x - cx) / 16.5, dz = (z - cz) / 9.5, e = dx * dx + dz * dz;                // dallage ovale
+            if (e > 1.0 + 0.12 * vn(x / 4.0, z / 4.0, 50)) continue;
+            double q = rnd(x, 51, z);
+            int blk = q < 0.42 ? COBBLE : q < 0.72 ? ANDESITE : q < 0.86 ? MOSSY_COBBLE : q < 0.95 ? GRAVEL : PATH;
+            int rr = (int) Math.round(Math.hypot(x - cx, (z - cz) * 1.0));
+            if (rr >= 6 && rr <= 7) blk = SB;                                                   // anneau de pierre autour de la fontaine
+            if (Math.abs(x - cx) <= 1 && z < cz) blk = SB;                                      // allee vers l'escalier du palais
+            if (e > 0.86) blk = q < 0.5 ? PATH : q < 0.8 ? COARSE : GRAVEL;                     // le dallage s'effrite vers l'exterieur
+            set(x, y - 1, z, blk);
+        }
+        // fontaine : bassin de pierre, eau, pilier et lanterne
+        for (int x = cx - 3; x <= cx + 3; x++) for (int z = cz - 3; z <= cz + 3; z++) {
+            int m = Math.max(Math.abs(x - cx), Math.abs(z - cz));
+            if (!plazaOk(x, z)) continue;
+            if (m == 3) { set(x, y, z, SB); set(x, y - 1, z, SB); }
+            else { set(x, y - 1, z, WATER); }
+        }
+        if (plazaOk(cx - 3, cz - 3, cx + 3, cz + 3)) {
+            for (int k = 0; k < 3; k++) set(cx, y + k, cz, SB);
+            set(cx, y + 3, cz, WALL_SB);
+            set(cx, y + 4, cz, LAMP);
+            for (int[] c : new int[][]{{-3, -3}, {3, -3}, {-3, 3}, {3, 3}}) set(cx + c[0], y + 1, cz + c[1], WALL_SB);
+        }
+        // bancs : escalier de bois patine, dossier vers l'exterieur, regardant la fontaine
+        int[][] benches = {{-9, 0, W_}, {9, 0, E}, {0, 8, S}, {0, -8, N}, {-8, 5, W_}, {8, 5, E}, {-8, -5, W_}, {8, -5, E}};
+        for (int[] b : benches) {
+            boolean alongZ = b[2] == W_ || b[2] == E;
+            int x0 = cx + b[0], z0 = cz + b[1];
+            int hx = alongZ ? 0 : 1, hz = alongZ ? 1 : 0;
+            if (!plazaOk(x0 - hx * 2, z0 - hz * 2, x0 + hx * 2, z0 + hz * 2)) continue;
+            for (int k = -1; k <= 1; k++) set(x0 + k * hx, y, z0 + k * hz, STAIR_W + b[2] * 2);
+            set(x0 - 2 * hx, y, z0 - 2 * hz, WLOG_Y); set(x0 + 2 * hx, y, z0 + 2 * hz, WLOG_Y);
+            set(x0 - 2 * hx, y + 1, z0 - 2 * hz, LAMP); set(x0 + 2 * hx, y + 1, z0 + 2 * hz, WFENCE);
+        }
+        // bacs fleuris : lit d'herbe sureleve, fleurs, un buisson au centre
+        int[][] planters = {{-14, -2, 4, 3}, {11, -2, 4, 3}, {-12, 7, 5, 2}, {8, 7, 5, 2}, {-5, -9, 4, 2}, {2, -9, 4, 2}};
+        for (int[] pl : planters) {
+            int x0 = cx + pl[0], z0 = cz + pl[1];
+            if (!plazaOk(x0 - 1, z0 - 1, x0 + pl[2], z0 + pl[3])) continue;
+            for (int x = x0; x < x0 + pl[2]; x++) for (int z = z0; z < z0 + pl[3]; z++) {
+                boolean edge = x == x0 || z == z0 || x == x0 + pl[2] - 1 || z == z0 + pl[3] - 1;
+                if (edge) { set(x, y, z, rnd(x, 52, z) < 0.4 ? MOSSY_COBBLE : COBBLE); set(x, y - 1, z, COBBLE); }
+                else { set(x, y - 1, z, DIRT); set(x, y, z, GRASS); int f = r.nextInt(5); set(x, y + 1, z, f == 0 ? DANDELION : f == 1 ? POPPY : f == 2 ? CORNFL : f == 3 ? DAISY : GRASS_S); }
+            }
+            int bx = x0 + pl[2] / 2, bz = z0 + pl[3] / 2;
+            set(bx, y + 1, bz, LEAF); if (pl[2] >= 5) set(bx - 1, y + 1, bz, LEAF_AZ);
+        }
+        // buissons le long du bord de la place
+        for (int x = cx - 16; x <= cx + 16; x++) for (int z = cz - 9; z <= cz + 9; z++) {
+            if (!plazaOk(x, z) || get(x, y, z) != AIR) continue;
+            double dx = (x - cx) / 16.5, dz = (z - cz) / 9.5, e = dx * dx + dz * dz;
+            if (e < 0.9 || e > 1.2 || r.nextInt(4) != 0) continue;
+            int g = get(x, y - 1, z) & 255;
+            if (g == GRASS || g == COARSE || g == PODZOL || g == PATH || g == GRAVEL) {
+                set(x, y, z, LEAF); if (r.nextInt(3) == 0) set(x, y + 1, z, LEAF_AZ); else if (r.nextInt(5) == 0) set(x, y + 1, z, DANDELION);
+            }
+        }
+        // mats a banderoles vertes et blanches de part et d'autre de l'allee, braseros au pied de l'escalier
+        for (int sgn = -1; sgn <= 1; sgn += 2) {
+            int mx = cx + sgn * 10, mz = cz - 8;
+            if (plazaOk(mx, mz, mx + 3, mz)) {
+                for (int k = 0; k < 11; k++) set(mx, y + k, mz, WLOG_Y);
+                set(mx, y + 11, mz, LAMP);
+                for (int dx = 1; dx <= 3; dx++) for (int dy = 6; dy <= 9; dy++) set(mx + dx * (sgn > 0 ? 1 : -1), y + dy, mz, dy == 7 || dy == 8 ? (dx == 2 ? WOOL_W : WOOL_G) : WOOL_G);
+            }
+            int bx = cx + sgn * 7, bz = cz - 8;
+            if (plazaOk(bx, bz, bx, bz)) { set(bx, y, bz, COBBLE); set(bx, y + 1, bz, WALL_COBBLE); set(bx, y + 2, bz, CAMPFIRE); }
+        }
     }
 
     private boolean inBox(int x, int z) {
