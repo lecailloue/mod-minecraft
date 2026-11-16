@@ -106,7 +106,7 @@ public final class TirithPlan {
     /** demi-largeur de l'eperon : large au plateau, puis une lame etroite qui fend la cite jusqu'au premier mur */
     private static double prowHW(double dz) {
         if (dz <= 26) return 21;
-        return Math.max(0, 21 * (1 - (dz - 26) / (PROW_TIP - 26 + 4.0)));      // triangle : la proue s'effile en pointe
+        return Math.max(0, 11 * (1 - (dz - 26) / (PROW_TIP - 26 + 4.0)));      // triangle : la proue s'effile en pointe
     }
 
     private static boolean inProw(int x, int z) {
