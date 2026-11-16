@@ -55,7 +55,8 @@ public final class EdorasPlan {
     public static final int WLOG_Y = 128, WLOG_X = 129, WLOG_Z = 130, WPLANKS = 131, WSLAB = 132, WSLAB_TOP = 133, WFENCE = 134, CARVED = 135, TIMBER = 136, PLASTER = 137,
             SHEAF_Y = 138, SHEAF_X = 139, EARTH = 140, FARM = 160, WHEAT_R = 161, WHEAT_Y = 162, CARROT_R = 163, CARROT_Y = 164, POTATO_R = 165, POTATO_Y = 166, WATER = 167,
             CAULDRON_W = 168, COMPOSTER = 169, CRAFT = 170, ANVIL = 171, LAVA_CAULD = 172, POT_TULIP = 173, POT_DAND = 174, POT_CORN = 175, WOOL_G = 176, WOOL_W = 177,
-            PLATE = 178, CARPET_G = 179, CARPET_W = 180;
+            PLATE = 178, CARPET_G = 179, CARPET_W = 180, PODZOL = 181, ROOTED = 182, MOSSB = 183, GRASS_S = 184, FERN = 185, DANDELION = 186, POPPY = 187, CORNFL = 188,
+            DAISY = 189, TALL_L = 190, TALL_U = 191, LEAF = 192, LEAF_AZ = 193, BERRY = 194, FARM_DRY = 195, MUD = 196;
     public static final int N = 0, E = 1, S = 2, W_ = 3;
 
     private final byte[] g = new byte[W * H * D];
@@ -65,8 +66,10 @@ public final class EdorasPlan {
     private final double[] roadS = new double[W * D];
     private final List<double[]> road = new ArrayList<>();                  // sommets de la route (x, z)
     private double roadLen, roadExt;
+    private final List<int[]> doors = new ArrayList<>();                    // portes des maisons : x, z, niveau
+    public boolean gateAlongX = true;
     private int lvl = H0;                                                   // niveau debout du groupe de batiments en cours (colline : H0, bas du village : 1)
-    public int lowHouses, wallCells, lowFieldX = -1, lowFieldZ, stallX = -1, stallZ, smithX = -1, smithZ, stallL, smithL;
+    public int gateX = -1, gateZ, lowHouses, wallCells, lowFieldX = -1, lowFieldZ, stallX = -1, stallZ, smithX = -1, smithZ, stallL, smithL;
     private final List<int[]> boxes = new ArrayList<>();                    // emprises deja prises : x0, z0, x1, z1
     public int houses, hallX, hallZ, towerX, towerZ;
 
@@ -146,6 +149,19 @@ public final class EdorasPlan {
         return H0 * (1 - smooth(t)) + 2.2 * vn(u / 3.5, v / 3.5, 6) * 4 * t * (1 - t);
     }
 
+    /** sol d'un village qui vit : herbe, terre pietinee, terre fertile, podzol, gravier, mousse */
+    private static int ground(int x, int z, double nz) {
+        double a = vn(x / 8.0, z / 8.0, 40), b = vn(x / 5.0, z / 5.0, 41), c = vn(x / 6.0, z / 6.0, 42), e = vn(x / 7.0, z / 7.0, 43), f = vn(x / 4.0, z / 4.0, 44);
+        if (b > 0.76) return FARM_DRY;                                       // carres de terre fertile retournee
+        if (c > 0.76) return GRAVEL;
+        if (e > 0.78) return MOSSB;
+        if (a > 0.68) return PODZOL;
+        if (f > 0.76) return MUD;
+        if (nz > 0.55) return COARSE;
+        if (rnd(x, 45, z) < 0.05) return ROOTED;
+        return GRASS;
+    }
+
     private static double ringR(int x, int z) {
         double u = ux(x, z), v = vx(x, z);
         return Math.hypot(u / A, v / B) + 0.035 * vn(u / 20.0, v / 20.0, 21);
@@ -184,11 +200,11 @@ public final class EdorasPlan {
             if (onRoad) topB = rnd(x, 5, z) < 0.45 ? PATH : rnd(x, 6, z) < 0.5 ? GRAVEL : EARTH;
             else if (steep) topB = rnd(x, 7, z) < 0.35 ? STONE : rnd(x, 8, z) < 0.45 ? ANDESITE : rnd(x, 9, z) < 0.5 ? COBBLE : rnd(x, 10, z) < 0.5 ? TUFF : rnd(x, 11, z) < 0.5 ? GRANITE : MOSSY_COBBLE;
             else if (s == 1 && Math.abs(ringR(x, z) - 1.095) < 0.022) topB = rnd(x, 14, z) < 0.65 ? EARTH : rnd(x, 15, z) < 0.6 ? PATH : COARSE;   // chemin de ronde du bas du village
-            else topB = nz > 0.55 ? COARSE : GRASS;
+            else topB = ground(x, z, nz);
             for (int y = 0; y < s; y++) {
                 int b;
                 if (y == s - 1) b = topB;
-                else if (y >= s - 4 && (topB == GRASS || topB == COARSE || topB == PATH || topB == GRAVEL || topB == EARTH)) b = DIRT;
+                else if (y >= s - 4 && !steep) b = DIRT;
                 else if (y >= s - 3 && steep) b = rnd(x, y, z) < 0.5 ? STONE : ANDESITE;
                 else b = rnd(x, y, z) < 0.12 ? ANDESITE : STONE;
                 set(x, y, z, b);
@@ -276,6 +292,8 @@ public final class EdorasPlan {
         outerWall();
         gate();
         lampPosts();
+        trails();
+        vegetation();
     }
 
     /** bas du village : maisons et enclos au pied de la colline, dans l'anneau entre le pied et la muraille */
@@ -453,6 +471,95 @@ public final class EdorasPlan {
         set(x + 2, lvl, z, SHEAF_Y); set(x + 2, lvl, z + 1, SHEAF_Y); set(x + 2, lvl + 1, z, SHEAF_Y); set(x - 2, lvl, z - 1, SHEAF_Y);
     }
 
+    private boolean inBox(int x, int z) {
+        for (int[] b : boxes) if (x >= b[0] && x <= b[2] && z >= b[1] && z <= b[3]) return true;
+        return false;
+    }
+
+    /** sentiers pietines : de chaque porte jusqu'au chemin le plus proche, sol retourne (terre, chemin, gravier) */
+    private void trails() {
+        List<int[]> targets = new ArrayList<>();
+        for (int x = 1; x < W - 1; x++) for (int z = 1; z < D - 1; z++) {
+            int i = z * W + x;
+            if (surf[i] >= 1 && roadD[i] <= 1.6 && (x + z) % 3 == 0) targets.add(new int[]{x, z, surf[i]});
+            else if (surf[i] == 1 && Math.abs(ringR(x, z) - 1.095) < 0.012 && (x + z) % 3 == 0) targets.add(new int[]{x, z, 1});
+        }
+        Random r = new Random(555);
+        for (int[] dr : doors) {
+            int[] best = null; double bd = 1e9;
+            for (int[] t : targets) {
+                if (t[2] != dr[2]) continue;
+                double d = Math.hypot(t[0] - dr[0], t[1] - dr[1]);
+                if (d < bd) { bd = d; best = t; }
+            }
+            if (best == null || bd > 45) continue;
+            int n = (int) Math.ceil(bd) + 1;
+            for (int k = 0; k <= n; k++) {
+                double t = (double) k / n;
+                double wob = Math.sin(t * 6.0 + dr[0]) * 1.4 * Math.min(1, bd / 14);
+                double dx = best[0] - dr[0], dz = best[1] - dr[1], len = Math.max(1, Math.hypot(dx, dz));
+                int x = (int) Math.round(dr[0] + dx * t - dz / len * wob), z = (int) Math.round(dr[1] + dz * t + dx / len * wob);
+                for (int ox = 0; ox <= (r.nextInt(3) == 0 ? 1 : 0); ox++) for (int oz = 0; oz <= (r.nextInt(3) == 0 ? 1 : 0); oz++) worn(x + ox, z + oz, dr[2], r);
+            }
+            for (int ox = -2; ox <= 2; ox++) for (int oz = -2; oz <= 2; oz++) if (ox * ox + oz * oz <= 5 && r.nextInt(3) > 0) worn(dr[0] + ox, dr[1] + oz, dr[2], r);   // parvis pietine devant la porte
+        }
+    }
+
+    private void worn(int x, int z, int level, Random r) {
+        if (!area(x, z) || surf[z * W + x] != level) return;
+        if (get(x, level, z) != AIR) return;                                // un batiment ou un objet : on ne touche pas
+        int g = get(x, level - 1, z) & 255;
+        if (g != GRASS && g != COARSE && g != PODZOL && g != FARM_DRY && g != MUD && g != ROOTED && g != MOSSB) return;
+        double q = r.nextDouble();
+        set(x, level - 1, z, q < 0.5 ? PATH : q < 0.72 ? COARSE : q < 0.86 ? EARTH : q < 0.94 ? GRAVEL : DIRT);
+    }
+
+    /** herbes hautes, fleurs, fougeres et buissons de feuillage sur tout le sol libre (hors routes, batiments et champs) */
+    private void vegetation() {
+        Random r = new Random(2024);
+        // buissons : des touffes de feuilles sur le sol libre, plus denses le long de la muraille
+        for (int gx = 0; gx < W; gx += 5) for (int gz = 0; gz < D; gz += 5) {
+            int cx = gx + r.nextInt(5), cz = gz + r.nextInt(5);
+            if (!area(cx, cz)) continue;
+            int lv = surf[cz * W + cx];
+            if (lv < 1) continue;
+            boolean hedge = lv == 1 && ringR(cx, cz) > RW - 0.14;
+            double p = hedge ? 0.55 : lv == 1 ? 0.30 : 0.20;
+            if (r.nextDouble() > p) continue;
+            int rad = 1 + r.nextInt(2);
+            for (int dx = -rad; dx <= rad; dx++) for (int dz = -rad; dz <= rad; dz++) {
+                int x = cx + dx, z = cz + dz;
+                if (!area(x, z) || surf[z * W + x] != lv || roadD[z * W + x] < 3.0 || inBox(x, z) || get(x, lv, z) != AIR) continue;
+                if (hedge && ringR(x, z) > RW - 0.075) continue;            // pas contre les rondins
+                int g = get(x, lv - 1, z) & 255;
+                if (g != GRASS && g != COARSE && g != PODZOL && g != MOSSB && g != ROOTED && g != MUD) continue;
+                if (dx * dx + dz * dz > rad * rad + (r.nextInt(2))) continue;
+                int leaf = r.nextInt(7) == 0 ? LEAF_AZ : LEAF;
+                set(x, lv, z, leaf);
+                if (rad == 2 && Math.abs(dx) + Math.abs(dz) <= 1 && r.nextInt(3) > 0) set(x, lv + 1, z, leaf);
+                else if (r.nextInt(6) == 0) set(x, lv + 1, z, rnd(x, 46, z) < 0.5 ? DANDELION : POPPY);
+            }
+            if (r.nextInt(4) == 0 && get(cx, lv, cz) == AIR && !inBox(cx, cz)) set(cx, lv, cz, BERRY);
+        }
+        // herbe, hautes herbes, fougeres, fleurs
+        for (int x = 1; x < W - 1; x++) for (int z = 1; z < D - 1; z++) {
+            int lv = surf[z * W + x];
+            if (lv < 1 || roadD[z * W + x] < 2.5 || inBox(x, z) || get(x, lv, z) != AIR) continue;
+            int g = get(x, lv - 1, z) & 255;
+            boolean grassy = g == GRASS || g == PODZOL || g == MOSSB || g == ROOTED;
+            if (!grassy && g != COARSE && g != FARM_DRY) continue;
+            if (lv > 1 && surf[z * W + x + 1] != lv) continue;
+            double d = vn(x / 6.0, z / 6.0, 47);
+            double q = r.nextDouble();
+            if (g == FARM_DRY) { if (q < 0.10) set(x, lv, z, GRASS_S); continue; }
+            if (g == COARSE) { if (q < 0.04) set(x, lv, z, GRASS_S); continue; }
+            if (q < 0.025) set(x, lv, z, q < 0.008 ? DANDELION : q < 0.016 ? POPPY : q < 0.021 ? CORNFL : DAISY);
+            else if (q < 0.045 + 0.12 * Math.max(0, d)) { set(x, lv, z, GRASS_S); }
+            else if (q < 0.075 + 0.14 * Math.max(0, d)) { set(x, lv, z, TALL_L); set(x, lv + 1, z, TALL_U); }
+            else if (q < 0.085 + 0.03 * Math.max(0, d)) set(x, lv, z, FERN);
+        }
+    }
+
     /** lampadaires (poteau de bois patine, lanterne) le long de la route et sur la place */
     private void lampPosts() {
         double acc = 6;
@@ -538,7 +645,8 @@ public final class EdorasPlan {
         }
         if (cp == null) return;
         int gx = (int) Math.round(cp[0]), gz = (int) Math.round(cp[1]);
-        boolean alongX = Math.abs(cp[2]) >= Math.abs(cp[3]);          // la route traverse la muraille le long de x (sinon le long de z)
+        boolean alongX = Math.abs(cp[2]) >= Math.abs(cp[3]);
+        gateX = gx; gateZ = gz; gateAlongX = alongX;          // la route traverse la muraille le long de x (sinon le long de z)
         for (int a = -4; a <= 4; a++) for (int b = -11; b <= 11; b++) {
             int x = alongX ? gx + a : gx + b, z = alongX ? gz + b : gz + a;
             if (!area(x, z)) continue;
@@ -722,6 +830,7 @@ public final class EdorasPlan {
             put(r, x0, z0, w, d, cxl - 1, 1, d - 1, DLOG_Y, false); put(r, x0, z0, w, d, cxl + 1, 1, d - 1, DLOG_Y, false);
             put(r, x0, z0, w, d, cxl - 1, 2, d - 1, DLOG_Y, false); put(r, x0, z0, w, d, cxl + 1, 2, d - 1, DLOG_Y, false);
             put(r, x0, z0, w, d, cxl, 1, d, LAMP, false);
+            { int[] dp = map(r, x0, z0, w, d, cxl, d + 2); doors.add(new int[]{dp[0], dp[1], lvl}); }
         } else {
             for (int y = 1; y <= hh; y++) put(r, x0, z0, w, d, cxl, y, d - 1, AIR, false);
         }

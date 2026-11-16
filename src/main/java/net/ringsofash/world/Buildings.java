@@ -968,11 +968,32 @@ public final class Buildings {
         p[EdorasPlan.PLATE] = Blocks.OAK_PRESSURE_PLATE.defaultBlockState();
         p[EdorasPlan.CARPET_G] = Blocks.GREEN_CARPET.defaultBlockState();
         p[EdorasPlan.CARPET_W] = Blocks.WHITE_CARPET.defaultBlockState();
+        p[EdorasPlan.PODZOL] = Blocks.PODZOL.defaultBlockState();
+        p[EdorasPlan.ROOTED] = Blocks.ROOTED_DIRT.defaultBlockState();
+        p[EdorasPlan.MOSSB] = Blocks.MOSS_BLOCK.defaultBlockState();
+        p[EdorasPlan.MUD] = Blocks.MUD.defaultBlockState();
+        p[EdorasPlan.FARM_DRY] = Blocks.FARMLAND.defaultBlockState().setValue(net.minecraft.world.level.block.FarmBlock.MOISTURE, 3);
+        p[EdorasPlan.GRASS_S] = Blocks.SHORT_GRASS.defaultBlockState();
+        p[EdorasPlan.FERN] = Blocks.FERN.defaultBlockState();
+        p[EdorasPlan.DANDELION] = Blocks.DANDELION.defaultBlockState();
+        p[EdorasPlan.POPPY] = Blocks.POPPY.defaultBlockState();
+        p[EdorasPlan.CORNFL] = Blocks.CORNFLOWER.defaultBlockState();
+        p[EdorasPlan.DAISY] = Blocks.OXEYE_DAISY.defaultBlockState();
+        p[EdorasPlan.TALL_L] = Blocks.TALL_GRASS.defaultBlockState();
+        p[EdorasPlan.TALL_U] = Blocks.TALL_GRASS.defaultBlockState().setValue(net.minecraft.world.level.block.DoublePlantBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER);
+        p[EdorasPlan.LEAF] = Blocks.OAK_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+        p[EdorasPlan.LEAF_AZ] = Blocks.FLOWERING_AZALEA_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+        p[EdorasPlan.BERRY] = Blocks.SWEET_BERRY_BUSH.defaultBlockState().setValue(net.minecraft.world.level.block.SweetBerryBushBlock.AGE, 3);
         edorasPal = p;
         return p;
     }
 
     /** Edoras : colline rocheuse, route en lacets, palais d'Or sur sa terrasse, tour de cloche et maisons au toit de chaume ; la forme vient de EdorasPlan. */
+    private static boolean softGround(int id) {
+        return id == EdorasPlan.GRASS || id == EdorasPlan.COARSE || id == EdorasPlan.EARTH || id == OrthancPlan.PATH || id == EdorasPlan.DIRT || id == EdorasPlan.PODZOL
+                || id == EdorasPlan.ROOTED || id == EdorasPlan.MOSSB || id == EdorasPlan.MUD || id == EdorasPlan.FARM || id == EdorasPlan.FARM_DRY || id == OrthancPlan.GRAVEL;
+    }
+
     private static void edoras(Build b) {
         EdorasPlan p = EdorasPlan.get();
         BlockState[] pal = edorasPal();
@@ -983,7 +1004,7 @@ public final class Buildings {
                 int top = p.top(x, z);
                 if (top < 0 || !b.in(x, 0, z)) continue;
                 int ground = Math.min(b.groundY(x, z), maxY);
-                if (p.get(x, 0, z) != OrthancPlan.AIR) b.foundation(x, z, x, z, (p.get(x, 0, z) & 255) == EdorasPlan.GRASS || (p.get(x, 0, z) & 255) == EdorasPlan.COARSE || (p.get(x, 0, z) & 255) == EdorasPlan.EARTH || (p.get(x, 0, z) & 255) == OrthancPlan.PATH ? dirt : foot, 24);   // la colline repose sur le sol ferme
+                if (p.get(x, 0, z) != OrthancPlan.AIR) b.foundation(x, z, x, z, softGround(p.get(x, 0, z) & 255) ? dirt : foot, 24);   // la colline repose sur le sol ferme
                 for (int y = ground; y > top; y--) {                                                     // on rase ce qui depasse du terrain naturel
                     if (y > ground || b.get(x, y, z).isAir()) continue;
                     if (p.get(x, y, z) == OrthancPlan.AIR) b.s(x, y, z, Build.AIR);

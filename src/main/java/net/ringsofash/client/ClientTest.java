@@ -833,9 +833,9 @@ public final class ClientTest {
             }));
         }
         // palais d'Or, tour de cloche, village, interieur, champs, etal, forge : positions tirees du plan
-        for (int k = 0; k < 8; k++) {
+        for (int k = 0; k < 11; k++) {
             final int kk = k;
-            SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle", "110_edoras_champs", "111_edoras_etal", "112_edoras_forge"}[k], 600, p -> {
+            SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle", "110_edoras_champs", "111_edoras_etal", "112_edoras_forge", "113_edoras_entree", "114_edoras_entree_dessus", "115_edoras_sol"}[k], 600, p -> {
                 ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
                 for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((EX >> 4) + dx, (EZ >> 4) + dz);
                 net.ringsofash.world.EdorasPlan ep = net.ringsofash.world.EdorasPlan.get();
@@ -851,7 +851,16 @@ public final class ClientTest {
                     case 4 -> view(p, lands, hx + 0.5, py + 28, hz + 3.5, 180F, 2F);
                     case 5 -> look(p, lands, ox + ep.lowFieldX - 7.5, py + 7, oz + ep.lowFieldZ + 10.5, ox + ep.lowFieldX, py + 1, oz + ep.lowFieldZ);
                     case 6 -> look(p, lands, ox + ep.stallX - 6.5, py + ep.stallL + 3, oz + ep.stallZ + 8.5, ox + ep.stallX, py + ep.stallL + 1, oz + ep.stallZ);
-                    default -> look(p, lands, ox + ep.smithX - 7.5, py + ep.smithL + 3, oz + ep.smithZ + 9.5, ox + ep.smithX, py + ep.smithL + 1, oz + ep.smithZ);
+                    case 7 -> look(p, lands, ox + ep.smithX - 7.5, py + ep.smithL + 3, oz + ep.smithZ + 9.5, ox + ep.smithX, py + ep.smithL + 1, oz + ep.smithZ);
+                    case 8 -> {                                                           // l'entree : la porte fortifiee vue de la route
+                        int gx = ox + ep.gateX, gz = oz + ep.gateZ, sx = gx - 20, sz = gz + 4;
+                        look(p, lands, sx + 0.5, lands.getHeight(Heightmap.Types.MOTION_BLOCKING, sx, sz) + 3, sz + 0.5, gx, py + 7, gz);
+                    }
+                    case 9 -> {                                                           // l'entree vue de l'interieur du village, un peu en hauteur
+                        int gx = ox + ep.gateX, gz = oz + ep.gateZ;
+                        look(p, lands, gx + 22.5, py + 12, gz - 6.5, gx, py + 5, gz);
+                    }
+                    default -> look(p, lands, ox + ep.gateX + 14.5, py + 6, oz + ep.gateZ + 16.5, ox + ep.gateX + 22, py + 1, oz + ep.gateZ + 8);   // le sol du bas du village
                 }
             }));
         }
