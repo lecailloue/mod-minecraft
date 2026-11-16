@@ -151,6 +151,10 @@ public final class ClientTest {
     }
 
     // ------------------------------------------------------------------ outils de mise en scene (cote serveur)
+    private static void look(ServerPlayer p, ServerLevel level, double x, double y, double z, double tx, double ty, double tz) {
+        float yaw = (float) Math.toDegrees(Math.atan2(-(tx - x), tz - z)), pitch = (float) -Math.toDegrees(Math.atan2(ty - y, Math.hypot(tx - x, tz - z)));
+        view(p, level, x, y, z, yaw, pitch);
+    }
     private static void view(ServerPlayer p, ServerLevel level, double x, double y, double z, float yaw, float pitch) {
         p.getAbilities().flying = true;
         p.onUpdateAbilities();
@@ -812,37 +816,42 @@ public final class ClientTest {
         spot("93_cendre_rocailles", 2125, 1725, 8, 60F, 6F);
         spot("94_cendre_rocailles_haut", 2165, 1745, 45, 90F, 28F);
         spotT("95_cendre_rocailles_nuit", 2195, 1765, 9, 150F, 6F, 18000);
-        // Edoras (centre 352, 1180, perron du palais au sud, route en lacets depuis le sud-ouest)
+        // Edoras (centre 352, 1180, perron du palais au sud, route en lacets depuis le sud-ouest) ; py = niveau du sol sous la colline
         final int EX = 352, EZ = 1180;
-        for (Object[] it : new Object[][]{{"100_edoras_loin_sud_ouest", -140, 150, 70, -139F, -12F, 6000}, {"101_edoras_loin_sud", 0, 200, 60, 180F, -10F, 6000},
-                {"102_edoras_porte", -150, 40, 8, -90F, 4F, 6000}, {"103_edoras_loin_est", 190, 20, 55, 90F, -10F, 6000}, {"104_edoras_nuit", 0, 200, 60, 180F, -10F, 18000}}) {
+        for (Object[] it : new Object[][]{{"100_edoras_loin_sud_ouest", -125, 105, 60, -135F, -14F, 6000}, {"101_edoras_loin_sud", 0, 175, 55, 180F, -10F, 6000},
+                {"102_edoras_porte", -150, 40, -1, -90F, 4F, 6000}, {"103_edoras_loin_est", 140, 10, 55, 90F, -12F, 6000}, {"104_edoras_nuit", 0, 175, 55, 180F, -10F, 18000}}) {
             final Object[] c = it;
-            SCENES.add(new Scene((String) c[0], 420, p -> {
+            SCENES.add(new Scene((String) c[0], 600, p -> {
                 ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
-                int sx = EX + (Integer) c[1], sz = EZ + (Integer) c[2];
                 for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((EX >> 4) + dx, (EZ >> 4) + dz);
-                int y = lands.getHeight(Heightmap.Types.MOTION_BLOCKING, sx, sz);
+                int py = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, EX - 10, EZ + 10) - 30;
+                int sx = EX + (Integer) c[1], sz = EZ + (Integer) c[2];
+                int h = (Integer) c[3];
+                int y = h < 0 ? lands.getHeight(Heightmap.Types.MOTION_BLOCKING, sx, sz) + 6 : py + h;
                 lands.setDayTime((Integer) c[6]);
-                view(p, lands, sx + 0.5, y + (Integer) c[3], sz + 0.5, (Float) c[4], (Float) c[5]);
+                view(p, lands, sx + 0.5, y, sz + 0.5, (Float) c[4], (Float) c[5]);
             }));
         }
-        // palais d'Or, tour de cloche, village, interieur : positions tirees du plan
-        for (int k = 0; k < 5; k++) {
+        // palais d'Or, tour de cloche, village, interieur, champs, etal, forge : positions tirees du plan
+        for (int k = 0; k < 8; k++) {
             final int kk = k;
-            SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle"}[k], 420, p -> {
+            SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle", "110_edoras_champs", "111_edoras_etal", "112_edoras_forge"}[k], 600, p -> {
                 ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
                 for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((EX >> 4) + dx, (EZ >> 4) + dz);
                 net.ringsofash.world.EdorasPlan ep = net.ringsofash.world.EdorasPlan.get();
-                int by = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, EX - 125, EZ + 60);
-                int hx = EX + ep.hallX - net.ringsofash.world.EdorasPlan.CX, hz = EZ + ep.hallZ - net.ringsofash.world.EdorasPlan.CZ;
-                int tx = EX + ep.towerX - net.ringsofash.world.EdorasPlan.CX, tz = EZ + ep.towerZ - net.ringsofash.world.EdorasPlan.CZ;
+                int py = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, EX - 10, EZ + 10) - 30;
+                int ox = EX - net.ringsofash.world.EdorasPlan.CX, oz = EZ - net.ringsofash.world.EdorasPlan.CZ;
+                int hx = ox + ep.hallX, hz = oz + ep.hallZ, tx = ox + ep.towerX, tz = oz + ep.towerZ;
                 lands.setDayTime(6000);
                 switch (kk) {
-                    case 0 -> view(p, lands, hx + 0.5, by + 34, hz + 40.5, 180F, 4F);
-                    case 1 -> view(p, lands, hx + 40.5, by + 36, hz - 4.5, 90F, 8F);
-                    case 2 -> view(p, lands, tx - 14.5, by + 36, tz + 24.5, 150F, 10F);
-                    case 3 -> view(p, lands, EX - 20.5, by + 60, EZ + 70.5, 160F, 20F);
-                    default -> view(p, lands, hx + 0.5, by + 34, hz + 4.5, 180F, 3F);
+                    case 0 -> view(p, lands, hx + 0.5, py + 34, hz + 40.5, 180F, 4F);
+                    case 1 -> view(p, lands, hx + 40.5, py + 36, hz - 4.5, 90F, 8F);
+                    case 2 -> view(p, lands, tx - 14.5, py + 36, tz + 24.5, -150F, -8F);
+                    case 3 -> view(p, lands, EX - 20.5, py + 60, EZ + 70.5, 160F, 20F);
+                    case 4 -> view(p, lands, hx + 0.5, py + 35, hz + 3.5, 180F, 2F);
+                    case 5 -> look(p, lands, ox + ep.lowFieldX - 7.5, py + 7, oz + ep.lowFieldZ + 10.5, ox + ep.lowFieldX, py + 1, oz + ep.lowFieldZ);
+                    case 6 -> look(p, lands, ox + ep.stallX - 6.5, py + ep.stallL + 3, oz + ep.stallZ + 8.5, ox + ep.stallX, py + ep.stallL + 1, oz + ep.stallZ);
+                    default -> look(p, lands, ox + ep.smithX - 7.5, py + ep.smithL + 3, oz + ep.smithZ + 9.5, ox + ep.smithX, py + ep.smithL + 1, oz + ep.smithZ);
                 }
             }));
         }

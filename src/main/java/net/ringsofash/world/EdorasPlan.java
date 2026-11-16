@@ -66,7 +66,7 @@ public final class EdorasPlan {
     private final List<double[]> road = new ArrayList<>();                  // sommets de la route (x, z)
     private double roadLen, roadExt;
     private int lvl = H0;                                                   // niveau debout du groupe de batiments en cours (colline : H0, bas du village : 1)
-    public int lowHouses, wallCells;
+    public int lowHouses, wallCells, lowFieldX = -1, lowFieldZ, stallX = -1, stallZ, smithX = -1, smithZ, stallL, smithL;
     private final List<int[]> boxes = new ArrayList<>();                    // emprises deja prises : x0, z0, x1, z1
     public int houses, hallX, hallZ, towerX, towerZ;
 
@@ -336,9 +336,9 @@ public final class EdorasPlan {
 
     /** la vie du village sur la colline : etals, forge, tas de bois, meules, jardins */
     private void life(Random r) {
-        for (int k = 0; k < 3; k++) { int[] sp = findSpot(r, 7, 5, 0, TAU, 0.05, 0.72, 250); if (sp != null) stall(sp[0] + 3, sp[1] + 2, k % 2 == 0); }
-        int[] sm = findSpot(r, 9, 7, 0, TAU, 0.1, 0.7, 300);
+        int[] sm = findSpot(r, 9, 7, 0, TAU, 0.05, 0.74, 600);
         if (sm != null) smithy(sm[0] + 1, sm[1] + 1);
+        for (int k = 0; k < 3; k++) { int[] sp = findSpot(r, 7, 5, 0, TAU, 0.05, 0.72, 250); if (sp != null) stall(sp[0] + 3, sp[1] + 2, k % 2 == 0); }
         for (int k = 0; k < 5; k++) { int[] sp = findSpot(r, 6, 3, 0, TAU, 0.05, 0.74, 250); if (sp != null) woodpile(sp[0] + 1, sp[1] + 1); }
         for (int k = 0; k < 3; k++) { int[] sp = findSpot(r, 5, 5, 0, TAU, 0.05, 0.74, 250); if (sp != null) haystack(sp[0] + 2, sp[1] + 2); }
         for (int k = 0; k < 3; k++) { int[] sp = findSpot(r, 8, 7, 0, TAU, 0.05, 0.72, 300); if (sp != null) field(sp[0], sp[1], 8, 7, k, r.nextDouble() < 0.7); }
@@ -353,14 +353,13 @@ public final class EdorasPlan {
     /** la vie du bas du village : champs dans les secteurs cultives, etals pres de la porte, forge, bois, meules */
     private void lowLife(Random r) {
         double[][] farm = {{300, 346}, {56, 112}, {214, 250}};
+        if (smithX < 0) { int[] sm = findSpot(r, 9, 7, 0, TAU, 1.14, 1.30, 600); if (sm != null) smithy(sm[0] + 1, sm[1] + 1); }
         int fields = 0;
         for (double[] f : farm) for (int k = 0; k < 4; k++) {
             int[] sp = findSpot(r, 9, 8, Math.toRadians(f[0]), Math.toRadians(f[1]), 1.14, 1.30, 120);
             if (sp != null) { field(sp[0], sp[1], 9, 8, fields++, r.nextDouble() < 0.7); }
         }
         for (int k = 0; k < 2; k++) { int[] sp = findSpot(r, 7, 5, Math.toRadians(150), Math.toRadians(205), 1.14, 1.30, 120); if (sp != null) stall(sp[0] + 3, sp[1] + 2, k % 2 == 0); }
-        int[] sm = findSpot(r, 9, 7, Math.toRadians(112), Math.toRadians(150), 1.14, 1.30, 200);
-        if (sm != null) smithy(sm[0] + 1, sm[1] + 1);
         for (int k = 0; k < 7; k++) { int[] sp = findSpot(r, 6, 3, 0, TAU, 1.14, 1.32, 150); if (sp != null) woodpile(sp[0] + 1, sp[1] + 1); }
         for (int k = 0; k < 5; k++) {
             double[] f = farm[k % 3];
@@ -387,6 +386,7 @@ public final class EdorasPlan {
             }
             set(x, lvl, z, id);
         }
+        if (lvl == 1 && lowFieldX < 0) { lowFieldX = x0 + w / 2; lowFieldZ = z0 + d / 2; }
         scarecrow(x0 + w - 1, z0);
         if (rnd(x0, 24, z0) < 0.6) { set(x0, lvl, z0 + d - 1, SHEAF_Y); set(x0, lvl + 1, z0 + d - 1, SHEAF_Y); }
     }
@@ -399,6 +399,7 @@ public final class EdorasPlan {
 
     /** etal de marche 5 x 3 : auvent de laine verte et blanche, comptoir, marchandises */
     private void stall(int cx, int cz, boolean alongX) {
+        if (stallX < 0) { stallX = cx; stallZ = cz; stallL = lvl; }
         int hx = alongX ? 2 : 1, hz = alongX ? 1 : 2;
         for (int x = cx - hx; x <= cx + hx; x++) for (int z = cz - hz; z <= cz + hz; z++) {
             int k = alongX ? x - cx + hx : z - cz + hz;
@@ -420,6 +421,7 @@ public final class EdorasPlan {
 
     /** forge ouverte : mur de pierre et cheminee au nord, foyer de lave, enclume, etabli, toit de chaume */
     private void smithy(int x0, int z0) {
+        if (smithX < 0) { smithX = x0 + 3; smithZ = z0 + 2; smithL = lvl; }
         for (int x = x0 - 1; x <= x0 + 7; x++) for (int z = z0 - 1; z <= z0 + 5; z++) {
             boolean in = x >= x0 && x <= x0 + 6 && z >= z0 && z <= z0 + 4;
             if (in) set(x, lvl - 1, z, rnd(x, 25, z) < 0.6 ? COBBLE : GRAVEL);
