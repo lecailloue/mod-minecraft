@@ -1007,6 +1007,22 @@ public final class Buildings {
         BlockState[] pal = edorasPal();
         BlockState foot = Blocks.STONE.defaultBlockState(), dirt = Blocks.DIRT.defaultBlockState();
         int maxY = EdorasPlan.H - EdorasPlan.OFF - 1;
+        // rampe de sortie : le passage de la porte donne sur le vide, on y raccorde une descente en marches jusqu'au sol naturel
+        int gu = p.gateAlongX ? p.gateZ : p.gateX, gv = p.gateAlongX ? p.gateX : p.gateZ, gsgn = 0;
+        int[][] rampG = null;
+        if (p.gateX >= 0) {
+            for (int sg = -1; sg <= 1 && gsgn == 0; sg += 2) {
+                int uu = gu + sg * 14, xx = p.gateAlongX ? gv : uu, zz = p.gateAlongX ? uu : gv;
+                if (xx >= 0 && zz >= 0 && xx < EdorasPlan.W && zz < EdorasPlan.D && p.get(xx, 0, zz) == OrthancPlan.AIR) gsgn = sg;
+            }
+            if (gsgn != 0) {
+                rampG = new int[16][17];
+                for (int i = 0; i < 16; i++) for (int dv = -8; dv <= 8; dv++) {
+                    int uu = gu + gsgn * (11 + i), vv = gv + dv, xx = p.gateAlongX ? vv : uu, zz = p.gateAlongX ? uu : vv;
+                    rampG[i][dv + 8] = Math.min(b.groundY(xx, zz), maxY);
+                }
+            }
+        }
         for (int x = 0; x < EdorasPlan.W; x++) {
             for (int z = 0; z < EdorasPlan.D; z++) {
                 int top = p.top(x, z);
@@ -1036,6 +1052,22 @@ public final class Buildings {
                     byte id = p.get(x, y, z);
                     if (id != OrthancPlan.AIR) b.s(x, y, z, pal[id & 255]);
                 }
+            }
+        }
+        if (rampG != null) {
+            int iEnd = -1;
+            for (int i = 0; i < 16; i++) { if (-((i + 1) / 2) > rampG[i][8]) iEnd = i; else break; }
+            BlockState grass = Blocks.GRASS_BLOCK.defaultBlockState(), path = pal[OrthancPlan.PATH & 255];
+            for (int i = 0; i < 16; i++) for (int dv = -8; dv <= 8; dv++) {
+                int uu = gu + gsgn * (11 + i), vv = gv + dv, xx = p.gateAlongX ? vv : uu, zz = p.gateAlongX ? uu : vv;
+                if (xx < 0 || zz < 0 || xx >= EdorasPlan.W || zz >= EdorasPlan.D || p.get(xx, 0, zz) != OrthancPlan.AIR) continue;
+                int g = rampG[i][dv + 8], ad = Math.abs(dv);
+                int sc = -((i + 1) / 2) - Math.max(0, ad - 3);                        // hauteur voulue de la surface
+                boolean onPath = ad <= 3 && i <= iEnd;
+                int top = Math.max(g, sc);
+                if (!onPath && i > iEnd + 3 && sc <= g && ad > 3) { for (int y = g + 1; y <= 4; y++) if (!b.get(xx, y, zz).isAir()) b.s(xx, y, zz, Build.AIR); continue; }
+                if (sc > g) { for (int y = g + 1; y < sc; y++) b.s(xx, y, zz, dirt); b.s(xx, sc, zz, onPath ? path : grass); }
+                for (int y = top + 1; y <= top + 4; y++) b.s(xx, y, zz, Build.AIR);
             }
         }
     }

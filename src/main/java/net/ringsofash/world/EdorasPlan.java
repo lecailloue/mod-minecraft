@@ -948,6 +948,11 @@ public final class EdorasPlan {
                 }
             }
         }
+        // sous-face du toit : un bloc plein dans chaque marche, sinon le pignon laisse des trous entre le mur et les escaliers
+        for (int k = 0; k < layers; k++) for (int lz = -1; lz <= d; lz++) {
+            put(r, x0, z0, w, d, k, hh + 1 + k, lz, MOSAIC, false);
+            put(r, x0, z0, w, d, w - 1 - k, hh + 1 + k, lz, MOSAIC, false);
+        }
         // pignon : plein sous le toit
         for (int k = 0; k < layers; k++) for (int lx = k + 1; lx <= w - 2 - k; lx++) for (int lzp : new int[]{0, d - 1}) put(r, x0, z0, w, d, lx, hh + 1 + k, lzp, WPLANKS, false);
         // ornements : poutres croisees en V (tetes de chevaux) a chaque bout du faitage, lanterne au plafond
