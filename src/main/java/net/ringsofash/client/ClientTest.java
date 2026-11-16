@@ -304,10 +304,33 @@ public final class ClientTest {
             clear(ow);
             view(p, ow, SX + 0.5, SY + 1.2, SZ, 0F, 0F);
         }));
+        // Minas Tirith (place (480, 1855), plan de 320 x 270 centre sur le lieu) ; py = sol de la plaine devant la porte ; coordonnees (dx, dz) relatives au centre du plan
+        final int TX = 480, TZ = 1855;
+        Object[][] tv = {{"200_tirith_loin_sud", 0, 200, 70, 180F, -22F, 6000}, {"201_tirith_sud_ouest", -150, 140, 45, -135F, -16F, 6000}, {"202_tirith_porte", 0, 150, 6, 180F, -4F, 6000},
+                {"203_tirith_rue", 0, 112, 24, 180F, -8F, 6000}, {"204_tirith_cour", 0, 0, 0, 0F, 0F, 6000}, {"205_tirith_tour", 0, 0, 0, 0F, 0F, 6000},
+                {"206_tirith_fontaine", 0, 0, 0, 0F, 0F, 6000}, {"207_tirith_nuit", 0, 200, 70, 180F, -22F, 18000}, {"208_tirith_est", 200, 40, 120, 90F, -14F, 6000}};
+        for (int k = 0; k < tv.length; k++) {
+            final int kk = k;
+            final Object[] c = tv[k];
+            SCENES.add(new Scene((String) c[0], 420, p -> {
+                ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+                for (int dx = -11; dx <= 11; dx++) for (int dz = -9; dz <= 15; dz++) lands.getChunk((TX >> 4) + dx, (TZ >> 4) + dz);
+                net.ringsofash.world.TirithPlan tp = net.ringsofash.world.TirithPlan.get();
+                int py = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, TX - 150, TZ + 100);
+                int top = py + net.ringsofash.world.TirithPlan.PROW_TOP;
+                int ox = TX - 160, oz = TZ - 135;                                    // origine du plan : x_plan = x_monde - ox
+                lands.setDayTime((Integer) c[6]);
+                switch (kk) {
+                    case 4 -> look(p, lands, TX + 7.5, top + 5, oz + tp.court_z + 8.5, TX, top + 8, oz + tp.tower_z + 6);                       // la cour, du portail vers la tour
+                    case 5 -> look(p, lands, TX - 30.5, top + 34, oz + tp.court_z + 22.5, TX, top + 70, oz + tp.tower_z);                         // la tour d'Ecthelion
+                    case 6 -> look(p, lands, TX + 9.5, top + 5, oz + tp.court_z + 6.5, TX - 2, top + 3, oz + tp.court_z - 4);                     // fontaine et Arbre Blanc
+                    default -> view(p, lands, TX + (Integer) c[1] + 0.5, py + (Integer) c[3], TZ + (Integer) c[2] + 0.5, (Float) c[4], (Float) c[5]);
+                }
+            }));
+        }
         // Edoras (centre 352, 1180, perron du palais au sud, route en lacets depuis le sud-ouest) ; py = niveau du sol sous la colline
         final int EX = 352, EZ = 1180;
-        for (Object[] it : new Object[][]{{"100_edoras_loin_sud_ouest", -125, 105, 60, -135F, -14F, 6000}, {"101_edoras_loin_sud", 0, 175, 55, 180F, -10F, 6000},
-                {"102_edoras_porte", -150, 40, -1, -90F, 4F, 6000}, {"103_edoras_loin_est", 140, 10, 55, 90F, -12F, 6000}, {"104_edoras_nuit", 0, 175, 55, 180F, -10F, 18000}}) {
+        for (Object[] it : new Object[][]{{"100_edoras_loin_sud_ouest", -125, 105, 60, -135F, -14F, 6000}}) {
             final Object[] c = it;
             SCENES.add(new Scene((String) c[0], 420, p -> {
                 ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
@@ -323,7 +346,7 @@ public final class ClientTest {
         // palais d'Or, tour de cloche, village, interieur, champs, etal, forge : positions tirees du plan
         for (int k = 0; k < 13; k++) {
             final int kk = k;
-            if (k == 1 || k == 4 || k == 8) continue;                  // doublons ou vues deja validees
+            if (k != 0 && k != 11 && k != 12) continue;                // les autres vues d'Edoras sont deja validees
             SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle", "110_edoras_champs", "111_edoras_etal", "112_edoras_forge", "113_edoras_entree", "114_edoras_entree_dessus", "115_edoras_sol", "116_edoras_place", "117_edoras_fontaine"}[k], 420, p -> {
                 ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
                 for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((EX >> 4) + dx, (EZ >> 4) + dz);

@@ -60,6 +60,7 @@ public final class Buildings {
             case ORTHANC -> orthanc(b);
             case BARADDUR -> baradDur(b);
             case EDORAS -> edoras(b);
+            case TIRITH -> tirith(b);
         }
     }
 
@@ -1013,6 +1014,97 @@ public final class Buildings {
                 for (int y = 0; y <= top; y++) {
                     byte id = p.get(x, y, z);
                     if (id != OrthancPlan.AIR) b.s(x, y, z, pal[id & 255]);
+                }
+            }
+        }
+    }
+
+    // ================================================================= MINAS TIRITH
+    private static BlockState[] tirithPal;
+
+    private static synchronized BlockState[] tirithPal() {
+        if (tirithPal != null) return tirithPal;
+        BlockState[] p = new BlockState[256];
+        java.util.Arrays.fill(p, Build.AIR);
+        p[TirithPlan.STONE] = Blocks.STONE.defaultBlockState();
+        p[TirithPlan.ANDESITE] = Blocks.ANDESITE.defaultBlockState();
+        p[TirithPlan.TUFF] = Blocks.TUFF.defaultBlockState();
+        p[TirithPlan.CALCITE] = Blocks.CALCITE.defaultBlockState();
+        p[TirithPlan.DIORITE] = Blocks.DIORITE.defaultBlockState();
+        p[TirithPlan.GRASS] = Blocks.GRASS_BLOCK.defaultBlockState();
+        p[TirithPlan.DIRT] = Blocks.DIRT.defaultBlockState();
+        p[TirithPlan.SNOW] = Blocks.SNOW_BLOCK.defaultBlockState();
+        p[TirithPlan.COBBLE] = Blocks.COBBLESTONE.defaultBlockState();
+        p[TirithPlan.GRAVEL] = Blocks.GRAVEL.defaultBlockState();
+        p[TirithPlan.WB] = Reg.WHITE_BRICKS.get().defaultBlockState();
+        stairSet(p, TirithPlan.WB_STAIR, Reg.WHITE_BRICKS_STAIRS.get());
+        p[TirithPlan.WB_SLAB] = slab(Reg.WHITE_BRICKS_SLAB.get(), false);
+        p[TirithPlan.WB_SLAB_TOP] = slab(Reg.WHITE_BRICKS_SLAB.get(), true);
+        p[TirithPlan.WB_WALL] = Reg.WHITE_BRICKS_WALL.get().defaultBlockState();
+        p[TirithPlan.QB] = Blocks.QUARTZ_BRICKS.defaultBlockState();
+        p[TirithPlan.SQ] = Blocks.SMOOTH_QUARTZ.defaultBlockState();
+        p[TirithPlan.PD] = Blocks.POLISHED_DIORITE.defaultBlockState();
+        p[TirithPlan.SBR] = Blocks.STONE_BRICKS.defaultBlockState();
+        p[TirithPlan.QPILLAR_Y] = Blocks.QUARTZ_PILLAR.defaultBlockState();
+        p[TirithPlan.CHISEL] = Blocks.CHISELED_QUARTZ_BLOCK.defaultBlockState();
+        p[TirithPlan.PAVE] = Reg.WHITE_STONE.get().defaultBlockState();
+        p[TirithPlan.PAVE2] = Blocks.SMOOTH_STONE.defaultBlockState();
+        p[TirithPlan.GLASS] = Blocks.GLASS_PANE.defaultBlockState();
+        p[TirithPlan.BARS] = Blocks.IRON_BARS.defaultBlockState();
+        p[TirithPlan.DPLANKS] = Blocks.DARK_OAK_PLANKS.defaultBlockState();
+        p[TirithPlan.DLOG_Y] = log(Blocks.DARK_OAK_LOG, Direction.Axis.Y);
+        p[TirithPlan.LANTERN] = Blocks.LANTERN.defaultBlockState();
+        p[TirithPlan.HLANTERN] = Blocks.LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true);
+        p[TirithPlan.CHAIN] = Blocks.CHAIN.defaultBlockState();
+        p[TirithPlan.FENCE_B] = Blocks.DARK_OAK_FENCE.defaultBlockState();
+        p[TirithPlan.WATER] = Blocks.WATER.defaultBlockState();
+        p[TirithPlan.BIRCH_Y] = log(Blocks.BIRCH_LOG, Direction.Axis.Y);
+        p[TirithPlan.BIRCH_FENCE] = Blocks.BIRCH_FENCE.defaultBlockState();
+        p[TirithPlan.SLATE] = Blocks.DEEPSLATE_TILES.defaultBlockState();
+        stairSet(p, TirithPlan.SLATE_STAIR, Blocks.DEEPSLATE_TILE_STAIRS);
+        p[TirithPlan.SLATE_SLAB] = slab(Blocks.DEEPSLATE_TILE_SLAB, false);
+        p[TirithPlan.SLATE_SLAB_TOP] = slab(Blocks.DEEPSLATE_TILE_SLAB, true);
+        p[TirithPlan.COPPER] = Blocks.OXIDIZED_CUT_COPPER.defaultBlockState();
+        stairSet(p, TirithPlan.COPPER_STAIR, Blocks.OXIDIZED_CUT_COPPER_STAIRS);
+        p[TirithPlan.COPPER_SLAB] = slab(Blocks.OXIDIZED_CUT_COPPER_SLAB, false);
+        p[TirithPlan.COPPER_SLAB_TOP] = slab(Blocks.OXIDIZED_CUT_COPPER_SLAB, true);
+        p[TirithPlan.LEAF] = Blocks.BIRCH_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+        p[TirithPlan.FLOWER1] = Blocks.WHITE_TULIP.defaultBlockState();
+        p[TirithPlan.FLOWER2] = Blocks.LILY_OF_THE_VALLEY.defaultBlockState();
+        p[TirithPlan.GRASS_S] = Blocks.SHORT_GRASS.defaultBlockState();
+        p[TirithPlan.DWALL] = Blocks.DEEPSLATE_TILE_WALL.defaultBlockState();
+        p[TirithPlan.WOOL_W] = Blocks.WHITE_WOOL.defaultBlockState();
+        p[TirithPlan.WOOL_G] = Blocks.GRAY_WOOL.defaultBlockState();
+        p[TirithPlan.SLAB_STONE] = slab(Blocks.SMOOTH_STONE_SLAB, false);
+        p[TirithPlan.QUARTZ_SLAB] = slab(Blocks.QUARTZ_SLAB, false);
+        p[TirithPlan.QUARTZ_SLAB_TOP] = slab(Blocks.QUARTZ_SLAB, true);
+        p[TirithPlan.GOLD] = Blocks.GOLD_BLOCK.defaultBlockState();
+        tirithPal = p;
+        return p;
+    }
+
+    /** Minas Tirith : sept niveaux de remparts blancs, eperon de roche, tour d'Ecthelion, cour de l'Arbre Blanc, le tout adosse a la montagne ; la forme vient de TirithPlan. */
+    private static void tirith(Build b) {
+        TirithPlan p = TirithPlan.get();
+        BlockState[] pal = tirithPal();
+        BlockState foot = Blocks.STONE.defaultBlockState();
+        int maxY = TirithPlan.H - TirithPlan.OFF - 1;
+        for (int x = 0; x < TirithPlan.W; x++) {
+            for (int z = 0; z < TirithPlan.D; z++) {
+                int top = p.top(x, z);
+                if (top < 0 || !b.in(x, 0, z)) continue;
+                int kd = p.kindAt(x, z);
+                int ground = Math.min(b.groundY(x, z), maxY);
+                if (p.get(x, 0, z) != TirithPlan.AIR) b.foundation(x, z, x, z, foot, 24);              // la cite repose sur le sol ferme
+                if (kd != 2 && kd != 5) {
+                    for (int y = ground; y > top; y--) {                                             // on rase ce qui depasse du terrain naturel (sauf la montagne, qui reste)
+                        if (b.get(x, y, z).isAir()) continue;
+                        if (p.get(x, y, z) == TirithPlan.AIR) b.s(x, y, z, Build.AIR);
+                    }
+                }
+                for (int y = -TirithPlan.OFF + 2; y <= top; y++) {
+                    byte id = p.get(x, y, z);
+                    if (id != TirithPlan.AIR) b.s(x, y, z, pal[id & 255]);
                 }
             }
         }

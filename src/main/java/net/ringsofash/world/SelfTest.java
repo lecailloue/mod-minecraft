@@ -140,7 +140,7 @@ public final class SelfTest {
             for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) lands.getChunk((px >> 4) + dx, (pz >> 4) + dz);
             for (int x = px - 24; x <= px + 24; x += 6) {
                 for (int z = pz - 24; z <= pz + 24; z += 6) {
-                    if (e.getKey().equals("barad_dur") || e.getKey().equals("edoras")) continue;                // site nivele et creuse (douve) expres
+                    if (e.getKey().equals("barad_dur") || e.getKey().equals("edoras") || e.getKey().equals("minas_terith")) continue;                // site nivele et creuse (douve) expres
                     n++;
                     BlockPos at = new BlockPos(x, MapData.height(x, z), z);
                     var st = lands.getBlockState(at);
@@ -214,6 +214,23 @@ public final class SelfTest {
             if (tow - plat < 14) fail("edoras : pas de tour de cloche (" + (tow - plat) + ")");
             if (ep.houses < 8 || ep.lowHouses < 6) fail("edoras : trop peu de maisons (" + ep.houses + " dont " + ep.lowHouses + " en bas)");
             if (ep.wallCells < 300) fail("edoras : muraille trop courte (" + ep.wallCells + ")");
+        }
+        int[] mt = spots.get("minas_terith");
+        if (mt != null) {                                                    // Minas Tirith : sept niveaux, tour d'Ecthelion, cour, montagne
+            for (int dx = -10; dx <= 10; dx++) for (int dz = -9; dz <= 9; dz++) lands.getChunk((mt[0] >> 4) + dx, (mt[1] >> 4) + dz);
+            topDown(lands, mt[0] - 160, mt[1] - 135, mt[0] + 159, mt[1] + 134, new File(OUT, "tirith_dessus.png"), 2);
+            TirithPlan tp = TirithPlan.get();
+            int by = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, mt[0] - 150, mt[1] + 100);
+            section(lands, mt[0] - 160, mt[0] + 159, mt[1] + 60, by - 10, by + 150, new File(OUT, "tirith_coupe.png"), 2);
+            int ring0 = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, mt[0] - 40, mt[1] + 100);
+            int plat = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, mt[0] - 15, mt[1] + 9);
+            int tow = lands.getHeight(Heightmap.Types.WORLD_SURFACE, mt[0], mt[1] + tp.tower_z - 135);
+            int mont = lands.getHeight(Heightmap.Types.WORLD_SURFACE, mt[0], mt[1] - 70);
+            log("minas_terith : sol " + by + " ; niveau 1 " + ring0 + " ; cour " + plat + " ; tour " + tow + " ; montagne " + mont);
+            if (ring0 - by < 12) fail("minas_terith : pas de premier rempart (" + (ring0 - by) + ")");
+            if (plat - by < 100) fail("minas_terith : le dernier niveau est trop bas (" + (plat - by) + ")");
+            if (tow - plat < 90) fail("minas_terith : pas de tour d'Ecthelion (" + (tow - plat) + ")");
+            if (mont - by < 120) fail("minas_terith : pas de montagne derriere la cite (" + (mont - by) + ")");
         }
         {                                                                    // rochers de cendre : on compte les blocs de roche de cendre / calcinee en surface d'une plaine de cendre
             int rx = 2165, rz = 1745, rocks = 0;

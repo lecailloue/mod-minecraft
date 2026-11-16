@@ -300,6 +300,9 @@ def structures():
     # Edoras : une seule instance, sur une plaine seche (places.json)
     settlement('edoras', ['plaines_jaunes', 'plaines_vertes', 'bosquets', 'foret_clairsemee'], 1, 0, 5114, [])
     LANG['structure.ringsofash.edoras'] = 'Edoras'
+    # Minas Tirith : une seule instance, sur la plaine au pied de la montagne (places.json)
+    settlement('minas_terith', ['plaines_jaunes', 'plaines_vertes', 'bosquets', 'foret_clairsemee'], 1, 0, 5115, [])
+    LANG['structure.ringsofash.minas_terith'] = 'Minas Tirith'
     tag('worldgen/structure', 'volcanoes', R('volcano'), R('mont_funeste'), ns=MOD)
     tag('worldgen/structure', 'doom', R('mont_funeste'), ns=MOD)
     LANG['structure.ringsofash.volcano'] = 'Volcan'
