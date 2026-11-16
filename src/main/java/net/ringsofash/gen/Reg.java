@@ -31,6 +31,11 @@ public final class Reg {
 
     public static final DeferredBlock<Block> ASH_BLOCK = BLOCKS.register("ash_block", () -> new Block(copy(Blocks.SAND).mapColor(MapColor.COLOR_GRAY)));
     public static final DeferredBlock<Block> VOLCANIC_ROCK = BLOCKS.register("volcanic_rock", () -> new Block(copy(Blocks.BLACKSTONE)));
+    public static final DeferredBlock<Block> ASH_ROCK = BLOCKS.register("ash_rock", () -> new Block(copy(Blocks.STONE)));
+    public static final DeferredBlock<Block> ASH_ROCK_STAIRS = BLOCKS.register("ash_rock_stairs", () -> new StairBlock(ASH_ROCK.get().defaultBlockState(), copy(ASH_ROCK.get())));
+    public static final DeferredBlock<Block> ASH_ROCK_SLAB = BLOCKS.register("ash_rock_slab", () -> new SlabBlock(copy(ASH_ROCK.get())));
+    public static final DeferredBlock<Block> ASH_ROCK_WALL = BLOCKS.register("ash_rock_wall", () -> new WallBlock(copy(ASH_ROCK.get()).forceSolidOn()));
+    public static final DeferredBlock<Block> SCORCHED_ROCK = BLOCKS.register("scorched_rock", () -> new Block(copy(Blocks.BLACKSTONE)));
     public static final DeferredBlock<Block> SMOKING_ROCK = BLOCKS.register("smoking_rock", () -> new SmokingRockBlock(copy(Blocks.BLACKSTONE).lightLevel(s -> 6)));
     public static final DeferredBlock<Block> PALE_LAVA = BLOCKS.register("pale_lava", () -> new PaleLavaBlock(BlockBehaviour.Properties.of().mapColor(MapColor.SAND).noCollission().forceSolidOn().strength(-1.0F, 3600000.0F).lightLevel(s -> 15).noLootTable().pushReaction(PushReaction.BLOCK)));
     public static final DeferredBlock<Block> WHITE_STONE = BLOCKS.register("white_stone", () -> new Block(copy(Blocks.STONE)));
@@ -112,6 +117,11 @@ public final class Reg {
 
     public static final DeferredItem<BlockItem> BI_ASH_BLOCK = ITEMS.registerSimpleBlockItem("ash_block", ASH_BLOCK);
     public static final DeferredItem<BlockItem> BI_VOLCANIC_ROCK = ITEMS.registerSimpleBlockItem("volcanic_rock", VOLCANIC_ROCK);
+    public static final DeferredItem<BlockItem> BI_ASH_ROCK = ITEMS.registerSimpleBlockItem("ash_rock", ASH_ROCK);
+    public static final DeferredItem<BlockItem> BI_ASH_ROCK_STAIRS = ITEMS.registerSimpleBlockItem("ash_rock_stairs", ASH_ROCK_STAIRS);
+    public static final DeferredItem<BlockItem> BI_ASH_ROCK_SLAB = ITEMS.registerSimpleBlockItem("ash_rock_slab", ASH_ROCK_SLAB);
+    public static final DeferredItem<BlockItem> BI_ASH_ROCK_WALL = ITEMS.registerSimpleBlockItem("ash_rock_wall", ASH_ROCK_WALL);
+    public static final DeferredItem<BlockItem> BI_SCORCHED_ROCK = ITEMS.registerSimpleBlockItem("scorched_rock", SCORCHED_ROCK);
     public static final DeferredItem<BlockItem> BI_SMOKING_ROCK = ITEMS.registerSimpleBlockItem("smoking_rock", SMOKING_ROCK);
     public static final DeferredItem<BlockItem> BI_PALE_LAVA = ITEMS.registerSimpleBlockItem("pale_lava", PALE_LAVA);
     public static final DeferredItem<BlockItem> BI_WHITE_STONE = ITEMS.registerSimpleBlockItem("white_stone", WHITE_STONE);

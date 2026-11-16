@@ -105,6 +105,14 @@ def blocks():
     vr = stone('#2f2b2d', 2, var=0.9, cell=4, speck=0.5)
     btex('volcanic_rock', ore(vr, ['#4a2a22', '#3a3436'], 5, 5))
     block('volcanic_rock', 'Roche volcanique', copy='BLACKSTONE', tool='pickaxe')
+    # roches des terres de cendre : pierre grise couverte de cendre, et roche calcinee aux braises eteintes
+    ar = stone('#5d5a56', 21, var=0.85, cell=3, speck=0.75)
+    btex('ash_rock', ore(ar, ['#8a867f', '#3d3b39'], 22, 7))
+    block('ash_rock', 'Roche de cendre', copy='STONE', tool='pickaxe')
+    family('ash_rock', 'ash', 'roche de cendre')
+    sr = stone('#3a3432', 23, var=0.9, cell=3, speck=0.6)
+    btex('scorched_rock', ore(sr, ['#7a3a1e', '#52291c', '#8a8680'], 24, 6))
+    block('scorched_rock', 'Roche calcinée', copy='BLACKSTONE', tool='pickaxe')
     btex('smoking_rock', ore(vr, ['#ff8a20', '#e0501a', '#ffc040'], 9, 9))
     block('smoking_rock', 'Roche fumante', 'custom_cube', java='new SmokingRockBlock(copy(Blocks.BLACKSTONE).lightLevel(s -> 6))',
           tool='pickaxe', drop='volcanic_rock')

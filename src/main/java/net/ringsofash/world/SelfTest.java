@@ -198,6 +198,18 @@ public final class SelfTest {
             if (deck.isAir()) fail("barad_dur : pas de plateforme au sommet de la tour");
             if (prong.isAir()) fail("barad_dur : pas de pointe a la couronne");
         }
+        {                                                                    // rochers de cendre : on compte les blocs de roche de cendre / calcinee en surface d'une plaine de cendre
+            int rx = 600, rz = 700, rocks = 0;
+            for (int dx = -5; dx <= 4; dx++) for (int dz = -5; dz <= 4; dz++) lands.getChunk((rx >> 4) + dx, (rz >> 4) + dz);
+            for (int x = rx - 64; x < rx + 64; x++) for (int z = rz - 64; z < rz + 64; z++) {
+                int y = lands.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1;
+                var st = lands.getBlockState(new BlockPos(x, y, z));
+                if (st.is(net.ringsofash.gen.Reg.ASH_ROCK.get()) || st.is(net.ringsofash.gen.Reg.SCORCHED_ROCK.get())) rocks++;
+            }
+            topDown(lands, rx - 64, rz - 64, rx + 63, rz + 63, new File(OUT, "rochers_cendre.png"), 4);
+            log("rochers de cendre : " + rocks + " colonnes de roche en surface sur 128 x 128");
+            if (rocks < 150) fail("trop peu de rochers dans la plaine de cendre (" + rocks + ")");
+        }
         for (int[] pk : new int[][]{cs != null ? cs : new int[]{0, 0}, hi}) {
             for (int dx = -10; dx <= 10; dx++) lands.getChunk((pk[0] >> 4) + dx, pk[1] >> 4);
             section(lands, pk[0] - 160, pk[0] + 160, pk[1], 50, 447, new File(OUT, "sommet_coupe_" + pk[0] + ".png"), 2);

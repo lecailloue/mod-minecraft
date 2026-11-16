@@ -54,6 +54,14 @@ def features():
     # terres de cendre
     cf('ash_spire', R('spire'), {'block': st('volcanic_rock'), 'cap': st('minecraft:basalt', axis='y'), 'min_height': 5, 'max_height': 22, 'radius': 3})
     pf('ash_spires', 'ash_spire', [RARE(2), SQ, HM('WORLD_SURFACE_WG'), BIOME])
+    # rochers des terres de cendre
+    rk = lambda lo, hi, rad: {'block': st('ash_rock'), 'cap': st('scorched_rock'), 'min_height': lo, 'max_height': hi, 'radius': rad}
+    cf('ash_rock_small', R('rock'), rk(1, 2, 2))
+    cf('ash_rock_mid', R('rock'), rk(2, 4, 3))
+    cf('ash_rock_big', R('rock'), rk(5, 9, 5))
+    pf('ash_rocks_small', 'ash_rock_small', [COUNT(8), SQ, HM('WORLD_SURFACE_WG'), BIOME])
+    pf('ash_rocks', 'ash_rock_mid', [COUNT(3), SQ, HM('WORLD_SURFACE_WG'), BIOME])
+    pf('ash_rocks_big', 'ash_rock_big', [RARE(2), SQ, HM('WORLD_SURFACE_WG'), BIOME])
     cf('dead_tree', R('spire'), {'block': st('minecraft:dark_oak_log', axis='y'), 'cap': st('minecraft:dark_oak_log', axis='y'), 'min_height': 3, 'max_height': 7, 'radius': 0})
     pf('dead_trees', 'dead_tree', [RARE(2), SQ, HM('WORLD_SURFACE_WG'), BIOME])
     pf('dead_trees_marsh', 'dead_tree', [RARE(3), SQ, NOWATER, HM('OCEAN_FLOOR'), BIOME])
@@ -146,7 +154,7 @@ ORES = ['minecraft:ore_dirt', 'minecraft:ore_gravel', 'minecraft:ore_granite_upp
         'minecraft:ore_diamond_large', 'minecraft:ore_diamond_buried', 'minecraft:ore_lapis', 'minecraft:ore_lapis_buried', 'minecraft:ore_copper']
 ORES_TAIL = ['ringsofash:ore_sombrefer', 'ringsofash:ore_braisite', 'ringsofash:ore_brumecristal', 'ringsofash:ore_orrune', 'minecraft:underwater_magma', 'minecraft:disk_sand', 'minecraft:disk_clay', 'minecraft:disk_gravel']
 # ordre global de la vegetation (toujours respecter cet ordre relatif)
-VEG_ORDER = ['minecraft:glow_lichen', 'ash_spires', 'dead_trees', 'dead_trees_marsh', 'boulders', 'standing_stones',
+VEG_ORDER = ['minecraft:glow_lichen', 'ash_spires', 'ash_rocks_big', 'ash_rocks', 'ash_rocks_small', 'dead_trees', 'dead_trees_marsh', 'boulders', 'standing_stones',
              'trees_golden_big', 'trees_golden_small', 'trees_golden_sparse', 'trees_ancient_big', 'trees_ancient_small',
              'trees_oak_big', 'trees_oak_sparse', 'trees_birch_big', 'trees_birch_sparse', 'trees_spruce_big', 'trees_spruce_sparse',
              'fallen_oak_logs', 'fallen_oak_logs_few', 'fallen_birch_logs', 'fallen_birch_logs_few', 'fallen_spruce_logs', 'fallen_spruce_logs_few',
@@ -215,7 +223,7 @@ def biomes():
           veg=('trees_birch_sparse', 'trees_oak_sparse', 'bushes_birch_few', 'bushes_oak_few', 'fallen_birch_logs_few', 'minecraft:flower_default', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
           spawns={'creature': [('minecraft:horse', 10, 2, 6), ('minecraft:cow', 8, 4, 4), ('minecraft:sheep', 6, 4, 4), ('stag', 2, 1, 2)], 'ambient': BATS, 'monster': ORCS + [('warg', 20, 2, 4)]})
     biome('plaines_cendre', 'Plaines de Cendre', 0.9, 0.1, '#55200e', '#30140c', water='#4a4a44', wfog='#1c1c18', grass='#96938E', foliage='#7d7a6a',
-          veg=('ashroot_patch', 'smoke_vents'), precip=False, particle=('minecraft:ash', 0.06), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
+          veg=('ash_rocks_big', 'ash_rocks', 'ash_rocks_small', 'ashroot_patch', 'smoke_vents'), precip=False, particle=('minecraft:ash', 0.06), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
           spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 60, 3, 5), ('war_orc', 35, 2, 3), ('warg', 25, 2, 4), ('cave_troll', 10, 1, 1), ('troll_chief', 3, 1, 1), ('shadow_rider', 5, 1, 2), ('shadow_chief', 1, 1, 1), ('goblin', 20, 3, 5)]})
     biome('grande_foret', 'Grande Forêt', 0.6, 0.9, '#6f9ed8', '#7f9a78', water='#3d6a55', wfog='#0c1f16', grass='#3f7a2e', foliage='#2f6a25',
           veg=('trees_oak_big', 'trees_birch_big', 'trees_spruce_big', 'fallen_oak_logs', 'fallen_spruce_logs', 'fallen_birch_logs_few', 'bushes_oak', 'bushes_spruce', 'moonbell_patch', 'minecraft:patch_grass_forest', 'minecraft:patch_large_fern',
@@ -233,7 +241,7 @@ def biomes():
           veg=('trees_oak_sparse', 'trees_birch_sparse', 'fallen_oak_logs_few', 'bushes_oak', 'bushes_birch', 'minecraft:flower_plains', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
           spawns={'creature': FARM + [('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS, 'monster': ORCS})
     biome('monts_de_cendre', 'Monts de Cendre', 1.0, 0.0, '#4a1a0c', '#28100a', water='#4a3a36', wfog='#1c100c', grass='#57503f', foliage='#57503f',
-          veg=('smoke_vents_dense',), precip=False, particle=('minecraft:ash', 0.06), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
+          veg=('ash_rocks_big', 'ash_rocks', 'ash_rocks_small', 'smoke_vents_dense'), precip=False, particle=('minecraft:ash', 0.06), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
           spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 40, 2, 4), ('war_orc', 25, 2, 3), ('warg', 20, 2, 3), ('cave_troll', 14, 1, 1), ('troll_chief', 3, 1, 1), ('stone_troll', 10, 1, 1), ('goblin', 40, 3, 6), ('goblin_king', 2, 1, 1), ('shadow_rider', 4, 1, 2), ('shadow_chief', 1, 1, 1)]})
     biome('rivieres_de_lave', 'Rivières de Lave', 2.0, 0.0, '#4a1a0c', '#28100a', water='#4a3a36', wfog='#1c100c', veg=('smoke_vents',), precip=False,
           particle=('minecraft:ash', 0.05), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
