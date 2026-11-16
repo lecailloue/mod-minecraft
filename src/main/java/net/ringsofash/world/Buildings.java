@@ -1072,6 +1072,9 @@ public final class Buildings {
         p[TirithPlan.YB] = Reg.LIMESTONE_BRICKS.get().defaultBlockState();
         p[TirithPlan.KEEL] = Reg.KEEL_STONE.get().defaultBlockState();
         p[TirithPlan.LEAF] = Blocks.OAK_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+        p[TirithPlan.WTLOG] = log(Reg.WHITE_TREE_LOG.get(), Direction.Axis.Y);
+        p[TirithPlan.WTLEAF] = Reg.WHITE_TREE_LEAVES.get().defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+        p[TirithPlan.WTBLOOM] = Reg.WHITE_TREE_BLOOM.get().defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
         p[TirithPlan.FLOWER1] = Blocks.WHITE_TULIP.defaultBlockState();
         p[TirithPlan.FLOWER2] = Blocks.LILY_OF_THE_VALLEY.defaultBlockState();
         p[TirithPlan.GRASS_S] = Blocks.SHORT_GRASS.defaultBlockState();

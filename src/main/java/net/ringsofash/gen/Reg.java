@@ -99,6 +99,9 @@ public final class Reg {
     public static final DeferredBlock<Block> ANCIENT_PLANKS_SLAB = BLOCKS.register("ancient_planks_slab", () -> new SlabBlock(copy(ANCIENT_PLANKS.get())));
     public static final DeferredBlock<Block> ANCIENT_PLANKS_FENCE = BLOCKS.register("ancient_planks_fence", () -> new FenceBlock(copy(ANCIENT_PLANKS.get())));
     public static final DeferredBlock<Block> ANCIENT_LEAVES = BLOCKS.register("ancient_leaves", () -> new LeavesBlock(copy(Blocks.OAK_LEAVES)));
+    public static final DeferredBlock<Block> WHITE_TREE_LOG = BLOCKS.register("white_tree_log", () -> new RotatedPillarBlock(copy(Blocks.BIRCH_LOG)));
+    public static final DeferredBlock<Block> WHITE_TREE_LEAVES = BLOCKS.register("white_tree_leaves", () -> new LeavesBlock(copy(Blocks.OAK_LEAVES)));
+    public static final DeferredBlock<Block> WHITE_TREE_BLOOM = BLOCKS.register("white_tree_bloom", () -> new LeavesBlock(copy(Blocks.OAK_LEAVES)));
     public static final DeferredBlock<Block> THATCH = BLOCKS.register("thatch", () -> new Block(copy(Blocks.HAY_BLOCK)));
     public static final DeferredBlock<Block> THATCH_STAIRS = BLOCKS.register("thatch_stairs", () -> new StairBlock(THATCH.get().defaultBlockState(), copy(THATCH.get())));
     public static final DeferredBlock<Block> THATCH_SLAB = BLOCKS.register("thatch_slab", () -> new SlabBlock(copy(THATCH.get())));
@@ -200,6 +203,9 @@ public final class Reg {
     public static final DeferredItem<BlockItem> BI_ANCIENT_PLANKS_SLAB = ITEMS.registerSimpleBlockItem("ancient_planks_slab", ANCIENT_PLANKS_SLAB);
     public static final DeferredItem<BlockItem> BI_ANCIENT_PLANKS_FENCE = ITEMS.registerSimpleBlockItem("ancient_planks_fence", ANCIENT_PLANKS_FENCE);
     public static final DeferredItem<BlockItem> BI_ANCIENT_LEAVES = ITEMS.registerSimpleBlockItem("ancient_leaves", ANCIENT_LEAVES);
+    public static final DeferredItem<BlockItem> BI_WHITE_TREE_LOG = ITEMS.registerSimpleBlockItem("white_tree_log", WHITE_TREE_LOG);
+    public static final DeferredItem<BlockItem> BI_WHITE_TREE_LEAVES = ITEMS.registerSimpleBlockItem("white_tree_leaves", WHITE_TREE_LEAVES);
+    public static final DeferredItem<BlockItem> BI_WHITE_TREE_BLOOM = ITEMS.registerSimpleBlockItem("white_tree_bloom", WHITE_TREE_BLOOM);
     public static final DeferredItem<BlockItem> BI_THATCH = ITEMS.registerSimpleBlockItem("thatch", THATCH);
     public static final DeferredItem<BlockItem> BI_THATCH_STAIRS = ITEMS.registerSimpleBlockItem("thatch_stairs", THATCH_STAIRS);
     public static final DeferredItem<BlockItem> BI_THATCH_SLAB = ITEMS.registerSimpleBlockItem("thatch_slab", THATCH_SLAB);

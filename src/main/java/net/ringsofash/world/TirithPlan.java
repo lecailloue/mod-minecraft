@@ -20,7 +20,7 @@ public final class TirithPlan {
             GLASS = 50, BARS = 51, DPLANKS = 52, DLOG_Y = 53, LANTERN = 54, CHAIN = 55, FENCE_B = 56, WATER = 57, BIRCH_Y = 58, BIRCH_FENCE = 59,
             SLATE = 60, SLATE_STAIR = 64, SLATE_SLAB = 72, SLATE_SLAB_TOP = 73, COPPER = 74, COPPER_STAIR = 80, COPPER_SLAB = 88, COPPER_SLAB_TOP = 89,
             LEAF = 90, FLOWER1 = 91, FLOWER2 = 92, GRASS_S = 93, DWALL = 94, BANNER_G = 95, WOOL_W = 96, WOOL_G = 97, TORCH_B = 98, LAMPBLOCK = 99, SLAB_STONE = 100,
-            QUARTZ_SLAB = 101, QUARTZ_SLAB_TOP = 102, GOLD = 103, DOOR_PL = 104, HLANTERN = 105, KEEL = 111, YB = 44;
+            QUARTZ_SLAB = 101, QUARTZ_SLAB_TOP = 102, GOLD = 103, DOOR_PL = 104, HLANTERN = 105, KEEL = 111, YB = 44, WTLOG = 106, WTLEAF = 107, WTBLOOM = 108;
     public static final int N = 0, E = 1, S = 2, W_ = 3;
 
     private final byte[] g = new byte[W * H * D];
@@ -614,13 +614,13 @@ public final class TirithPlan {
         }
         int[][] br = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
         // tronc droit et epais (2 x 2), couronne dense et verte
-        for (int y = 1; y <= 11; y++) for (int dx = 0; dx <= 1; dx++) for (int dz = 0; dz <= 1; dz++) set(tx + dx, y0 + y, tz + dz, BIRCH_Y);
-        for (int dx = -1; dx <= 2; dx++) for (int dz = -1; dz <= 2; dz++) if ((dx == -1 || dx == 2) != (dz == -1 || dz == 2)) set(tx + dx, y0 + 1, tz + dz, BIRCH_Y);
+        for (int y = 1; y <= 11; y++) for (int dx = 0; dx <= 1; dx++) for (int dz = 0; dz <= 1; dz++) set(tx + dx, y0 + y, tz + dz, WTLOG);
+        for (int dx = -1; dx <= 2; dx++) for (int dz = -1; dz <= 2; dz++) if ((dx == -1 || dx == 2) != (dz == -1 || dz == 2)) set(tx + dx, y0 + 1, tz + dz, WTLOG);
         for (int dx = -9; dx <= 10; dx++) for (int dz = -9; dz <= 10; dz++) for (int dy = 7; dy <= 22; dy++) {
             double ex = dx - 0.5, ez = dz - 0.5;
             double e = Math.pow(ex / 9.2, 2) + Math.pow(ez / 9.2, 2) + Math.pow((dy - 14.5) / 7.5, 2);
             e += 0.12 * vn(tx + dx / 3.0, tz + dz / 3.0 + dy * 0.7, 21);
-            if (e < 1) setIfAir(tx + dx, y0 + dy, tz + dz, LEAF);
+            if (e < 1) setIfAir(tx + dx, y0 + dy, tz + dz, vn(tx + dx / 2.5, tz + dz / 2.5 + dy * 0.5, 22) > 0.1 ? WTBLOOM : WTLEAF);
         }
         // fontaine : bassin carre, pilier central
         int fx = cx, fz = cz + 6;

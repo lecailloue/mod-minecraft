@@ -232,6 +232,24 @@ def blocks():
     btex('ancient_leaves', leaves('#2f5c2b', 54, holes=0.12))
     block('ancient_leaves', 'Feuilles de vénérable', 'leaves')
 
+    # --- l'Arbre Blanc (Minas Tirith) : ecorce argentee, feuillage dense parseme de fleurs blanches
+    import random as _rnd
+    def _bloom(seed, density):
+        im = leaves('#3c7a33', seed, holes=0.03)
+        r = _rnd.Random(seed * 7)
+        for y in range(16):
+            for x in range(16):
+                if r.random() < density:
+                    t = r.choice([(255, 255, 255), (244, 246, 250), (226, 232, 240)])
+                    im.putpixel((x, y), t + (255,))
+        return im
+    btex('white_tree_log', log_side('#a9a79c', 71)); btex('white_tree_log_top', log_top('#a9a79c', '#e8e2c8', 72))
+    block('white_tree_log', "Bûche de l'Arbre Blanc", 'pillar', copy='BIRCH_LOG', tool='axe', tags=['logs', 'logs_that_burn'], itags=['logs', 'logs_that_burn'])
+    btex('white_tree_leaves', _bloom(73, 0.10))
+    block('white_tree_leaves', "Feuilles de l'Arbre Blanc", 'leaves')
+    btex('white_tree_bloom', _bloom(74, 0.34))
+    block('white_tree_bloom', "Fleurs de l'Arbre Blanc", 'leaves')
+
     # --- chaume
     th = log_side('#c8a64c', 61).rotate(90)
     btex('thatch', th)
