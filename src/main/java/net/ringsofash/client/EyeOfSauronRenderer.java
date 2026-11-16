@@ -170,6 +170,10 @@ public class EyeOfSauronRenderer implements BlockEntityRenderer<EyeOfSauronBlock
     @Override
     public int getViewDistance() { return 1024; }
 
+    /** l'oeil depasse largement le cube du bloc : sans cela il disparaitrait des que le bloc sort du champ de vision */
+    @Override
+    public net.minecraft.world.phys.AABB getRenderBoundingBox(EyeOfSauronBlockEntity be) { return new net.minecraft.world.phys.AABB(be.getBlockPos()).inflate(14.0); }
+
     @Override
     public void render(EyeOfSauronBlockEntity be, float partial, PoseStack ps, MultiBufferSource buf, int light, int overlay) {
         Minecraft mc = Minecraft.getInstance();

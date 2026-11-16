@@ -3,13 +3,8 @@ package net.ringsofash.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 
 /** Ne porte aucune donnee : existe pour que le client dessine l'oeil des que le chunk est charge. */
 public class EyeOfSauronBlockEntity extends BlockEntity {
     public EyeOfSauronBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.EYE_OF_SAURON.get(), pos, state); }
-
-    /** l'oeil depasse largement le cube du bloc : sans cela il disparaitrait des que le bloc sort du champ de vision */
-    @Override
-    public AABB getRenderBoundingBox() { return new AABB(worldPosition).inflate(14.0); }
 }
