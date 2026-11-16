@@ -1019,7 +1019,7 @@ public final class Buildings {
                 rampG = new int[16][17];
                 for (int i = 0; i < 16; i++) for (int dv = -8; dv <= 8; dv++) {
                     int uu = gu + gsgn * (11 + i), vv = gv + dv, xx = p.gateAlongX ? vv : uu, zz = p.gateAlongX ? uu : vv;
-                    rampG[i][dv + 8] = Math.min(b.groundY(xx, zz), maxY);
+                    rampG[i][dv + 8] = b.in(xx, 0, zz) ? Math.min(b.groundY(xx, zz), maxY) : Integer.MIN_VALUE;
                 }
             }
         }
@@ -1055,18 +1055,15 @@ public final class Buildings {
             }
         }
         if (rampG != null) {
-            int iEnd = -1;
-            for (int i = 0; i < 16; i++) { if (-((i + 1) / 2) > rampG[i][8]) iEnd = i; else break; }
             BlockState grass = Blocks.GRASS_BLOCK.defaultBlockState(), path = pal[OrthancPlan.PATH & 255];
             for (int i = 0; i < 16; i++) for (int dv = -8; dv <= 8; dv++) {
                 int uu = gu + gsgn * (11 + i), vv = gv + dv, xx = p.gateAlongX ? vv : uu, zz = p.gateAlongX ? uu : vv;
                 if (xx < 0 || zz < 0 || xx >= EdorasPlan.W || zz >= EdorasPlan.D || p.get(xx, 0, zz) != OrthancPlan.AIR) continue;
                 int g = rampG[i][dv + 8], ad = Math.abs(dv);
+                if (g == Integer.MIN_VALUE) continue;
                 int sc = -((i + 1) / 2) - Math.max(0, ad - 3);                        // hauteur voulue de la surface
-                boolean onPath = ad <= 3 && i <= iEnd;
                 int top = Math.max(g, sc);
-                if (!onPath && i > iEnd + 3 && sc <= g && ad > 3) { for (int y = g + 1; y <= 4; y++) if (!b.get(xx, y, zz).isAir()) b.s(xx, y, zz, Build.AIR); continue; }
-                if (sc > g) { for (int y = g + 1; y < sc; y++) b.s(xx, y, zz, dirt); b.s(xx, sc, zz, onPath ? path : grass); }
+                if (sc > g) { for (int y = g + 1; y < sc; y++) b.s(xx, y, zz, dirt); b.s(xx, sc, zz, ad <= 3 ? path : grass); }
                 for (int y = top + 1; y <= top + 4; y++) b.s(xx, y, zz, Build.AIR);
             }
         }
