@@ -300,6 +300,12 @@ public final class ClientTest {
     }
 
     private static void scenes() {
+        // l'Oeil de Sauron en premier : la serie de captures est longue et peut etre coupee par le delai du CI
+        eyeT("95_oeil_sud", 1712, 1742, 0, 0, 40, 180F, 0F, 6000);
+        eyeT("96_oeil_est", 1712, 1742, 40, 0, 0, 90F, 0F, 6000);
+        eyeT("97_oeil_loin", 1712, 1742, 0, -35, 150, 180F, 14F, 6000);
+        eyeT("98_oeil_nuit", 1712, 1742, 0, 0, 60, 180F, 0F, 18000);
+        eyeT("99_oeil_haut", 1712, 1742, 20, 25, 30, 150F, 35F, 6000);
         SCENES.add(new Scene("00_scene", 120, p -> {
             MinecraftServer s = p.server;
             ServerLevel ow = s.overworld();
@@ -935,11 +941,6 @@ public final class ClientTest {
         spotT("87_barad_douve", BX + 85, BZ + 85, 25, 135F, 18F, 6000);
         spotT("88_barad_aerien", BX + 140, BZ + 140, 130, 135F, 20F, 6000);
         spotT("89_barad_mi_hauteur", BX + 70, BZ, 120, 90F, -10F, 6000);
-        eyeT("95_oeil_sud", BX, BZ, 0, 0, 40, 180F, 0F, 6000);
-        eyeT("96_oeil_est", BX, BZ, 40, 0, 0, 90F, 0F, 6000);
-        eyeT("97_oeil_loin", BX, BZ, 0, -35, 150, 180F, 14F, 6000);
-        eyeT("98_oeil_nuit", BX, BZ, 0, 0, 60, 180F, 0F, 18000);
-        eyeT("99_oeil_haut", BX, BZ, 20, 25, 30, 150F, 35F, 6000);
         spotT("90_barad_nuit_loin", BX, BZ + 235, 110, 180F, -20F, 18000);
         for (int[] it : new int[][]{{91, -30, 0, -90, -3, 0}, {92, -6, -7, -62, 5, 200}}) {
             final int[] c = it;
