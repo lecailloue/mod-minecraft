@@ -297,6 +297,9 @@ def structures():
     # Barad-dur : une seule instance, sur la plaine de cendre (places.json)
     settlement('barad_dur', ['plaines_cendre', 'monts_de_cendre', 'plaines_jaunes', 'plaines_vertes', 'rivieres_de_lave'], 1, 0, 5113, [])
     LANG['structure.ringsofash.barad_dur'] = 'Barad-dûr'
+    # Edoras : une seule instance, sur une plaine seche (places.json)
+    settlement('edoras', ['plaines_jaunes', 'plaines_vertes', 'bosquets', 'foret_clairsemee'], 1, 0, 5114, [])
+    LANG['structure.ringsofash.edoras'] = 'Edoras'
     tag('worldgen/structure', 'volcanoes', R('volcano'), R('mont_funeste'), ns=MOD)
     tag('worldgen/structure', 'doom', R('mont_funeste'), ns=MOD)
     LANG['structure.ringsofash.volcano'] = 'Volcan'

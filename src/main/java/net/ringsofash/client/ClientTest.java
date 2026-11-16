@@ -812,6 +812,40 @@ public final class ClientTest {
         spot("93_cendre_rocailles", 2125, 1725, 8, 60F, 6F);
         spot("94_cendre_rocailles_haut", 2165, 1745, 45, 90F, 28F);
         spotT("95_cendre_rocailles_nuit", 2195, 1765, 9, 150F, 6F, 18000);
+        // Edoras (centre 352, 1180, perron du palais au sud, route en lacets depuis le sud-ouest)
+        final int EX = 352, EZ = 1180;
+        for (Object[] it : new Object[][]{{"100_edoras_loin_sud_ouest", -140, 150, 70, -139F, -12F, 6000}, {"101_edoras_loin_sud", 0, 200, 60, 180F, -10F, 6000},
+                {"102_edoras_porte", -150, 40, 8, -90F, 4F, 6000}, {"103_edoras_loin_est", 190, 20, 55, 90F, -10F, 6000}, {"104_edoras_nuit", 0, 200, 60, 180F, -10F, 18000}}) {
+            final Object[] c = it;
+            SCENES.add(new Scene((String) c[0], 420, p -> {
+                ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+                int sx = EX + (Integer) c[1], sz = EZ + (Integer) c[2];
+                for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((EX >> 4) + dx, (EZ >> 4) + dz);
+                int y = lands.getHeight(Heightmap.Types.MOTION_BLOCKING, sx, sz);
+                lands.setDayTime((Integer) c[6]);
+                view(p, lands, sx + 0.5, y + (Integer) c[3], sz + 0.5, (Float) c[4], (Float) c[5]);
+            }));
+        }
+        // palais d'Or, tour de cloche, village, interieur : positions tirees du plan
+        for (int k = 0; k < 5; k++) {
+            final int kk = k;
+            SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle"}[k], 420, p -> {
+                ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+                for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((EX >> 4) + dx, (EZ >> 4) + dz);
+                net.ringsofash.world.EdorasPlan ep = net.ringsofash.world.EdorasPlan.get();
+                int by = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, EX - 125, EZ + 60);
+                int hx = EX + ep.hallX - net.ringsofash.world.EdorasPlan.CX, hz = EZ + ep.hallZ - net.ringsofash.world.EdorasPlan.CZ;
+                int tx = EX + ep.towerX - net.ringsofash.world.EdorasPlan.CX, tz = EZ + ep.towerZ - net.ringsofash.world.EdorasPlan.CZ;
+                lands.setDayTime(6000);
+                switch (kk) {
+                    case 0 -> view(p, lands, hx + 0.5, by + 34, hz + 40.5, 180F, 4F);
+                    case 1 -> view(p, lands, hx + 40.5, by + 36, hz - 4.5, 90F, 8F);
+                    case 2 -> view(p, lands, tx - 14.5, by + 36, tz + 24.5, 150F, 10F);
+                    case 3 -> view(p, lands, EX - 20.5, by + 60, EZ + 70.5, 160F, 20F);
+                    default -> view(p, lands, hx + 0.5, by + 34, hz + 4.5, 180F, 3F);
+                }
+            }));
+        }
         // Barad-dur (centre 1712, 1742, porte et pont a l'ouest) : vues lointaines, sommet, pont, douve, interieur
         final int BX = 1712, BZ = 1742;
         spotT("80_barad_loin_sud", BX, BZ + 235, 110, 180F, -20F, 6000);

@@ -140,7 +140,7 @@ public final class SelfTest {
             for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) lands.getChunk((px >> 4) + dx, (pz >> 4) + dz);
             for (int x = px - 24; x <= px + 24; x += 6) {
                 for (int z = pz - 24; z <= pz + 24; z += 6) {
-                    if (e.getKey().equals("barad_dur")) continue;                // site nivele et creuse (douve) expres
+                    if (e.getKey().equals("barad_dur") || e.getKey().equals("edoras")) continue;                // site nivele et creuse (douve) expres
                     n++;
                     BlockPos at = new BlockPos(x, MapData.height(x, z), z);
                     var st = lands.getBlockState(at);
@@ -197,6 +197,23 @@ public final class SelfTest {
             if (!lava.is(net.minecraft.world.level.block.Blocks.LAVA)) fail("barad_dur : pas de lave dans la douve (" + lava + ")");
             if (deck.isAir()) fail("barad_dur : pas de plateforme au sommet de la tour");
             if (prong.isAir()) fail("barad_dur : pas de pointe a la couronne");
+        }
+        int[] ed = spots.get("edoras");
+        if (ed != null) {                                                    // Edoras : colline, palais d'Or, tour de cloche
+            for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((ed[0] >> 4) + dx, (ed[1] >> 4) + dz);
+            topDown(lands, ed[0] - 130, ed[1] - 110, ed[0] + 129, ed[1] + 109, new File(OUT, "edoras_dessus.png"), 3);
+                        EdorasPlan ep = EdorasPlan.get();
+            int by = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, ed[0] - 125, ed[1] + 60);
+            section(lands, ed[0] - 130, ed[0] + 130, ed[1], by - 10, by + 90, new File(OUT, "edoras_coupe.png"), 3);
+            int plat = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, ed[0] - 10, ed[1] + 10);
+            int hall = lands.getHeight(Heightmap.Types.WORLD_SURFACE, ed[0] + ep.hallX - EdorasPlan.CX, ed[1] + ep.hallZ - 11 - EdorasPlan.CZ);
+            int tow = lands.getHeight(Heightmap.Types.WORLD_SURFACE, ed[0] + ep.towerX - EdorasPlan.CX, ed[1] + ep.towerZ - EdorasPlan.CZ);
+            log("edoras : sol " + by + " ; plateau " + plat + " ; palais " + hall + " ; tour " + tow + " ; maisons " + ep.houses);
+            if (plat - by < 24) fail("edoras : la colline est trop basse (" + (plat - by) + ")");
+            if (hall - plat < 16) fail("edoras : pas de palais au sommet (" + (hall - plat) + ")");
+            if (tow - plat < 18) fail("edoras : pas de tour de cloche (" + (tow - plat) + ")");
+            if (ep.houses < 8 || ep.lowHouses < 6) fail("edoras : trop peu de maisons (" + ep.houses + " dont " + ep.lowHouses + " en bas)");
+            if (ep.wallCells < 300) fail("edoras : muraille trop courte (" + ep.wallCells + ")");
         }
         {                                                                    // rochers de cendre : on compte les blocs de roche de cendre / calcinee en surface d'une plaine de cendre
             int rx = 2165, rz = 1745, rocks = 0;

@@ -59,6 +59,7 @@ public final class Buildings {
             case MORGUL -> morgul(b);
             case ORTHANC -> orthanc(b);
             case BARADDUR -> baradDur(b);
+            case EDORAS -> edoras(b);
         }
     }
 
@@ -899,5 +900,59 @@ public final class Buildings {
         }
         Direction[] dirs = {N, E, S, W};
         for (int[] c : p.chests) b.chest(c[0], c[1], c[2], dirs[c[3]], "dark_tower");
+    }
+
+    // ================================================================= EDORAS
+    private static BlockState[] edorasPal;
+
+    private static synchronized BlockState[] edorasPal() {
+        if (edorasPal != null) return edorasPal;
+        BlockState[] p = orthancPal().clone();
+        p[EdorasPlan.STONE] = Blocks.STONE.defaultBlockState();
+        p[EdorasPlan.DIRT] = Blocks.DIRT.defaultBlockState();
+        p[EdorasPlan.GRASS] = Blocks.GRASS_BLOCK.defaultBlockState();
+        p[EdorasPlan.COARSE] = Blocks.COARSE_DIRT.defaultBlockState();
+        p[EdorasPlan.GRANITE] = Blocks.GRANITE.defaultBlockState();
+        p[EdorasPlan.HAY] = Blocks.HAY_BLOCK.defaultBlockState();
+        p[EdorasPlan.MOSAIC] = Blocks.BAMBOO_MOSAIC.defaultBlockState();
+        p[EdorasPlan.GLASSPANE] = Blocks.GLASS_PANE.defaultBlockState();
+        p[EdorasPlan.DFENCE] = Blocks.DARK_OAK_FENCE.defaultBlockState();
+        p[EdorasPlan.BELL] = Blocks.BELL.defaultBlockState();
+        p[EdorasPlan.LAMP] = Blocks.LANTERN.defaultBlockState();
+        p[EdorasPlan.SLAB_MO] = slab(Blocks.BAMBOO_MOSAIC_SLAB, false);
+        p[EdorasPlan.SLAB_MO_TOP] = slab(Blocks.BAMBOO_MOSAIC_SLAB, true);
+        p[EdorasPlan.SLAB_DP] = slab(Blocks.DARK_OAK_SLAB, false);
+        p[EdorasPlan.SLAB_DP_TOP] = slab(Blocks.DARK_OAK_SLAB, true);
+        p[EdorasPlan.WALL_COBBLE] = Blocks.COBBLESTONE_WALL.defaultBlockState();
+        p[EdorasPlan.DSTRIP_Y] = log(Blocks.STRIPPED_DARK_OAK_LOG, Direction.Axis.Y);
+        p[EdorasPlan.DSTRIP_X] = log(Blocks.STRIPPED_DARK_OAK_LOG, Direction.Axis.X);
+        p[EdorasPlan.DSTRIP_Z] = log(Blocks.STRIPPED_DARK_OAK_LOG, Direction.Axis.Z);
+        stairSet(p, EdorasPlan.STAIR_MO, Blocks.BAMBOO_MOSAIC_STAIRS);
+        edorasPal = p;
+        return p;
+    }
+
+    /** Edoras : colline rocheuse, route en lacets, palais d'Or sur sa terrasse, tour de cloche et maisons au toit de chaume ; la forme vient de EdorasPlan. */
+    private static void edoras(Build b) {
+        EdorasPlan p = EdorasPlan.get();
+        BlockState[] pal = edorasPal();
+        BlockState foot = Blocks.STONE.defaultBlockState();
+        int maxY = EdorasPlan.H - EdorasPlan.OFF - 1;
+        for (int x = 0; x < EdorasPlan.W; x++) {
+            for (int z = 0; z < EdorasPlan.D; z++) {
+                int top = p.top(x, z);
+                if (top < 0 || !b.in(x, 0, z)) continue;
+                int ground = Math.min(b.groundY(x, z), maxY);
+                if (p.get(x, 0, z) != OrthancPlan.AIR) b.foundation(x, z, x, z, foot, 24);            // la colline repose sur le sol ferme
+                for (int y = ground; y > top; y--) {                                                     // on rase ce qui depasse du terrain naturel
+                    if (y > ground || b.get(x, y, z).isAir()) continue;
+                    if (p.get(x, y, z) == OrthancPlan.AIR) b.s(x, y, z, Build.AIR);
+                }
+                for (int y = 0; y <= top; y++) {
+                    byte id = p.get(x, y, z);
+                    if (id != OrthancPlan.AIR) b.s(x, y, z, pal[id & 255]);
+                }
+            }
+        }
     }
 }
