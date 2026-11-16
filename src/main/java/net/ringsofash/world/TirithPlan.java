@@ -106,16 +106,14 @@ public final class TirithPlan {
     /** demi-largeur de l'eperon : large au plateau, puis une lame etroite qui fend la cite jusqu'au premier mur */
     private static double prowHW(double dz) {
         if (dz <= 26) return 21;
-        if (dz <= 52) return 21 - 14 * smooth((dz - 26) / 26.0);
-        return 7 - 2.5 * (dz - 52) / (PROW_TIP - 52);
+        return Math.max(0, 21 * (1 - (dz - 26) / (PROW_TIP - 26 + 4.0)));      // triangle : la proue s'effile en pointe
     }
 
     private static boolean inProw(int x, int z) {
         double dz = z + 0.5 - CZ;
         if (dz < -14 || dz > PROW_TIP + 1) return false;
         double hw = prowHW(dz);
-        if (dz > PROW_TIP - 9) hw *= Math.sqrt(Math.max(0, 1 - Math.pow((dz - (PROW_TIP - 9)) / 10.0, 2)));
-        hw += 1.6 * vn(z / 8.0, 3.3, 5);
+        hw += 1.2 * vn(z / 8.0, 3.3, 5) * Math.min(1, hw / 10);
         return Math.abs(x + 0.5 - CX) <= hw;
     }
 
