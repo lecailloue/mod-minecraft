@@ -13,7 +13,7 @@ public final class TirithPlan {
     public static final int W = 320, D = 270, OFF = 8, TOP = 280, H = OFF + TOP + 1, CX = 160, CZ = 130;
     public static final double[] R = {125, 107, 89, 71, 53, 35, 17};              // rayon exterieur de chaque niveau (largeur 18)
     public static final int[] FL = {18, 36, 54, 72, 90, 108, 126};                // niveau debout de chaque terrasse
-    public static final int PROW_TOP = 126, PROW_TIP = 100;                         // sommet de l'eperon, longueur de l'eperon vers le sud
+    public static final int PROW_TOP = 126, PROW_TIP = 104;                         // sommet de l'eperon, longueur de l'eperon vers le sud
 
     public static final int AIR = 0, STONE = 1, ANDESITE = 2, TUFF = 3, CALCITE = 4, DIORITE = 5, GRASS = 6, DIRT = 7, SNOW = 8, COBBLE = 9, GRAVEL = 10,
             WB = 20, WB_STAIR = 24, WB_SLAB = 32, WB_SLAB_TOP = 33, WB_WALL = 34, QB = 35, SQ = 36, PD = 37, SBR = 38, QPILLAR_Y = 40, CHISEL = 41, PAVE = 42, PAVE2 = 43,
@@ -100,13 +100,20 @@ public final class TirithPlan {
     private static int prowTop(int z) {
         double dz = z + 0.5 - CZ;
         if (dz <= 26) return PROW_TOP - 1;
-        return (int) Math.max(FL[1] + 3, PROW_TOP - 1 - (dz - 26) * 1.15);
+        return (int) (PROW_TOP - 1 - (dz - 26) * 0.45);
+    }
+
+    /** demi-largeur de l'eperon : large au plateau, puis une lame etroite qui fend la cite jusqu'au premier mur */
+    private static double prowHW(double dz) {
+        if (dz <= 26) return 21;
+        if (dz <= 52) return 21 - 14 * smooth((dz - 26) / 26.0);
+        return 7 - 2.5 * (dz - 52) / (PROW_TIP - 52);
     }
 
     private static boolean inProw(int x, int z) {
         double dz = z + 0.5 - CZ;
         if (dz < -14 || dz > PROW_TIP + 1) return false;
-        double hw = dz < 0 ? 21 : 21 - 13 * dz / PROW_TIP;
+        double hw = prowHW(dz);
         if (dz > PROW_TIP - 9) hw *= Math.sqrt(Math.max(0, 1 - Math.pow((dz - (PROW_TIP - 9)) / 10.0, 2)));
         hw += 1.6 * vn(z / 8.0, 3.3, 5);
         return Math.abs(x + 0.5 - CX) <= hw;
@@ -142,7 +149,7 @@ public final class TirithPlan {
         }
         // rampe du flanc de l'eperon (niveau 5 -> 6), au bord est de l'eperon
         for (int z = CZ + 7; z <= CZ + 25; z++) {
-            double dz = z + 0.5 - CZ, hw = 21 - 13 * dz / PROW_TIP;
+            double dz = z + 0.5 - CZ, hw = prowHW(dz);
             for (int x = CX + (int) hw; x <= CX + (int) hw + 4; x++) {
                 int i = z * W + x;
                 if (kind[i] == 3) continue;
