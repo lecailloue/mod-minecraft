@@ -187,8 +187,8 @@ public final class SelfTest {
             topDown(lands, bd[0] - 75, bd[1] - 75, bd[0] + 74, bd[1] + 74, new File(OUT, "barad_dessus.png"), 3);
             int by = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, bd[0] - 70, bd[1]);
             section(lands, bd[0] - 80, bd[0] + 80, bd[1], by - 20, by + 262, new File(OUT, "barad_coupe.png"), 2);
-            var gate = lands.getBlockState(new BlockPos(bd[0] - 30, by + 3, bd[1]));
-            var lava = lands.getBlockState(new BlockPos(bd[0], by - 9, bd[1] - 46));
+            var gate = lands.getBlockState(new BlockPos(bd[0] - 24, by + 3, bd[1]));
+            var lava = lands.getBlockState(new BlockPos(bd[0], by - 9, bd[1] - 40));
             var deck = lands.getBlockState(new BlockPos(bd[0] + 8, by + 224, bd[1] + 8));
             var prong = lands.getBlockState(new BlockPos(bd[0] + 11, by + 227, bd[1] + 11));
             log("barad_dur : sol " + by + " ; porte " + gate + " ; douve " + lava + " ; plateforme " + deck + " ; pointe " + prong);
