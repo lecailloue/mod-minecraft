@@ -58,6 +58,7 @@ public final class Buildings {
             case RUIN -> ruin(b, aux);
             case MORGUL -> morgul(b);
             case ORTHANC -> orthanc(b);
+            case BARADDUR -> baradDur(b);
         }
     }
 
@@ -833,6 +834,66 @@ public final class Buildings {
                 for (int y = -OrthancPlan.OFF; y <= top; y++) {
                     byte id = p.get(x, y, z);
                     if (id != OrthancPlan.AIR) b.s(x, y, z, pal[id]);
+                }
+            }
+        }
+        Direction[] dirs = {N, E, S, W};
+        for (int[] c : p.chests) b.chest(c[0], c[1], c[2], dirs[c[3]], "dark_tower");
+    }
+
+    // ================================================================= BARAD-DUR
+    private static BlockState[] baradPal;
+
+    private static synchronized BlockState[] baradPal() {
+        if (baradPal != null) return baradPal;
+        BlockState[] p = orthancPal().clone();
+        p[BaradPlan.LAVA] = Blocks.LAVA.defaultBlockState();
+        p[BaradPlan.SBASALT] = Blocks.SMOOTH_BASALT.defaultBlockState();
+        p[BaradPlan.DTILE] = Blocks.DEEPSLATE_TILES.defaultBlockState();
+        p[BaradPlan.MAGMA] = Blocks.MAGMA_BLOCK.defaultBlockState();
+        stairSet(p, BaradPlan.STAIR_DT, Blocks.DEEPSLATE_TILE_STAIRS);
+        p[BaradPlan.SLAB_DT] = slab(Blocks.DEEPSLATE_TILE_SLAB, false);
+        p[BaradPlan.SLAB_DT_TOP] = slab(Blocks.DEEPSLATE_TILE_SLAB, true);
+        p[BaradPlan.WALL_DT] = Blocks.DEEPSLATE_TILE_WALL.defaultBlockState();
+        baradPal = p;
+        return p;
+    }
+
+    /** Barad-dur : forteresse de 80 x 80, tour de 250 blocs sans l'oeil, douve de lave et pont ; la forme vient de BaradPlan. */
+    private static void baradDur(Build b) {
+        BaradPlan p = BaradPlan.get();
+        BlockState[] pal = baradPal();
+        BlockState filler = Blocks.STONE.defaultBlockState(), foot = Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
+        BlockState[] ash = {Blocks.GRAVEL.defaultBlockState(), Blocks.TUFF.defaultBlockState(), Blocks.COBBLED_DEEPSLATE.defaultBlockState(), Blocks.BASALT.defaultBlockState()};
+        int maxY = BaradPlan.H - BaradPlan.OFF - 1;
+        for (int x = 0; x < BaradPlan.W; x++) {
+            for (int z = 0; z < BaradPlan.D; z++) {
+                if (!BaradPlan.area(x, z) || !b.in(x, 0, z)) continue;
+                int top = p.top(x, z);
+                boolean lv = BaradPlan.level(x, z);
+                int ground = Math.min(b.groundY(x, z), maxY);
+                int f;
+                if (lv) f = p.floor(x, z);
+                else f = (int) Math.round(-1 + (ground + 1) * BaradPlan.band(x, z));
+                if (p.get(x, -1, z) != BaradPlan.AIR) b.foundation(x, z, x, z, foot, 20);
+                int hi = Math.max(ground, f) + 14;
+                for (int y = hi; y > f; y--) {
+                    if (p.get(x, y, z) != BaradPlan.AIR) continue;
+                    if (y > ground && b.get(x, y, z).isAir()) continue;
+                    b.s(x, y, z, Build.AIR);
+                }
+                if (ground < f) for (int y = ground + 1; y < f; y++) if (p.get(x, y, z) == BaradPlan.AIR) b.s(x, y, z, filler);
+                if (p.get(x, f, z) == BaradPlan.AIR) {
+                    if (lv) {
+                        byte cv = p.cover(x, z);
+                        if (cv != BaradPlan.AIR) b.s(x, f, z, pal[cv]);
+                    } else if (ground != f) {
+                        b.s(x, f, z, ash[(x * 7 + z * 13 + (x ^ z)) & 3]);
+                    }
+                }
+                for (int y = -BaradPlan.OFF; y <= top; y++) {
+                    byte id = p.get(x, y, z);
+                    if (id != BaradPlan.AIR) b.s(x, y, z, pal[id]);
                 }
             }
         }

@@ -181,6 +181,22 @@ public final class SelfTest {
             if (plat.isAir()) fail("orthanc : pas de plateforme au sommet de la tour");
             if (horn.isAir()) fail("orthanc : pas de crete au sommet de la tour");
         }
+        int[] bd = spots.get("barad_dur");
+        if (bd != null) {                                                    // Barad-dur : vue de dessus, coupe, porte, douve de lave, couronne
+            for (int dx = -6; dx <= 6; dx++) for (int dz = -6; dz <= 6; dz++) lands.getChunk((bd[0] >> 4) + dx, (bd[1] >> 4) + dz);
+            topDown(lands, bd[0] - 75, bd[1] - 75, bd[0] + 74, bd[1] + 74, new File(OUT, "barad_dessus.png"), 3);
+            int by = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, bd[0] - 70, bd[1]);
+            section(lands, bd[0] - 80, bd[0] + 80, bd[1], by - 20, by + 262, new File(OUT, "barad_coupe.png"), 2);
+            var gate = lands.getBlockState(new BlockPos(bd[0] - 30, by + 1, bd[1]));
+            var lava = lands.getBlockState(new BlockPos(bd[0], by - 9, bd[1] - 46));
+            var deck = lands.getBlockState(new BlockPos(bd[0] + 8, by + 223, bd[1] + 8));
+            var prong = lands.getBlockState(new BlockPos(bd[0] + 11, by + 226, bd[1] + 11));
+            log("barad_dur : sol " + by + " ; porte " + gate + " ; douve " + lava + " ; plateforme " + deck + " ; pointe " + prong);
+            if (!gate.isAir()) fail("barad_dur : le tunnel de la porte est bouche en " + gate);
+            if (!lava.is(net.minecraft.world.level.block.Blocks.LAVA)) fail("barad_dur : pas de lave dans la douve (" + lava + ")");
+            if (deck.isAir()) fail("barad_dur : pas de plateforme au sommet de la tour");
+            if (prong.isAir()) fail("barad_dur : pas de pointe a la couronne");
+        }
         for (int[] pk : new int[][]{cs != null ? cs : new int[]{0, 0}, hi}) {
             for (int dx = -10; dx <= 10; dx++) lands.getChunk((pk[0] >> 4) + dx, pk[1] >> 4);
             section(lands, pk[0] - 160, pk[0] + 160, pk[1], 50, 447, new File(OUT, "sommet_coupe_" + pk[0] + ".png"), 2);
