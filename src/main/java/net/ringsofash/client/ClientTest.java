@@ -316,7 +316,7 @@ public final class ClientTest {
                 ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
                 for (int dx = -11; dx <= 11; dx++) for (int dz = -9; dz <= 15; dz++) lands.getChunk((TX >> 4) + dx, (TZ >> 4) + dz);
                 net.ringsofash.world.TirithPlan tp = net.ringsofash.world.TirithPlan.get();
-                int py = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, TX - 150, TZ + 100);
+                int py = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, TX - 50, TZ + 135);
                 int top = py + net.ringsofash.world.TirithPlan.PROW_TOP;
                 int ox = TX - 160, oz = TZ - 135;                                    // origine du plan : x_plan = x_monde - ox
                 lands.setDayTime((Integer) c[6]);
