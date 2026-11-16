@@ -816,18 +816,18 @@ public final class ClientTest {
         spotT("82_barad_loin_nord", BX, BZ - 235, 110, 0F, -20F, 6000);
         spotT("83_barad_sommet_diag", BX + 55, BZ + 55, 245, 135F, -8F, 6000);
         spotT("84_barad_sommet_sud", BX, BZ + 60, 248, 180F, -6F, 6000);
-        spotT("85_barad_pont", BX - 80, BZ, 12, -90F, -4F, 6000);
-        spotT("86_barad_pont_nuit", BX - 80, BZ, 12, -90F, -4F, 18000);
-        spotT("87_barad_douve", BX + 62, BZ + 62, 25, 135F, 18F, 6000);
-        spotT("88_barad_aerien", BX + 110, BZ + 110, 120, 135F, 20F, 6000);
-        spotT("89_barad_mi_hauteur", BX + 50, BZ, 120, 90F, -10F, 6000);
+        spotT("85_barad_pont", BX - 100, BZ, 12, -90F, -4F, 6000);
+        spotT("86_barad_pont_nuit", BX - 100, BZ, 12, -90F, -4F, 18000);
+        spotT("87_barad_douve", BX + 85, BZ + 85, 25, 135F, 18F, 6000);
+        spotT("88_barad_aerien", BX + 140, BZ + 140, 130, 135F, 20F, 6000);
+        spotT("89_barad_mi_hauteur", BX + 70, BZ, 120, 90F, -10F, 6000);
         spotT("90_barad_nuit_loin", BX, BZ + 235, 110, 180F, -20F, 18000);
-        for (int[] it : new int[][]{{91, -25, 0, -90, -3, 0}, {92, -6, -7, -62, 5, 200}}) {
+        for (int[] it : new int[][]{{91, -30, 0, -90, -3, 0}, {92, -6, -7, -62, 5, 200}}) {
             final int[] c = it;
             SCENES.add(new Scene(c[0] == 91 ? "91_barad_tunnel" : "92_barad_salle_trone", 420, p -> {
                 ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
-                for (int dx = -5; dx <= 5; dx++) for (int dz = -5; dz <= 5; dz++) lands.getChunk((BX >> 4) + dx, (BZ >> 4) + dz);
-                int by = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, BX - 70, BZ);
+                for (int dx = -7; dx <= 7; dx++) for (int dz = -7; dz <= 7; dz++) lands.getChunk((BX >> 4) + dx, (BZ >> 4) + dz);
+                int by = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, BX - 100, BZ);
                 lands.setDayTime(6000);
                 view(p, lands, BX + c[1] + 0.5, by + c[5], BZ + c[2] + 0.5, c[3], c[4]);
             }));

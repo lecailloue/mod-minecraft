@@ -10,17 +10,18 @@ import java.util.Random;
  * Plan de Barad-dur : forteresse de 80 x 80 (tambour cannele, bastions, terrasses, eboulis de roche) d'ou monte une tour noire de 250 blocs
  * sans l'oeil, coiffee d'une couronne de pointes vide ; elle est ceinte d'une douve de lave et ouverte a l'ouest par un pont.
  * Grille de blocs abstraits (palette de {@link OrthancPlan} + quelques ajouts), sans dependance a Minecraft.
- * Repere local : x, z de 0 a 149, axe de la tour en (75, 75), y = 0 : premier niveau d'air au-dessus du sol, y negatif : sous le sol.
+ * Repere local : x, z de 0 a 199, axe de la tour en (100, 100), y = 0 : premier niveau d'air au-dessus du sol, y negatif : sous le sol.
  */
 public final class BaradPlan {
-    public static final int W = 150, D = 150, OFF = 20;
-    public static final int CX = 75, CZ = 75;
+    public static final int W = 200, D = 200, OFF = 20;
+    public static final int CX = 100, CZ = 100;
     public static final int TOP = 222;                                   // y de la dalle du sommet ; surface a TOP + 2, pointes jusqu'a TOP + 27
     public static final int H = OFF + TOP + 34;
-    public static final double R_LEVEL = 22.0, R_BAND = 36.0;            // distance au contour de la forteresse : zone nivelee, puis raccord au terrain naturel
-    public static final double MOAT_W = 12.0;                            // largeur de la douve
+    public static final double R_LEVEL = 26.0, R_BAND = 40.0;            // distance au contour de la forteresse : zone nivelee, puis raccord au terrain naturel
+    public static final double ROCK_W = 6.0, MOAT_W = 12.0;              // largeur du socle de roche autour du mur, largeur de la douve (qui commence au bord du socle)
+    public static final int ROCK_H = 5;                                  // hauteur maximale du rocher
     /** contour irregulier de la forteresse : rayon a chaque angle (eperons et baies), interpole lineairement */
-    private static final double[] RAD = {35, 29, 38, 27, 36, 30, 38, 26, 37, 31, 34, 28};
+    private static final double[] RAD = {50, 41, 54, 38, 51, 42, 54, 36, 53, 44, 48, 40};
     private static final double[] ANG = new double[12];
     static { for (int i = 0; i < 12; i++) ANG[i] = i * Math.PI / 6 + (i % 3 - 1) * 0.07; }
     public static double outline(double th) {
@@ -107,8 +108,9 @@ public final class BaradPlan {
             double v = n1 * 0.7 + n2 * 0.3;
             byte c = v < -0.35 ? COBBLED_DS : v < 0.0 ? BASALT : v < 0.4 ? TUFF : GRAVEL;
             if (h < 0.06) c = BS; else if (h < 0.09) c = ANDESITE;
-            if (m > MOAT_W && m < MOAT_W + 1.5) c = BS;                              // levre de la douve
-            if (m >= 0 && m <= MOAT_W) {
+            if (m > ROCK_W + MOAT_W && m < ROCK_W + MOAT_W + 1.5) c = BS;            // levre de la douve
+            if (m >= 0 && m < ROCK_W) c = BASALT;
+            if (m >= ROCK_W && m <= ROCK_W + MOAT_W) {
                 floor[i] = MOAT_FLOOR;
                 c = BASALT;
                 for (int y = MOAT_FLOOR + 1; y <= LAVA_TOP; y++) set(x, y, z, LAVA);
@@ -118,28 +120,29 @@ public final class BaradPlan {
     }
 
     // ------------------------------------------------------------------ forteresse
-    private static double tier2(double th) { return Math.max(0.8 * outline(th) - 1.0, 25.0); }
+    private static double tier2(double th) { return Math.max(0.75 * outline(th), 30.0); }
     private static double rwest() { return outline(Math.PI); }
 
     private void fort() {
         // pied de la forteresse, dans la douve
-        for (int y = MOAT_FLOOR; y <= -1; y++) for (int x = CX - 42; x < CX + 42; x++) for (int z = CZ - 42; z < CZ + 42; z++)
-            if (dist(x, z) < 0) set(x, y, z, rnd(x, y, z) < 0.2 ? BASALT : BS);
+        for (int y = MOAT_FLOOR; y <= -1; y++) for (int x = CX - 64; x < CX + 64; x++) for (int z = CZ - 64; z < CZ + 64; z++)
+            if (dist(x, z) < ROCK_W) set(x, y, z, rnd(x, y, z) < 0.2 ? BASALT : BS);
         // massif a contour irregulier (80 de large environ), puis second etage en retrait
         massif(0, 34, 0, 4.0, 3);
         massif(35, 57, 1, 3.5, 3);
+        skirt();
         // bastions sur les eperons, tourelles sur les baies et sur le second etage
         for (int i = 0; i < 12; i++) {
             double a = ANG[i], r = RAD[i];
             boolean spur = r >= 35;
-            double rad = spur ? 6.4 + (i % 3) * 0.6 : 4.4;
-            roundTower(CX + Math.cos(a) * (r - rad + 1.5), CZ + Math.sin(a) * (r - rad + 1.5), rad, spur ? 44 + (i * 5) % 14 : 38, spur ? 18 : 12, 0, i);
+            double rad = spur ? 7.6 + (i % 3) * 0.7 : 5.2;
+            roundTower(CX + Math.cos(a) * (r - rad + 1.5), CZ + Math.sin(a) * (r - rad + 1.5), rad, spur ? 46 + (i * 5) % 16 : 40, spur ? 20 : 13, 0, i);
             double r2 = tier2(a);
             if (i % 2 == 0) roundTower(CX + Math.cos(a) * (r2 - 3.5), CZ + Math.sin(a) * (r2 - 3.5), 4.2, 76 - (i % 4) * 4, 14, 35, i + 20);
         }
         // tours de la porte (ouest) : de part et d'autre du tunnel
         double rw = rwest();
-        for (int s = -1; s <= 1; s += 2) roundTower(CX - rw + 3.0, CZ + s * 11.0, 6.0, 62, 22, 0, 4);
+        for (int s = -1; s <= 1; s += 2) roundTower(CX - rw + 3.0, CZ + s * 12.0, 6.6, 64, 24, 0, 4);
         // tunnel d'entree : de la porte jusqu'a la grande salle de la tour
         int tx0 = (int) Math.floor(CX - rw) - 2;
         for (int x = tx0; x <= CX - 12; x++) for (int y = 0; y <= 9; y++) for (int z = CZ - 4; z <= CZ + 3; z++) {
@@ -157,7 +160,7 @@ public final class BaradPlan {
             for (int y = 5; y <= 8; y++) if (a <= (y <= 5 ? 3.5 : y <= 7 ? 2.6 : 1.6) && (z & 1) == 0) set(tx0 + 2, y, z, BARS);
         }
         // creneaux : merlons sur le bord de chaque etage
-        for (int x = CX - 42; x < CX + 42; x++) for (int z = CZ - 42; z < CZ + 42; z++) {
+        for (int x = CX - 64; x < CX + 64; x++) for (int z = CZ - 64; z < CZ + 64; z++) {
             if (((x + z) & 1) != 0) continue;
             for (int top : new int[]{34, 57}) {
                 if (get(x, top, z) == AIR || get(x, top + 1, z) != AIR) continue;
@@ -169,11 +172,30 @@ public final class BaradPlan {
         }
     }
 
+    /** socle de roche sous la forteresse : au plus ROCK_H blocs, strie comme les falaises du croquis, qui descend vers la douve ; il laisse libre l'acces de la porte */
+    private void skirt() {
+        double rw = rwest();
+        for (int x = CX - 64; x < CX + 64; x++) for (int z = CZ - 64; z < CZ + 64; z++) {
+            double d = dist(x, z);
+            if (d < 0 || d >= ROCK_W) continue;
+            double ox = x + 0.5 - CX, oz = z + 0.5 - CZ, th = Math.atan2(oz, ox), R = outline(th);
+            int rib = (int) Math.floor((th + Math.PI) / (2 * Math.PI) * (R * 2 * Math.PI / 2.2));
+            double fac = Math.floorMod(rib, 3) == 0 ? 1.0 : Math.floorMod(rib, 3) == 1 ? 0.5 : 0.75;
+            double gate = ox < 0 ? smooth((Math.abs(oz) - 5.5) / 4.0) : 1.0;
+            double h = ROCK_H * Math.pow(1 - d / ROCK_W, 0.6) * fac * gate + 0.8 * vn(x / 3.0, z / 3.0, 9);
+            int hs = (int) Math.min(ROCK_H, Math.round(h));
+            for (int y = 0; y < hs; y++) {
+                double q = rnd(x, y, z);
+                setIfAir(x, y, z, q < 0.35 ? BASALT : q < 0.6 ? SBASALT : q < 0.8 ? BS : q < 0.93 ? TUFF : MAGMA);
+            }
+        }
+    }
+
     /** massif a contour irregulier : tier 0 = contour complet qui perd 'loss' blocs sur sa hauteur, tier 1 = etage superieur en retrait ; falaise cannelee */
     private void massif(int y0, int y1, int tier, double loss, int flute) {
         for (int y = y0; y <= y1; y++) {
             double shrink = loss * (y - y0) / Math.max(1, (y1 - y0));
-            for (int x = CX - 42; x < CX + 42; x++) for (int z = CZ - 42; z < CZ + 42; z++) {
+            for (int x = CX - 64; x < CX + 64; x++) for (int z = CZ - 64; z < CZ + 64; z++) {
                 double ox = x + 0.5 - CX, oz = z + 0.5 - CZ, rr = Math.hypot(ox, oz), th = Math.atan2(oz, ox);
                 double R = (tier == 0 ? outline(th) : tier2(th)) - shrink;
                 int d = (int) Math.floor(R - rr);
@@ -219,7 +241,7 @@ public final class BaradPlan {
     // ------------------------------------------------------------------ pont
     private void bridge() {
         double rw = rwest();
-        int x1 = (int) Math.floor(CX - rw), x0 = (int) Math.floor(CX - rw - MOAT_W) - 4;
+        int x1 = (int) Math.floor(CX - rw), x0 = (int) Math.floor(CX - rw - ROCK_W - MOAT_W) - 4;
         for (int x = x0; x <= x1; x++) for (int z = CZ - 4; z <= CZ + 3; z++) {
             double a = Math.abs(z + 0.5 - CZ);
             if (a > 3.5) continue;
@@ -232,7 +254,7 @@ public final class BaradPlan {
             for (int y = -13; y <= -3; y++) { set(x, y, z, BS); set(x + 1, y, z, BS); }
         }
         // pylones a l'entree du pont, sur la levre de la douve
-        double px = CX - rw - MOAT_W - 3.5;
+        double px = CX - rw - ROCK_W - MOAT_W - 3.5;
         roundTower(px, CZ - 6.0, 3.2, 26, 10, 0, 5);
         roundTower(px, CZ + 6.0, 3.2, 26, 10, 0, 5);
         // route pavee de la douve vers l'ouest
@@ -333,7 +355,7 @@ public final class BaradPlan {
             for (int h = 0; h < len; h++) {
                 double f = (double) h / len;
                 int size = f < 0.3 ? 5 : f < 0.5 ? 4 : f < 0.7 ? 3 : h < len - 5 ? 2 : 1;
-                double c = 11.5 - 6.0 * Math.pow(f, 1.5);                     // la pointe se penche vers le centre
+                double c = 11.5 - 5.0 * Math.pow(f, 1.5);                     // la pointe se penche vers le centre, mais laisse au moins 10 blocs libres entre les pointes (place de l'oeil)
                 int x0 = (int) Math.round(CX + sx * c - size / 2.0), z0 = (int) Math.round(CZ + sz * c - size / 2.0);
                 for (int a = 0; a < size; a++) for (int b = 0; b < size; b++) {
                     if (size >= 4 && (a == 0 || a == size - 1) && (b == 0 || b == size - 1)) continue;
@@ -499,9 +521,9 @@ public final class BaradPlan {
     private void village() {
         Random rnd = new Random(4242L);
         // maisons a toit pointu sur la terrasse du tambour (anneau entre les deux etages)
-        for (int tries = 0, n = 0; tries < 900 && n < 70; tries++) {
+        for (int tries = 0, n = 0; tries < 900 && n < 110; tries++) {
             int sx = 4 + rnd.nextInt(2);
-            int x0 = CX - 40 + rnd.nextInt(80), z0 = CZ - 40 + rnd.nextInt(80);
+            int x0 = CX - 56 + rnd.nextInt(112), z0 = CZ - 56 + rnd.nextInt(112);
             boolean okp = true;
             for (int a = -1; a <= sx && okp; a++) for (int b = -1; b <= sx && okp; b++) {
                 int x = x0 + a, z = z0 + b;
@@ -525,7 +547,7 @@ public final class BaradPlan {
         }
         // brasiers sur la terrasse basse
         for (int i = 0, n = 0; i < 600 && n < 16; i++) {
-            int x = CX - 40 + rnd.nextInt(80), z = CZ - 40 + rnd.nextInt(80);
+            int x = CX - 56 + rnd.nextInt(112), z = CZ - 56 + rnd.nextInt(112);
             if (get(x, 34, z) == AIR || get(x, 35, z) != AIR || get(x, 36, z) != AIR) continue;
             set(x, 35, z, BS); set(x, 36, z, CAMPFIRE);
             n++;
