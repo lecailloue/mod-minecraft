@@ -1055,7 +1055,7 @@ public final class EdorasPlan {
                 if (k >= 1 && k < layers && z >= hz0 - 1 && z <= hz0 + hd) { set(hx0 + k, ya - 1, z, stair(STAIR_MO, E, true)); set(hx0 + hw - 1 - k, ya - 1, z, stair(STAIR_MO, W_, true)); }
                 if (k == layers) set(hx0 + hw / 2, ya, z, MOSAIC);
             }
-            for (int lx = k; lx <= hw - 1 - k; lx++) for (int z : new int[]{hz0, hz0 + hd - 1}) if (lx > k && lx < hw - 1 - k) set(hx0 + lx, ya, z, DPLANKS);
+            for (int lx = k; lx <= hw - 1 - k; lx++) for (int z : new int[]{hz0, hz0 + hd - 1}) if (lx > k && lx < hw - 1 - k || (lx == k || lx == hw - 1 - k) && k < layers) set(hx0 + lx, ya, z, DPLANKS);   // pignon plein, sans fente contre les escaliers
         }
         // poutres et lanternes dans la salle
         for (int lz = 4; lz < hd - 2; lz += 4) {
@@ -1106,7 +1106,7 @@ public final class EdorasPlan {
             int x = ax0 + lx, z = az0 + lz;
             boolean wall = lx == 0 || lx == ww - 1 || lz == 0 || lz == dd - 1;
             set(x, ty - 1, z, DPLANKS); set(x, ty, z, PLANKS);
-            for (int y = 1; y <= wh + 4; y++) set(x, ty + y, z, AIR);
+            for (int y = 1; y <= wh + 3; y++) set(x, ty + y, z, AIR);                   // pas plus haut que le toit de l'aile : l'avant-toit du palais passe juste au-dessus
             if (wall) for (int y = 1; y <= wh; y++) {
                 boolean corner = (lx == 0 || lx == ww - 1) && (lz == 0 || lz == dd - 1);
                 set(x, ty + y, z, y == 1 ? COBBLE : corner ? DLOG_Y : (y == 3 && lx == (s < 0 ? 0 : ww - 1) && lz == 2) ? GLASSPANE : DPLANKS);
@@ -1119,7 +1119,7 @@ public final class EdorasPlan {
         // toit : faitage le long de x (perpendiculaire au grand toit) : pans nord et sud
         for (int k = 0; k <= 2; k++) {
             int ya = ty + wh + 1 + k;
-            for (int lx = -1; lx < ww + (s < 0 ? 1 : 1); lx++) {
+            for (int lx = s < 0 ? -1 : 0; lx <= (s < 0 ? ww - 1 : ww); lx++) {          // le toit s'arrete contre le mur du palais : il ne le perce plus
                 int x = ax0 + lx;
                 set(x, ya, az0 + k - 1, stair(STAIR_MO, S, false)); set(x, ya, az0 + dd - k, stair(STAIR_MO, N, false));
                 if (k == 2) set(x, ya, az0 + 2, MOSAIC);
