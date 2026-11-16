@@ -985,6 +985,12 @@ public final class Buildings {
         p[EdorasPlan.LEAF] = Blocks.OAK_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
         p[EdorasPlan.LEAF_AZ] = Blocks.FLOWERING_AZALEA_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
         stairSet(p, EdorasPlan.STAIR_W, Reg.WEATHERED_PLANKS_STAIRS.get());
+        Direction[] dd = {N, E, S, W};
+        for (int d = 0; d < 4; d++) {
+            BlockState door = Blocks.DARK_OAK_DOOR.defaultBlockState().setValue(net.minecraft.world.level.block.DoorBlock.FACING, dd[d]);
+            p[EdorasPlan.DOOR + d * 2] = door.setValue(net.minecraft.world.level.block.DoorBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER);
+            p[EdorasPlan.DOOR + d * 2 + 1] = door.setValue(net.minecraft.world.level.block.DoorBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER);
+        }
         p[EdorasPlan.BERRY] = Blocks.SWEET_BERRY_BUSH.defaultBlockState().setValue(net.minecraft.world.level.block.SweetBerryBushBlock.AGE, 3);
         edorasPal = p;
         return p;
@@ -1004,6 +1010,21 @@ public final class Buildings {
         for (int x = 0; x < EdorasPlan.W; x++) {
             for (int z = 0; z < EdorasPlan.D; z++) {
                 int top = p.top(x, z);
+                if ((top < 2 || p.get(x, 0, z) == OrthancPlan.AIR) && b.in(x, 0, z)) {                 // talus : le village est surelevé, on raccorde le sol naturel a sa bordure
+                    int best = -99;
+                    for (int dx = -9; dx <= 9; dx++) for (int dz = -9; dz <= 9; dz++) {
+                        int nx = x + dx, nz = z + dz;
+                        if (nx < 0 || nz < 0 || nx >= EdorasPlan.W || nz >= EdorasPlan.D || p.get(nx, 0, nz) == OrthancPlan.AIR) continue;
+                        int t = -(int) Math.ceil(Math.hypot(dx, dz) * 0.75);
+                        if (t > best) best = t;
+                    }
+                    if (best > -8) {
+                        int g = Math.min(b.groundY(x, z), maxY);
+                        if (g < best && g > best - 14) {
+                            for (int y = g + 1; y <= best; y++) b.s(x, y, z, y == best ? Blocks.GRASS_BLOCK.defaultBlockState() : dirt);
+                        }
+                    }
+                }
                 if (top < 0 || !b.in(x, 0, z)) continue;
                 int ground = Math.min(b.groundY(x, z), maxY);
                 if (p.get(x, 0, z) != OrthancPlan.AIR) b.foundation(x, z, x, z, softGround(p.get(x, 0, z) & 255) ? dirt : foot, 24);   // la colline repose sur le sol ferme

@@ -42,6 +42,7 @@ import java.util.Random;
  * La colline est tournee de ANG degres : son grand axe (u) va du sud-ouest (route) au nord-est (palais).
  */
 public final class EdorasPlan {
+    public static final int DOOR = 208;                                       // 208..215 : porte en chene noir (lower/upper x 4 directions)
     public static final int W = 260, D = 220, OFF = 12, CX = 130, CZ = 110;
     public static final int H0 = 30;                                       // hauteur du sommet de la colline au-dessus du sol
     public static final int H = OFF + H0 + 52;
@@ -866,6 +867,9 @@ public final class EdorasPlan {
             if (id >= STAIR_MO) base = STAIR_MO;
             int rel = id - base, dir = rel / 2, top = rel % 2;
             v = base + ((dir + r) & 3) * 2 + top;
+        } else if (id >= DOOR && id < DOOR + 8) {
+            int rel = id - DOOR;
+            v = DOOR + (((rel / 2) + r) & 3) * 2 + rel % 2;
         } else if (id == LOG_X || id == LOG_Z) {
             if (r % 2 == 1) v = id == LOG_X ? LOG_Z : LOG_X;
         } else if (id == WLOG_X || id == WLOG_Z) {
@@ -911,13 +915,13 @@ public final class EdorasPlan {
         }
         // porte au pignon sud local, perron de pierre
         if (!sub) {
-            put(r, x0, z0, w, d, cxl, 1, d - 1, AIR, false); put(r, x0, z0, w, d, cxl, 2, d - 1, AIR, false);
+            put(r, x0, z0, w, d, cxl, 1, d - 1, DOOR + S * 2, false); put(r, x0, z0, w, d, cxl, 2, d - 1, DOOR + S * 2 + 1, false);
             put(r, x0, z0, w, d, cxl, 3, d - 1, DPLANKS, false);
             put(r, x0, z0, w, d, cxl, 0, d, STAIR_SB + 0 * 2, true);
             put(r, x0, z0, w, d, cxl - 1, 0, d, COBBLE, false); put(r, x0, z0, w, d, cxl + 1, 0, d, COBBLE, false);
             put(r, x0, z0, w, d, cxl - 1, 1, d - 1, DLOG_Y, false); put(r, x0, z0, w, d, cxl + 1, 1, d - 1, DLOG_Y, false);
             put(r, x0, z0, w, d, cxl - 1, 2, d - 1, DLOG_Y, false); put(r, x0, z0, w, d, cxl + 1, 2, d - 1, DLOG_Y, false);
-            put(r, x0, z0, w, d, cxl, 1, d, LAMP, false);
+            for (int sd = -1; sd <= 1; sd += 2) { put(r, x0, z0, w, d, cxl + sd, 1, d, WFENCE, false); put(r, x0, z0, w, d, cxl + sd, 2, d, LAMP, false); }
             { int[] dp = map(r, x0, z0, w, d, cxl, d + 2); doors.add(new int[]{dp[0], dp[1], lvl}); }
         } else {
             for (int y = 1; y <= hh; y++) put(r, x0, z0, w, d, cxl, y, d - 1, AIR, false);
@@ -927,12 +931,9 @@ public final class EdorasPlan {
         for (int k = 0; k <= layers; k++) {
             int ya = hh + 1 + k;
             for (int lz = -1; lz <= d; lz++) {
-                if (k < layers) {
-                    put(r, x0, z0, w, d, k - 1, ya, lz, STAIR_MO + E * 2, true);
-                    put(r, x0, z0, w, d, w - k, ya, lz, STAIR_MO + W_ * 2, true);
-                } else {
-                    put(r, x0, z0, w, d, cxl, ya, lz, MOSAIC, false);
-                }
+                put(r, x0, z0, w, d, k - 1, ya, lz, STAIR_MO + E * 2, true);
+                put(r, x0, z0, w, d, w - k, ya, lz, STAIR_MO + W_ * 2, true);
+                if (k == layers) put(r, x0, z0, w, d, cxl, ya, lz, MOSAIC, false);
             }
             if (k < layers + 1) for (int lx = k; lx <= w - 1 - k; lx++) {                              // pignons
                 int yy = ya - (k < layers ? 0 : 0);
@@ -974,11 +975,11 @@ public final class EdorasPlan {
             for (int y = 1; y <= hh + 3; y++) put(r, x0, z0, w, d, -2, y, chz, y % 3 == 0 ? MOSSY_COBBLE : COBBLE, false);
             put(r, x0, z0, w, d, -2, hh + 4, chz, CAMPFIRE, false);
             // devant : pot de fleurs, tonneau, tas de bois contre le mur est
-            put(r, x0, z0, w, d, cxl + 2, 1, d, (hash(x0, 5, z0) & 1) == 0 ? POT_TULIP : POT_DAND, false);
-            put(r, x0, z0, w, d, cxl - 2, 1, d, BARREL, false);
+            put(r, x0, z0, w, d, cxl + 2, 0, d, (hash(x0, 5, z0) & 1) == 0 ? POT_TULIP : POT_DAND, false);
+            put(r, x0, z0, w, d, cxl - 2, 0, d, BARREL, false);
             for (int lz = 2; lz <= Math.min(d - 3, 6); lz++) {
-                put(r, x0, z0, w, d, w + 1, 1, lz, WLOG_Z, false); put(r, x0, z0, w, d, w + 2, 1, lz, WLOG_Z, false);
-                if (lz >= 3 && lz <= Math.min(d - 4, 5)) put(r, x0, z0, w, d, w + 1, 2, lz, WLOG_Z, false);
+                put(r, x0, z0, w, d, w + 1, 0, lz, WLOG_Z, false); put(r, x0, z0, w, d, w + 2, 0, lz, WLOG_Z, false);
+                if (lz >= 3 && lz <= Math.min(d - 4, 5)) put(r, x0, z0, w, d, w + 1, 1, lz, WLOG_Z, false);
             }
         }
     }
@@ -1043,11 +1044,10 @@ public final class EdorasPlan {
         for (int k = 0; k <= layers; k++) {
             int ya = ty + wh + 1 + k;
             for (int z = hz0 - 2; z <= hz0 + hd + 1; z++) {
-                if (k < layers) {
-                    set(hx0 + k - 1, ya, z, stair(STAIR_MO, E, false));
-                    set(hx0 + hw - k, ya, z, stair(STAIR_MO, W_, false));
-                    if (k >= 1 && z >= hz0 - 1 && z <= hz0 + hd) { set(hx0 + k, ya - 1, z, stair(STAIR_MO, E, true)); set(hx0 + hw - 1 - k, ya - 1, z, stair(STAIR_MO, W_, true)); }
-                } else set(hx0 + hw / 2, ya, z, MOSAIC);
+                set(hx0 + k - 1, ya, z, stair(STAIR_MO, E, false));
+                set(hx0 + hw - k, ya, z, stair(STAIR_MO, W_, false));
+                if (k >= 1 && k < layers && z >= hz0 - 1 && z <= hz0 + hd) { set(hx0 + k, ya - 1, z, stair(STAIR_MO, E, true)); set(hx0 + hw - 1 - k, ya - 1, z, stair(STAIR_MO, W_, true)); }
+                if (k == layers) set(hx0 + hw / 2, ya, z, MOSAIC);
             }
             for (int lx = k; lx <= hw - 1 - k; lx++) for (int z : new int[]{hz0, hz0 + hd - 1}) if (lx > k && lx < hw - 1 - k) set(hx0 + lx, ya, z, DPLANKS);
         }
@@ -1106,13 +1106,17 @@ public final class EdorasPlan {
                 set(x, ty + y, z, y == 1 ? COBBLE : corner ? DLOG_Y : (y == 3 && lx == (s < 0 ? 0 : ww - 1) && lz == 2) ? GLASSPANE : DPLANKS);
             }
         }
+        // porte entre l'aile et la salle : ouverture dans le mur de l'aile, vantail dans le mur de la salle
+        int ix = s < 0 ? ax0 + ww - 1 : ax0, hxw = s < 0 ? ax0 + ww : ax0 - 1;
+        for (int y = 1; y <= 2; y++) { set(ix, ty + y, az0 + 2, AIR); set(hxw, ty + y, az0 + 2, DOOR + (s < 0 ? W_ : E) * 2 + (y - 1)); }
+        set(ix, ty + 3, az0 + 2, DPLANKS); set(hxw, ty + 3, az0 + 2, DPLANKS);
         // toit : faitage le long de x (perpendiculaire au grand toit) : pans nord et sud
-        for (int k = 0; k <= 3; k++) {
+        for (int k = 0; k <= 2; k++) {
             int ya = ty + wh + 1 + k;
             for (int lx = -1; lx < ww + (s < 0 ? 1 : 1); lx++) {
                 int x = ax0 + lx;
-                if (k < 2) { set(x, ya, az0 + k - 1, stair(STAIR_MO, S, false)); set(x, ya, az0 + dd - k, stair(STAIR_MO, N, false)); }
-                else set(x, ya, az0 + 2, MOSAIC);
+                set(x, ya, az0 + k - 1, stair(STAIR_MO, S, false)); set(x, ya, az0 + dd - k, stair(STAIR_MO, N, false));
+                if (k == 2) set(x, ya, az0 + 2, MOSAIC);
             }
             for (int lz = k; lz <= dd - 1 - k; lz++) { int x = s < 0 ? ax0 : ax0 + ww - 1; if (lz > k - 1 && k < 2 && lz >= k + 0 && lz <= dd - 1 - k) set(x, ya, az0 + lz, DPLANKS); }
         }
