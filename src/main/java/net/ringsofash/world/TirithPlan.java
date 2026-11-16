@@ -10,7 +10,7 @@ import java.util.Random;
  * Repere local : x de 0 a W - 1, z de 0 a D - 1 (la montagne est au nord, z petit ; la cite regarde le sud) ; y = 0 : premier niveau d'air au-dessus du sol.
  */
 public final class TirithPlan {
-    public static final int W = 320, D = 270, OFF = 8, TOP = 280, H = OFF + TOP + 1, CX = 160, CZ = 130;
+    public static final int W = 320, D = 340, OFF = 8, TOP = 280, H = OFF + TOP + 1, CX = 160, CZ = 165, ZS = 35;   // ZS : decalage du plan vers le sud (la route d acces occupe les 40 derniers blocs)
     public static final double[] R = {125, 107, 89, 71, 53, 35, 17};              // rayon exterieur de chaque niveau (largeur 18)
     public static final int[] FL = {18, 36, 54, 72, 90, 108, 126};                // niveau debout de chaque terrasse
     public static final int PROW_TOP = 126, PROW_TIP = 104;                         // sommet de l'eperon, longueur de l'eperon vers le sud
@@ -20,7 +20,10 @@ public final class TirithPlan {
             GLASS = 50, BARS = 51, DPLANKS = 52, DLOG_Y = 53, LANTERN = 54, CHAIN = 55, FENCE_B = 56, WATER = 57, BIRCH_Y = 58, BIRCH_FENCE = 59,
             SLATE = 60, SLATE_STAIR = 64, SLATE_SLAB = 72, SLATE_SLAB_TOP = 73, COPPER = 74, COPPER_STAIR = 80, COPPER_SLAB = 88, COPPER_SLAB_TOP = 89,
             LEAF = 90, FLOWER1 = 91, FLOWER2 = 92, GRASS_S = 93, DWALL = 94, BANNER_G = 95, WOOL_W = 96, WOOL_G = 97, TORCH_B = 98, LAMPBLOCK = 99, SLAB_STONE = 100,
-            QUARTZ_SLAB = 101, QUARTZ_SLAB_TOP = 102, GOLD = 103, DOOR_PL = 104, HLANTERN = 105, KEEL = 111, YB = 44, WTLOG = 106, WTLEAF = 107, WTBLOOM = 108;
+            QUARTZ_SLAB = 101, QUARTZ_SLAB_TOP = 102, GOLD = 103, DOOR_PL = 104, HLANTERN = 105, KEEL = 111, YB = 44, WTLOG = 106, WTLEAF = 107, WTBLOOM = 108,
+            MOSS = 112, MOSSC = 113, PATH = 114, COARSE = 115, SBRS = 116, BARREL = 117, HAY = 118, CAMPF = 119, SBRW = 120, MELON = 121, PUMPKIN = 122, OAKLEAF = 123, GLOW = 124, TRAPD = 125,
+            DOOR = 130;                                                              // DOOR + dir * 2 (+ 1 : moitie haute), dir = N E S W
+    public static final int ROAD_N = 30, ROAD_HW = 7;                                 // longueur de la route d'acces au sud du pied de la grande rampe
     public static final int N = 0, E = 1, S = 2, W_ = 3;
 
     private final byte[] g = new byte[W * H * D];
@@ -29,6 +32,7 @@ public final class TirithPlan {
     private final byte[] ring = new byte[W * D];                                 // niveau de la terrasse (-1 hors terrasses)
     private final int[] top = new int[W * D];
     private final boolean[] occ = new boolean[W * D];                            // emprise prise par un batiment
+    public final List<int[]> spawns = new ArrayList<>();                    // {genre (0 civil, 1 garde, 2 cheval, 3 poule), x, y, z}
     public int houses, towers;
     public int tower_x, tower_z, court_x, court_z, hall_x, hall_z, gate_x, gate_z;
 
@@ -75,6 +79,7 @@ public final class TirithPlan {
         parapets();
         terraces();
         citadel();
+        rocks();
         for (int x = 0; x < W; x++) for (int z = 0; z < D; z++) {
             int t = -OFF - 1;
             for (int y = H - OFF - 1; y >= -OFF; y--) if (g[idx(x, y, z)] != AIR) { t = y; break; }
@@ -85,14 +90,22 @@ public final class TirithPlan {
     private static double cliffZ(int x) { return CZ - 3 + 6 * vn(x / 20.0, 0.5, 1); }
 
     private double mountain(int x, int z) {
+        int zz = z - ZS;
         double b = cliffZ(x) - (z + 0.5);
+        // face en crans : des anses creusees dans la falaise et des contreforts qui avancent, au lieu d'un mur droit
+        double cove = 11 * Math.max(0, vn(x / 7.0, zz / 7.0, 31)) + 5 * Math.max(0, vn(x / 3.5, zz / 3.5, 32));
+        b -= cove * (1 - smooth((b - 14) / 26));
         if (b < 0) return -1;
         double lat = Math.abs(x + 0.5 - CX);
-        double lx = 1 - smooth((lat - 90) / 70);
+        double lx = 1 - smooth((lat - 66) / 60);                                   // la montagne s'arrete a 126 blocs du centre : au-dela, Minecraft ne genere plus la structure
         double base = 128 + 150 * smooth(b / 115);
-        double rg = vn(x / 40.0, z / 40.0, 2) * 30 + vn(x / 16.0, z / 16.0, 3) * 12 + (1 - Math.abs(vn(x / 55.0, z / 55.0, 4))) * 35 * smooth(b / 40);
-        double taper = 1 - 0.5 * smooth((b - 100) / 30);
-        double h = (base + rg) * taper * lx * (0.35 + 0.65 * smooth((z + 0.5) / 80.0));
+        double rg = vn(x / 40.0, zz / 40.0, 2) * 30 + vn(x / 16.0, zz / 16.0, 3) * 12 + (1 - Math.abs(vn(x / 55.0, zz / 55.0, 4))) * 35 * smooth(b / 40);
+        // ravines et nervures verticales : la paroi n'est plus un plan
+        double gr = 1 - smooth(Math.abs(vn(x / 6.0, zz / 15.0, 41)) / 0.14);
+        double rib = 1 - smooth(Math.abs(vn(x / 11.0, zz / 28.0, 42)) / 0.2);
+        double carve = (12 * gr + 16 * rib) * (1 - smooth((b - 70) / 40));
+        double taper = 1 - smooth((b - 76) / 32.0);                                  // idem au nord : elle retombe a rien avant la limite
+        double h = (base + rg - carve) * taper * lx * (0.35 + 0.65 * smooth((zz + 0.5) / 80.0));
         return h < 3 ? -1 : h;
     }
 
@@ -109,12 +122,23 @@ public final class TirithPlan {
         return Math.max(0, 11 * (1 - (dz - 26) / (PROW_TIP - 26 + 4.0)));      // triangle : la proue s'effile en pointe
     }
 
-    private static boolean inProw(int x, int z) {
+    /** distance a l'interieur du bord de l'eperon (negative : hors de l'eperon) ; le bord est irregulier, pas une ligne droite */
+    private static double prowEdge(int x, int z) {
         double dz = z + 0.5 - CZ;
-        if (dz < -14 || dz > PROW_TIP + 1) return false;
-        double hw = prowHW(dz);
-        hw += 1.2 * vn(z / 8.0, 3.3, 5) * Math.min(1, hw / 10);
-        return Math.abs(x + 0.5 - CX) <= hw;
+        if (dz < -14 || dz > PROW_TIP + 1) return -1;
+        double hw = prowHW(dz), k = Math.min(1, hw / 10);
+        hw += 2.4 * vn(z / 7.0, 3.3, 5) * k + 1.3 * vn(z / 3.0, 7.7, 6) * k;
+        return hw - Math.abs(x + 0.5 - CX);
+    }
+
+    private static boolean inProw(int x, int z) { return prowEdge(x, z) >= 0; }
+
+    /** hauteur de l'eperon : plateau, puis epaule arrondie et rongee vers le bord */
+    private static int prowTopAt(int x, int z) {
+        double e = prowEdge(x, z);
+        int t = PROW_TOP - 1;
+        if (e < 3) { double sh = 3 - e; t -= (int) (sh * sh * 1.3 + 2.5 * Math.max(0, vn(x / 3.0, z / 3.0, 52)) * sh); }
+        return t;
     }
 
     /** rampes : {x central, demi-largeur, z de depart (le pied, au sud), niveau du bas, niveau du haut} ; elles montent vers le nord, une marche par bloc */
@@ -133,22 +157,22 @@ public final class TirithPlan {
             int i = z * W + x;
             double dx = x + 0.5 - CX, dz = z + 0.5 - CZ, r = Math.hypot(dx, dz);
             double m = mountain(x, z);
-            if (m > 0) { fill[i] = (int) m; kind[i] = 2; continue; }
-            if (inProw(x, z)) { fill[i] = prowTop(z); kind[i] = 3; continue; }
+            if (m > 0 && !(m < PROW_TOP + 2 && inProw(x, z))) { fill[i] = (int) m; kind[i] = 2; continue; }
+            if (inProw(x, z)) { fill[i] = prowTopAt(x, z); kind[i] = 3; continue; }
             if (r <= R[0] && z + 0.5 >= cliffZ(x)) {
                 int k = Math.min(6, (int) ((R[0] - r) / 18));
                 fill[i] = FL[k] - 1; kind[i] = 1; ring[i] = (byte) k; continue;
             }
             double lat = Math.abs(dx);
-            if (lat > 100 && z + 0.5 >= cliffZ(x)) {
-                double fh = 70 * smooth((lat - 100) / 25) * (1 - smooth((lat - 135) / 25)) * (1 - smooth((z + 0.5 - cliffZ(x)) / 75)) + 6 * vn(x / 12.0, z / 12.0, 6) * smooth((lat - 100) / 25);
+            if (lat > 84 && lat < 127 && z + 0.5 >= cliffZ(x) && z + 0.5 - cliffZ(x) < 78) {
+                double fh = 70 * smooth((lat - 84) / 22) * (1 - smooth((lat - 104) / 22)) * (1 - smooth((z + 0.5 - cliffZ(x)) / 75)) + 6 * vn(x / 12.0, z / 12.0, 6) * smooth((lat - 84) / 22) * (1 - smooth((lat - 104) / 22));
                 if (fh > 5) { fill[i] = (int) fh; kind[i] = 5; }
             }
         }
         // rampe du flanc de l'eperon (niveau 5 -> 6), au bord est de l'eperon
         for (int z = CZ + 7; z <= CZ + 25; z++) {
             double dz = z + 0.5 - CZ, hw = prowHW(dz);
-            for (int x = CX + (int) hw; x <= CX + (int) hw + 4; x++) {
+            for (int x = CX + (int) hw - 4; x <= CX + (int) hw + 6; x++) {
                 int i = z * W + x;
                 if (kind[i] == 3) continue;
                 fill[i] = FL[5] - 1 + (int) Math.round(18 - (z - (CZ + 7))); kind[i] = 4;
@@ -185,8 +209,7 @@ public final class TirithPlan {
                 boolean inside = rel >= 8.0 && rel <= 12.0;
                 for (int y = b; y <= b + h; y++) set(x, y, z, inside ? (y == b + h ? WB : AIR) : WB);
                 set(x, b - 1, z, inside ? PAVE : WB);
-                if (inside && (x + z) % 9 == 0) set(x, b + h - 1, z, HLANTERN);
-                if (inside && (x + z) % 9 == 0) set(x, b + h, z, CHAIN);
+                if (inside && (x + z) % 9 == 0) set(x, b + h - 1, z, HLANTERN);                   // la lanterne pend directement du plafond plein (plus de trou dans la voute)
             }
         }
     }
@@ -203,39 +226,58 @@ public final class TirithPlan {
         return mn;
     }
 
+    /** tout est plein : la montagne, l'eperon et les remparts sont de la roche ou de la maconnerie jusqu'au sol (plus de coque creuse, donc plus de trous ni d'arches) */
     private void materialize() {
         for (int x = 0; x < W; x++) for (int z = 0; z < D; z++) {
             int i = z * W + x, f = fill[i];
             if (f == -99) continue;
-            int mn = nbMin(x, z, 4), mn1 = nbMin(x, z, 1);
+            int mn1 = nbMin(x, z, 1), mn2 = nbMin(x, z, 2);
             int k = kind[i];
             boolean rock = k == 2 || k == 5, keel = k == 3;
             for (int y = -6; y <= f; y++) {
-                boolean solid = y <= 2 || y >= f - 3 || y > mn;
-                if (!solid) continue;
-                boolean exposed = y > mn1 && y < f;
+                boolean surf = y >= f - 1 || y > mn1 || (rock || keel) && y > mn2 - 2;           // la peau visible, un peu plus epaisse pour la roche
                 int id;
-                if (keel) id = y == f ? WB : (rnd(x, y, z) < 0.12 ? DIORITE : KEEL);
-                else if (rock) id = rockBlock(x, y, z, f, k, y == f || y > mn1);
+                if (keel) id = surf ? keelBlock(x, y, z, f, y == f || y > mn1) : (rnd(x, y, z) < 0.5 ? STONE : ANDESITE);
+                else if (rock) id = surf ? rockBlock(x, y, z, f, k, y == f || y > mn1) : (rnd(x, y, z) < 0.6 ? STONE : TUFF);
                 else if (y == f) id = paving(x, z);
-                else if (exposed || y > mn) id = wallBlock(x, y, z);
+                else if (surf) id = wallBlock(x, y, z);
                 else id = STONE;
                 set(x, y, z, id);
             }
         }
     }
 
+    /** roche de l'eperon : calcaire clair, veines, mousse sur les replats bas */
+    private int keelBlock(int x, int y, int z, int f, boolean face) {
+        double q = rnd(x, y, z);
+        double layer = Math.floor((y + 5 * vn(x / 14.0, z / 14.0, 53)) / 3.0);
+        double lh = rnd((int) layer, 19, 7);
+        if (face && y < 100 && vn(x / 5.0, z / 5.0 + y / 6.0, 54) > 0.62) return q < 0.5 ? MOSS : MOSSC;
+        if (face && vn(x / 2.5 + y / 4.0, z / 2.5, 55) > 0.72) return ANDESITE;                  // fissures sombres
+        if (lh < 0.28) return q < 0.7 ? CALCITE : DIORITE;
+        if (lh < 0.5) return q < 0.7 ? DIORITE : STONE;
+        if (lh < 0.7) return q < 0.6 ? STONE : (q < 0.85 ? ANDESITE : KEEL);
+        if (lh < 0.85) return q < 0.7 ? KEEL : CALCITE;
+        return q < 0.5 ? TUFF : DIORITE;
+    }
+
+    /** la falaise : strates inclinees, fissures, mousse, eboulis et neige en altitude */
     private int rockBlock(int x, int y, int z, int f, int k, boolean surface) {
-        double n = vn(x / 7.0 + y / 11.0, z / 7.0 - y / 9.0, 7), q = rnd(x, y, z);
-        if (k == 3) {                                                            // l'eperon : roche claire
-            if (n > 0.35) return CALCITE;
-            return q < 0.35 ? CALCITE : q < 0.65 ? DIORITE : q < 0.88 ? STONE : ANDESITE;
-        }
+        double q = rnd(x, y, z);
         if (surface && y >= 258 + 14 * vn(x / 20.0, z / 20.0, 8)) return SNOW;
-        if (surface && f < 80 && y == f) return k == 5 ? GRASS : (q < 0.5 ? GRASS : STONE);
-        if (n > 0.55) return CALCITE;
-        if (n < -0.5) return TUFF;
-        return q < 0.5 ? STONE : q < 0.85 ? ANDESITE : q < 0.93 ? TUFF : DIORITE;
+        if (surface && f < 80 && y == f) return k == 5 ? (q < 0.12 ? COARSE : GRASS) : (q < 0.4 ? GRASS : (q < 0.55 ? GRAVEL : STONE));
+        double layer = Math.floor((y + 11 * vn(x / 22.0, z / 22.0, 11) + 3 * vn(x / 6.0, z / 6.0, 12)) / 5.0);
+        double lh = rnd((int) layer, 17, 3);
+        if (surface && y < 150 && vn(x / 6.0, z / 6.0 + y / 9.0, 56) > 0.58) return q < 0.7 ? MOSS : MOSSC;
+        if (surface && vn(x / 3.0 + y / 5.0, z / 3.0, 57) > 0.74) return COBBLE;                    // fissures
+        if (surface && f - y < 3 && f < 200 && q < 0.08) return GRAVEL;
+        if (lh < 0.22) return q < 0.8 ? STONE : ANDESITE;
+        if (lh < 0.4) return q < 0.75 ? ANDESITE : STONE;
+        if (lh < 0.52) return q < 0.7 ? TUFF : ANDESITE;
+        if (lh < 0.68) return q < 0.85 ? STONE : DIORITE;
+        if (lh < 0.8) return q < 0.7 ? CALCITE : STONE;
+        if (lh < 0.9) return q < 0.7 ? ANDESITE : TUFF;
+        return q < 0.5 ? DIORITE : STONE;
     }
 
     private int wallBlock(int x, int y, int z) {
@@ -304,7 +346,7 @@ public final class TirithPlan {
         for (int k = 0; k < 7; k++) streetLife(k);
     }
 
-    /** tours de garde de chaque porte : deux tours de part et d'autre de la rampe et un linteau qui l'enjambe */
+    /** tours de garde de chaque porte : deux tours de part et d'autre de la rampe, reliees par un porche voute en ogive (plus de linteau flottant) */
     private void gates() {
         for (int n = 0; n < ramps.size(); n++) {
             int[] r = ramps.get(n);
@@ -322,25 +364,48 @@ public final class TirithPlan {
                 if (!can) continue;
                 gateTower(x0, z1, sz, base, th);
             }
-            // linteau
-            int zb = zc;
             boolean okL = true;
-            for (int x = xr - hw - 1; x <= xr + hw + 1; x++) if (!area(x, zb)) okL = false;
-            if (okL) {
-                int yb = base + (grand ? 12 : 8);
-                for (int x = xr - hw - 1; x <= xr + hw + 1; x++) for (int z = zb - 1; z <= zb + 1; z++) {
-                    set(x, yb, z, WB); set(x, yb + 1, z, WB);
-                    if (z == zb - 1 || z == zb + 1) set(x, yb + 2, z, (x + z) % 2 == 0 ? WB : AIR);
-                }
-                for (int x = xr - hw; x <= xr + hw; x++) {
-                    int dxm = x - xr;
-                    int drop = (Math.abs(dxm) >= hw - 1) ? 2 : (Math.abs(dxm) >= hw - 3 ? 1 : 0);
-                    for (int d = 1; d <= drop; d++) set(x, yb - d, zb, WB);
-                }
-                set(xr, yb - 2, zb, GOLD);
-                for (int x : new int[]{xr - 2, xr + 2}) { set(x, yb - 1, zb, CHAIN); set(x, yb - 2, zb, HLANTERN); }
-                for (int x = xr - hw + 1; x <= xr + hw - 1; x += 2) { set(x, yb - 1, zb - 1, WOOL_W); set(x, yb - 2, zb - 1, WOOL_W); set(x, yb - 3, zb - 1, WOOL_G); }
+            for (int x = xr - hw - 2; x <= xr + hw + 2; x++) for (int z = zc - 2; z <= zc + 2; z++) if (!area(x, z) || kind[z * W + x] == 0) okL = false;
+            if (okL) archGate(xr, zc, hw, base, grand ? base + 2 : base - 3, grand);
+            int zTop = z0 - (hi - lo) - 2;
+            spawns.add(new int[]{1, xr - hw + 1, hi, zTop}); spawns.add(new int[]{1, xr + hw - 1, hi, zTop});
+            if (grand) { spawns.add(new int[]{1, xr - 3, 0, z0 + 3}); spawns.add(new int[]{1, xr + 3, 0, z0 + 3}); }
+        }
+    }
+
+    /** hauteur du sommet de l'ogive (au-dessus de l'axe) pour une demi-ouverture hw, a l'abscisse ax */
+    private static int archTop(int hw, int ax, int ys) {
+        double q = 4.0 * hw * hw - (double) (hw + ax) * (hw + ax);
+        return ys + (int) Math.floor(Math.sqrt(Math.max(0, q)));
+    }
+
+    /** porche : masse pleine entre les deux tours, ouverte par une ogive qui laisse passer la rampe ; herse relevee, lanternes, clef d'or, bannieres, creneaux */
+    private void archGate(int xr, int zc, int hw, int base, int ys, boolean grand) {
+        int half = hw + 2;
+        int yTop = archTop(hw, 0, ys) + 4;
+        for (int dx = -half; dx <= half; dx++) for (int z = zc - 2; z <= zc + 2; z++) {
+            int ax = Math.abs(dx), x = xr + dx;
+            for (int y = base; y <= yTop; y++) {
+                boolean open = ax <= hw && y <= archTop(hw, ax, ys);
+                if (open) continue;
+                boolean edge = ax <= hw + 1 && (y == archTop(hw, Math.min(ax, hw), ys) + 1 || ax == hw + 1 && y <= ys + 1);
+                boolean frontFace = z == zc + 2 || z == zc - 2;
+                int id = edge && frontFace ? QB : (y % 9 == 8 ? YB : (rnd(x, y, z) < 0.05 ? PD : WB));
+                set(x, y, z, id);
             }
+            // creneaux au sommet
+            if (z == zc - 2 || z == zc + 2) { set(x, yTop + 1, z, WB); if ((x + z) % 2 == 0) set(x, yTop + 2, z, WB); }
+            else set(x, yTop + 1, z, WB);
+        }
+        // herse relevee : barreaux dans le haut de l'ogive, sur la face nord
+        for (int dx = -hw + 1; dx <= hw - 1; dx++) for (int y = ys + 2; y < archTop(hw, Math.abs(dx), ys); y++) set(xr + dx, y, zc - 1, BARS);
+        // lanternes pendues sous la voute, clef d'or, bannieres sur la face sud
+        for (int dx : new int[]{-2, 2}) set(xr + dx, archTop(hw, 2, ys), zc + 1, HLANTERN);
+        set(xr, archTop(hw, 0, ys) + 1, zc + 2, GOLD);
+        for (int dx = -half; dx <= half; dx++) {
+            int ax = Math.abs(dx);
+            if (ax != hw + 1) continue;
+            for (int j = 0; j < (grand ? 7 : 5); j++) set(xr + dx, yTop - 1 - j, zc + 3, j == (grand ? 6 : 4) ? WOOL_G : WOOL_W);
         }
     }
 
@@ -405,6 +470,30 @@ public final class TirithPlan {
         int hh = 5 + (int) (rnd(ix, iz, seed) * 4) + (k >= 4 ? 1 : 0);
         int roofKind = rnd(iz, ix, 5) < 0.35 ? 1 : 0;
         int wallMat = rnd(ix, iz, 6) < 0.38 ? YB : WB, bandMat = wallMat == WB ? YB : WB;
+        java.util.Set<Long> inside = new java.util.HashSet<>();
+        for (int[] c : cells) inside.add(((long) c[0] << 32) | (c[1] & 0xffffffffL));
+        // la porte : une seule, la cellule de la face tournee vers la rue la plus proche de l'axe, avec un voisin exterieur a l'air libre
+        double nx = faceIn ? -rx : rx, nz = faceIn ? -rz : rz;                          // normale sortante de la facade
+        int[] doorCell = null; int doorDir = -1; double bestA = 9;
+        for (int[] c : cells) {
+            int x = c[0], z = c[1];
+            double ax = x + 0.5 - hx, az = z + 0.5 - hz;
+            double a = ax * tx + az * tz, b = ax * rx + az * rz;
+            boolean doorFace = faceIn ? b < -d / 2 + 1.1 : b > d / 2 - 1.1;
+            if (!doorFace || Math.abs(a) > 1.6) continue;
+            int bestDir = -1; double bestDot = -9;
+            int[][] o4 = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};                             // N E S W
+            for (int dI = 0; dI < 4; dI++) {
+                int xx = x + o4[dI][0], zz = z + o4[dI][1];
+                if (inside.contains(((long) xx << 32) | (zz & 0xffffffffL))) continue;
+                if (!area(xx, zz) || kind[zz * W + xx] != 1) continue;
+                double dot = o4[dI][0] * nx + o4[dI][1] * nz;
+                if (dot > bestDot) { bestDot = dot; bestDir = dI; }
+            }
+            if (bestDir < 0 || bestDot < 0.2) continue;
+            if (Math.abs(a) < bestA) { bestA = Math.abs(a); doorCell = c; doorDir = bestDir; }
+        }
+        int roofX = 0, roofZ = 0, roofH = -1;
         for (int[] c : cells) {
             int x = c[0], z = c[1];
             double ax = x + 0.5 - hx, az = z + 0.5 - hz;
@@ -418,11 +507,12 @@ public final class TirithPlan {
             }
             occ[z * W + x] = true;
             boolean doorFace = faceIn ? b < -d / 2 + 1.1 : b > d / 2 - 1.1;
-            boolean door = edge && doorFace && Math.abs(a) < 0.9;
+            boolean door = doorCell != null && doorCell[0] == x && doorCell[1] == z;
             for (int y = 0; y <= hh; y++) {
                 int id;
                 if (!edge) id = y == 0 ? WB : AIR;
-                else if (door && y >= 1 && y <= 2) id = AIR;
+                else if (door && y == 1) id = DOOR + doorDir * 2;
+                else if (door && y == 2) id = DOOR + doorDir * 2 + 1;
                 else if (door && y == 3) id = DPLANKS;
                 else if (y % 4 == 0 && y > 0) id = bandMat;
                 else if (y >= 2 && y <= 3 && ((x * 3 + z * 5) % 3 == 0) && !doorFace) id = GLASS;
@@ -438,7 +528,13 @@ public final class TirithPlan {
                 if (j == top && rh > 3) id = roofKind == 1 ? COPPER_SLAB : SLATE_SLAB;
                 set(x, base + hh + 1 + j, z, id);
             }
+            if (rh > roofH && edge == false) { roofH = rh; roofX = x; roofZ = z; }
             if (edge && !door && ((x + z) % 7 == 3) && rnd(x, z, 9) < 0.5) { set(x, base + hh + 5, z, FENCE_B); }
+        }
+        if (roofH >= 1 && rnd(ix, iz, 72) < 0.55) {                                       // cheminee fumante
+            int ytop = base + hh + 1 + Math.min(roofH, 3);
+            set(roofX, ytop, roofZ, SBR); set(roofX, ytop + 1, roofZ, SBR); set(roofX, ytop + 2, roofZ, SBR);
+            set(roofX, ytop + 3, roofZ, CAMPF);
         }
         return true;
     }
@@ -464,8 +560,118 @@ public final class TirithPlan {
             if (!inBand) continue;
             double q = rnd(x, z, 41);
             int b = FL[k];
-            if (q < 0.045) { set(x, b, z, LEAF); if (rnd(x, z, 42) < 0.5) set(x, b + 1, z, LEAF); else set(x, b + 1, z, FLOWER1); occ[z * W + x] = true; }
+            if (q < 0.045) { set(x, b, z, rnd(x, z, 44) < 0.5 ? LEAF : OAKLEAF); if (rnd(x, z, 42) < 0.5) set(x, b + 1, z, rnd(x, z, 45) < 0.5 ? LEAF : OAKLEAF); else set(x, b + 1, z, FLOWER1); occ[z * W + x] = true; }
             else if (q < 0.07) { set(x, b, z, rnd(x, z, 43) < 0.5 ? FLOWER1 : FLOWER2); occ[z * W + x] = true; }
+            else if (q < 0.082) { set(x, b, z, BARREL); if (rnd(x, z, 46) < 0.4) set(x, b + 1, z, BARREL); occ[z * W + x] = true; }
+            else if (q < 0.09) { set(x, b, z, HAY); occ[z * W + x] = true; }
+            else if (q < 0.097) { set(x, b, z, rnd(x, z, 47) < 0.5 ? PUMPKIN : MELON); occ[z * W + x] = true; }
+            else if (q < 0.1 && freeCellAny(x + 1, z) && freeCellAny(x, z + 1) && freeCellAny(x + 1, z + 1)) {   // petit arbre de ruelle
+                for (int dx = 0; dx <= 1; dx++) for (int dz = 0; dz <= 1; dz++) occ[(z + dz) * W + x + dx] = true;
+                for (int yy = 0; yy < 3; yy++) set(x, b + yy, z, DLOG_Y);
+                for (int dx = -1; dx <= 2; dx++) for (int dz = -1; dz <= 2; dz++) for (int dy = 3; dy <= 5; dy++) {
+                    double e = Math.pow((dx - 0.5) / 2.2, 2) + Math.pow((dz - 0.5) / 2.2, 2) + Math.pow((dy - 3.8) / 1.5, 2);
+                    if (e < 1 && !(dx == 0 && dz == 0 && dy < 4)) setIfAir(x + dx, b + dy, z + dz, rnd(x + dx, dy, z + dz) < 0.5 ? OAKLEAF : LEAF);
+                }
+            }
+        }
+        // etals de marche dans la rue, sous une toile de laine
+        for (double th = 0.55; th < Math.PI - 0.4; th += 31.0 / (ro - 10)) {
+            double rr = ro - 9.7;
+            int x0 = (int) Math.round(CX + Math.cos(th) * rr), z0 = (int) Math.round(CZ + Math.sin(th) * rr);
+            double tgx = -Math.sin(th), tgz = Math.cos(th);
+            int ux = Math.abs(tgx) > Math.abs(tgz) ? (tgx > 0 ? 1 : -1) : 0, uz = ux == 0 ? (tgz > 0 ? 1 : -1) : 0;
+            int vx = -uz, vz = ux;                                                         // normale (vers l'exterieur ou l'interieur, peu importe)
+            boolean okS = true;
+            for (int i = -1; i <= 1 && okS; i++) for (int j = 0; j <= 1; j++) {
+                int xx = x0 + ux * i + vx * j, zz = z0 + uz * i + vz * j;
+                if (!freeCellAny(xx, zz) || ring[zz * W + xx] != k || nearRamp(xx, zz)) { okS = false; break; }
+            }
+            if (!okS || rnd(x0, z0, 61) < 0.25) continue;
+            int b = FL[k];
+            for (int i = -1; i <= 1; i++) for (int j = 0; j <= 1; j++) {
+                int xx = x0 + ux * i + vx * j, zz = z0 + uz * i + vz * j;
+                occ[zz * W + xx] = true;
+                set(xx, b + 3, zz, (i + j + 2) % 2 == 0 ? WOOL_W : WOOL_G);
+            }
+            for (int i = -1; i <= 1; i += 2) for (int j = 0; j <= 1; j++) { int xx = x0 + ux * i + vx * j, zz = z0 + uz * i + vz * j; if (j == 1) { set(xx, b, zz, FENCE_B); set(xx, b + 1, zz, FENCE_B); set(xx, b + 2, zz, FENCE_B); } }
+            for (int i = -1; i <= 1; i++) {
+                int xx = x0 + ux * i, zz = z0 + uz * i;                                    // comptoir
+                int pick = (int) (rnd(xx, zz, 62) * 4);
+                set(xx, b, zz, pick == 0 ? BARREL : pick == 1 ? HAY : pick == 2 ? MELON : PUMPKIN);
+                occ[zz * W + xx] = true;
+            }
+            spawns.add(new int[]{0, x0 + vx, b, z0 + vz});
+        }
+        // passants dans la rue
+        for (int i = 0; i < 4; i++) {
+            double th = 0.3 + rnd(k, i, 63) * (Math.PI - 0.6), rr = ro - 10.0;
+            int x = (int) Math.round(CX + Math.cos(th) * rr), z = (int) Math.round(CZ + Math.sin(th) * rr);
+            if (freeCellAny(x, z) && ring[z * W + x] == k && !nearRamp(x, z)) spawns.add(new int[]{0, x, FL[k], z});
+        }
+        // etendards de laine pendus au haut du rempart qui domine la rue
+        if (k >= 1) for (double th = 0.15; th < Math.PI - 0.15; th += (10.0 + 5 * rnd(k, (int) (th * 100), 64)) / (R[k] - 4)) {
+            for (int t = 0; t < 2; t++) {
+                double a2 = th + t * 1.0 / R[k];
+                int x = (int) Math.round(CX + Math.cos(a2) * (R[k] + 0.7)), z = (int) Math.round(CZ + Math.sin(a2) * (R[k] + 0.7));
+                if (!area(x, z) || nearRamp(x, z)) continue;
+                for (int j = 0; j < 7; j++) setIfAir(x, FL[k] - 3 - j, z, j == 6 ? WOOL_G : WOOL_W);
+            }
+        }
+    }
+
+    private boolean freeCellAny(int x, int z) { return area(x, z) && kind[z * W + x] == 1 && !occ[z * W + x]; }
+
+    // ------------------------------------------------------------------ rochers, eboulis et arbres : la falaise et l'eperon ne sont plus lisses
+    private int boulderBlock(int x, int y, int z) {
+        double q = rnd(x, y, z);
+        return q < 0.28 ? STONE : q < 0.5 ? ANDESITE : q < 0.64 ? CALCITE : q < 0.76 ? MOSSC : q < 0.86 ? TUFF : q < 0.94 ? DIORITE : COBBLE;
+    }
+
+    private void blob(double cx, double cy, double cz, double rad) {
+        int rr = (int) Math.ceil(rad) + 1;
+        for (int dx = -rr; dx <= rr; dx++) for (int dy = -rr; dy <= rr; dy++) for (int dz = -rr; dz <= rr; dz++) {
+            int bx = (int) Math.round(cx) + dx, by = (int) Math.round(cy) + dy, bz = (int) Math.round(cz) + dz;
+            double e = ((bx - cx) * (bx - cx) + (by - cy) * (by - cy) * 1.3 + (bz - cz) * (bz - cz)) / (rad * rad) + 0.3 * vn(bx / 1.7, bz / 1.7 + by * 0.5, 58);
+            if (e < 1) setIfAir(bx, by, bz, boulderBlock(bx, by, bz));
+        }
+    }
+
+    private void rocks() {
+        // rochers eboules au pied et sur les replats de la montagne
+        for (int i = 0; i < 4200; i++) {
+            int x = (int) (rnd(i, 1, 2) * W), z = (int) (rnd(i, 3, 4) * D);
+            int kd = kind[z * W + x], f = fill[z * W + x];
+            if (kd != 2 && kd != 5) continue;
+            if (Math.abs(x - CX) < 38 && z > CZ - 32) continue;                              // la citadelle
+            if (f > 150 && rnd(i, 5, 6) > 0.04) continue;
+            double rad = 1.5 + rnd(i, 7, 8) * 2.8;
+            if (rnd(i, 9, 10) < 0.06) rad += 2.5;                                            // quelques gros blocs
+            blob(x + 0.5, f + rad * 0.35, z + 0.5, rad);
+        }
+        // arbres et buissons sur les pentes herbeuses
+        for (int i = 0; i < 1400; i++) {
+            int x = (int) (rnd(i, 11, 12) * W), z = (int) (rnd(i, 13, 14) * D);
+            int kd = kind[z * W + x], f = fill[z * W + x];
+            if ((kd != 5 && kd != 2) || f > 78 || get(x, f, z) != GRASS || get(x, f + 1, z) != AIR) continue;
+            if (rnd(i, 15, 16) < 0.55) { set(x, f + 1, z, OAKLEAF); if (rnd(i, 17, 18) < 0.5) set(x, f + 2, z, OAKLEAF); continue; }
+            int th = 4 + (int) (rnd(i, 19, 20) * 3);
+            for (int y = 1; y <= th; y++) set(x, f + y, z, DLOG_Y);
+            for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) for (int dy = th - 1; dy <= th + 2; dy++) {
+                double e = (dx * dx + dz * dz) / 5.0 + (dy - th - 0.5) * (dy - th - 0.5) / 2.2;
+                if (e < 1) setIfAir(x + dx, f + dy, z + dz, OAKLEAF);
+            }
+        }
+        // sur l'eperon : des ressauts de roche qui sortent de la paroi, entre les rues (jamais dans le passage)
+        for (int i = 0; i < 520; i++) {
+            double dz = 6 + rnd(i, 21, 22) * 92;
+            int z = (int) (CZ + dz), side = rnd(i, 23, 24) < 0.5 ? -1 : 1;
+            int y = 14 + (int) (rnd(i, 25, 26) * 104);
+            if (y % 18 < 14 || y % 18 > 16) continue;
+            int hw = (int) prowHW(dz) + 5;
+            int xe = -1;
+            for (int xx = CX + side * hw; Math.abs(xx - CX) >= 0 && xx != CX; xx -= side) { if (get(xx, y, z) != AIR) { xe = xx; break; } }
+            if (xe < 0) continue;
+            blob(xe + side * 0.9, y, z + 0.5, 1.4 + rnd(i, 27, 28) * 2.0);
         }
     }
 
@@ -560,7 +766,7 @@ public final class TirithPlan {
     private void wings(int cx, int cz, int y0) {
         for (int sd = -1; sd <= 1; sd += 2) {
             int xa = sd < 0 ? cx - 21 : cx + 12, xb = sd < 0 ? cx - 12 : cx + 21;
-            int za = cz - 3, zb = cz + 17, hh = 20;
+            int za = cz - 13, zb = cz + 3, hh = 20;                                  // les ailes s'arretent avant la rampe du flanc, qui debouche dans la cour
             for (int x = xa; x <= xb; x++) for (int z = za; z <= zb; z++) {
                 boolean edge = x == xa || x == xb || z == za || z == zb;
                 boolean inner = sd < 0 ? x == xb : x == xa;
@@ -585,7 +791,7 @@ public final class TirithPlan {
             for (int z = za + 2; z <= zb - 2; z++) set(xc, y0 + 7, z, QB);
             // porte
             int xd = sd < 0 ? xb : xa;
-            for (int y = 0; y < 3; y++) for (int dz = -1; dz <= 0; dz++) set(xd, y0 + y, cz + 9 + dz, AIR);
+            for (int y = 0; y < 3; y++) for (int dz = -1; dz <= 0; dz++) set(xd, y0 + y, cz - 5 + dz, AIR);
         }
     }
 
@@ -603,6 +809,70 @@ public final class TirithPlan {
         for (int x : new int[]{cx - 2, cx + 2}) { set(x, y0 + 9, z, CHAIN); set(x, y0 + 8, z, HLANTERN); }
     }
 
+    /** l'Arbre Blanc : vieux tronc noueux a racines saillantes, branches qui se tordent vers le haut, grosses touffes de feuilles entierement blanches qui pendent un peu */
+    private void whiteTree(int tx, int tz, int y0) {
+        java.util.Random r = new java.util.Random(7717);
+        double ccx = tx + 0.5, ccz = tz + 0.5;
+        int h = 17;
+        for (int y = 1; y <= h; y++) {
+            double t = y / (double) h;
+            double rad = y < 3 ? 2.7 : t < 0.55 ? 1.95 : t < 0.8 ? 1.45 : 1.0;
+            for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++) {
+                double d = Math.hypot(tx + dx - ccx, tz + dz - ccz);
+                if (d <= rad) set(tx + dx, y0 + y, tz + dz, WTLOG);
+            }
+        }
+        // racines saillantes
+        int roots = 6;
+        for (int i = 0; i < roots; i++) {
+            double a = (i + r.nextDouble() * 0.6) * Math.PI * 2 / roots;
+            double x = Math.cos(a) * 2.3, z = Math.sin(a) * 2.3;
+            int y = 1;
+            int len = 2 + r.nextInt(3);
+            for (int k = 0; k < len; k++) {
+                x += Math.cos(a); z += Math.sin(a);
+                if (k > 0 && r.nextBoolean()) y--;
+                int bx = (int) Math.round(ccx + x - 0.5), bz = (int) Math.round(ccz + z - 0.5);
+                if (Math.abs(bx - tx) > 3 || Math.abs(bz - tz) > 3) continue;                    // reste dans le parterre
+                set(bx, y0 + Math.max(0, y), bz, WTLOG);
+            }
+        }
+        // branches : surtout vers le sud et les cotes, pour ne pas manger la tour
+        java.util.List<double[]> tips = new java.util.ArrayList<>();
+        int branches = 8;
+        for (int i = 0; i < branches; i++) {
+            double a = -0.15 * Math.PI + (i + r.nextDouble() * 0.8) * 1.3 * Math.PI / branches;
+            double startT = 0.38 + r.nextDouble() * 0.55;
+            int len = 5 + r.nextInt(5);
+            double rise = 0.3 + r.nextDouble() * 0.45;
+            double x = 0, z = 0, y = h * startT;
+            for (int k = 0; k < len; k++) {
+                x += Math.cos(a); z += Math.sin(a); y += rise;
+                a += (r.nextDouble() - 0.5) * 0.4;
+                set((int) Math.round(ccx + x - 0.5), y0 + (int) Math.round(y), (int) Math.round(ccz + z - 0.5), WTLOG);
+                if (k > 1 && k % 2 == 0) set((int) Math.round(ccx + x - 0.5), y0 + (int) Math.round(y) - 1, (int) Math.round(ccz + z - 0.5), WTLOG);
+            }
+            tips.add(new double[]{ccx + x - 0.5, y0 + y + 1, ccz + z - 0.5, 3.4 + r.nextDouble() * 0.8, 0.75});
+        }
+        tips.add(new double[]{ccx - 0.5, y0 + h + 1, ccz - 0.5, 5.0, 0.8});
+        tips.add(new double[]{ccx - 0.5, y0 + h - 4, ccz - 0.5, 3.4, 0.6});
+        for (double[] t : tips) {
+            int rr = (int) Math.ceil(t[3]) + 1;
+            for (int dx = -rr; dx <= rr; dx++) for (int dz = -rr; dz <= rr; dz++) for (int dy = -rr; dy <= rr; dy++) {
+                double e = (dx * dx + dz * dz) / (t[3] * t[3]) + dy * dy / (t[3] * t[4] * t[3] * t[4]);
+                int bx = (int) Math.round(t[0]) + dx, by = (int) Math.round(t[1]) + dy, bz = (int) Math.round(t[2]) + dz;
+                e += 0.35 * vn(bx / 2.0 + by * 0.4, bz / 2.0, 23) ;
+                if (e >= 1) continue;
+                setIfAir(bx, by, bz, rnd(bx, by, bz) < 0.3 ? WTBLOOM : WTLEAF);
+                // franges pendantes sous la touffe
+                if (e > 0.62 && dy < 0 && rnd(bx, by, bz + 5) < 0.22) {
+                    int len = 1 + (int) (rnd(bz, by, bx) * 3);
+                    for (int j = 1; j <= len; j++) setIfAir(bx, by - j, bz, WTLEAF);
+                }
+            }
+        }
+    }
+
     private void court(int cx, int cz, int y0) {
         hall_x = cx; hall_z = cz;
         // l'Arbre Blanc, dans un parterre souleve, au nord de la cour
@@ -613,15 +883,9 @@ public final class TirithPlan {
             if (!rim) { set(tx + dx, y0 - 1, tz + dz, DIRT); if (rnd(tx + dx, 5, tz + dz) < 0.25) set(tx + dx, y0 + 1, tz + dz, rnd(dx, 6, dz) < 0.5 ? FLOWER1 : FLOWER2); }
         }
         int[][] br = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-        // tronc droit et epais (2 x 2), couronne dense et verte
-        for (int y = 1; y <= 11; y++) for (int dx = 0; dx <= 1; dx++) for (int dz = 0; dz <= 1; dz++) set(tx + dx, y0 + y, tz + dz, WTLOG);
-        for (int dx = -1; dx <= 2; dx++) for (int dz = -1; dz <= 2; dz++) if ((dx == -1 || dx == 2) != (dz == -1 || dz == 2)) set(tx + dx, y0 + 1, tz + dz, WTLOG);
-        for (int dx = -9; dx <= 10; dx++) for (int dz = -9; dz <= 10; dz++) for (int dy = 7; dy <= 22; dy++) {
-            double ex = dx - 0.5, ez = dz - 0.5;
-            double e = Math.pow(ex / 9.2, 2) + Math.pow(ez / 9.2, 2) + Math.pow((dy - 14.5) / 7.5, 2);
-            e += 0.12 * vn(tx + dx / 3.0, tz + dz / 3.0 + dy * 0.7, 21);
-            if (e < 1) setIfAir(tx + dx, y0 + dy, tz + dz, vn(tx + dx / 2.5, tz + dz / 2.5 + dy * 0.5, 22) > 0.1 ? WTBLOOM : WTLEAF);
-        }
+        whiteTree(tx, tz, y0);
+        spawns.add(new int[]{1, cx - 3, y0 + 1, cz - 4}); spawns.add(new int[]{1, cx + 3, y0 + 1, cz - 4});
+        spawns.add(new int[]{0, cx - 6, y0 + 1, cz + 12}); spawns.add(new int[]{0, cx + 6, y0 + 1, cz + 14});
         // fontaine : bassin carre, pilier central
         int fx = cx, fz = cz + 6;
         for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++) {

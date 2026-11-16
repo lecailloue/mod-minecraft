@@ -220,14 +220,14 @@ public final class SelfTest {
         }
         int[] mt = spots.get("minas_terith");
         if (mt != null) {                                                    // Minas Tirith : sept niveaux, tour d'Ecthelion, cour, montagne
-            for (int dx = -10; dx <= 10; dx++) for (int dz = -9; dz <= 9; dz++) lands.getChunk((mt[0] >> 4) + dx, (mt[1] >> 4) + dz);
-            topDown(lands, mt[0] - 160, mt[1] - 135, mt[0] + 159, mt[1] + 134, new File(OUT, "tirith_dessus.png"), 2);
+            for (int dx = -10; dx <= 10; dx++) for (int dz = -11; dz <= 11; dz++) lands.getChunk((mt[0] >> 4) + dx, (mt[1] >> 4) + dz);
+            topDown(lands, mt[0] - 160, mt[1] - 170, mt[0] + 159, mt[1] + 169, new File(OUT, "tirith_dessus.png"), 2);
             TirithPlan tp = TirithPlan.get();
             int by = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, mt[0] - 50, mt[1] + 135);
             section(lands, mt[0] - 160, mt[0] + 159, mt[1] + 60, by - 10, by + 150, new File(OUT, "tirith_coupe.png"), 2);
             int ring0 = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, mt[0] - 40, mt[1] + 100);
             int plat = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, mt[0], mt[1] + 25);
-            int tow = lands.getHeight(Heightmap.Types.WORLD_SURFACE, mt[0], mt[1] + tp.tower_z - 135);
+            int tow = lands.getHeight(Heightmap.Types.WORLD_SURFACE, mt[0], mt[1] + tp.tower_z - TirithPlan.D / 2);
             int mont = lands.getHeight(Heightmap.Types.WORLD_SURFACE, mt[0], mt[1] - 70);
             log("minas_terith : sol " + by + " ; niveau 1 " + ring0 + " ; cour " + plat + " ; tour " + tow + " ; montagne " + mont);
             if (ring0 - by < 12) fail("minas_terith : pas de premier rempart (" + (ring0 - by) + ")");

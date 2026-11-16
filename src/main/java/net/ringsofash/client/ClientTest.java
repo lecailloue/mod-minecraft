@@ -299,12 +299,18 @@ public final class ClientTest {
         }));
     }
 
+    /** une porte de maison du plan dans le cadre donne : {x, y, z, direction exterieure} */
+    private static int[] findDoor(net.ringsofash.world.TirithPlan tp, int x0, int x1, int z0, int z1) {
+        for (int z = z0; z <= z1; z++) for (int x = x0; x <= x1; x++) for (int y = 20; y < 130; y++) {
+            int id = tp.get(x, y, z) & 255;
+            if (id >= net.ringsofash.world.TirithPlan.DOOR && id < net.ringsofash.world.TirithPlan.DOOR + 8 && ((id - net.ringsofash.world.TirithPlan.DOOR) & 1) == 0) return new int[]{x, y, z, (id - net.ringsofash.world.TirithPlan.DOOR) / 2};
+        }
+        return null;
+    }
+
     private static void scenes() {
         // l'Oeil de Sauron en premier : la serie de captures est longue et peut etre coupee par le delai du CI
         eyeT("95_oeil_sud", 1712, 1742, 0, 0, 40, 180F, 0F, 6000);
-        eyeT("96_oeil_est", 1712, 1742, 40, 0, 0, 90F, 0F, 6000);
-        eyeT("97_oeil_loin", 1712, 1742, 0, -35, 150, 180F, 14F, 6000);
-        eyeT("98_oeil_nuit", 1712, 1742, 0, 0, 60, 180F, 0F, 18000);
         eyeT("99_oeil_haut", 1712, 1742, 20, 25, 30, 150F, 35F, 6000);
         SCENES.add(new Scene("00_scene", 120, p -> {
             MinecraftServer s = p.server;
@@ -321,35 +327,57 @@ public final class ClientTest {
             clear(ow);
             view(p, ow, SX + 0.5, SY + 1.2, SZ, 0F, 0F);
         }));
-        // Minas Tirith (place (480, 1855), plan de 320 x 270 centre sur le lieu) ; py = sol de la plaine devant la porte ; coordonnees (dx, dz) relatives au centre du plan
+        // Minas Tirith (place (480, 1855), plan de 320 x 340 centre sur le lieu) ; py = niveau 0 du plan ; (px, y, pz) = coordonnees du plan (x vers l'est, z vers le sud)
         final int TX = 480, TZ = 1855;
-        Object[][] tv = {{"200_tirith_loin_sud", 0, 200, 70, 180F, -22F, 6000}, {"201_tirith_sud_ouest", -150, 140, 45, -135F, -16F, 6000}, {"202_tirith_porte", 0, 150, 6, 180F, -4F, 6000},
-                {"203_tirith_rue", 0, 112, 24, 180F, -8F, 6000}, {"204_tirith_cour", 0, 0, 0, 0F, 0F, 6000}, {"205_tirith_tour", 0, 0, 0, 0F, 0F, 6000},
-                {"206_tirith_fontaine", 0, 0, 0, 0F, 0F, 6000}, {"207_tirith_nuit", 0, 200, 70, 180F, -22F, 18000}, {"208_tirith_est", 200, 40, 120, 90F, -14F, 6000}};
+        final String[] tn = {"200_tirith_loin_sud", "201_tirith_sud_ouest", "202_tirith_porte", "203_tirith_route", "204_tirith_cour", "205_tirith_tour", "206_tirith_arbre", "207_tirith_nuit",
+                "208_tirith_est", "209_tirith_crete", "210_tirith_falaise", "211_tirith_escalier", "212_tirith_tunnel", "213_tirith_maison", "214_tirith_rue", "215_tirith_arbre_large",
+                "216_tirith_porte_haut", "217_tirith_route_cote", "218_tirith_montagne_ouest"};
         SCENES.add(new Scene("199_tirith_chargement", 100, p -> {
             ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
             for (int dx = -11; dx <= 11; dx++) for (int dz = -9; dz <= 15; dz++) lands.getChunk((TX >> 4) + dx, (TZ >> 4) + dz);
             view(p, lands, TX + 0.5, 200, TZ + 0.5, 180F, 0F);
         }));
-        for (int k = 0; k < tv.length; k++) {
+        for (int k = 0; k < tn.length; k++) {
             final int kk = k;
-            final Object[] c = tv[k];
-            SCENES.add(new Scene((String) c[0], 420, p -> {
+            SCENES.add(new Scene(tn[k], 420, p -> {
                 ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
                 for (int dx = -11; dx <= 11; dx++) for (int dz = -9; dz <= 15; dz++) lands.getChunk((TX >> 4) + dx, (TZ >> 4) + dz);
                 net.ringsofash.world.TirithPlan tp = net.ringsofash.world.TirithPlan.get();
+                final int CX = net.ringsofash.world.TirithPlan.CX, CZ = net.ringsofash.world.TirithPlan.CZ;
                 int py = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, TX - 40, TZ + 100) - 18;               // le premier niveau est a 18 blocs au-dessus de la plaine
+                int ox = TX - 160, oz = TZ - net.ringsofash.world.TirithPlan.D / 2;                          // origine du plan : x_plan = x_monde - ox
                 int top = py + net.ringsofash.world.TirithPlan.PROW_TOP;
-                int ox = TX - 160, oz = TZ - 135;                                    // origine du plan : x_plan = x_monde - ox
-                lands.setDayTime((Integer) c[6]);
-                int rd = (kk == 0 || kk == 1 || kk == 7 || kk == 8) ? 20 : 12;
+                lands.setDayTime(kk == 7 ? 18000 : 6000);
+                int rd = (kk == 0 || kk == 1 || kk == 7 || kk == 8 || kk == 17 || kk == 18) ? 20 : 12;
                 p.server.getPlayerList().setViewDistance(rd);
                 net.minecraft.client.Minecraft.getInstance().options.renderDistance().set(rd);
                 switch (kk) {
+                    case 0, 7 -> view(p, lands, TX + 0.5, py + 70, TZ + 200.5, 180F, -22F);
+                    case 1 -> view(p, lands, TX - 149.5, py + 45, TZ + 140.5, -135F, -16F);
+                    case 2 -> look(p, lands, ox + CX + 0.5, py + 8, oz + CZ + 160.5, ox + CX + 0.5, py + 14, oz + CZ + 118);                  // la grande porte, depuis l'esplanade
+                    case 3 -> look(p, lands, ox + CX + 0.5, py + 12, oz + 336.5, ox + CX + 0.5, py + 8, oz + CZ + 110);                       // la route, depuis son bout, vers la porte
                     case 4 -> look(p, lands, TX + 7.5, top + 5, oz + tp.court_z + 8.5, TX, top + 8, oz + tp.tower_z + 6);                       // la cour, du portail vers la tour
                     case 5 -> look(p, lands, TX - 30.5, top + 34, oz + tp.court_z + 22.5, TX, top + 70, oz + tp.tower_z);                         // la tour d'Ecthelion
                     case 6 -> look(p, lands, TX + 9.5, top + 5, oz + tp.court_z + 6.5, TX - 2, top + 3, oz + tp.court_z - 4);                     // fontaine et Arbre Blanc
-                    default -> view(p, lands, TX + (Integer) c[1] + 0.5, py + (Integer) c[3], TZ + (Integer) c[2] + 0.5, (Float) c[4], (Float) c[5]);
+                    case 8 -> view(p, lands, TX + 200.5, py + 120, TZ + 40.5, 90F, -14F);
+                    case 9 -> look(p, lands, ox + CX - 40.5, py + 44, oz + CZ + 96.5, ox + CX - 4, py + 74, oz + CZ + 78);                     // l'eperon de roche vu de la rue du niveau 2
+                    case 10 -> look(p, lands, ox + CX - 95.5, py + 150, oz + CZ + 20.5, ox + CX - 15, py + 185, oz + CZ - 28);                  // la falaise de la montagne
+                    case 11 -> look(p, lands, ox + CX + 34.5, py + 112, oz + CZ + 36.5, ox + CX + 21, py + 126, oz + CZ + 9);                  // la rampe du flanc, qui debouche dans la cour
+                    case 12 -> look(p, lands, ox + CX - 20.5, py + 56, oz + CZ + 79.5, ox + CX + 14, py + 57, oz + CZ + 79.5);                  // un tunnel sous l'eperon
+                    case 13 -> {                                                                                                               // une porte de maison, de pres
+                        int[] d = findDoor(tp, CX - 48, CX - 16, CZ + 60, CZ + 125);
+                        if (d == null) view(p, lands, TX + 0.5, py + 40, TZ + 60.5, 180F, 0F);
+                        else {
+                            int[][] o4 = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+                            double cxw = ox + d[0] + 0.5 + o4[d[3]][0] * 4.0, czw = oz + d[2] + 0.5 + o4[d[3]][1] * 4.0;
+                            look(p, lands, cxw, py + d[1] + 2.2, czw, ox + d[0] + 0.5, py + d[1] + 1.3, oz + d[2] + 0.5);
+                        }
+                    }
+                    case 14 -> look(p, lands, ox + CX + 22, py + 74, oz + CZ + 57, ox + CX + 58, py + 78, oz + CZ + 32);                      // une rue du niveau 4, ses etals et ses passants
+                    case 15 -> look(p, lands, ox + CX + 15.5, top + 16, oz + CZ + 30.5, ox + CX, top + 14, oz + CZ + 8);                       // l'Arbre Blanc en entier
+                    case 16 -> look(p, lands, ox + CX + 0.5, py + 40, oz + CZ + 150.5, ox + CX + 0.5, py + 30, oz + CZ + 116);                 // le porche en ogive, d'en haut
+                    case 17 -> view(p, lands, TX - 60.5, py + 14, TZ + 160.5, -45F, -3F);                                                        // la route vue de cote
+                    default -> view(p, lands, TX - 200.5, py + 130, TZ + 20.5, -90F, -10F);                                                      // la montagne, a l'ouest
                 }
             }));
         }

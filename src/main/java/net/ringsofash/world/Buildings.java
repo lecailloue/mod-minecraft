@@ -1137,6 +1137,24 @@ public final class Buildings {
         p[TirithPlan.QUARTZ_SLAB] = slab(Blocks.QUARTZ_SLAB, false);
         p[TirithPlan.QUARTZ_SLAB_TOP] = slab(Blocks.QUARTZ_SLAB, true);
         p[TirithPlan.GOLD] = Blocks.GOLD_BLOCK.defaultBlockState();
+        p[TirithPlan.MOSS] = Blocks.MOSS_BLOCK.defaultBlockState();
+        p[TirithPlan.MOSSC] = Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+        p[TirithPlan.PATH] = Blocks.DIRT_PATH.defaultBlockState();
+        p[TirithPlan.COARSE] = Blocks.COARSE_DIRT.defaultBlockState();
+        p[TirithPlan.SBRS] = slab(Blocks.STONE_BRICK_SLAB, false);
+        p[TirithPlan.BARREL] = Blocks.BARREL.defaultBlockState();
+        p[TirithPlan.HAY] = Blocks.HAY_BLOCK.defaultBlockState();
+        p[TirithPlan.CAMPF] = Blocks.CAMPFIRE.defaultBlockState();
+        p[TirithPlan.SBRW] = Blocks.STONE_BRICK_WALL.defaultBlockState();
+        p[TirithPlan.MELON] = Blocks.MELON.defaultBlockState();
+        p[TirithPlan.PUMPKIN] = Blocks.PUMPKIN.defaultBlockState();
+        p[TirithPlan.OAKLEAF] = Blocks.OAK_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+        Direction[] dd = {N, E, S, W};
+        for (int d = 0; d < 4; d++) {                                                   // d : cote exterieur de la porte ; le vantail est a ras de la facade, donc FACING pointe vers l'interieur
+            BlockState door = Blocks.DARK_OAK_DOOR.defaultBlockState().setValue(net.minecraft.world.level.block.DoorBlock.FACING, dd[(d + 2) % 4]);
+            p[TirithPlan.DOOR + d * 2] = door.setValue(net.minecraft.world.level.block.DoorBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER);
+            p[TirithPlan.DOOR + d * 2 + 1] = door.setValue(net.minecraft.world.level.block.DoorBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER);
+        }
         tirithPal = p;
         return p;
     }
@@ -1166,5 +1184,107 @@ public final class Buildings {
                 }
             }
         }
+        tirithRoad(b, p, pal);
+        for (int[] sp : p.spawns) {
+            if (sp[0] == 0) people(b, ModEntities.HUMAN.get(), sp[1], sp[2], sp[3], PeopleEntity.CIVIL, b.rnd.nextInt(4), 14);
+            else if (sp[0] == 1) people(b, ModEntities.HUMAN.get(), sp[1], sp[2], sp[3], PeopleEntity.GUARD, -1, 8);
+        }
+    }
+
+    private static double sm(double t) { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); }
+
+    private static int tHash(int x, int y, int z) {
+        int h = x * 374761393 + y * 668265263 + z * 362437 + 1013;
+        h = (h ^ (h >>> 13)) * 1274126177;
+        return (h ^ (h >>> 16)) & 0x7fffffff;
+    }
+
+    private static double tRnd(int x, int y, int z) { return (tHash(x, y, z) % 1024) / 1024.0; }
+
+    /** la route d'acces : une esplanade pavee devant la grande porte, puis une route qui serpente vers le sud, pavee, bordee de bordures, de lanternes, d'etendards et de buissons */
+    private static void tirithRoad(Build b, TirithPlan p, BlockState[] pal) {
+        final int cx = TirithPlan.CX, zA = TirithPlan.CZ + (int) TirithPlan.R[0] + 9, zEnd = TirithPlan.D - 1;
+        BlockState PAVE = pal[TirithPlan.PAVE], PAVE2 = pal[TirithPlan.PAVE2], PD = pal[TirithPlan.PD], SBR = pal[TirithPlan.SBR], COBBLE = pal[TirithPlan.COBBLE],
+                GRAVEL = pal[TirithPlan.GRAVEL], MOSSC = pal[TirithPlan.MOSSC], PATHB = pal[TirithPlan.PATH], COARSE = pal[TirithPlan.COARSE], SQ = pal[TirithPlan.SQ];
+        for (int z = zA - 6; z <= zEnd; z++) {
+            double u = (z - zA) / 14.0;
+            double xc = cx + 7.0 * Math.sin((z - zA) * 0.075) * sm(u);
+            double hw = 6.0 + 3.2 * (1 - sm((z - zA) / 18.0));
+            for (int x = cx - 34; x <= cx + 34; x++) {
+                if (!b.in(x, 0, z) || p.kindAt(x, z) != 0) continue;
+                double d = Math.abs(x + 0.5 - xc);
+                double pdx = (x + 0.5 - cx) / 19.0, pdz = (z + 0.5 - (zA + 5)) / 9.5;
+                boolean plaza = pdx * pdx + pdz * pdz <= 1 && z >= zA - 5;
+                double q = tRnd(x, 5, z);
+                BlockState top;
+                if (plaza) {
+                    double rr = Math.hypot(x + 0.5 - cx, (z + 0.5 - (zA + 5)) * 1.6);
+                    boolean ring = ((int) rr) % 5 == 0 || x % 6 == 0 && Math.abs(x - cx) < 14;
+                    top = rr < 3.2 ? SQ : ring ? PAVE2 : (q < 0.1 ? PD : q < 0.16 ? GRAVEL : PAVE);
+                } else if (z >= zA && d <= hw + 1.6) {
+                    if (d <= hw - 3) top = d < 0.7 && (z / 3) % 2 == 0 ? PD : (q < 0.5 ? PAVE : q < 0.6 ? PD : q < 0.78 ? COBBLE : q < 0.9 ? GRAVEL : q < 0.95 ? MOSSC : SBR);
+                    else if (d <= hw - 1) top = (x + z) % 2 == 0 ? SBR : PAVE2;
+                    else top = q < 0.45 ? PATHB : q < 0.75 ? COARSE : GRAVEL;
+                } else continue;
+                int gy = b.groundY(x, z);
+                b.s(x, gy, z, top);
+                for (int y = gy + 1; y <= gy + 5; y++) if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR);
+                for (int y = gy - 1; y >= gy - 3; y--) {                                   // dessous : pierre, pas d'eau ni de trou
+                    var cur = b.get(x, y, z);
+                    if (!(cur.isAir() || cur.canBeReplaced() || !cur.getFluidState().isEmpty())) break;
+                    b.s(x, y, z, Blocks.STONE.defaultBlockState());
+                }
+            }
+            if (z < zA + 4) continue;
+            int off = (z - zA) % 11;
+            for (int side = -1; side <= 1; side += 2) {                                      // lanternes sur la bordure
+                if (off != 5 + (side > 0 ? 0 : 0) || (z - zA) / 11 % 2 != (side > 0 ? 0 : 1)) continue;
+                int x = (int) Math.round(xc + side * (hw + 1.2));
+                if (!b.in(x, 0, z)) continue;
+                int gy = b.groundY(x, z);
+                b.s(x, gy, z, SBR);
+                b.s(x, gy + 1, z, pal[TirithPlan.SBRW]); b.s(x, gy + 2, z, pal[TirithPlan.SBRW]); b.s(x, gy + 3, z, pal[TirithPlan.FENCE_B]);
+                b.s(x, gy + 4, z, pal[TirithPlan.LANTERN]);
+            }
+            if ((z - zA) % 17 == 9) for (int side = -1; side <= 1; side += 2) {              // etendards blancs sur mats
+                int x = (int) Math.round(xc + side * (hw + 3));
+                if (!b.in(x, 0, z)) continue;
+                int gy = b.groundY(x, z);
+                for (int y = 1; y <= 7; y++) b.s(x, gy + y, z, pal[TirithPlan.FENCE_B]);
+                for (int j = 0; j < 5; j++) { b.s(x - side, gy + 6 - j, z, j == 4 ? pal[TirithPlan.WOOL_G] : pal[TirithPlan.WOOL_W]); }
+                b.s(x - side, gy + 7, z, pal[TirithPlan.FENCE_B]);
+            }
+            for (int side = -1; side <= 1; side += 2) for (int k = 2; k <= 5; k++) {          // buissons, fleurs, rochers sur les bas-cotes
+                int x = (int) Math.round(xc + side * (hw + k)), zz = z;
+                if (!b.in(x, 0, zz) || p.kindAt(x, zz) != 0) continue;
+                double q = tRnd(x, 9, zz);
+                int gy = b.groundY(x, zz);
+                if (q < 0.1) { b.s(x, gy + 1, zz, pal[TirithPlan.OAKLEAF]); if (q < 0.04) b.s(x, gy + 2, zz, pal[TirithPlan.OAKLEAF]); }
+                else if (q < 0.2) b.s(x, gy + 1, zz, q < 0.15 ? pal[TirithPlan.FLOWER1] : pal[TirithPlan.FLOWER2]);
+                else if (q < 0.235) { b.s(x, gy, zz, q < 0.22 ? MOSSC : COBBLE); }
+                else if (q < 0.26 && k >= 3) { b.s(x, gy + 1, zz, pal[TirithPlan.COBBLE]); b.s(x + side, gy + 1, zz, pal[TirithPlan.STONE]); if (q < 0.245) b.s(x, gy + 2, zz, pal[TirithPlan.MOSSC]); }
+            }
+        }
+        // deux obelisques et une charrette sur l'esplanade
+        for (int side = -1; side <= 1; side += 2) {
+            int x = cx + side * 11, z = zA + 1;
+            if (!b.in(x, 0, z)) continue;
+            int gy = b.groundY(x, z);
+            for (int dx = 0; dx <= 1; dx++) for (int dz = 0; dz <= 1; dz++) b.s(x + dx, gy + 1, z + dz, SBR);
+            for (int y = 2; y <= 10; y++) b.s(x, gy + y, z, pal[TirithPlan.QPILLAR_Y]);
+            b.s(x, gy + 11, z, pal[TirithPlan.QB]); b.s(x, gy + 12, z, pal[TirithPlan.LANTERN]);
+            b.s(x + side, gy + 1, z, pal[TirithPlan.BARREL]);
+        }
+        {
+            int x = cx - 14, z = zA + 8;
+            if (b.in(x, 0, z) && b.in(x + 2, 0, z + 2)) {
+                int gy = b.groundY(x, z);
+                for (int dx = 0; dx <= 2; dx++) { b.s(x + dx, gy + 1, z, pal[TirithPlan.HAY]); b.s(x + dx, gy + 2, z, pal[TirithPlan.HAY]); }
+                b.s(x, gy + 1, z + 1, pal[TirithPlan.FENCE_B]); b.s(x + 2, gy + 1, z + 1, pal[TirithPlan.FENCE_B]);
+                b.s(x + 1, gy + 1, z + 1, pal[TirithPlan.BARREL]);
+                b.mob(EntityType.HORSE, x + 1, gy + 1, z + 3, 5, null);
+            }
+        }
+        if (b.in(cx + 14, 0, zA + 7)) b.mob(EntityType.HORSE, cx + 14, b.groundY(cx + 14, zA + 7) + 1, zA + 7, 5, null);
     }
 }

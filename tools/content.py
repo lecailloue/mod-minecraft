@@ -234,13 +234,17 @@ def blocks():
 
     # --- l'Arbre Blanc (Minas Tirith) : ecorce argentee, feuillage dense parseme de fleurs blanches
     import random as _rnd
-    def _bloom(seed, density):
-        im = leaves('#3c7a33', seed, holes=0.03)
+    def _bloom(seed, density):                       # feuillage entierement blanc : tons de neige et de lune, sans une pointe de vert
+        im = leaves('#cfd8e2', seed, holes=0.05)
         r = _rnd.Random(seed * 7)
         for y in range(16):
             for x in range(16):
+                px = im.getpixel((x, y))
+                if px[3] == 0: continue
+                k = 0.3 + 0.35 * r.random()
+                im.putpixel((x, y), tuple(int(c + (255 - c) * k) for c in px[:3]) + (255,))
                 if r.random() < density:
-                    t = r.choice([(255, 255, 255), (244, 246, 250), (226, 232, 240)])
+                    t = r.choice([(255, 255, 255), (250, 252, 255), (238, 243, 250)])
                     im.putpixel((x, y), t + (255,))
         return im
     btex('white_tree_log', log_side('#a9a79c', 71)); btex('white_tree_log_top', log_top('#a9a79c', '#e8e2c8', 72))
