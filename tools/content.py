@@ -234,18 +234,16 @@ def blocks():
 
     # --- l'Arbre Blanc (Minas Tirith) : ecorce argentee, feuillage dense parseme de fleurs blanches
     import random as _rnd
-    def _bloom(seed, density):                       # feuillage entierement blanc : tons de neige et de lune, sans une pointe de vert
-        im = leaves('#cfd8e2', seed, holes=0.05)
+    def _bloom(seed, density):                       # feuillage entierement blanc : neige et lune, aucun ton sombre
         r = _rnd.Random(seed * 7)
+        im = leaves('#ffffff', seed, holes=0.0)
+        pal = [(255, 255, 255), (250, 252, 255), (243, 247, 252), (234, 241, 249)]
         for y in range(16):
             for x in range(16):
-                px = im.getpixel((x, y))
-                if px[3] == 0: continue
-                k = 0.3 + 0.35 * r.random()
-                im.putpixel((x, y), tuple(int(c + (255 - c) * k) for c in px[:3]) + (255,))
-                if r.random() < density:
-                    t = r.choice([(255, 255, 255), (250, 252, 255), (238, 243, 250)])
-                    im.putpixel((x, y), t + (255,))
+                if r.random() < 0.035:
+                    im.putpixel((x, y), (0, 0, 0, 0)); continue
+                c = pal[0] if r.random() < 0.35 + density else r.choice(pal[1:])
+                im.putpixel((x, y), c + (255,))
         return im
     btex('white_tree_log', log_side('#a9a79c', 71)); btex('white_tree_log_top', log_top('#a9a79c', '#e8e2c8', 72))
     block('white_tree_log', "Bûche de l'Arbre Blanc", 'pillar', copy='BIRCH_LOG', tool='axe', tags=['logs', 'logs_that_burn'], itags=['logs', 'logs_that_burn'])

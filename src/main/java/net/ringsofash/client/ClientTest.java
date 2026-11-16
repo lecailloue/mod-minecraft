@@ -363,7 +363,7 @@ public final class ClientTest {
                     case 9 -> look(p, lands, ox + CX - 40.5, py + 44, oz + CZ + 96.5, ox + CX - 4, py + 74, oz + CZ + 78);                     // l'eperon de roche vu de la rue du niveau 2
                     case 10 -> look(p, lands, ox + CX - 95.5, py + 150, oz + CZ + 20.5, ox + CX - 15, py + 185, oz + CZ - 28);                  // la falaise de la montagne
                     case 11 -> look(p, lands, ox + CX + 34.5, py + 112, oz + CZ + 36.5, ox + CX + 21, py + 126, oz + CZ + 9);                  // la rampe du flanc, qui debouche dans la cour
-                    case 12 -> look(p, lands, ox + CX - 20.5, py + 56, oz + CZ + 79.5, ox + CX + 14, py + 57, oz + CZ + 79.5);                  // un tunnel sous l'eperon
+                    case 12 -> look(p, lands, ox + CX - 9.5, py + 56, oz + CZ + 80.5, ox + CX + 10, py + 56.5, oz + CZ + 78.5);                  // un tunnel sous l'eperon
                     case 13 -> {                                                                                                               // une porte de maison, de pres
                         int[] d = findDoor(tp, CX - 48, CX - 16, CZ + 60, CZ + 125);
                         if (d == null) view(p, lands, TX + 0.5, py + 40, TZ + 60.5, 180F, 0F);
