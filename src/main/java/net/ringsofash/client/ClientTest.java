@@ -809,9 +809,9 @@ public final class ClientTest {
                 view(p, lands, 308 + c[1] + 0.5, oy + (c[0] == 72 ? 0 : 160), 745 + c[2] + 0.5, c[3], c[4]);
             }));
         }
-        spot("93_cendre_rocailles", 560, 690, 8, 60F, 6F);
-        spot("94_cendre_rocailles_haut", 600, 700, 45, 90F, 28F);
-        spotT("95_cendre_rocailles_nuit", 620, 720, 9, 150F, 6F, 18000);
+        spot("93_cendre_rocailles", 2125, 1725, 8, 60F, 6F);
+        spot("94_cendre_rocailles_haut", 2165, 1745, 45, 90F, 28F);
+        spotT("95_cendre_rocailles_nuit", 2195, 1765, 9, 150F, 6F, 18000);
         // Barad-dur (centre 1712, 1742, porte et pont a l'ouest) : vues lointaines, sommet, pont, douve, interieur
         final int BX = 1712, BZ = 1742;
         spotT("80_barad_loin_sud", BX, BZ + 235, 110, 180F, -20F, 6000);

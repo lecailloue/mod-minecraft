@@ -199,7 +199,7 @@ public final class SelfTest {
             if (prong.isAir()) fail("barad_dur : pas de pointe a la couronne");
         }
         {                                                                    // rochers de cendre : on compte les blocs de roche de cendre / calcinee en surface d'une plaine de cendre
-            int rx = 600, rz = 700, rocks = 0;
+            int rx = 2165, rz = 1745, rocks = 0;
             for (int dx = -5; dx <= 4; dx++) for (int dz = -5; dz <= 4; dz++) lands.getChunk((rx >> 4) + dx, (rz >> 4) + dz);
             for (int x = rx - 64; x < rx + 64; x++) for (int z = rz - 64; z < rz + 64; z++) {
                 int y = lands.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1;
