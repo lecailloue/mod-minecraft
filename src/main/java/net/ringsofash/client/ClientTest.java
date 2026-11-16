@@ -304,6 +304,57 @@ public final class ClientTest {
             clear(ow);
             view(p, ow, SX + 0.5, SY + 1.2, SZ, 0F, 0F);
         }));
+        // Edoras (centre 352, 1180, perron du palais au sud, route en lacets depuis le sud-ouest) ; py = niveau du sol sous la colline
+        final int EX = 352, EZ = 1180;
+        for (Object[] it : new Object[][]{{"100_edoras_loin_sud_ouest", -125, 105, 60, -135F, -14F, 6000}, {"101_edoras_loin_sud", 0, 175, 55, 180F, -10F, 6000},
+                {"102_edoras_porte", -150, 40, -1, -90F, 4F, 6000}, {"103_edoras_loin_est", 140, 10, 55, 90F, -12F, 6000}, {"104_edoras_nuit", 0, 175, 55, 180F, -10F, 18000}}) {
+            final Object[] c = it;
+            SCENES.add(new Scene((String) c[0], 420, p -> {
+                ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+                for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((EX >> 4) + dx, (EZ >> 4) + dz);
+                int py = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, EX - 10, EZ + 10) - 30;
+                int sx = EX + (Integer) c[1], sz = EZ + (Integer) c[2];
+                int h = (Integer) c[3];
+                int y = h < 0 ? lands.getHeight(Heightmap.Types.MOTION_BLOCKING, sx, sz) + 6 : py + h;
+                lands.setDayTime((Integer) c[6]);
+                view(p, lands, sx + 0.5, y, sz + 0.5, (Float) c[4], (Float) c[5]);
+            }));
+        }
+        // palais d'Or, tour de cloche, village, interieur, champs, etal, forge : positions tirees du plan
+        for (int k = 0; k < 13; k++) {
+            final int kk = k;
+            if (k == 1 || k == 4 || k == 8) continue;                  // doublons ou vues deja validees
+            SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle", "110_edoras_champs", "111_edoras_etal", "112_edoras_forge", "113_edoras_entree", "114_edoras_entree_dessus", "115_edoras_sol", "116_edoras_place", "117_edoras_fontaine"}[k], 420, p -> {
+                ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+                for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((EX >> 4) + dx, (EZ >> 4) + dz);
+                net.ringsofash.world.EdorasPlan ep = net.ringsofash.world.EdorasPlan.get();
+                int py = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, EX - 10, EZ + 10) - 30;
+                int ox = EX - net.ringsofash.world.EdorasPlan.CX, oz = EZ - net.ringsofash.world.EdorasPlan.CZ;
+                int hx = ox + ep.hallX, hz = oz + ep.hallZ, tx = ox + ep.towerX, tz = oz + ep.towerZ;
+                lands.setDayTime(6000);
+                switch (kk) {
+                    case 0 -> view(p, lands, hx + 0.5, py + 34, hz + 40.5, 180F, 4F);
+                    case 1 -> view(p, lands, hx + 40.5, py + 36, hz - 4.5, 90F, 8F);
+                    case 2 -> view(p, lands, tx - 14.5, py + 36, tz + 24.5, -150F, -8F);
+                    case 3 -> view(p, lands, EX - 20.5, py + 60, EZ + 70.5, 160F, 20F);
+                    case 4 -> view(p, lands, hx + 0.5, py + 28, hz + 3.5, 180F, 2F);
+                    case 5 -> look(p, lands, ox + ep.lowFieldX - 7.5, py + 7, oz + ep.lowFieldZ + 10.5, ox + ep.lowFieldX, py + 1, oz + ep.lowFieldZ);
+                    case 6 -> look(p, lands, ox + ep.stallX - 6.5, py + ep.stallL + 3, oz + ep.stallZ + 8.5, ox + ep.stallX, py + ep.stallL + 1, oz + ep.stallZ);
+                    case 7 -> look(p, lands, ox + ep.smithX - 7.5, py + ep.smithL + 3, oz + ep.smithZ + 9.5, ox + ep.smithX, py + ep.smithL + 1, oz + ep.smithZ);
+                    case 8 -> {                                                           // l'entree : la porte fortifiee vue de la route
+                        int gx = ox + ep.gateX, gz = oz + ep.gateZ, sx = gx - 20, sz = gz + 4;
+                        look(p, lands, sx + 0.5, lands.getHeight(Heightmap.Types.MOTION_BLOCKING, sx, sz) + 3, sz + 0.5, gx, py + 7, gz);
+                    }
+                    case 9 -> {                                                           // l'entree vue de l'interieur du village, un peu en hauteur
+                        int gx = ox + ep.gateX, gz = oz + ep.gateZ;
+                        look(p, lands, gx + 22.5, py + 12, gz - 6.5, gx, py + 5, gz);
+                    }
+                    case 10 -> look(p, lands, ox + ep.gateX + 14.5, py + 6, oz + ep.gateZ + 16.5, ox + ep.gateX + 22, py + 1, oz + ep.gateZ + 8);   // le sol du bas du village
+                    case 11 -> look(p, lands, ox + ep.plazaX + 0.5, py + 40, oz + ep.plazaZ + 22.5, ox + ep.plazaX, py + 31, oz + ep.plazaZ - 6);   // la place devant le palais
+                    default -> look(p, lands, ox + ep.plazaX + 11.5, py + 34, oz + ep.plazaZ + 7.5, ox + ep.plazaX - 1, py + 31, oz + ep.plazaZ);
+                }
+            }));
+        }
         lineup("01_orques", 7.5, 2F, 2.0, List.of(ModEntities.ORC.get(), ModEntities.ORC.get(), ModEntities.WAR_ORC.get(), ModEntities.ORC_CHIEF.get(), ModEntities.GOBLIN.get(),
                 ModEntities.WILD_MAN.get()));
         // gobelins : les 3 types (1,2 / 1,5 / 1,8 m) et leur roi (2,7 m), de face puis de profil ; on journalise les hauteurs reelles de hitbox
@@ -816,56 +867,6 @@ public final class ClientTest {
         spot("93_cendre_rocailles", 2125, 1725, 8, 60F, 6F);
         spot("94_cendre_rocailles_haut", 2165, 1745, 45, 90F, 28F);
         spotT("95_cendre_rocailles_nuit", 2195, 1765, 9, 150F, 6F, 18000);
-        // Edoras (centre 352, 1180, perron du palais au sud, route en lacets depuis le sud-ouest) ; py = niveau du sol sous la colline
-        final int EX = 352, EZ = 1180;
-        for (Object[] it : new Object[][]{{"100_edoras_loin_sud_ouest", -125, 105, 60, -135F, -14F, 6000}, {"101_edoras_loin_sud", 0, 175, 55, 180F, -10F, 6000},
-                {"102_edoras_porte", -150, 40, -1, -90F, 4F, 6000}, {"103_edoras_loin_est", 140, 10, 55, 90F, -12F, 6000}, {"104_edoras_nuit", 0, 175, 55, 180F, -10F, 18000}}) {
-            final Object[] c = it;
-            SCENES.add(new Scene((String) c[0], 600, p -> {
-                ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
-                for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((EX >> 4) + dx, (EZ >> 4) + dz);
-                int py = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, EX - 10, EZ + 10) - 30;
-                int sx = EX + (Integer) c[1], sz = EZ + (Integer) c[2];
-                int h = (Integer) c[3];
-                int y = h < 0 ? lands.getHeight(Heightmap.Types.MOTION_BLOCKING, sx, sz) + 6 : py + h;
-                lands.setDayTime((Integer) c[6]);
-                view(p, lands, sx + 0.5, y, sz + 0.5, (Float) c[4], (Float) c[5]);
-            }));
-        }
-        // palais d'Or, tour de cloche, village, interieur, champs, etal, forge : positions tirees du plan
-        for (int k = 0; k < 13; k++) {
-            final int kk = k;
-            SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle", "110_edoras_champs", "111_edoras_etal", "112_edoras_forge", "113_edoras_entree", "114_edoras_entree_dessus", "115_edoras_sol", "116_edoras_place", "117_edoras_fontaine"}[k], 600, p -> {
-                ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
-                for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((EX >> 4) + dx, (EZ >> 4) + dz);
-                net.ringsofash.world.EdorasPlan ep = net.ringsofash.world.EdorasPlan.get();
-                int py = lands.getHeight(Heightmap.Types.OCEAN_FLOOR, EX - 10, EZ + 10) - 30;
-                int ox = EX - net.ringsofash.world.EdorasPlan.CX, oz = EZ - net.ringsofash.world.EdorasPlan.CZ;
-                int hx = ox + ep.hallX, hz = oz + ep.hallZ, tx = ox + ep.towerX, tz = oz + ep.towerZ;
-                lands.setDayTime(6000);
-                switch (kk) {
-                    case 0 -> view(p, lands, hx + 0.5, py + 34, hz + 40.5, 180F, 4F);
-                    case 1 -> view(p, lands, hx + 40.5, py + 36, hz - 4.5, 90F, 8F);
-                    case 2 -> view(p, lands, tx - 14.5, py + 36, tz + 24.5, -150F, -8F);
-                    case 3 -> view(p, lands, EX - 20.5, py + 60, EZ + 70.5, 160F, 20F);
-                    case 4 -> view(p, lands, hx + 0.5, py + 28, hz + 3.5, 180F, 2F);
-                    case 5 -> look(p, lands, ox + ep.lowFieldX - 7.5, py + 7, oz + ep.lowFieldZ + 10.5, ox + ep.lowFieldX, py + 1, oz + ep.lowFieldZ);
-                    case 6 -> look(p, lands, ox + ep.stallX - 6.5, py + ep.stallL + 3, oz + ep.stallZ + 8.5, ox + ep.stallX, py + ep.stallL + 1, oz + ep.stallZ);
-                    case 7 -> look(p, lands, ox + ep.smithX - 7.5, py + ep.smithL + 3, oz + ep.smithZ + 9.5, ox + ep.smithX, py + ep.smithL + 1, oz + ep.smithZ);
-                    case 8 -> {                                                           // l'entree : la porte fortifiee vue de la route
-                        int gx = ox + ep.gateX, gz = oz + ep.gateZ, sx = gx - 20, sz = gz + 4;
-                        look(p, lands, sx + 0.5, lands.getHeight(Heightmap.Types.MOTION_BLOCKING, sx, sz) + 3, sz + 0.5, gx, py + 7, gz);
-                    }
-                    case 9 -> {                                                           // l'entree vue de l'interieur du village, un peu en hauteur
-                        int gx = ox + ep.gateX, gz = oz + ep.gateZ;
-                        look(p, lands, gx + 22.5, py + 12, gz - 6.5, gx, py + 5, gz);
-                    }
-                    case 10 -> look(p, lands, ox + ep.gateX + 14.5, py + 6, oz + ep.gateZ + 16.5, ox + ep.gateX + 22, py + 1, oz + ep.gateZ + 8);   // le sol du bas du village
-                    case 11 -> look(p, lands, ox + ep.plazaX + 0.5, py + 40, oz + ep.plazaZ + 22.5, ox + ep.plazaX, py + 31, oz + ep.plazaZ - 6);   // la place devant le palais
-                    default -> look(p, lands, ox + ep.plazaX + 11.5, py + 34, oz + ep.plazaZ + 7.5, ox + ep.plazaX - 1, py + 31, oz + ep.plazaZ);
-                }
-            }));
-        }
         // Barad-dur (centre 1712, 1742, porte et pont a l'ouest) : vues lointaines, sommet, pont, douve, interieur
         final int BX = 1712, BZ = 1742;
         spotT("80_barad_loin_sud", BX, BZ + 235, 110, 180F, -20F, 6000);
