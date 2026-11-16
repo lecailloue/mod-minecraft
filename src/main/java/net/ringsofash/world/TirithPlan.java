@@ -612,13 +612,15 @@ public final class TirithPlan {
             set(tx + dx, y0, tz + dz, rim ? QB : GRASS);
             if (!rim) { set(tx + dx, y0 - 1, tz + dz, DIRT); if (rnd(tx + dx, 5, tz + dz) < 0.25) set(tx + dx, y0 + 1, tz + dz, rnd(dx, 6, dz) < 0.5 ? FLOWER1 : FLOWER2); }
         }
-        for (int y = 1; y <= 9; y++) set(tx, y0 + y, tz, BIRCH_Y);
-        set(tx + 1, y0 + 1, tz, BIRCH_Y); set(tx - 1, y0 + 1, tz, BIRCH_Y);
         int[][] br = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-        for (int[] b : br) for (int j = 1; j <= 5; j++) set(tx + b[0] * j, y0 + 6 + j / 2 + 1, tz + b[1] * j, BIRCH_Y);
-        for (int dx = -7; dx <= 7; dx++) for (int dz = -7; dz <= 7; dz++) for (int dy = 6; dy <= 16; dy++) {
-            double e = Math.pow(dx / 7.0, 2) + Math.pow(dz / 7.0, 2) + Math.pow((dy - 11) / 5.5, 2);
-            if (e < 1 && (e < 0.7 || rnd(tx + dx, dy, tz + dz) < 0.7)) setIfAir(tx + dx, y0 + dy, tz + dz, LEAF);
+        // tronc droit et epais (2 x 2), couronne dense et verte
+        for (int y = 1; y <= 11; y++) for (int dx = 0; dx <= 1; dx++) for (int dz = 0; dz <= 1; dz++) set(tx + dx, y0 + y, tz + dz, BIRCH_Y);
+        for (int dx = -1; dx <= 2; dx++) for (int dz = -1; dz <= 2; dz++) if ((dx == -1 || dx == 2) != (dz == -1 || dz == 2)) set(tx + dx, y0 + 1, tz + dz, BIRCH_Y);
+        for (int dx = -9; dx <= 10; dx++) for (int dz = -9; dz <= 10; dz++) for (int dy = 7; dy <= 22; dy++) {
+            double ex = dx - 0.5, ez = dz - 0.5;
+            double e = Math.pow(ex / 9.2, 2) + Math.pow(ez / 9.2, 2) + Math.pow((dy - 14.5) / 7.5, 2);
+            e += 0.12 * vn(tx + dx / 3.0, tz + dz / 3.0 + dy * 0.7, 21);
+            if (e < 1) setIfAir(tx + dx, y0 + dy, tz + dz, LEAF);
         }
         // fontaine : bassin carre, pilier central
         int fx = cx, fz = cz + 6;
