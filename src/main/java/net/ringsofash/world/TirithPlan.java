@@ -119,7 +119,7 @@ public final class TirithPlan {
     /** demi-largeur de l'eperon : large au plateau, puis une lame etroite qui fend la cite jusqu'au premier mur */
     private static double prowHW(double dz) {
         if (dz <= 26) return 21;
-        return Math.max(11, 21 - (dz - 26) * 10.0 / 6.0);                         // une lame de largeur constante, qui se termine net : bout droit, face verticale
+        return Math.max(0, 21 * (1 - (dz - 26) / (PROW_TIP - 26.0)));              // un triangle aux bords droits : la lame se resserre en ligne droite jusqu'a la pointe
     }
 
     /** distance a l'interieur du bord de l'eperon (negative : hors de l'eperon) ; le bord est irregulier, pas une ligne droite */
