@@ -46,6 +46,13 @@ zone0 = zone0[idx[0], idx[1]]
 oh = np.stack([(zone0 == i).astype(np.float32) for i in range(3)])
 oh = np.stack([gaussian_filter(np.asarray(Image.fromarray(o).resize((N, N), Image.BILINEAR)), 5) for o in oh])
 zone = oh.argmax(0).astype(np.uint8)                                 # 0 vert, 1 jaune, 2 cendre
+# les Argonath : pas de cendre dans leur zone (les statues doivent baigner dans un seul biome)
+_ag = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'places.json')))['argonath']
+_gy, _gx = np.mgrid[0:N, 0:N]
+_agx, _agz = _ag['x'] + 1000 + 8, _ag['z'] + 1000
+_ar = np.hypot(_gx - _agx, _gy - _agz)
+_wob = 14 * np.sin(np.arctan2(_gy - _agz, _gx - _agx) * 3 + 1.0) + 9 * np.sin(np.arctan2(_gy - _agz, _gx - _agx) * 7)
+zone[(_ar < 118 + _wob) & (zone == 2)] = 0
 
 # mer + bande de mer sur le pourtour (limite du monde)
 rng = np.random.default_rng(7)
@@ -175,6 +182,10 @@ bio[carve & (zone == 2)] = 12                 # rivieres de lave dans les terres
 beach = land & (d_sea < 16) & (h < SEA + 4) & ~roc & ~carve & (zone != 2)
 bio[beach] = B_RIVAGE
 bio[sea] = B_MER
+# Argonath : un seul biome (monts rocheux) sur toute l'emprise du site et ses abords, plus de cendre ni de plaine melangee
+_aw = np.arctan2(_gy - _agz, _gx - _agx)
+_ab = (_ar < 74 + 9 * np.sin(_aw * 3 + 1.0) + 5 * np.sin(_aw * 7)) & ~sea
+bio[_ab] = B_MONTS
 
 # ------------------------------------------------------------------ sorties
 GR = np.array([(190, 235, 158), (255, 235, 158), (150, 147, 142)], np.float32)

@@ -911,7 +911,7 @@ public final class Buildings {
 
     private static synchronized BlockState[] argonathPal() {
         if (argonathPal != null) return argonathPal;
-        BlockState[] p = new BlockState[24];
+        BlockState[] p = new BlockState[ArgonathPlan.SHAPE + ArgonathPlan.SHAPES * 16];
         java.util.Arrays.fill(p, Build.AIR);
         p[ArgonathPlan.STONE] = Blocks.STONE.defaultBlockState();
         p[ArgonathPlan.ANDESITE] = Blocks.ANDESITE.defaultBlockState();
@@ -930,6 +930,17 @@ public final class Buildings {
         p[ArgonathPlan.PODZOL] = Blocks.PODZOL.defaultBlockState();
         p[ArgonathPlan.COARSE] = Blocks.COARSE_DIRT.defaultBlockState();
         p[ArgonathPlan.SAND] = Blocks.SAND.defaultBlockState();
+        net.minecraft.world.level.block.Block[] stairs = {Blocks.STONE_STAIRS, Blocks.ANDESITE_STAIRS, Blocks.POLISHED_ANDESITE_STAIRS};
+        net.minecraft.world.level.block.Block[] slabs = {Blocks.STONE_SLAB, Blocks.ANDESITE_SLAB, Blocks.POLISHED_ANDESITE_SLAB};
+        Direction[] dirs = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+        for (int m = 0; m < ArgonathPlan.SHAPES; m++) {
+            int o = ArgonathPlan.SHAPE + m * 16;
+            for (int d = 0; d < 4; d++) for (int h = 0; h < 2; h++)
+                p[o + d * 2 + h] = stairs[m].defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, dirs[d])
+                        .setValue(net.minecraft.world.level.block.StairBlock.HALF, h == 0 ? net.minecraft.world.level.block.state.properties.Half.BOTTOM : net.minecraft.world.level.block.state.properties.Half.TOP);
+            p[o + 8] = slabs[m].defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE, net.minecraft.world.level.block.state.properties.SlabType.BOTTOM);
+            p[o + 9] = slabs[m].defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE, net.minecraft.world.level.block.state.properties.SlabType.TOP);
+        }
         return argonathPal = p;
     }
 
