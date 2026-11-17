@@ -732,16 +732,78 @@ public final class RivendellPlan {
     }
 
     private void bridges() {
-        int zb = 132;
-        int xa = (int) Math.round(cxW(zb)) - 4, xb = (int) Math.round(cxE(zb)) + 4;
-        bridgeX(xa, xb, zb, S, 26);
-        gate(xa + 8, zb, S + 1);
-        gate(xb - 8, zb, S + 1);
-        spawns.add(new int[]{xa + 20, S + 1, zb});
+        galleryBridge(132);
         // passerelle sur le ruisseau de la terrasse
         for (int x = 146; x <= 154; x++) for (int z = 136; z <= 138; z++) set(x, S + 1, z, (x == 146 || x == 154) ? stair(WBS, x == 146 ? E : W_, false) : WS);
         for (int x = 147; x <= 153; x++) { set(x, S + 2, 135, WWALL); set(x, S + 2, 139, WWALL); }
         for (int x = 147; x <= 153; x++) for (int z = 136; z <= 138; z++) set(x, S, z, WB);
+    }
+
+    private void turret(int cx, int cz, int yb, int h) {
+        found(cx - 3, cz - 3, cx + 3, cz + 3, yb - 1, TSTONE);
+        for (int k = 0; k < h; k++) for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++) {
+            double d = Math.hypot(dx, dz);
+            if (d <= 2.6 && d > 1.4) set(cx + dx, yb + k, cz + dz, (k % 8 == 4 && (dx == 0 || dz == 0)) ? GLASS : (k % 8 == 7 ? QB : TSTONE));
+            else if (d <= 1.4) set(cx + dx, yb + k, cz + dz, AIR);
+        }
+        for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++) if (Math.hypot(dx, dz) <= 3.4) set(cx + dx, yb + h, cz + dz, Math.hypot(dx, dz) > 2.4 ? QB : GP);
+        cone(cx, cz, 3, yb + h + 1, 13, true);
+    }
+
+    /**
+     * Le grand pont-galerie sur la gorge, d'apres l'aquarelle : un tablier porte sur de gros piliers de pierre et de hautes arches, une galerie de deux files d'arcs en ogive
+     * (une plaque ajouree au sommet de chacun, un petit toit pointu au-dessus), un grand toit a deux pans entre les files, quatre tourelles aux extremites.
+     */
+    private void galleryBridge(int zc) {
+        int xw = (int) Math.round(cxW(zc)), xe = (int) Math.round(cxE(zc)), hw = 5;
+        reserve(xw - 8, zc - 9, xe + 8, zc + 9, 2);
+        int n = 5, spring = S - 13;
+        int[] xp = new int[n + 1];
+        for (int k = 0; k <= n; k++) xp[k] = xw + (int) Math.round((xe - xw) * k / (double) n);
+        for (int x = xw - 4; x <= xe + 4; x++) {
+            int pier = -1, bay = -1;
+            for (int k = 1; k < n; k++) if (Math.abs(x - xp[k]) <= 1) pier = k;
+            if (pier < 0) for (int k = 0; k < n; k++) if (x >= xp[k] && x <= xp[k + 1]) bay = k;
+            for (int dz = -hw; dz <= hw; dz++) {
+                int z = zc + dz;
+                if (x < xw || x > xe) found(x, z, x, z, S - 1, STB);
+                else if (pier >= 0) {
+                    for (int y = Math.max(th[z * W + x] + 1, -OFF + 2); y <= S - 1; y++) if (get(x, y, z) == AIR || get(x, y, z) == WATER) set(x, y, z, (y >= S - 5 || (x + y + z) % 11 == 0) ? WB : STB);
+                } else if (bay >= 0) {
+                    double xc = (xp[bay] + xp[bay + 1]) / 2.0, half = (xp[bay + 1] - xp[bay]) / 2.0 - 1.6;
+                    double t = Math.abs(x - xc) / half;
+                    int top = t > 1 ? -OFF : spring + (int) Math.round(9 * (1 - Math.pow(t, 1.7)));
+                    for (int y = Math.max(top, th[z * W + x]) + 1; y <= S - 1; y++) if (get(x, y, z) == AIR || get(x, y, z) == WATER) set(x, y, z, y == top + 1 ? WB : STB);
+                }
+                set(x, S, z, ((x + z) & 1) == 0 ? WS : PAVE2);
+                if (Math.abs(dz) == hw) { set(x, S + 1, z, WWALL); if ((x - xw) % 12 == 6) { set(x, S + 2, z, WWALL); set(x, S + 3, z, LANTERN); } }
+            }
+        }
+        int g0 = xw - 2, g1 = xe + 2, len = g1 - g0, m = Math.max(1, (int) Math.round(len / 6.0));
+        int[] cols = new int[m + 1];
+        for (int i = 0; i <= m; i++) cols[i] = g0 + (int) Math.round(len * i / (double) m);
+        for (int side = -1; side <= 1; side += 2) {
+            int zs = zc + side * 4;
+            for (int i = 0; i <= m; i++) for (int y = S + 1; y <= S + 9; y++) set(cols[i], y, zs, (y == S + 1 || y == S + 9) ? QB : WPIL);
+            for (int i = 0; i < m; i++) {
+                int c0 = cols[i], c1 = cols[i + 1], w = c1 - c0;
+                double c = w / 2.0;
+                for (int dx = 1; dx < w; dx++) {
+                    double ddx = Math.abs(dx - c);
+                    for (int l = 0; l <= 8; l++) {
+                        boolean open = l <= 5 || (l == 6 && ddx <= c - 1.4) || (l == 7 && ddx <= c - 2.4) || (l == 8 && ddx <= 0.6);
+                        set(c0 + dx, S + 1 + l, zs, open ? AIR : WB);
+                    }
+                    set(c0 + dx, S + 10, zs, Math.abs(dx - c) <= 0.6 ? FILIG : GP);
+                }
+                hip(c0, zs - 1, c1, zs + 1, S + 11, 2, 0);
+                finial(c0 + w / 2, zs, S + 16, 5);
+            }
+        }
+        gable(0, zc - 3, zc + 3, g0, g1, S + 13, 1);
+        for (int sx : new int[]{g0 - 2, g1 + 2}) for (int side = -1; side <= 1; side += 2) turret(sx, zc + side * 7, S + 1, 22);
+        spawns.add(new int[]{(xw + xe) / 2 - 8, S + 1, zc});
+        spawns.add(new int[]{(xw + xe) / 2 + 8, S + 1, zc});
     }
 
     // ------------------------------------------------------------------ la vallee : maison du gue, pont sur la riviere

@@ -322,7 +322,8 @@ public final class ClientTest {
         rivT("403_fondcombe_promenade", 107, 35, 158, 107, 52, 128, 6000);
         rivT("404_fondcombe_conseil", 195, 36, 176, 195, 42, 136, 6000);
         rivT("405_fondcombe_grande_cascade", 262, 22, 178, 262, 62, 80, 6000);
-        rivT("406_fondcombe_pont", 214, 46, 152, 262, 30, 132, 6000);
+        rivT("406_fondcombe_pont", 262, 24, 200, 262, 30, 132, 6000);
+        rivT("414_fondcombe_pont_dessus", 214, 48, 160, 262, 36, 132, 6000);
         rivT("407_fondcombe_tours", 104, 52, 168, 74, 62, 126, 6000);
         rivT("408_fondcombe_pagode", 214, 46, 152, 214, 62, 116, 6000);
         rivT("409_fondcombe_salle", 80, 35, 138, 132, 36, 138, 6000);
