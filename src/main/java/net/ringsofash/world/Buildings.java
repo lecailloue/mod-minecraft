@@ -952,7 +952,16 @@ public final class Buildings {
         for (int x = 0; x < ArgonathPlan.W; x++) {
             for (int z = 0; z < ArgonathPlan.D; z++) {
                 int kd = p.kindAt(x, z);
-                if (kd == 0 || !b.in(x, 0, z)) continue;
+                if (!b.in(x, 0, z)) continue;
+                if (kd == 0) {                                                                 // relief naturel voisin de l'eau : berge en pente, pas de falaise taillee par la riviere
+                    int rd = p.riverDist(x, z);
+                    if (rd > 14) continue;
+                    int gnd = b.groundY(x, z), lim = ArgonathPlan.WATER_Y + 1 + (int) (rd * 0.8);
+                    if (gnd <= lim) continue;
+                    for (int y = lim + 1; y <= gnd + 16; y++) if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR);
+                    b.s(x, lim, z, rd > 3 ? pal[ArgonathPlan.GRASS] : pal[ArgonathPlan.GRAVEL]);
+                    continue;
+                }
                 int ground = Math.min(b.groundY(x, z), maxY);
                 if (kd == 1) {                                                                 // la riviere : on creuse un lit et on le remplit d'eau
                     int floor = ArgonathPlan.WATER_Y - p.depthAt(x, z);

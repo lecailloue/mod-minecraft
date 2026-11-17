@@ -38,6 +38,26 @@ public final class ArgonathPlan {
     public int top(int x, int z) { return top[z * W + x]; }
     /** distance (en blocs) a l'eau, 255 hors de la zone du site : sert a raser le relief naturel qui depasserait sur les berges */
     public int shore(int x, int z) { return shore[z * W + x] & 255; }
+    private byte[] rdist;
+    /** distance (blocs, 99 si > 14) a la colonne de riviere la plus proche : sert a adoucir les berges du relief naturel voisin */
+    public synchronized int riverDist(int x, int z) {
+        if (rdist == null) {
+            rdist = new byte[W * D];
+            java.util.Arrays.fill(rdist, (byte) 99);
+            for (int zz = 0; zz < D; zz++) for (int xx = 0; xx < W; xx++) {
+                if (kind[zz * W + xx] == 1) continue;
+                int best = 99;
+                for (int dz = -14; dz <= 14 && best > 1; dz++) for (int dx = -14; dx <= 14; dx++) {
+                    int x2 = xx + dx, z2 = zz + dz;
+                    if (x2 < 0 || z2 < 0 || x2 >= W || z2 >= D || kind[z2 * W + x2] != 1) continue;
+                    int d = (int) Math.ceil(Math.sqrt(dx * dx + dz * dz));
+                    if (d < best) best = d;
+                }
+                rdist[zz * W + xx] = (byte) best;
+            }
+        }
+        return rdist[z * W + x];
+    }
 
     private static int hash(int x, int y, int z) {
         int h = x * 374761393 + y * 668265263 + z * 362437 + 77;
