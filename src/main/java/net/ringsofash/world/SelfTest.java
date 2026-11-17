@@ -140,7 +140,7 @@ public final class SelfTest {
             for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) lands.getChunk((px >> 4) + dx, (pz >> 4) + dz);
             for (int x = px - 24; x <= px + 24; x += 6) {
                 for (int z = pz - 24; z <= pz + 24; z += 6) {
-                    if (e.getKey().equals("barad_dur") || e.getKey().equals("edoras") || e.getKey().equals("minas_terith") || e.getKey().equals("orthanc")) continue;                // site nivele et creuse (douve) expres
+                    if (e.getKey().equals("barad_dur") || e.getKey().equals("edoras") || e.getKey().equals("minas_terith") || e.getKey().equals("orthanc") || e.getKey().equals("argonath")) continue;                // site nivele et creuse (douve) expres
                     n++;
                     BlockPos at = new BlockPos(x, MapData.height(x, z), z);
                     var st = lands.getBlockState(at);
@@ -218,6 +218,33 @@ public final class SelfTest {
             if (tow - plat < 14) fail("edoras : pas de tour de cloche (" + (tow - plat) + ")");
             if (ep.houses < 8 || ep.lowHouses < 6) fail("edoras : trop peu de maisons (" + ep.houses + " dont " + ep.lowHouses + " en bas)");
             if (ep.wallCells < 300) fail("edoras : muraille trop courte (" + ep.wallCells + ")");
+        }
+        int[] ag = spots.get("argonath");
+        if (ag != null) {                                                    // Argonath : riviere, falaises plus basses que les deux rois, statues
+            for (int dx = -9; dx <= 9; dx++) for (int dz = -9; dz <= 9; dz++) lands.getChunk((ag[0] >> 4) + dx, (ag[1] >> 4) + dz);
+            ArgonathPlan ap = ArgonathPlan.get();
+            int py = SiteHeight.py(lands, ag[0], ag[1]);
+            topDown(lands, ag[0] - 128, ag[1] - 128, ag[0] + 127, ag[1] + 127, new File(OUT, "argonath_dessus.png"), 3);
+            section(lands, ag[0] - 128, ag[0] + 127, ag[1], py - 14, py + 124, new File(OUT, "argonath_coupe.png"), 3);
+            int ox = ag[0] - ArgonathPlan.CX, oz = ag[1] - ArgonathPlan.CZ;
+            var water = lands.getBlockState(new BlockPos(ag[0], py + ArgonathPlan.WATER_Y, ag[1] + 50));
+            var robeW = lands.getBlockState(new BlockPos(ox + ap.statueW_x, py + 40, oz + ArgonathPlan.CZ));
+            var robeE = lands.getBlockState(new BlockPos(ox + ap.statueE_x, py + 40, oz + ArgonathPlan.CZ));
+            var headW = lands.getBlockState(new BlockPos(ox + ap.statueW_x, py + 92, oz + ArgonathPlan.CZ));
+            var headE = lands.getBlockState(new BlockPos(ox + ap.statueE_x, py + 92, oz + ArgonathPlan.CZ));
+            int crest = 0;
+            for (int x = ag[0] - 120; x <= ag[0] + 120; x += 4) for (int z = ag[1] - 120; z <= ag[1] + 120; z += 4) {
+                if (Math.abs(x - ag[0]) < 40 && Math.abs(z - ag[1]) < 16) continue;                  // les statues elles-memes
+                var top = lands.getBlockState(new BlockPos(x, lands.getHeight(Heightmap.Types.OCEAN_FLOOR, x, z) - 1, z));
+                if (top.is(net.minecraft.tags.BlockTags.LEAVES) || top.is(net.minecraft.tags.BlockTags.LOGS)) continue;
+                crest = Math.max(crest, lands.getHeight(Heightmap.Types.OCEAN_FLOOR, x, z) - py);
+            }
+            log("argonath : sol " + py + " ; eau " + water + " ; robes " + robeW + " / " + robeE + " ; tetes " + headW + " / " + headE + " ; crete max " + crest + " (statues " + ArgonathPlan.STATUE_TOP + ")");
+            if (!water.is(net.minecraft.world.level.block.Blocks.WATER)) fail("argonath : pas d'eau dans la riviere (" + water + ")");
+            if (robeW.isAir() || robeE.isAir()) fail("argonath : une statue est creuse a mi-hauteur");
+            if (headW.isAir() || headE.isAir()) fail("argonath : une statue n'a pas de tete");
+            if (crest > ArgonathPlan.STATUE_TOP - 5) fail("argonath : les montagnes depassent les statues (" + crest + ")");
+            if (crest < 40) fail("argonath : pas de montagne autour de la riviere (" + crest + ")");
         }
         int[] mt = spots.get("minas_terith");
         if (mt != null) {                                                    // Minas Tirith : sept niveaux, tour d'Ecthelion, cour, montagne

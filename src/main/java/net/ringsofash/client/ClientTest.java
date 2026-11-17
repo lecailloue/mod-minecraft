@@ -316,6 +316,14 @@ public final class ClientTest {
         eyeFar("96_oeil_loin_nuit", 1712, 1742, 700, true, 18000);
         eyeFar("97_oeil_loin_cache", 1712, 1742, 700, false, 18000);
         eyeFar("98_oeil_tres_loin_jour", 1712, 1742, 1800, true, 6000);
+        argT("300_argonath_face_nord", 0, 4, -118, 0, 62, 0, 6000);
+        argT("301_argonath_vue_haute", 70, 135, -122, 0, 50, 0, 6000);
+        argT("302_argonath_visages", 0, 98, -48, 0, 92, 0, 6000);
+        argT("303_argonath_dos_sud", 0, 38, 105, 0, 62, 0, 6000);
+        argT("304_argonath_cote_ouest", -48, 30, -72, -24, 60, 0, 6000);
+        argT("305_argonath_relief_est", 175, 28, 0, 0, 45, 0, 6000);
+        argT("306_argonath_riviere_sud", 0, 3, 70, 0, 48, -10, 6000);
+        argT("307_argonath_coucher", 0, 6, -118, 0, 62, 0, 12800);
         SCENES.add(new Scene("00_scene", 120, p -> {
             MinecraftServer s = p.server;
             ServerLevel ow = s.overworld();
@@ -1016,6 +1024,21 @@ public final class ClientTest {
             lands.setDayTime(time);
             view(p, lands, px + 0.5, y, bz + 0.5, yaw, pitch);
             EyeOfSauronSky.force = show;
+        }));
+    }
+
+    /** vue relative a l'Argonath : de (fx, fy, fz) vers (tx, ty, tz), tout depuis (x de la carte, sol, z de la carte) */
+    private static void argT(String name, double fx, double fy, double fz, double tx, double ty, double tz, int time) {
+        SCENES.add(new Scene(name, 420, p -> {
+            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+            int[] pl = net.ringsofash.world.MapData.place("argonath");
+            if (pl == null) return;
+            for (int dx = -9; dx <= 9; dx++) for (int dz = -9; dz <= 9; dz++) lands.getChunk((pl[0] >> 4) + dx, (pl[1] >> 4) + dz);
+            int py = net.ringsofash.world.SiteHeight.py(lands, pl[0], pl[1]);
+            double ddx = tx - fx, ddy = ty - fy, ddz = tz - fz;
+            float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
+            lands.setDayTime(time);
+            view(p, lands, pl[0] + fx + 0.5, py + fy, pl[1] + fz + 0.5, yaw, pitch);
         }));
     }
 

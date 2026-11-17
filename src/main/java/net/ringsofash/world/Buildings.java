@@ -61,6 +61,7 @@ public final class Buildings {
             case BARADDUR -> baradDur(b);
             case EDORAS -> edoras(b);
             case TIRITH -> tirith(b);
+            case ARGONATH -> argonath(b);
         }
     }
 
@@ -902,6 +903,73 @@ public final class Buildings {
         Direction[] dirs = {N, E, S, W};
         for (int[] c : p.chests) b.chest(c[0], c[1], c[2], dirs[c[3]], "dark_tower");
         // l'Oeil n'est plus une creature posee ici : le client le dessine a TOP + 29 (EyeOfSauron), de loin, quand l'Anneau est actif et la corruption >= 35 %
+    }
+
+
+    // ================================================================= ARGONATH
+    private static BlockState[] argonathPal;
+
+    private static synchronized BlockState[] argonathPal() {
+        if (argonathPal != null) return argonathPal;
+        BlockState[] p = new BlockState[24];
+        java.util.Arrays.fill(p, Build.AIR);
+        p[ArgonathPlan.STONE] = Blocks.STONE.defaultBlockState();
+        p[ArgonathPlan.ANDESITE] = Blocks.ANDESITE.defaultBlockState();
+        p[ArgonathPlan.TUFF] = Blocks.TUFF.defaultBlockState();
+        p[ArgonathPlan.COBBLE] = Blocks.COBBLESTONE.defaultBlockState();
+        p[ArgonathPlan.MOSSC] = Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+        p[ArgonathPlan.GRASS] = Blocks.GRASS_BLOCK.defaultBlockState();
+        p[ArgonathPlan.DIRT] = Blocks.DIRT.defaultBlockState();
+        p[ArgonathPlan.GRAVEL] = Blocks.GRAVEL.defaultBlockState();
+        p[ArgonathPlan.MOSS] = Blocks.MOSS_BLOCK.defaultBlockState();
+        p[ArgonathPlan.POLISHED] = Blocks.POLISHED_ANDESITE.defaultBlockState();
+        p[ArgonathPlan.LOG] = log(Blocks.SPRUCE_LOG, Direction.Axis.Y);
+        p[ArgonathPlan.LEAVES] = Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+        p[ArgonathPlan.BRICKS] = Blocks.STONE_BRICKS.defaultBlockState();
+        p[ArgonathPlan.MBRICKS] = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
+        p[ArgonathPlan.PODZOL] = Blocks.PODZOL.defaultBlockState();
+        p[ArgonathPlan.COARSE] = Blocks.COARSE_DIRT.defaultBlockState();
+        p[ArgonathPlan.SAND] = Blocks.SAND.defaultBlockState();
+        return argonathPal = p;
+    }
+
+    private static void argonath(Build b) {
+        ArgonathPlan p = ArgonathPlan.get();
+        BlockState[] pal = argonathPal();
+        BlockState foot = Blocks.STONE.defaultBlockState(), water = Blocks.WATER.defaultBlockState();
+        int maxY = ArgonathPlan.TOP - 2;
+        for (int x = 0; x < ArgonathPlan.W; x++) {
+            for (int z = 0; z < ArgonathPlan.D; z++) {
+                int kd = p.kindAt(x, z);
+                if (kd == 0 || !b.in(x, 0, z)) continue;
+                int ground = Math.min(b.groundY(x, z), maxY);
+                if (kd == 1) {                                                                 // la riviere : on creuse un lit et on le remplit d'eau
+                    int floor = ArgonathPlan.WATER_Y - p.depthAt(x, z);
+                    for (int y = Math.max(ground, 4) + 14; y > floor; y--) {
+                        if (y > ArgonathPlan.WATER_Y) { if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR); }
+                        else b.s(x, y, z, water);
+                    }
+                    double q = tRnd(x, 17, z);
+                    b.s(x, floor, z, q < 0.45 ? pal[ArgonathPlan.GRAVEL] : q < 0.7 ? pal[ArgonathPlan.SAND] : pal[ArgonathPlan.COBBLE]);
+                    for (int y = floor - 1; y >= floor - 26; y--) {
+                        var cur = b.get(x, y, z);
+                        if (!(cur.isAir() || cur.canBeReplaced() || !cur.getFluidState().isEmpty() || cur.is(net.minecraft.tags.BlockTags.LEAVES) || cur.is(net.minecraft.tags.BlockTags.LOGS))) break;
+                        b.s(x, y, z, foot);
+                    }
+                    continue;
+                }
+                b.foundation(x, z, x, z, foot, ArgonathPlan.OFF);
+                int top = p.top(x, z);
+                for (int y = Math.max(top, ground) + 1; y <= Math.max(top, ground) + 16 && y <= maxY + 1; y++) {
+                    if (p.get(x, y, z) != ArgonathPlan.AIR) continue;
+                    if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR);
+                }
+                for (int y = -ArgonathPlan.OFF + 2; y <= top; y++) {
+                    byte id = p.get(x, y, z);
+                    if (id != ArgonathPlan.AIR) b.s(x, y, z, pal[id & 255]);
+                }
+            }
+        }
     }
 
     // ================================================================= EDORAS
