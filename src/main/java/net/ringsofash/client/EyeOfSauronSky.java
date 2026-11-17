@@ -46,7 +46,9 @@ public final class EyeOfSauronSky {
         if (dist > maxD) {
             double k = maxD / dist;
             rx *= k; ry *= k; rz *= k;
-            mul = (float) (k * Mth.clamp(dist / 700.0, 1.0, 5.0));        // meme taille apparente, un peu gonflee de tres loin
+            // de loin, l'oeil garde une taille apparente fixe et bien visible (environ 7 degres) au lieu de n'etre qu'un point
+            double boost = Mth.clamp(dist / maxD, 1.0, 14.0) * (1.0 + 1.5 * Mth.clamp((dist - maxD) / maxD, 0.0, 1.0));
+            mul = (float) (k * boost);
         }
         var mv = RenderSystem.getModelViewStack();
         mv.pushMatrix();
