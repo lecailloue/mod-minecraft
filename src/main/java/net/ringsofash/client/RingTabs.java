@@ -13,7 +13,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import net.ringsofash.data.Net;
 import net.ringsofash.gen.Reg;
 
-/** Les deux onglets sur le cote gauche de l'inventaire : Inventaire et Anneaux. */
+/** Les deux onglets sur le cote gauche de l'inventaire : Inventaire, Anneaux et Artefacts. */
 final class RingTabs {
     private RingTabs() {}
 
@@ -29,9 +29,9 @@ final class RingTabs {
 
     static void draw(GuiGraphics g, AbstractContainerScreen<?> s, int tab, int mx, int my) {
         Minecraft mc = Minecraft.getInstance();
-        ItemStack[] icons = {new ItemStack(Items.IRON_CHESTPLATE), new ItemStack(Reg.RING_HOARD.get())};
-        String[] names = {"Inventaire", "Anneaux"};
-        for (int i = 0; i < 2; i++) {
+        ItemStack[] icons = {new ItemStack(Items.IRON_CHESTPLATE), new ItemStack(Reg.RING_HOARD.get()), new ItemStack(Reg.ARTIFACT_CHAIN_1.get())};
+        String[] names = {"Inventaire", "Anneaux", "Artefacts"};
+        for (int i = 0; i < 3; i++) {
             int x = tabX(s), y = tabY(s, i);
             boolean on = i == tab, hover = Ui.in(mx, my, x, y, W, H);
             g.fill(x, y, x + W, y + H, Ui.BRONZE_D);
@@ -39,7 +39,7 @@ final class RingTabs {
             g.fill(x + 2, y + 2, x + W, y + H - 2, on ? 0xFF7A5A22 : hover ? 0xFF5A4220 : 0xFF3A2A14);
             g.renderItem(icons[i], x + 5, y + 5);
         }
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 3; i++) {
             if (Ui.in(mx, my, tabX(s), tabY(s, i), W, H)) g.renderTooltip(mc.font, Component.literal(names[i]), mx, my);
         }
     }
@@ -53,5 +53,19 @@ final class RingTabs {
     private static void click(ScreenEvent.MouseButtonPressed.Pre e) {
         if (!(e.getScreen() instanceof InventoryScreen s) || e.getButton() != 0) return;
         if (Ui.in(e.getMouseX(), e.getMouseY(), tabX(s), tabY(s, 1), W, H)) { PacketDistributor.sendToServer(new Net.OpenRings()); e.setCanceled(true); }
+        if (Ui.in(e.getMouseX(), e.getMouseY(), tabX(s), tabY(s, 2), W, H)) { PacketDistributor.sendToServer(new Net.OpenArtifacts()); e.setCanceled(true); }
+    }
+
+    /** clic sur un onglet depuis un de nos ecrans (current = onglet affiche) ; renvoie true si le clic est traite */
+    static boolean clickFrom(AbstractContainerScreen<?> s, double mx, double my, int current) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return false;
+        for (int i = 0; i < 3; i++) {
+            if (i == current || !Ui.in(mx, my, tabX(s), tabY(s, i), W, H)) continue;
+            if (i == 0) { mc.player.closeContainer(); mc.setScreen(new InventoryScreen(mc.player)); }
+            else PacketDistributor.sendToServer(i == 1 ? new Net.OpenRings() : new Net.OpenArtifacts());
+            return true;
+        }
+        return false;
     }
 }

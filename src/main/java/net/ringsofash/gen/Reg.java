@@ -250,7 +250,13 @@ public final class Reg {
     public static final DeferredItem<Item> SPIDER_SILK = ITEMS.register("spider_silk", () -> new Item(props()));
     public static final DeferredItem<Item> WIGHT_DUST = ITEMS.register("wight_dust", () -> new Item(props()));
     public static final DeferredItem<Item> DEMON_HEART = ITEMS.register("demon_heart", () -> new MiscItems.Info("Encore brûlant. Convoité par les mages.", props().fireResistant().rarity(Rarity.EPIC)));
-    public static final DeferredItem<Item> DRAGON_SCALE = ITEMS.register("dragon_scale", () -> new Item(props().fireResistant().rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> DRAGON_SCALE = ITEMS.register("dragon_scale", () -> new Artifacts.Piece(Artifacts.Kind.SCALE, props().fireResistant().rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> GIANT_EAGLE_FEATHER = ITEMS.register("giant_eagle_feather", () -> new Artifacts.Piece(Artifacts.Kind.FEATHER, props().rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> HORN = ITEMS.register("horn", () -> new Artifacts.Piece(Artifacts.Kind.HORN, props().rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> ARTIFACT_CHAIN_1 = ITEMS.register("artifact_chain_1", () -> new Artifacts.Chain(1, props().stacksTo(1).rarity(Rarity.COMMON)));
+    public static final DeferredItem<Item> ARTIFACT_CHAIN_2 = ITEMS.register("artifact_chain_2", () -> new Artifacts.Chain(2, props().stacksTo(1).rarity(Rarity.UNCOMMON)));
+    public static final DeferredItem<Item> ARTIFACT_CHAIN_3 = ITEMS.register("artifact_chain_3", () -> new Artifacts.Chain(3, props().stacksTo(1).rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> ARTIFACT_CHAIN_4 = ITEMS.register("artifact_chain_4", () -> new Artifacts.Chain(4, props().stacksTo(1).rarity(Rarity.EPIC)));
     public static final DeferredItem<Item> RUNE_KEY = ITEMS.register("rune_key", () -> new MiscItems.Info("Ouvre les portes scellées des mines naines.", props()));
     public static final DeferredItem<Item> WAYBREAD = ITEMS.register("waybread", () -> new Item(props().food(new FoodProperties.Builder().nutrition(10).saturationModifier(1.4F).fast().build())));
     public static final DeferredItem<Item> HALFLING_STEW = ITEMS.register("halfling_stew", () -> new Item(props().food(new FoodProperties.Builder().nutrition(9).saturationModifier(0.9F).build())));

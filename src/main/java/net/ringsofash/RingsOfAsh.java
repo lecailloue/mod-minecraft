@@ -26,7 +26,10 @@ public class RingsOfAsh {
             .icon(() -> new ItemStack(Reg.HALFLING_RING.get()))
             .displayItems((params, out) -> {
                 out.accept(net.ringsofash.data.Guide.create(null));
-                Reg.ITEMS.getEntries().forEach(e -> out.accept(e.get()));
+                Reg.ITEMS.getEntries().forEach(e -> {
+                    out.accept(e.get());
+                    if (e.get() instanceof net.ringsofash.item.Artifacts.Piece) out.accept(net.ringsofash.item.Artifacts.artifact(e.get()));     // version artefact (secrete) a cote de la version ordinaire
+                });
                 out.accept(net.ringsofash.fluid.ModFluids.ICHOR_BUCKET.get());
             })
             .build());
@@ -36,6 +39,7 @@ public class RingsOfAsh {
         Reg.ITEMS.register(modBus);
         TABS.register(modBus);
         net.ringsofash.menu.ModMenus.MENUS.register(modBus);
+        net.ringsofash.item.Artifacts.init(modBus);
         net.ringsofash.effect.ModEffects.EFFECTS.register(modBus);
         net.ringsofash.fluid.ModFluids.register(modBus);
         ModWorldgen.register(modBus);

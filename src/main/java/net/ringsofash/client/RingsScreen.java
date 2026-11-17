@@ -1,9 +1,7 @@
 package net.ringsofash.client;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
@@ -59,11 +57,7 @@ public class RingsScreen extends AbstractContainerScreen<RingsMenu> {
 
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
-        if (button == 0 && Ui.in(mx, my, getGuiLeft() - RingTabs.W + 2, getGuiTop() + 6, RingTabs.W, RingTabs.H)) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) { mc.player.closeContainer(); mc.setScreen(new InventoryScreen(mc.player)); }
-            return true;
-        }
+        if (button == 0 && RingTabs.clickFrom(this, mx, my, 1)) return true;
         return super.mouseClicked(mx, my, button);
     }
 }

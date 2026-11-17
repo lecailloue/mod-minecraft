@@ -76,6 +76,20 @@ public final class Net {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    /** Ouvre l'onglet d'artefacts. */
+    public record OpenArtifacts() implements CustomPacketPayload {
+        public static final CustomPacketPayload.Type<OpenArtifacts> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("open_artifacts"));
+        public static final StreamCodec<FriendlyByteBuf, OpenArtifacts> CODEC = StreamCodec.of((buf, v) -> { }, buf -> new OpenArtifacts());
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    /** Touche de saut maintenue ou relachee (plume d'aigle : vol plane). */
+    public record ArtifactJump(boolean on) implements CustomPacketPayload {
+        public static final CustomPacketPayload.Type<ArtifactJump> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("artifact_jump"));
+        public static final StreamCodec<FriendlyByteBuf, ArtifactJump> CODEC = StreamCodec.of((buf, v) -> buf.writeBoolean(v.on), buf -> new ArtifactJump(buf.readBoolean()));
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
     /** Copie cote client des anneaux ranges. */
     public static final class ClientRings {
         public static final ItemStack[] stacks = new ItemStack[PlayerLore.RING_SLOTS];
@@ -104,6 +118,12 @@ public final class Net {
         }));
         e.registrar("1").playToServer(OpenRings.TYPE, OpenRings.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
             if (ctx.player() instanceof ServerPlayer sp) net.ringsofash.menu.RingsMenu.open(sp);
+        }));
+        e.registrar("1").playToServer(OpenArtifacts.TYPE, OpenArtifacts.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer sp) net.ringsofash.menu.ArtifactMenu.open(sp);
+        }));
+        e.registrar("1").playToServer(ArtifactJump.TYPE, ArtifactJump.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer sp) net.ringsofash.item.Artifacts.setJump(sp, payload.on());
         }));
         e.registrar("1").playToClient(LoreSync.TYPE, LoreSync.CODEC, (payload, ctx) -> {
             ClientLore.rep = payload.rep(); ClientLore.corruption = payload.corruption(); ClientLore.eye = payload.eye(); ClientLore.quest = payload.quest();

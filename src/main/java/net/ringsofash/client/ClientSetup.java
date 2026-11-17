@@ -72,6 +72,7 @@ public final class ClientSetup {
     private static void screens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent e) {
         e.register(net.ringsofash.menu.ModMenus.FORGE.get(), ForgeScreen::new);
         e.register(net.ringsofash.menu.ModMenus.RINGS.get(), RingsScreen::new);
+        e.register(net.ringsofash.menu.ModMenus.ARTIFACTS.get(), ArtifactScreen::new);
     }
 
     private static void gui(net.neoforged.neoforge.client.event.RegisterGuiLayersEvent e) {
@@ -123,6 +124,8 @@ public final class ClientSetup {
 
     private static void keys(RegisterKeyMappingsEvent e) { e.register(REP_KEY); e.register(MAP_KEY); e.register(RINGS_KEY); e.register(DESCEND_KEY); }
 
+    private static boolean jumpSent;
+
     private static void tick(ClientTickEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
         while (MAP_KEY.consumeClick()) {
@@ -131,6 +134,8 @@ public final class ClientSetup {
         while (RINGS_KEY.consumeClick()) {
             if (mc.player != null && mc.screen == null) net.neoforged.neoforge.network.PacketDistributor.sendToServer(new net.ringsofash.data.Net.OpenRings());
         }
+        boolean jump = mc.player != null && mc.screen == null && mc.options.keyJump.isDown();
+        if (jump != jumpSent) { jumpSent = jump; net.neoforged.neoforge.network.PacketDistributor.sendToServer(new net.ringsofash.data.Net.ArtifactJump(jump)); }
         if (!net.minecraft.client.gui.screens.Screen.hasAltDown()) RingWheel.waitRelease = false;
         else if (mc.player != null && mc.screen == null && !RingWheel.waitRelease && RingWheel.hasRings()) mc.setScreen(new RingWheel());
         while (REP_KEY.consumeClick()) {

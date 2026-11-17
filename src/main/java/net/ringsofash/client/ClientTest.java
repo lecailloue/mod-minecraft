@@ -120,7 +120,7 @@ public final class ClientTest {
                     RingWheel.keepOpen = false;
                     if (s.name.contains("onglet")) { mc.options.hideGui = false; mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player)); }
                     if (s.name.contains("roue")) { mc.options.hideGui = false; RingWheel.keepOpen = true; mc.setScreen(new RingWheel()); }
-                    if (s.name.contains("anneaux")) mc.options.hideGui = false;
+                    if (s.name.contains("anneaux") || s.name.contains("artefacts")) mc.options.hideGui = false;
                     if (s.name.contains("suivi")) { mc.options.hideGui = false; QuestScreen.tracked = 1; }
                     server.execute(() -> {
                         try { s.setup.accept(server.getPlayerList().getPlayers().get(0)); }
@@ -789,6 +789,36 @@ public final class ClientTest {
             net.ringsofash.menu.RingsMenu.open(p);
         }));
         SCENES.add(new Scene("12c_anneaux_roue", 30, p -> { }));
+        SCENES.add(new Scene("12e_artefacts_menu", 50, p -> {
+            p.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
+            var l = net.ringsofash.data.ModData.lore(p);
+            l.artifacts.clearContent();
+            l.artifacts.setItem(0, new ItemStack(Reg.ARTIFACT_CHAIN_3.get()));
+            l.artifacts.setItem(1, net.ringsofash.item.Artifacts.artifact(Reg.DRAGON_SCALE.get()));
+            l.artifacts.setItem(2, net.ringsofash.item.Artifacts.artifact(Reg.GIANT_EAGLE_FEATHER.get()));
+            l.artifacts.setItem(3, net.ringsofash.item.Artifacts.artifact(Reg.HORN.get()));
+            net.ringsofash.menu.ArtifactMenu.open(p);
+        }));
+        SCENES.add(new Scene("12f_artefacts_chaine1", 50, p -> {
+            var l = net.ringsofash.data.ModData.lore(p);
+            l.artifacts.clearContent();
+            l.artifacts.setItem(0, new ItemStack(Reg.ARTIFACT_CHAIN_1.get()));
+            l.artifacts.setItem(1, new ItemStack(Reg.HORN.get()));                       // corne ordinaire : rangee mais sans effet
+            net.ringsofash.menu.ArtifactMenu.open(p);
+        }));
+        SCENES.add(new Scene("12g_artefacts_effets", 100, p -> {
+            p.closeContainer();
+            p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+            var l = net.ringsofash.data.ModData.lore(p);
+            l.artifacts.clearContent();
+            l.artifacts.setItem(0, new ItemStack(Reg.ARTIFACT_CHAIN_4.get()));
+            l.artifacts.setItem(1, net.ringsofash.item.Artifacts.artifact(Reg.DRAGON_SCALE.get()));
+            l.artifacts.setItem(2, net.ringsofash.item.Artifacts.artifact(Reg.GIANT_EAGLE_FEATHER.get()));
+            l.artifacts.setItem(3, net.ringsofash.item.Artifacts.artifact(Reg.HORN.get()));
+            l.artifacts.setItem(4, new ItemStack(Reg.DRAGON_SCALE.get()));
+            hook = () -> log("12g artefacts : feu=" + p.hasEffect(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE) + " force=" + p.hasEffect(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST)
+                    + " chute lente=" + p.hasEffect(net.minecraft.world.effect.MobEffects.SLOW_FALLING) + " icone visible=" + p.getActiveEffects().stream().anyMatch(e -> e.isVisible() || e.showIcon()));
+        }));
         SCENES.add(new Scene("12d_anneaux_actif", 80, p -> {
             net.ringsofash.menu.RingsMenu.select(p, 4);
             hook = () -> log("12d anneau actif=" + net.ringsofash.item.RingItem.worn(p) + " chance=" + p.hasEffect(net.minecraft.world.effect.MobEffects.LUCK) + " nuit=" + p.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION));

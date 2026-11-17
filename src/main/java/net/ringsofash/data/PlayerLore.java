@@ -28,6 +28,8 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
     public static final int RING_SLOTS = 10;
     public final SimpleContainer rings = new SimpleContainer(RING_SLOTS);
     public int activeRing = -1;
+    /** Onglet d'artefacts : case 0 = chaine, cases 1 a 4 = artefacts (selon le niveau de la chaine). */
+    public final SimpleContainer artifacts = new SimpleContainer(net.ringsofash.item.Artifacts.SLOTS);
 
     /** L'anneau actif doit exister : sinon on prend le premier anneau range, ou aucun. */
     public void fixActiveRing() {
@@ -69,6 +71,7 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
         t.put("bestiary", l);
         t.put("rings", rings.createTag(provider));
         t.putInt("activeRing", activeRing);
+        t.put("artifacts", artifacts.createTag(provider));
         return t;
     }
 
@@ -91,5 +94,7 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
         rings.clearContent();
         if (t.contains("rings", Tag.TAG_LIST)) rings.fromTag(t.getList("rings", Tag.TAG_COMPOUND), provider);
         activeRing = t.contains("activeRing") ? t.getInt("activeRing") : -1;
+        artifacts.clearContent();
+        if (t.contains("artifacts", Tag.TAG_LIST)) artifacts.fromTag(t.getList("artifacts", Tag.TAG_COMPOUND), provider);
     }
 }
