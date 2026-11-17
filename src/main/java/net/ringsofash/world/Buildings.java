@@ -967,6 +967,10 @@ public final class Buildings {
                         if (!(cur.isAir() || cur.canBeReplaced() || !cur.getFluidState().isEmpty() || cur.is(net.minecraft.tags.BlockTags.LEAVES) || cur.is(net.minecraft.tags.BlockTags.LOGS))) break;
                         b.s(x, y, z, foot);
                     }
+                    for (int y = ArgonathPlan.WATER_Y + 1; y <= p.top(x, z) && y <= maxY + 1; y++) {       // au-dessus de l'eau : bras et manches des rois
+                        byte id = p.get(x, y, z);
+                        if (id != ArgonathPlan.AIR) b.s(x, y, z, pal[id & 255]);
+                    }
                     continue;
                 }
                 b.foundation(x, z, x, z, foot, ArgonathPlan.OFF);

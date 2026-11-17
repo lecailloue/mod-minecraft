@@ -316,7 +316,6 @@ public final class ClientTest {
         eyeFar("96_oeil_loin_nuit", 1712, 1742, 700, true, 18000);
         eyeFar("97_oeil_loin_cache", 1712, 1742, 700, false, 18000);
         eyeFar("98_oeil_tres_loin_jour", 1712, 1742, 1800, true, 6000);
-        argT("299_argonath_chargement", 0, 4, -118, 0, 62, 0, 6000);       // sert a charger les chunks et a deplacer le joueur, la capture suivante est la bonne
         argT("300_argonath_face_nord", 0, 4, -118, 0, 62, 0, 6000);
         argT("301_argonath_vue_haute", 70, 135, -122, 0, 50, 0, 6000);
         argT("302_argonath_visages", 0, 98, -48, 0, 92, 0, 6000);
@@ -325,12 +324,12 @@ public final class ClientTest {
         argT("305_argonath_relief_est", 175, 28, 0, 0, 45, 0, 6000);
         argT("306_argonath_riviere_sud", 0, 3, 70, 0, 48, -10, 6000);
         argT("307_argonath_coucher", 0, 6, -118, 0, 62, 0, 12800);
-        argT("308_argonath_mains", 0, 101, -34, 0, 100, -3, 6000);
+        argT("308_argonath_mains", 0, 101, -40, 0, 100, -3, 6000);
         argT("309_argonath_base_ouest", -20, 14, -56, -25, 10, 0, 6000);
-        argT("310_argonath_profil_drape", -62, 70, -6, -25, 66, -2, 6000);
-        argT("311_argonath_rive_est", 96, 12, -104, 62, 14, -58, 6000);
-        argT("312_argonath_rive_ouest", -100, 12, -108, -62, 14, -60, 6000);
-        argT("313_argonath_bout_sud", 0, 14, 150, 0, 8, 100, 6000);
+        argT("310_argonath_profil_drape", 18, 82, -38, -8, 84, -3, 6000);
+        argT("311_argonath_rive_est", -20, 25, -75, 62, 20, -70, 6000);
+        argT("312_argonath_rive_ouest", 20, 25, -75, -62, 20, -70, 6000);
+        argT("313_argonath_bout_sud", 0, 40, 175, 0, 12, 100, 6000);
         SCENES.add(new Scene("00_scene", 120, p -> {
             MinecraftServer s = p.server;
             ServerLevel ow = s.overworld();

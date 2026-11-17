@@ -103,12 +103,12 @@ public final class ArgonathPlan {
                     continue;
                 }
                 // profil de la masse : continu avec la distance a l'eau, la rive qui recule n'y ajoute qu'une entaille
-                double ue = Math.max(u - hw, 0);
+                double ue = Math.max(u - edge, 0);
                 double ue2 = Math.max(0, ue + 5 * vn(x / 12.0, z / 12.0, 41) + 2.5 * vn(x / 5.0, z / 5.0, 42));
-                double base = 76 * (0.42 * sm(ue2 / 8.0) + 0.58 * sm((ue2 - 2) / 46.0));
+                double base = 76 * (0.42 * sm(ue2 / 15.0) + 0.58 * sm((ue2 - 2) / 46.0));
                 double fall = 1 - sm((ue - 42) / 75.0);
                 double ridge = 1 - Math.abs(vn(x / 26.0, z / 26.0, 13));
-                double n = 8 * vn(x / 16.0, z / 16.0, 11) + 4.5 * vn(x / 7.0, z / 7.0, 12) + 2.2 * vn(x / 3.3, z / 3.3, 15) + 9 * ridge * ridge * sm(ue / 20.0);
+                double n = 8 * vn(x / 16.0, z / 16.0, 11) + 4.5 * vn(x / 7.0, z / 7.0, 12) + 1.1 * vn(x / 3.3, z / 3.3, 15) + 9 * ridge * ridge * sm(ue / 20.0);
                 double lowNear = 1 - 0.24 * Math.exp(-Math.pow((z - CZ) / 42.0, 2));                 // un peu plus bas autour des rois : ils se detachent mieux
                 double h = (base + n * sm(ue / 10.0)) * fall * zf * lowNear;
                 h = Math.max(h, 4 * Math.min(1, fall * 3) * Math.min(1, zf * 4));                     // pas de bande vide entre l'eau et la masse
