@@ -8,7 +8,7 @@ package net.ringsofash.world;
  */
 public final class ArgonathPlan {
     public static final int W = 256, D = 256, OFF = 30, TOP = 126, H = OFF + TOP + 1, CX = 128, CZ = 128;
-    public static final int WATER_Y = -3;
+    public static final int WATER_Y = -2;
     public static final int STATUE_TOP = 110, CREST_MAX = 88;
 
     public static final int AIR = 0, STONE = 1, ANDESITE = 2, TUFF = 3, COBBLE = 4, MOSSC = 5, GRASS = 6, DIRT = 7, GRAVEL = 8, MOSS = 9, POLISHED = 10,
@@ -20,6 +20,7 @@ public final class ArgonathPlan {
     private final byte[] g = new byte[W * H * D];
     private final double[] th = new double[W * D];                              // hauteur de la masse rocheuse (>= 2) ou -99
     private final byte[] kind = new byte[W * D];                                // 0 rien, 1 riviere, 2 masse
+    private final byte[] shore = new byte[W * D];
     private final byte[] depth = new byte[W * D];                               // profondeur de la riviere
     private final int[] top = new int[W * D];
     public int statueW_x, statueE_x, statue_z;
@@ -35,6 +36,8 @@ public final class ArgonathPlan {
     public int kindAt(int x, int z) { return kind[z * W + x]; }
     public int depthAt(int x, int z) { return depth[z * W + x]; }
     public int top(int x, int z) { return top[z * W + x]; }
+    /** distance (en blocs) a l'eau, 255 hors de la zone du site : sert a raser le relief naturel qui depasserait sur les berges */
+    public int shore(int x, int z) { return shore[z * W + x] & 255; }
 
     private static int hash(int x, int y, int z) {
         int h = x * 374761393 + y * 668265263 + z * 362437 + 77;
@@ -66,6 +69,7 @@ public final class ArgonathPlan {
 
     // ------------------------------------------------------------------ construction
     public ArgonathPlan() {
+        java.util.Arrays.fill(shore, (byte) 120);
         terrain();
         materialize();
         trees();
@@ -111,9 +115,11 @@ public final class ArgonathPlan {
                 double n = 8 * vn(x / 16.0, z / 16.0, 11) + 4.5 * vn(x / 7.0, z / 7.0, 12) + 1.1 * vn(x / 3.3, z / 3.3, 15) + 9 * ridge * ridge * sm(ue / 20.0);
                 double lowNear = 1 - 0.24 * Math.exp(-Math.pow((z - CZ) / 42.0, 2));                 // un peu plus bas autour des rois : ils se detachent mieux
                 double h = (base + n * sm(ue / 10.0)) * fall * zf * lowNear;
-                h = Math.max(h, 4 * Math.min(1, fall * 3) * Math.min(1, zf * 4));                     // pas de bande vide entre l'eau et la masse
+                double g = Math.min(1, fall * 3) * Math.min(1, zf * 4);
+                h = Math.max(h, g * (0.2 + 4 * sm(ue / 10.0)));                                       // rive en pente douce, pas de bande vide entre l'eau et la masse
                 h = Math.min(h, CREST_MAX);
-                if (h >= 2) { th[i] = h; kind[i] = 2; }
+                shore[i] = (byte) Math.min(120, (int) ue);
+                if (h >= 1 || g > 0.5) { th[i] = h; kind[i] = 2; }
             }
         }
     }

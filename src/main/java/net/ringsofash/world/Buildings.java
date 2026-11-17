@@ -975,7 +975,8 @@ public final class Buildings {
                 }
                 b.foundation(x, z, x, z, foot, ArgonathPlan.OFF);
                 int top = p.top(x, z);
-                for (int y = Math.max(top, ground) + 1; y <= Math.max(top, ground) + 16 && y <= maxY + 1; y++) {
+                int lo = p.shore(x, z) < 16 ? top : Math.max(top, ground);                    // sur les berges, le relief naturel qui depasse est rase : la rive suit la pente du plan
+                for (int y = lo + 1; y <= Math.max(top, ground) + 16 && y <= maxY + 1; y++) {
                     if (p.get(x, y, z) != ArgonathPlan.AIR) continue;
                     if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR);
                 }

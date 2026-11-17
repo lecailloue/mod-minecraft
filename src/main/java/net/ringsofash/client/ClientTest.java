@@ -316,7 +316,8 @@ public final class ClientTest {
         eyeFar("96_oeil_loin_nuit", 1712, 1742, 700, true, 18000);
         eyeFar("97_oeil_loin_cache", 1712, 1742, 700, false, 18000);
         eyeFar("98_oeil_tres_loin_jour", 1712, 1742, 1800, true, 6000);
-        argT("300_argonath_face_nord", 0, 4, -118, 0, 62, 0, 6000);
+        argT("299_argonath_chargement", 0, 60, -30, 0, 50, 40, 6000);       // charge les chunks du site (long) : sa capture ne compte pas
+        argT("300_argonath_face_nord", 2, 5, -116, 0, 62, 0, 6000);
         argT("301_argonath_vue_haute", 70, 135, -122, 0, 50, 0, 6000);
         argT("302_argonath_visages", 0, 98, -48, 0, 92, 0, 6000);
         argT("303_argonath_dos_sud", 0, 38, 105, 0, 62, 0, 6000);
@@ -1035,7 +1036,7 @@ public final class ClientTest {
 
     /** vue relative a l'Argonath : de (fx, fy, fz) vers (tx, ty, tz), tout depuis (x de la carte, sol, z de la carte) */
     private static void argT(String name, double fx, double fy, double fz, double tx, double ty, double tz, int time) {
-        SCENES.add(new Scene(name, 420, p -> {
+        SCENES.add(new Scene(name, name.startsWith("299") ? 1500 : 420, p -> {
             ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
             int[] pl = net.ringsofash.world.MapData.place("argonath");
             if (pl == null) return;
