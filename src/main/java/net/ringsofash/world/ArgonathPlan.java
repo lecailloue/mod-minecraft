@@ -8,7 +8,7 @@ package net.ringsofash.world;
  */
 public final class ArgonathPlan {
     public static final int W = 256, D = 256, OFF = 30, TOP = 126, H = OFF + TOP + 1, CX = 128, CZ = 128;
-    public static final int WATER_Y = -2;
+    public static final int WATER_Y = 0;       // meme niveau que les rivieres naturelles de la carte (surface a y = 63, comme le sol du site)
     public static final int STATUE_TOP = 110, CREST_MAX = 88;
 
     public static final int AIR = 0, STONE = 1, ANDESITE = 2, TUFF = 3, COBBLE = 4, MOSSC = 5, GRASS = 6, DIRT = 7, GRAVEL = 8, MOSS = 9, POLISHED = 10,
@@ -80,12 +80,16 @@ public final class ArgonathPlan {
     /** demi-largeur de l'eau : etroite et profonde en aval des statues, plus large vers l'amont, arrondie aux deux bouts du plan */
     private static double half(int z) {
         double h = 14;
-        if (z < CZ - 10) h += 17 * sm((CZ - 10 - z) / 55.0);
+        if (z < CZ - 10) h += 9 * sm((CZ - 10 - z) / 70.0) * (1 + 0.5 * vn(z / 31.0, 4.1, 9));
         h += 2 * vn(z / 25.0, 1.3, 8) * sm((z - CZ - 10) / 20.0);
-        return h * sm(z / 24.0) * sm((D - 1 - z) / 24.0);
+        return h * sm(z / 48.0) * sm((D - 1 - z) / 24.0);
     }
     /** la rive recule d'un coup au nord des statues : un golfe ouvert sur lequel elles regardent */
-    private static double bay(int z) { return z < CZ - 7.5 ? 24 * sm((CZ - 7.5 - z) / 2.5) : 0; }
+    private static double bay(int z, int side) {
+        if (z >= CZ - 7.5) return 0;
+        double a = side == 0 ? 15 : 8, k = vn(z / 17.0, side == 0 ? 5.3 : 8.9, 63);
+        return a * sm((CZ - 7.5 - z) / 6.0) * Math.max(0.15, 0.7 + 0.8 * k);
+    }
 
     // ------------------------------------------------------------------ construction
     public ArgonathPlan() {
@@ -106,11 +110,12 @@ public final class ArgonathPlan {
     private void terrain() {
         double hwc = half(CZ);
         for (int z = 0; z < D; z++) {
-            double ax = axis(z), hw = half(z), bz = bay(z);
+            double ax = axis(z), hw = half(z);
             double zf = sm((z - 8) / 45.0) * (1 - sm((z - (D - 62)) / 54.0));
             for (int x = 0; x < W; x++) {
                 int i = z * W + x;
                 double u = Math.abs(x + 0.5 - ax);
+                double bz = bay(z, x + 0.5 < ax ? 0 : 1);
                 th[i] = -99;
                 // promontoire sous chaque roi : un affleurement de roche irregulier, plus haut au centre, qui plonge dans l'eau
                 double cu = hwc + 11, du = (u - cu) / 14.0, dz = (z + 0.5 - CZ) / 13.0;

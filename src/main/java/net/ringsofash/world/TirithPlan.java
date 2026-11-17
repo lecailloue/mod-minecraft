@@ -119,7 +119,7 @@ public final class TirithPlan {
     /** demi-largeur de l'eperon : large au plateau, puis une lame etroite qui fend la cite jusqu'au premier mur */
     private static double prowHW(double dz) {
         if (dz <= 26) return 21;
-        return Math.max(0, 11 * (1 - (dz - 26) / (PROW_TIP - 26 + 4.0)));      // triangle : la proue s'effile en pointe
+        return Math.max(11, 21 - (dz - 26) * 10.0 / 6.0);                         // une lame de largeur constante, qui se termine net : bout droit, face verticale
     }
 
     /** distance a l'interieur du bord de l'eperon (negative : hors de l'eperon) ; le bord est irregulier, pas une ligne droite */
@@ -127,7 +127,7 @@ public final class TirithPlan {
         double dz = z + 0.5 - CZ;
         if (dz < -14 || dz > PROW_TIP + 1) return -1;
         double hw = prowHW(dz), k = Math.min(1, hw / 10);
-        hw += 2.4 * vn(z / 7.0, 3.3, 5) * k + 1.3 * vn(z / 3.0, 7.7, 6) * k;
+        if (dz <= 26) hw += 2.4 * vn(z / 7.0, 3.3, 5) * k + 1.3 * vn(z / 3.0, 7.7, 6) * k;       // le plateau garde un bord irregulier, la lame est droite
         return hw - Math.abs(x + 0.5 - CX);
     }
 
@@ -137,7 +137,9 @@ public final class TirithPlan {
     private static int prowTopAt(int x, int z) {
         double e = prowEdge(x, z);
         int t = PROW_TOP - 1;
-        if (e < 3) { double sh = 3 - e; t -= (int) (sh * sh * 1.3 + 2.5 * Math.max(0, vn(x / 3.0, z / 3.0, 52)) * sh); }
+        double dz = z + 0.5 - CZ;
+        if (dz > PROW_TIP - 36) t -= Math.min(12, (int) ((dz - (PROW_TIP - 36)) / 3.0));      // le bout descend : terrasses blanches d'un bloc tous les trois blocs
+        if (e < 3 && dz <= 26) { double sh = 3 - e; t -= (int) (sh * sh * 1.3 + 2.5 * Math.max(0, vn(x / 3.0, z / 3.0, 52)) * sh); }
         return t;
     }
 
@@ -237,7 +239,8 @@ public final class TirithPlan {
             for (int y = -6; y <= f; y++) {
                 boolean surf = y >= f - 1 || y > mn1 || (rock || keel) && y > mn2 - 2;           // la peau visible, un peu plus epaisse pour la roche
                 int id;
-                if (keel) id = surf ? keelBlock(x, y, z, f, y == f || y > mn1) : (rnd(x, y, z) < 0.5 ? STONE : ANDESITE);
+                if (keel && y == f && z + 0.5 - CZ > 26) id = paving(x, z);                           // le dessus de la lame : sol de pierre blanche
+                else if (keel) id = surf ? keelBlock(x, y, z, f, y == f || y > mn1) : (rnd(x, y, z) < 0.5 ? STONE : ANDESITE);
                 else if (rock) id = surf ? rockBlock(x, y, z, f, k, y == f || y > mn1) : (rnd(x, y, z) < 0.6 ? STONE : TUFF);
                 else if (y == f) id = paving(x, z);
                 else if (surf) id = wallBlock(x, y, z);
@@ -252,7 +255,6 @@ public final class TirithPlan {
         double q = rnd(x, y, z);
         double layer = Math.floor((y + 5 * vn(x / 14.0, z / 14.0, 53)) / 3.0);
         double lh = rnd((int) layer, 19, 7);
-        if (face && y < 100 && vn(x / 5.0, z / 5.0 + y / 6.0, 54) > 0.62) return q < 0.5 ? MOSS : MOSSC;
         if (face && vn(x / 2.5 + y / 4.0, z / 2.5, 55) > 0.72) return ANDESITE;                  // fissures sombres
         if (lh < 0.28) return q < 0.7 ? CALCITE : DIORITE;
         if (lh < 0.5) return q < 0.7 ? DIORITE : STONE;
@@ -354,6 +356,7 @@ public final class TirithPlan {
             boolean grand = n == 0;
             int sz = grand ? 11 : 7, th = grand ? 30 : 15, base = hi;
             int zc = z0 - (grand ? 9 : 5);
+            int built = 0;
             for (int sd = -1; sd <= 1; sd += 2) {
                 int cx0 = xr + sd * (hw + 2 + sz / 2 + 1);
                 int x0 = cx0 - sz / 2, z1 = zc - sz / 2;
@@ -363,10 +366,17 @@ public final class TirithPlan {
                 }
                 if (!can) continue;
                 gateTower(x0, z1, sz, base, th);
+                built++;
             }
             boolean okL = true;
             for (int x = xr - hw - 2; x <= xr + hw + 2; x++) for (int z = zc - 2; z <= zc + 2; z++) if (!area(x, z) || kind[z * W + x] == 0) okL = false;
             if (okL) archGate(xr, zc, hw, base, grand ? base + 2 : base - 3, grand);
+            if (okL && built == 2) {                                   // galerie : on traverse les deux tours et le porche d'un bout a l'autre de la rue, sur un plancher au niveau de la rue
+                for (int x = xr - hw - 2; x <= xr + hw + 2; x++) for (int z = zc - 1; z <= zc + 1; z++) {
+                    for (int y = base; y <= base + 3; y++) set(x, y, z, AIR);
+                    if (get(x, base - 1, z) == AIR) set(x, base - 1, z, PAVE);
+                }
+            }
             int zTop = z0 - (hi - lo) - 2;
             spawns.add(new int[]{1, xr - hw + 1, hi, zTop}); spawns.add(new int[]{1, xr + hw - 1, hi, zTop});
             if (grand) { spawns.add(new int[]{1, xr - 3, 0, z0 + 3}); spawns.add(new int[]{1, xr + 3, 0, z0 + 3}); }
@@ -415,7 +425,7 @@ public final class TirithPlan {
             boolean edge = x == x0 || x == x0 + sz - 1 || z == z0 || z == z0 + sz - 1;
             boolean corner = (x == x0 || x == x0 + sz - 1) && (z == z0 || z == z0 + sz - 1);
             for (int y = 0; y <= h; y++) {
-                int id = edge ? (corner ? QPILLAR_Y : (y % 10 == 9 ? QB : WB)) : (y == 0 ? WB : AIR);
+                int id = edge ? (corner ? QPILLAR_Y : (y % 10 == 9 ? QB : WB)) : AIR;
                 if (edge && !corner && y % 8 >= 4 && y % 8 <= 5 && y > 3 && y < h - 3 && ((x - x0 + z - z0) % 4 == 2)) id = BARS;
                 if (id != AIR) set(x, base + y, z, id);
             }
@@ -427,6 +437,15 @@ public final class TirithPlan {
             set(x, base + h, z, WB);
             boolean mid = Math.abs(x - (x0 + sz / 2)) <= 1 && Math.abs(z - (z0 + sz / 2)) <= 1;
             if (mid) { set(x, base + h + 1, z, WB); set(x, base + h + 2, z, WB); }
+        }
+        // la tour est traversable : une porte sur chaque face le long de la rue (entree d'un cote, sortie de l'autre), au niveau de la chaussee
+        int czd = z0 + sz / 2;
+        for (int xd : new int[]{x0, x0 + sz - 1}) {
+            for (int dz = -1; dz <= 1; dz++) {
+                for (int y = 0; y <= 3; y++) set(xd, base + y, czd + dz, AIR);
+                set(xd, base + 4, czd + dz, QB);
+            }
+            for (int dz : new int[]{-2, 2}) for (int y = 0; y <= 3; y++) set(xd, base + y, czd + dz, QB);
         }
         int cxp = x0 + sz / 2, czp = z0 + sz / 2;
         set(cxp, base + h + 3, czp, FENCE_B); set(cxp, base + h + 4, czp, FENCE_B); set(cxp, base + h + 5, czp, LANTERN);
@@ -624,28 +643,44 @@ public final class TirithPlan {
     // ------------------------------------------------------------------ rochers, eboulis et arbres : la falaise et l'eperon ne sont plus lisses
     private int boulderBlock(int x, int y, int z) {
         double q = rnd(x, y, z);
-        return q < 0.28 ? STONE : q < 0.5 ? ANDESITE : q < 0.64 ? CALCITE : q < 0.76 ? MOSSC : q < 0.86 ? TUFF : q < 0.94 ? DIORITE : COBBLE;
+        return q < 0.3 ? STONE : q < 0.56 ? ANDESITE : q < 0.7 ? CALCITE : q < 0.82 ? TUFF : q < 0.93 ? DIORITE : COBBLE;
     }
 
+    /** vrai si la cellule est sur ou contre un passage (terrasse, rampe, escalier) : aucun rocher ne doit y tomber */
+    private boolean passage(int x, int z) {
+        for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++) {
+            int xx = x + dx, zz = z + dz;
+            if (!area(xx, zz)) continue;
+            int kd = kind[zz * W + xx];
+            if (kd == 4 || (kd == 1 && Math.abs(dx) <= 1 && Math.abs(dz) <= 1)) return true;
+        }
+        return false;
+    }
+
+    /** bloc de roche anguleux : un pave aux aretes vives, un peu penche et ebreche, a la place des anciennes boules */
     private void blob(double cx, double cy, double cz, double rad) {
-        int rr = (int) Math.ceil(rad) + 1;
+        double rx = rad * (0.8 + 0.5 * rnd((int) (cx * 3), 61, (int) (cz * 3))), rz = rad * (0.8 + 0.5 * rnd((int) (cz * 3), 62, (int) (cx * 3))), ry = rad * 0.85;
+        double sk = (rnd((int) (cx * 5), 63, (int) (cz * 5)) - 0.5) * 0.6;
+        int rr = (int) Math.ceil(Math.max(rx, Math.max(ry, rz))) + 2;
         for (int dx = -rr; dx <= rr; dx++) for (int dy = -rr; dy <= rr; dy++) for (int dz = -rr; dz <= rr; dz++) {
             int bx = (int) Math.round(cx) + dx, by = (int) Math.round(cy) + dy, bz = (int) Math.round(cz) + dz;
-            double e = ((bx - cx) * (bx - cx) + (by - cy) * (by - cy) * 1.3 + (bz - cz) * (bz - cz)) / (rad * rad) + 0.3 * vn(bx / 1.7, bz / 1.7 + by * 0.5, 58);
-            if (e < 1) setIfAir(bx, by, bz, boulderBlock(bx, by, bz));
+            double u = (bx - cx) / rx, w = (by - cy) / ry - sk * (bx - cx) / rx, v = (bz - cz) / rz;
+            double e = Math.pow(Math.abs(u), 4) + Math.pow(Math.abs(w), 4) + Math.pow(Math.abs(v), 4) + 0.25 * vn(bx / 1.7, bz / 1.7 + by * 0.5, 58);
+            if (e >= 1 || !area(bx, bz) || passage(bx, bz)) continue;
+            setIfAir(bx, by, bz, boulderBlock(bx, by, bz));
         }
     }
 
     private void rocks() {
         // rochers eboules au pied et sur les replats de la montagne
-        for (int i = 0; i < 4200; i++) {
+        for (int i = 0; i < 2600; i++) {
             int x = (int) (rnd(i, 1, 2) * W), z = (int) (rnd(i, 3, 4) * D);
             int kd = kind[z * W + x], f = fill[z * W + x];
             if (kd != 2 && kd != 5) continue;
             if (Math.abs(x - CX) < 38 && z > CZ - 32) continue;                              // la citadelle
             if (f > 150 && rnd(i, 5, 6) > 0.04) continue;
-            double rad = 1.5 + rnd(i, 7, 8) * 2.8;
-            if (rnd(i, 9, 10) < 0.06) rad += 2.5;                                            // quelques gros blocs
+            double rad = 1.0 + rnd(i, 7, 8) * 1.7;
+            if (rnd(i, 9, 10) < 0.03) rad += 1.2;                                            // de rares gros blocs
             blob(x + 0.5, f + rad * 0.35, z + 0.5, rad);
         }
         // arbres et buissons sur les pentes herbeuses
@@ -671,7 +706,7 @@ public final class TirithPlan {
             int xe = -1;
             for (int xx = CX + side * hw; Math.abs(xx - CX) >= 0 && xx != CX; xx -= side) { if (get(xx, y, z) != AIR) { xe = xx; break; } }
             if (xe < 0) continue;
-            blob(xe + side * 0.9, y, z + 0.5, 1.4 + rnd(i, 27, 28) * 2.0);
+            blob(xe + side * 0.4, y, z + 0.5, 0.9 + rnd(i, 27, 28) * 1.1);
         }
     }
 
@@ -679,18 +714,21 @@ public final class TirithPlan {
     private void citadel() {
         int cx = CX, cz = CZ, y0 = PROW_TOP;
         tower_x = cx; tower_z = cz - 5; court_x = cx; court_z = cz + 14;
-        // parapet autour du plateau
-        for (int x = cx - 24; x <= cx + 24; x++) for (int z = cz - 18; z <= cz + PROW_TIP + 2; z++) {
-            if (!area(x, z) || kind[z * W + x] != 3 || fill[z * W + x] != PROW_TOP - 1) continue;
+        // parapet sur tout le bord de l'eperon (plateau et lame), et marches blanches la ou la crete descend
+        for (int x = cx - 24; x <= cx + 24; x++) for (int z = cz - 12; z <= cz + PROW_TIP + 2; z++) {
+            if (!area(x, z) || kind[z * W + x] != 3) continue;
+            int f = fill[z * W + x];
+            if (f < PROW_TOP - 14 || (z <= cz + 26 && f != PROW_TOP - 1)) continue;
             boolean edge = false;
             for (int[] o : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
                 int xx = x + o[0], zz = z + o[1];
-                if (!area(xx, zz) || kind[zz * W + xx] != 3 || fill[zz * W + xx] < PROW_TOP - 2) edge = true;
+                if (!area(xx, zz) || kind[zz * W + xx] != 3 || fill[zz * W + xx] < f - 1) edge = true;
             }
-            if (!edge) continue;
-            if (z < cz - 12) continue;
-            set(x, y0, z, WB);
-            if ((x + z) % 2 == 0) set(x, y0 + 1, z, WB); else set(x, y0 + 1, z, WB_SLAB);
+            if (edge) {
+                set(x, f + 1, z, WB);
+                if ((x + z) % 2 == 0) set(x, f + 2, z, WB); else set(x, f + 2, z, WB_SLAB);
+            }
+            if (z > cz + 26 && area(x, z + 1) && kind[(z + 1) * W + x] == 3 && fill[(z + 1) * W + x] == f - 1) set(x, f, z, stair(WB_STAIR, N, false));
         }
         // sol de la cour : motif de dalles
         for (int x = cx - 21; x <= cx + 21; x++) for (int z = cz - 14; z <= cz + 26; z++) {
@@ -813,10 +851,10 @@ public final class TirithPlan {
     private void whiteTree(int tx, int tz, int y0) {
         java.util.Random r = new java.util.Random(7717);
         double ccx = tx + 0.5, ccz = tz + 0.5;
-        int h = 17;
+        int h = 11;
         for (int y = 1; y <= h; y++) {
             double t = y / (double) h;
-            double rad = y < 3 ? 2.7 : t < 0.55 ? 1.95 : t < 0.8 ? 1.45 : 1.0;
+            double rad = y < 3 ? 1.9 : t < 0.55 ? 1.35 : t < 0.8 ? 1.0 : 0.7;
             for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++) {
                 double d = Math.hypot(tx + dx - ccx, tz + dz - ccz);
                 if (d <= rad) set(tx + dx, y0 + y, tz + dz, WTLOG);
@@ -826,9 +864,9 @@ public final class TirithPlan {
         int roots = 6;
         for (int i = 0; i < roots; i++) {
             double a = (i + r.nextDouble() * 0.6) * Math.PI * 2 / roots;
-            double x = Math.cos(a) * 2.3, z = Math.sin(a) * 2.3;
+            double x = Math.cos(a) * 1.6, z = Math.sin(a) * 1.6;
             int y = 1;
-            int len = 2 + r.nextInt(3);
+            int len = 1 + r.nextInt(2);
             for (int k = 0; k < len; k++) {
                 x += Math.cos(a); z += Math.sin(a);
                 if (k > 0 && r.nextBoolean()) y--;
@@ -843,7 +881,7 @@ public final class TirithPlan {
         for (int i = 0; i < branches; i++) {
             double a = -0.15 * Math.PI + (i + r.nextDouble() * 0.8) * 1.3 * Math.PI / branches;
             double startT = 0.38 + r.nextDouble() * 0.55;
-            int len = 5 + r.nextInt(5);
+            int len = 3 + r.nextInt(3);
             double rise = 0.3 + r.nextDouble() * 0.45;
             double x = 0, z = 0, y = h * startT;
             for (int k = 0; k < len; k++) {
@@ -852,10 +890,10 @@ public final class TirithPlan {
                 set((int) Math.round(ccx + x - 0.5), y0 + (int) Math.round(y), (int) Math.round(ccz + z - 0.5), WTLOG);
                 if (k > 1 && k % 2 == 0) set((int) Math.round(ccx + x - 0.5), y0 + (int) Math.round(y) - 1, (int) Math.round(ccz + z - 0.5), WTLOG);
             }
-            tips.add(new double[]{ccx + x - 0.5, y0 + y + 1, ccz + z - 0.5, 3.4 + r.nextDouble() * 0.8, 0.75});
+            tips.add(new double[]{ccx + x - 0.5, y0 + y + 1, ccz + z - 0.5, 2.3 + r.nextDouble() * 0.6, 0.75});
         }
-        tips.add(new double[]{ccx - 0.5, y0 + h + 1, ccz - 0.5, 5.0, 0.8});
-        tips.add(new double[]{ccx - 0.5, y0 + h - 4, ccz - 0.5, 3.4, 0.6});
+        tips.add(new double[]{ccx - 0.5, y0 + h + 1, ccz - 0.5, 3.3, 0.8});
+        tips.add(new double[]{ccx - 0.5, y0 + h - 3, ccz - 0.5, 2.3, 0.6});
         for (double[] t : tips) {
             int rr = (int) Math.ceil(t[3]) + 1;
             for (int dx = -rr; dx <= rr; dx++) for (int dz = -rr; dz <= rr; dz++) for (int dy = -rr; dy <= rr; dy++) {

@@ -49,7 +49,7 @@ zone = oh.argmax(0).astype(np.uint8)                                 # 0 vert, 1
 # les Argonath : pas de cendre dans leur zone (les statues doivent baigner dans un seul biome)
 _ag = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'places.json')))['argonath']
 _gy, _gx = np.mgrid[0:N, 0:N]
-_agx, _agz = _ag['x'] + 1000 + 8, _ag['z'] + 1000
+_agx, _agz = _ag['x'] + 1000, _ag['z'] + 1000     # le site reste pose sur l'axe de la riviere (pas de recalage sur la berge)
 _ar = np.hypot(_gx - _agx, _gy - _agz)
 _wob = 14 * np.sin(np.arctan2(_gy - _agz, _gx - _agx) * 3 + 1.0) + 9 * np.sin(np.arctan2(_gy - _agz, _gx - _agx) * 7)
 zone[(_ar < 118 + _wob) & (zone == 2)] = 0
@@ -216,6 +216,8 @@ if places_out:
     out_pl = {}
     for k, v in pl.items():
         if k == 'mont_du_destin': continue
+        if k == 'argonath':
+            out_pl[k] = {'x': round(v['x'] * SC), 'z': round(v['z'] * SC)}; continue
         gx, gy = int(np.clip(v['x'] + 1000, 0, N - 1)), int(np.clip(v['z'] + 1000, 0, N - 1))
         if not walk[gy, gx]:
             dd = (ids[1] - gx) ** 2 + (ids[0] - gy) ** 2; j = dd.argmin(); gx, gy = int(ids[1][j]), int(ids[0][j])

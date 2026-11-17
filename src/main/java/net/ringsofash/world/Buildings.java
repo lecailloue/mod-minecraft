@@ -1101,22 +1101,6 @@ public final class Buildings {
         BlockState[] pal = edorasPal();
         BlockState foot = Blocks.STONE.defaultBlockState(), dirt = Blocks.DIRT.defaultBlockState();
         int maxY = EdorasPlan.H - EdorasPlan.OFF - 1;
-        // rampe de sortie : le passage de la porte donne sur le vide, on y raccorde une descente en marches jusqu'au sol naturel
-        int gu = p.gateAlongX ? p.gateZ : p.gateX, gv = p.gateAlongX ? p.gateX : p.gateZ, gsgn = 0;
-        int[][] rampG = null;
-        if (p.gateX >= 0) {
-            for (int sg = -1; sg <= 1 && gsgn == 0; sg += 2) {
-                int uu = gu + sg * 14, xx = p.gateAlongX ? gv : uu, zz = p.gateAlongX ? uu : gv;
-                if (xx >= 0 && zz >= 0 && xx < EdorasPlan.W && zz < EdorasPlan.D && p.get(xx, 0, zz) == OrthancPlan.AIR) gsgn = sg;
-            }
-            if (gsgn != 0) {
-                rampG = new int[16][17];
-                for (int i = 0; i < 16; i++) for (int dv = -8; dv <= 8; dv++) {
-                    int uu = gu + gsgn * (11 + i), vv = gv + dv, xx = p.gateAlongX ? vv : uu, zz = p.gateAlongX ? uu : vv;
-                    rampG[i][dv + 8] = b.in(xx, 0, zz) ? Math.min(b.groundY(xx, zz), maxY) : Integer.MIN_VALUE;
-                }
-            }
-        }
         for (int x = 0; x < EdorasPlan.W; x++) {
             for (int z = 0; z < EdorasPlan.D; z++) {
                 int top = p.top(x, z);
@@ -1148,17 +1132,53 @@ public final class Buildings {
                 }
             }
         }
-        if (rampG != null) {
-            BlockState grass = Blocks.GRASS_BLOCK.defaultBlockState(), path = pal[OrthancPlan.PATH & 255];
-            for (int i = 0; i < 16; i++) for (int dv = -8; dv <= 8; dv++) {
-                int uu = gu + gsgn * (11 + i), vv = gv + dv, xx = p.gateAlongX ? vv : uu, zz = p.gateAlongX ? uu : vv;
-                if (xx < 0 || zz < 0 || xx >= EdorasPlan.W || zz >= EdorasPlan.D || p.get(xx, 0, zz) != OrthancPlan.AIR) continue;
-                int g = rampG[i][dv + 8], ad = Math.abs(dv);
-                if (g == Integer.MIN_VALUE) continue;
-                int sc = -((i + 1) / 2) - Math.max(0, ad - 3);                        // hauteur voulue de la surface
-                int top = Math.max(g, sc);
-                if (sc > g) { for (int y = g + 1; y < sc; y++) b.s(xx, y, zz, dirt); b.s(xx, sc, zz, ad <= 3 ? path : grass); }
-                for (int y = top + 1; y <= top + 4; y++) b.s(xx, y, zz, Build.AIR);
+        edorasGateStairs(b, p, maxY);
+    }
+
+    /** escalier de la porte : la route sort du village par le bord du plan ; le sol naturel y est souvent plus haut ou plus bas que la chaussee, alors on la raccorde par de vraies marches */
+    private static void edorasGateStairs(Build b, EdorasPlan p, int maxY) {
+        if (p.gateX < 0) return;
+        boolean ax = p.gateAlongX;
+        int ga = ax ? p.gateX : p.gateZ, gc = ax ? p.gateZ : p.gateX, lim = ax ? EdorasPlan.W : EdorasPlan.D;
+        int sg = ga < lim - 1 - ga ? -1 : 1, edge = sg < 0 ? 0 : lim - 1;
+        int n = Math.abs(edge - (ga + sg * 5)) + 1;
+        if (n < 4 || n > 40) return;
+        BlockState path = Blocks.DIRT_PATH.defaultBlockState(), grass = Blocks.GRASS_BLOCK.defaultBlockState(), dirt = Blocks.DIRT.defaultBlockState();
+        // hauteur du sol naturel au bout du plan, au milieu de la route
+        int sum = 0, cnt = 0;
+        for (int i = n - 3; i < n; i++) for (int d = -1; d <= 1; d++) {
+            int a = ga + sg * (5 + i), c = gc + d, xx = ax ? a : c, zz = ax ? c : a;
+            if (!b.in(xx, 0, zz)) continue;
+            sum += Math.min(b.groundY(xx, zz), maxY); cnt++;
+        }
+        if (cnt == 0) return;
+        int G = Math.max(-6, Math.min(14, Math.round(sum / (float) cnt)));
+        int[] T = new int[n];
+        for (int i = 0; i < n; i++) T[i] = (int) Math.signum(G) * (int) Math.floor(((i + 1) * (double) Math.abs(G)) / n);
+        Direction out = ax ? (sg > 0 ? E : W) : (sg > 0 ? S : N), in = out.getOpposite();
+        Block stairB = Blocks.COBBLESTONE_STAIRS;
+        for (int i = 0; i < n; i++) for (int d = -8; d <= 8; d++) {
+            int a = ga + sg * (5 + i), c = gc + d, xx = ax ? a : c, zz = ax ? c : a, ad = Math.abs(d);
+            if (!b.in(xx, 0, zz)) continue;
+            int g = Math.min(b.groundY(xx, zz), maxY);
+            if (ad <= 3) {
+                int t = T[i], prev = i == 0 ? 0 : T[i - 1];
+                for (int y = Math.min(g, t) + 1; y < t; y++) b.s(xx, y, zz, dirt);             // sol plus bas que la marche : on remplit dessous
+                for (int y = t + 1; y <= Math.max(g, t) + 4; y++) b.s(xx, y, zz, Build.AIR);   // sol plus haut : on creuse la tranchee
+                BlockState top = path;
+                if (t > prev) top = stairs(stairB, out, false);                                  // on monte en sortant : la marche regarde vers l'exterieur
+                else if (i + 1 < n && T[i + 1] < t) top = stairs(stairB, in, false);              // on descend en sortant : la marche regarde vers la porte
+                b.s(xx, t, zz, top);
+                if (t - 1 > g) b.s(xx, t - 1, zz, dirt);
+            } else {
+                int sc = T[i] + (ad - 3);                                                        // talus de part et d'autre : pente d'un bloc par bloc, jamais un mur
+                if (g > sc) {
+                    for (int y = sc + 1; y <= g + 3; y++) b.s(xx, y, zz, Build.AIR);
+                    b.s(xx, sc, zz, grass);
+                } else if (g < sc - 1 && ad <= 5) {
+                    for (int y = g + 1; y < sc; y++) b.s(xx, y, zz, dirt);
+                    b.s(xx, sc, zz, grass);
+                }
             }
         }
     }

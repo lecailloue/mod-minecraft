@@ -349,7 +349,7 @@ public final class ClientTest {
         final int TX = 480, TZ = 1855;
         final String[] tn = {"200_tirith_loin_sud", "201_tirith_sud_ouest", "202_tirith_porte", "203_tirith_route", "204_tirith_cour", "205_tirith_tour", "206_tirith_arbre", "207_tirith_nuit",
                 "208_tirith_est", "209_tirith_crete", "210_tirith_falaise", "211_tirith_escalier", "212_tirith_tunnel", "213_tirith_maison", "214_tirith_rue", "215_tirith_arbre_large",
-                "216_tirith_porte_haut", "217_tirith_route_cote", "218_tirith_montagne_ouest"};
+                "216_tirith_porte_haut", "217_tirith_route_cote", "218_tirith_montagne_ouest", "219_tirith_proue", "220_tirith_crete_dessus", "221_tirith_tour_porte", "222_tirith_tour_traversee"};
         SCENES.add(new Scene("199_tirith_chargement", 100, p -> {
             ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
             for (int dx = -11; dx <= 11; dx++) for (int dz = -9; dz <= 15; dz++) lands.getChunk((TX >> 4) + dx, (TZ >> 4) + dz);
@@ -395,7 +395,11 @@ public final class ClientTest {
                     case 15 -> look(p, lands, ox + CX + 15.5, top + 16, oz + CZ + 30.5, ox + CX, top + 14, oz + CZ + 8);                       // l'Arbre Blanc en entier
                     case 16 -> look(p, lands, ox + CX + 0.5, py + 40, oz + CZ + 150.5, ox + CX + 0.5, py + 30, oz + CZ + 116);                 // le porche en ogive, d'en haut
                     case 17 -> view(p, lands, TX - 60.5, py + 14, TZ + 160.5, -45F, -3F);                                                        // la route vue de cote
-                    default -> view(p, lands, TX - 200.5, py + 130, TZ + 20.5, -90F, -10F);                                                      // la montagne, a l'ouest
+                    case 18 -> view(p, lands, TX - 200.5, py + 130, TZ + 20.5, -90F, -10F);                                                      // la montagne, a l'ouest
+                    case 19 -> look(p, lands, ox + CX - 34.5, py + 104, oz + CZ + 136.5, ox + CX, py + 108, oz + CZ + 100);                      // le bout de l'eperon : face droite, terrasses blanches
+                    case 20 -> look(p, lands, ox + CX + 0.5, top + 16, oz + CZ + 36.5, ox + CX + 0.5, top - 8, oz + CZ + 96);                    // le dessus de l'eperon : sol blanc, barrieres, marches
+                    case 21 -> look(p, lands, ox + CX - 34.5, py + 22, oz + CZ + 124.5, ox + CX - 18, py + 21, oz + CZ + 116);                   // une tour de la grande porte, vue de la rue
+                    default -> look(p, lands, ox + CX - 30.5, py + 19.8, oz + CZ + 116.5, ox + CX - 8, py + 19.8, oz + CZ + 116.5);               // a travers la tour, la galerie et l'autre tour
                 }
             }));
         }
