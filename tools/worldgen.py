@@ -304,7 +304,7 @@ def structures():
     settlement('minas_terith', ['plaines_jaunes', 'plaines_vertes', 'bosquets', 'foret_clairsemee'], 1, 0, 5115, [])
     LANG['structure.ringsofash.minas_terith'] = 'Minas Tirith'
     # Argonath : une seule instance, au lieu marque sur la carte (places.json)
-    settlement('argonath', ['plaines_jaunes', 'plaines_vertes', 'bosquets', 'foret_clairsemee', 'grande_foret', 'riviere'], 1, 0, 5116, [])
+    settlement('argonath', ['plaines_jaunes', 'plaines_vertes', 'plaines_cendre', 'bosquets', 'foret_clairsemee', 'grande_foret', 'riviere', 'rivage', 'monts_rocheux', 'monts_de_cendre'], 1, 0, 5116, [])
     LANG['structure.ringsofash.argonath'] = 'Argonath'
     tag('worldgen/structure', 'volcanoes', R('volcano'), R('mont_funeste'), ns=MOD)
     tag('worldgen/structure', 'doom', R('mont_funeste'), ns=MOD)
