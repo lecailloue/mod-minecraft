@@ -316,6 +316,19 @@ public final class ClientTest {
         eyeFar("96_oeil_loin_nuit", 1712, 1742, 700, true, 18000);
         eyeFar("97_oeil_loin_cache", 1712, 1742, 700, false, 18000);
         eyeFar("98_oeil_tres_loin_jour", 1712, 1742, 1800, true, 6000);
+        rivT("399_fondcombe_chargement", 176, 60, 395, 176, 20, 176, 6000);    // charge les chunks du site (tres long) : sa capture ne compte pas
+        rivT("401_fondcombe_vue_sud", 176, 105, 372, 176, 20, 150, 6000);
+        rivT("402_fondcombe_dessus", 176, 230, 177, 176, 0, 176, 6000);
+        rivT("403_fondcombe_maison", 132, 24, 236, 140, 28, 160, 6000);
+        rivT("404_fondcombe_salle", 96, 16, 158, 190, 18, 158, 6000);
+        rivT("405_fondcombe_conseil", 222, 30, 250, 214, 22, 190, 6000);
+        rivT("406_fondcombe_galerie", 300, 32, 215, 250, 22, 152, 6000);
+        rivT("407_fondcombe_pont", 232, 24, 170, 300, 6, 170, 6000);
+        rivT("408_fondcombe_cascades", 158, 40, 190, 158, 70, 100, 6000);
+        rivT("409_fondcombe_tours", 120, 40, 215, 90, 40, 140, 6000);
+        rivT("410_fondcombe_gloriette", 176, 18, 252, 176, 18, 226, 6000);
+        rivT("411_fondcombe_riviere_sud", 120, 30, 250, 230, -8, 300, 6000);
+        rivT("412_fondcombe_coucher", 232, 22, 250, 176, 30, 150, 12800);
         argT("299_argonath_chargement", 0, 60, -30, 0, 50, 40, 6000);       // charge les chunks du site (long) : sa capture ne compte pas
         argT("301_argonath_vue_haute", 70, 135, -122, 0, 50, 0, 6000);
         argT("302_argonath_visages", 0, 98, -48, 0, 92, 0, 6000);
@@ -1085,6 +1098,21 @@ public final class ClientTest {
             float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
             lands.setDayTime(time);
             view(p, lands, pl[0] + fx + 0.5, py + fy, pl[1] + fz + 0.5, yaw, pitch);
+        }));
+    }
+
+    /** vue relative a Fondcombe : coordonnees du plan (352 x 352, centre en 176, 176 ; y = niveau du sol au centre) */
+    private static void rivT(String name, double fx, double fy, double fz, double tx, double ty, double tz, int time) {
+        SCENES.add(new Scene(name, name.startsWith("399") ? 3600 : 420, p -> {
+            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+            int[] pl = net.ringsofash.world.MapData.place("fondcombe");
+            if (pl == null) return;
+            for (int dx = -12; dx <= 12; dx++) for (int dz = -12; dz <= 12; dz++) lands.getChunk((pl[0] >> 4) + dx, (pl[1] >> 4) + dz);
+            int py = net.ringsofash.world.SiteHeight.py(lands, pl[0], pl[1]);
+            double ddx = tx - fx, ddy = ty - fy, ddz = tz - fz;
+            float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
+            lands.setDayTime(time);
+            view(p, lands, pl[0] + fx - 176 + 0.5, py + fy, pl[1] + fz - 176 + 0.5, yaw, pitch);
         }));
     }
 

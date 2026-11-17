@@ -140,7 +140,7 @@ public final class SelfTest {
             for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) lands.getChunk((px >> 4) + dx, (pz >> 4) + dz);
             for (int x = px - 24; x <= px + 24; x += 6) {
                 for (int z = pz - 24; z <= pz + 24; z += 6) {
-                    if (e.getKey().equals("barad_dur") || e.getKey().equals("edoras") || e.getKey().equals("minas_terith") || e.getKey().equals("orthanc") || e.getKey().equals("argonath")) continue;                // site nivele et creuse (douve) expres
+                    if (e.getKey().equals("barad_dur") || e.getKey().equals("edoras") || e.getKey().equals("minas_terith") || e.getKey().equals("orthanc") || e.getKey().equals("argonath") || e.getKey().equals("fondcombe")) continue;                // site nivele et creuse (douve) expres
                     n++;
                     BlockPos at = new BlockPos(x, MapData.height(x, z), z);
                     var st = lands.getBlockState(at);
@@ -245,6 +245,21 @@ public final class SelfTest {
             if (headW.isAir() || headE.isAir()) fail("argonath : une statue n'a pas de tete");
             if (crest > ArgonathPlan.STATUE_TOP - 5) fail("argonath : les montagnes depassent les statues (" + crest + ")");
             if (crest < 40) fail("argonath : pas de montagne autour de la riviere (" + crest + ")");
+        }
+        int[] fc = spots.get("fondcombe");
+        if (fc != null) {                                                    // Fondcombe : quatre quartiers qui doivent se raccorder sans trou
+            for (int dx = -12; dx <= 12; dx++) for (int dz = -12; dz <= 12; dz++) lands.getChunk((fc[0] >> 4) + dx, (fc[1] >> 4) + dz);
+            RivendellPlan rp = RivendellPlan.get();
+            int py = SiteHeight.py(lands, fc[0], fc[1]);
+            topDown(lands, fc[0] - 176, fc[1] - 176, fc[0] + 175, fc[1] + 175, new File(OUT, "fondcombe_dessus.png"), 2);
+            int ox = fc[0] - RivendellPlan.CX, oz = fc[1] - RivendellPlan.CZ, miss = 0, tot = 0;
+            for (int x = RivendellPlan.BAND + 2; x < RivendellPlan.W - RivendellPlan.BAND - 2; x += 5) for (int z = RivendellPlan.BAND + 2; z < RivendellPlan.D - RivendellPlan.BAND - 2; z += 5) {
+                tot++;
+                int hw = lands.getHeight(Heightmap.Types.WORLD_SURFACE, ox + x, oz + z) - 1 - py;
+                if (hw < rp.top(x, z) - 1) { miss++; if (miss < 6) log("fondcombe : trou en plan " + x + "," + z + " : monde " + hw + " < plan " + rp.top(x, z)); }
+            }
+            log("fondcombe : sol " + py + " ; colonnes manquantes " + miss + " / " + tot);
+            if (miss * 50 > tot) fail("fondcombe : trop de colonnes manquantes (" + miss + " / " + tot + ")");
         }
         int[] mt = spots.get("minas_terith");
         if (mt != null) {                                                    // Minas Tirith : sept niveaux, tour d'Ecthelion, cour, montagne

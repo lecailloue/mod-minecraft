@@ -92,6 +92,8 @@ public final class Reg {
     public static final DeferredBlock<Block> GOLDEN_PLANKS_SLAB = BLOCKS.register("golden_planks_slab", () -> new SlabBlock(copy(GOLDEN_PLANKS.get())));
     public static final DeferredBlock<Block> GOLDEN_PLANKS_FENCE = BLOCKS.register("golden_planks_fence", () -> new FenceBlock(copy(GOLDEN_PLANKS.get())));
     public static final DeferredBlock<Block> GOLDEN_LEAVES = BLOCKS.register("golden_leaves", () -> new LeavesBlock(copy(Blocks.OAK_LEAVES)));
+    public static final DeferredBlock<Block> AUTUMN_ORANGE_LEAVES = BLOCKS.register("autumn_orange_leaves", () -> new LeavesBlock(copy(Blocks.OAK_LEAVES)));
+    public static final DeferredBlock<Block> AUTUMN_RED_LEAVES = BLOCKS.register("autumn_red_leaves", () -> new LeavesBlock(copy(Blocks.OAK_LEAVES)));
     public static final DeferredBlock<Block> GOLDEN_SAPLING = BLOCKS.register("golden_sapling", () -> new SaplingBlock(new TreeGrower("roa_golden", Optional.empty(), Optional.of(ResourceKey.create(Registries.CONFIGURED_FEATURE, id("golden_tree_small"))), Optional.empty()), copy(Blocks.OAK_SAPLING)));
     public static final DeferredBlock<Block> ANCIENT_LOG = BLOCKS.register("ancient_log", () -> new RotatedPillarBlock(copy(Blocks.DARK_OAK_LOG)));
     public static final DeferredBlock<Block> ANCIENT_PLANKS = BLOCKS.register("ancient_planks", () -> new Block(copy(Blocks.DARK_OAK_PLANKS)));
@@ -196,6 +198,8 @@ public final class Reg {
     public static final DeferredItem<BlockItem> BI_GOLDEN_PLANKS_SLAB = ITEMS.registerSimpleBlockItem("golden_planks_slab", GOLDEN_PLANKS_SLAB);
     public static final DeferredItem<BlockItem> BI_GOLDEN_PLANKS_FENCE = ITEMS.registerSimpleBlockItem("golden_planks_fence", GOLDEN_PLANKS_FENCE);
     public static final DeferredItem<BlockItem> BI_GOLDEN_LEAVES = ITEMS.registerSimpleBlockItem("golden_leaves", GOLDEN_LEAVES);
+    public static final DeferredItem<BlockItem> BI_AUTUMN_ORANGE_LEAVES = ITEMS.registerSimpleBlockItem("autumn_orange_leaves", AUTUMN_ORANGE_LEAVES);
+    public static final DeferredItem<BlockItem> BI_AUTUMN_RED_LEAVES = ITEMS.registerSimpleBlockItem("autumn_red_leaves", AUTUMN_RED_LEAVES);
     public static final DeferredItem<BlockItem> BI_GOLDEN_SAPLING = ITEMS.registerSimpleBlockItem("golden_sapling", GOLDEN_SAPLING);
     public static final DeferredItem<BlockItem> BI_ANCIENT_LOG = ITEMS.registerSimpleBlockItem("ancient_log", ANCIENT_LOG);
     public static final DeferredItem<BlockItem> BI_ANCIENT_PLANKS = ITEMS.registerSimpleBlockItem("ancient_planks", ANCIENT_PLANKS);

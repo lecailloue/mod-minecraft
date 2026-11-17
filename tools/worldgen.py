@@ -306,6 +306,9 @@ def structures():
     # Argonath : une seule instance, au lieu marque sur la carte (places.json)
     settlement('argonath', ['plaines_jaunes', 'plaines_vertes', 'plaines_cendre', 'bosquets', 'foret_clairsemee', 'grande_foret', 'riviere', 'rivage', 'monts_rocheux', 'monts_de_cendre'], 1, 0, 5116, [])
     LANG['structure.ringsofash.argonath'] = 'Argonath'
+    # Fondcombe : une seule instance de 352 x 352 (quatre departs, un par quartier), au lieu marque sur la carte (places.json) ; tous les biomes terrestres
+    settlement('fondcombe', ['plaines_jaunes', 'plaines_vertes', 'plaines_cendre', 'bosquets', 'foret_clairsemee', 'grande_foret', 'riviere', 'rivage', 'monts_rocheux', 'monts_de_cendre', 'cimes_neigeuses'], 1, 0, 5117, [])
+    LANG['structure.ringsofash.fondcombe'] = 'Fondcombe'
     tag('worldgen/structure', 'volcanoes', R('volcano'), R('mont_funeste'), ns=MOD)
     tag('worldgen/structure', 'doom', R('mont_funeste'), ns=MOD)
     LANG['structure.ringsofash.volcano'] = 'Volcan'

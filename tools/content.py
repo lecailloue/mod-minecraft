@@ -216,6 +216,10 @@ def blocks():
     family('golden_planks', 'golden', 'doréal', ('stairs', 'slab', 'fence'), tool='axe')
     btex('golden_leaves', leaves('#dcb236', 44, accent='#fbe98a'))
     block('golden_leaves', 'Feuilles de doréal', 'leaves', sapling='golden_sapling')
+    btex('autumn_orange_leaves', leaves('#d9731c', 45, accent='#f2a23a'))
+    block('autumn_orange_leaves', "Feuilles d'automne orangées", 'leaves')
+    btex('autumn_red_leaves', leaves('#a9391c', 46, accent='#d9601f'))
+    block('autumn_red_leaves', "Feuilles d'automne rousses", 'leaves')
     btex('golden_sapling', sprite([
         '................', '.......bb.......', '......bcab......', '.....babbab.....', '....bbacbaab....', '.....abbabb.....',
         '......babb......', '.......ss.......', '..bb...ss..ab...', '.baab..ss.bbab..', '..bab..ssabb....', '...ba.ssss......',

@@ -62,6 +62,7 @@ public final class Buildings {
             case EDORAS -> edoras(b);
             case TIRITH -> tirith(b);
             case ARGONATH -> argonath(b);
+            case RIVEND -> rivendell(b, aux);
         }
     }
 
@@ -994,6 +995,150 @@ public final class Buildings {
                     if (id != ArgonathPlan.AIR) b.s(x, y, z, pal[id & 255]);
                 }
             }
+        }
+    }
+
+    // ================================================================= FONDCOMBE
+    private static BlockState[] rivPal;
+
+    private static BlockState leaf(Block bl) { return bl.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true); }
+
+    private static void rivFamily(BlockState[] p, int base, Block stair, Block slab) {
+        Direction[] dirs = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+        for (int d = 0; d < 4; d++) for (int h = 0; h < 2; h++) p[base + d * 2 + h] = stairs(stair, dirs[d], h == 1);
+        p[base + 8] = slab(slab, false);
+        p[base + 9] = slab(slab, true);
+    }
+
+    private static synchronized BlockState[] rivendellPal() {
+        if (rivPal != null) return rivPal;
+        BlockState[] p = new BlockState[160];
+        java.util.Arrays.fill(p, Build.AIR);
+        p[RivendellPlan.STONE] = Blocks.STONE.defaultBlockState();
+        p[RivendellPlan.ANDESITE] = Blocks.ANDESITE.defaultBlockState();
+        p[RivendellPlan.TUFF] = Blocks.TUFF.defaultBlockState();
+        p[RivendellPlan.CALCITE] = Blocks.CALCITE.defaultBlockState();
+        p[RivendellPlan.DIORITE] = Blocks.DIORITE.defaultBlockState();
+        p[RivendellPlan.COBBLE] = Blocks.COBBLESTONE.defaultBlockState();
+        p[RivendellPlan.MOSSC] = Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+        p[RivendellPlan.DIRT] = Blocks.DIRT.defaultBlockState();
+        p[RivendellPlan.GRASS] = Blocks.GRASS_BLOCK.defaultBlockState();
+        p[RivendellPlan.PODZOL] = Blocks.PODZOL.defaultBlockState();
+        p[RivendellPlan.GRAVEL] = Blocks.GRAVEL.defaultBlockState();
+        p[RivendellPlan.SAND] = Blocks.SAND.defaultBlockState();
+        p[RivendellPlan.COARSE] = Blocks.COARSE_DIRT.defaultBlockState();
+        p[RivendellPlan.MOSS] = Blocks.MOSS_BLOCK.defaultBlockState();
+        p[RivendellPlan.WATER] = Blocks.WATER.defaultBlockState();
+        p[RivendellPlan.WATERF] = Blocks.WATER.defaultBlockState().setValue(net.minecraft.world.level.block.LiquidBlock.LEVEL, 8);
+        p[RivendellPlan.SHORTG] = Blocks.SHORT_GRASS.defaultBlockState();
+        p[RivendellPlan.FERN] = Blocks.FERN.defaultBlockState();
+        p[RivendellPlan.POPPY] = Blocks.POPPY.defaultBlockState();
+        p[RivendellPlan.DANDEL] = Blocks.DANDELION.defaultBlockState();
+        p[RivendellPlan.CORNFL] = Blocks.CORNFLOWER.defaultBlockState();
+        p[RivendellPlan.BLUET] = Blocks.AZURE_BLUET.defaultBlockState();
+        p[RivendellPlan.SPRLOG] = log(Blocks.SPRUCE_LOG, Direction.Axis.Y);
+        p[RivendellPlan.SPRLEAF] = leaf(Blocks.SPRUCE_LEAVES);
+        p[RivendellPlan.WB] = Reg.WHITE_BRICKS.get().defaultBlockState();
+        p[RivendellPlan.WS] = Reg.WHITE_STONE.get().defaultBlockState();
+        p[RivendellPlan.WPIL] = Reg.WHITE_PILLAR.get().defaultBlockState();
+        p[RivendellPlan.QB] = Blocks.QUARTZ_BRICKS.defaultBlockState();
+        p[RivendellPlan.SQ] = Blocks.SMOOTH_QUARTZ.defaultBlockState();
+        p[RivendellPlan.GP] = Reg.GOLDEN_PLANKS.get().defaultBlockState();
+        p[RivendellPlan.GLOG_Y] = log(Reg.GOLDEN_LOG.get(), Direction.Axis.Y);
+        p[RivendellPlan.GLOG_X] = log(Reg.GOLDEN_LOG.get(), Direction.Axis.X);
+        p[RivendellPlan.GLOG_Z] = log(Reg.GOLDEN_LOG.get(), Direction.Axis.Z);
+        p[RivendellPlan.GOLDB] = Blocks.GOLD_BLOCK.defaultBlockState();
+        p[RivendellPlan.GLASS] = Blocks.GLASS_PANE.defaultBlockState();
+        p[RivendellPlan.BARS] = Blocks.IRON_BARS.defaultBlockState();
+        p[RivendellPlan.LANTERN] = Blocks.LANTERN.defaultBlockState();
+        p[RivendellPlan.ENDROD] = Blocks.END_ROD.defaultBlockState();
+        p[RivendellPlan.GFENCE] = Reg.GOLDEN_PLANKS_FENCE.get().defaultBlockState();
+        p[RivendellPlan.WWALL] = Reg.WHITE_BRICKS_WALL.get().defaultBlockState();
+        p[RivendellPlan.CHAIN] = Blocks.CHAIN.defaultBlockState();
+        p[RivendellPlan.HLANT] = hang(Blocks.LANTERN);
+        p[RivendellPlan.LEAF_G] = leaf(Blocks.OAK_LEAVES);
+        p[RivendellPlan.LEAF_Y] = leaf(Reg.GOLDEN_LEAVES.get());
+        p[RivendellPlan.LEAF_O] = leaf(Reg.AUTUMN_ORANGE_LEAVES.get());
+        p[RivendellPlan.LEAF_R] = leaf(Reg.AUTUMN_RED_LEAVES.get());
+        p[RivendellPlan.LEAF_B] = leaf(Blocks.BIRCH_LEAVES);
+        p[RivendellPlan.CUOB] = Blocks.WAXED_CUT_COPPER.defaultBlockState();
+        p[RivendellPlan.CUGB] = Blocks.WAXED_OXIDIZED_CUT_COPPER.defaultBlockState();
+        p[RivendellPlan.CUWB] = Blocks.WAXED_EXPOSED_CUT_COPPER.defaultBlockState();
+        p[RivendellPlan.STB] = Blocks.STONE_BRICKS.defaultBlockState();
+        p[RivendellPlan.MOSSB] = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
+        p[RivendellPlan.PAVE2] = Reg.LIMESTONE_BRICKS.get().defaultBlockState();
+        p[RivendellPlan.LIGHT] = Blocks.LANTERN.defaultBlockState();
+        p[RivendellPlan.WLOG] = log(Blocks.BIRCH_LOG, Direction.Axis.Y);
+        p[RivendellPlan.BENCHW] = Reg.GOLDEN_PLANKS.get().defaultBlockState();
+        rivFamily(p, RivendellPlan.WBS, Reg.WHITE_BRICKS_STAIRS.get(), Reg.WHITE_BRICKS_SLAB.get());
+        rivFamily(p, RivendellPlan.GPS, Reg.GOLDEN_PLANKS_STAIRS.get(), Reg.GOLDEN_PLANKS_SLAB.get());
+        rivFamily(p, RivendellPlan.CUOS, Blocks.WAXED_CUT_COPPER_STAIRS, Blocks.WAXED_CUT_COPPER_SLAB);
+        rivFamily(p, RivendellPlan.CUGS, Blocks.WAXED_OXIDIZED_CUT_COPPER_STAIRS, Blocks.WAXED_OXIDIZED_CUT_COPPER_SLAB);
+        rivFamily(p, RivendellPlan.CUWS, Blocks.WAXED_EXPOSED_CUT_COPPER_STAIRS, Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB);
+        rivFamily(p, RivendellPlan.STBS, Blocks.STONE_BRICK_STAIRS, Blocks.STONE_BRICK_SLAB);
+        rivFamily(p, RivendellPlan.QS, Blocks.QUARTZ_STAIRS, Blocks.QUARTZ_SLAB);
+        return rivPal = p;
+    }
+
+    /**
+     * Fondcombe : un quartier de 176 x 176 de la vallee de 352 x 352 (aux = 0 nord-ouest, 1 nord-est, 2 sud-ouest, 3 sud-est). Au coeur du site, le plan remplace le relief ;
+     * sur la bande de raccord (30 blocs), le sol est un melange du relief naturel et du plan, pour que la vallee se fonde dans la montagne.
+     */
+    private static void rivendell(Build b, int aux) {
+        RivendellPlan p = RivendellPlan.get();
+        BlockState[] pal = rivendellPal();
+        BlockState stone = Blocks.STONE.defaultBlockState(), water = Blocks.WATER.defaultBlockState();
+        int qx = (aux & 1) * 176, qz = (aux >> 1) * 176;
+        int maxY = RivendellPlan.TOP - 2;
+        for (int lx = 0; lx < 176; lx++) {
+            for (int lz = 0; lz < 176; lz++) {
+                if (!b.in(lx, 0, lz)) continue;
+                int x = qx + lx, z = qz + lz;
+                int w = p.weight(x, z);
+                if (w == 0) continue;
+                int ground = Math.min(b.groundY(lx, lz), maxY);
+                int top = p.top(x, z), t = p.terrain(x, z);
+                if (w < 255) {                                                                  // bande de raccord : sol melange, sans batiments
+                    double a = w / 255.0;
+                    int hb = (int) Math.round(ground * (1 - a) + t * a);
+                    int wlv = p.water(x, z);
+                    boolean wet = wlv > -999 && hb < wlv && a > 0.3;
+                    if (hb == ground && !wet) continue;
+                    int surf = p.get(x, t, z) & 255, sub = p.get(x, t - 1, z) & 255;
+                    BlockState topB = surf == RivendellPlan.AIR ? pal[RivendellPlan.GRASS] : pal[surf], subB = sub == RivendellPlan.AIR ? pal[RivendellPlan.DIRT] : pal[sub];
+                    if (hb > ground) {
+                        for (int y = ground + 1; y <= hb; y++) b.s(lx, y, lz, y == hb ? topB : (y >= hb - 3 ? subB : stone));
+                    } else {
+                        for (int y = ground; y > hb; y--) if (!b.get(lx, y, lz).isAir()) b.s(lx, y, lz, Build.AIR);
+                        b.s(lx, hb, lz, topB);
+                    }
+                    for (int y = Math.max(hb, ground) + 1; y <= Math.max(hb, ground) + 14; y++) if (!b.get(lx, y, lz).isAir() && b.get(lx, y, lz).is(net.minecraft.tags.BlockTags.LEAVES)) b.s(lx, y, lz, Build.AIR);
+                    if (wet) for (int y = hb + 1; y <= wlv; y++) b.s(lx, y, lz, water);
+                    continue;
+                }
+                for (int y = -RivendellPlan.OFF - 1; y >= -RivendellPlan.OFF - 28; y--) {       // fondation : sous le plan, jusqu'au sol ferme
+                    BlockState cur = b.get(lx, y, lz);
+                    if (cur.isSolidRender(b.level, b.pos(lx, y, lz)) && !cur.is(net.minecraft.tags.BlockTags.LEAVES) && !cur.is(net.minecraft.tags.BlockTags.LOGS)) break;
+                    b.s(lx, y, lz, stone);
+                }
+                int hi = Math.min(Math.max(top, ground) + 18, maxY + 1);
+                for (int y = top + 1; y <= hi; y++) {
+                    if (p.get(x, y, z) != RivendellPlan.AIR) continue;
+                    if (!b.get(lx, y, lz).isAir()) b.s(lx, y, lz, Build.AIR);
+                }
+                for (int y = -RivendellPlan.OFF; y <= top; y++) {
+                    byte id = p.get(x, y, z);
+                    if (id != RivendellPlan.AIR) b.s(lx, y, lz, pal[id & 255]);
+                    else if (y <= t) b.s(lx, y, lz, stone);
+                }
+            }
+        }
+        // habitants : quelques elfes dans la maison, sur la galerie, a la terrasse du Conseil et dans les jardins
+        int n = 0;
+        for (int[] sp : p.spawns) {
+            int lx = sp[0] - qx, lz = sp[2] - qz;
+            if (lx < 0 || lx >= 176 || lz < 0 || lz >= 176 || !b.in(lx, sp[1], lz)) continue;
+            people(b, ModEntities.ELF.get(), lx, sp[1], lz, n++ % 3 == 0 ? PeopleEntity.GUARD : PeopleEntity.CIVIL, n % 3 == 0 ? -1 : n % 3, 30);
         }
     }
 
