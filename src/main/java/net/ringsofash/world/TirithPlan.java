@@ -138,7 +138,6 @@ public final class TirithPlan {
         double e = prowEdge(x, z);
         int t = PROW_TOP - 1;
         double dz = z + 0.5 - CZ;
-        if (dz > 44) t -= (int) ((dz - 44) * 2.0 / 3.0);                                      // le bout descend franchement : marches blanches (un bloc tous les 1,5 blocs), de 125 a environ 85 au bout
         if (e < 3 && dz <= 26) { double sh = 3 - e; t -= (int) (sh * sh * 1.3 + 2.5 * Math.max(0, vn(x / 3.0, z / 3.0, 52)) * sh); }
         return t;
     }
