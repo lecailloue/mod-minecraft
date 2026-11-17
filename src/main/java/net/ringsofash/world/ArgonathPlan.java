@@ -204,7 +204,7 @@ public final class ArgonathPlan {
         int inner = -side;
         if (side < 0) statueW_x = xc; else statueE_x = xc;
         statue_z = CZ;
-        for (int wx = xc - 27; wx <= xc + 27; wx++) for (int y = 6; y <= STATUE_TOP; y++) for (int wz = CZ - 11; wz <= CZ + 11; wz++) {
+        for (int wx = xc - 27; wx <= xc + 27; wx++) for (int y = 6; y <= STATUE_TOP; y++) for (int wz = CZ - 34; wz <= CZ + 11; wz++) {
             double bsx = inner * ((wx - xc) + 0.5), bsy = y + 0.5, bsz = (wz - CZ) + 0.5;
             if (carve(bsx, bsy, bsz, variant)) { set(wx, y, wz, AIR); continue; }
             boolean fineB = fine(bsx, bsy, bsz, variant);
@@ -277,19 +277,22 @@ public final class ArgonathPlan {
             double cy = (sy - 98.5) / 6.0, cx2 = sx / 4.9, cz2 = (sz + 0.4) / 5.0;
             if (sy >= 98.5 && cx2 * cx2 + cy * cy + cz2 * cz2 <= 1) return true;
         } else if (sy >= 98.5 && sy <= 101.5 && Math.pow(sx / 4.9, 2) + Math.pow((sz + 0.4) / 5.0, 2) <= 1) return true;
-        // bras tendu vers la riviere, un peu en avant : un cylindre de l'epaule au poignet
-        double[] S = {9.0, 77.0, 0.0}, Wr = {19.5, 93.5, -2.5};
-        if (sx > 5) {
-            double vx = Wr[0] - S[0], vy = Wr[1] - S[1], vz = Wr[2] - S[2], wx = sx - S[0], wy = sy - S[1], wz = sz - S[2];
-            double t = Math.max(0, Math.min(1, (wx * vx + wy * vy + wz * vz) / (vx * vx + vy * vy + vz * vz)));
-            double dx = wx - vx * t, dy = wy - vy * t, dz = wz - vz * t;
-            if (dx * dx + dy * dy + dz * dz <= 2.8 * 2.8) return true;
-            // le grand drap de la manche : il pend sous le bras, plus long au poignet, plisse
-            if (sx >= 9 && sx <= 21.5) {
-                double t2 = (sx - 9) / 12.5, yTop = 77 + 16.5 * t2 + 1.2;
-                double yLow = 69 - 11 * sm((sx - 9) / 9.0) + 1.6 * Math.sin(sx * 2.0);
-                double zc = -1.0 - 1.5 * t2, half = 2.7 - 1.3 * sm((yTop - sy) / 24.0) - 0.8 * (0.5 + 0.5 * Math.sin(sx * 2.3 + sy * 0.05));
-                if (sy >= yLow && sy <= yTop && Math.abs(sz - zc) <= half) return true;
+        // bras tendu vers l'avant (le nord), un peu vers la riviere : epaule -> coude -> poignet, la main se redresse paume en avant
+        if (sx > 5 && sz < 2) {
+            double[][] P = {{8.5, 80, -1.5}, {12, 80.5, -12}, {15, 84, -26.5}};
+            for (int k = 0; k < 2; k++) {
+                double[] A = P[k], B = P[k + 1];
+                double vx = B[0] - A[0], vy = B[1] - A[1], vz = B[2] - A[2], wx = sx - A[0], wy = sy - A[1], wz = sz - A[2];
+                double t = Math.max(0, Math.min(1, (wx * vx + wy * vy + wz * vz) / (vx * vx + vy * vy + vz * vz)));
+                double dx = wx - vx * t, dy = wy - vy * t, dz = wz - vz * t, r = 2.9 - 0.5 * (k + t) / 2.0;
+                if (dx * dx + dy * dy + dz * dz <= r * r) return true;
+            }
+            // le grand drap de la manche : il pend sous le bras sur toute sa longueur, plus court vers le poignet, plisse
+            if (sz <= -1 && sz >= -27) {
+                double t = (-sz - 1) / 26.0, sx0 = 8.5 + 6.5 * t;
+                double half = 1.5 + 2.0 * (1 - t) + 0.5 * Math.sin(sz * 1.3);
+                double yTop = 80 + 4 * t + 0.6, yLow = 80 - (22 - 12 * t) + 1.6 * Math.sin(sz * 1.7);
+                if (Math.abs(sx - sx0) <= half && sy >= yLow && sy <= yTop) return true;
             }
         }
         // bras replie (cote exterieur) : manche tombante qui se resserre, avant-bras vers l'epee
@@ -301,12 +304,12 @@ public final class ArgonathPlan {
     /** details fins, modeles au bloc : main ouverte (paume vers le nord), poing et epee, ailes et pointes, nez et arcade */
     private static boolean fine(double sx, double sy, double sz, int variant) {
         double ax = Math.abs(sx);
-        // main : paume de 6 x 9, deux blocs d'epaisseur, quatre doigts et le pouce
-        if (sz >= -3.6 && sz <= -1.6) {
-            if (sy >= 94 && sy <= 102.9 && sx >= 17.4 && sx <= 23.6) return true;
-            double[][] fg = {{18, 19, 107.5}, {19, 20, 109.5}, {20, 21, 108.5}, {21, 22, 106.5}, {22, 23, 104.5}};
-            for (double[] f : fg) if (sx >= f[0] && sx <= f[1] && sy >= 103 && sy <= f[2]) return true;
-            if (sx >= 15.4 && sx <= 17.4 && sy >= 95 && sy <= 99.9) return true;
+        // main au bout du bras tendu : paume de 6 x 5 tournee vers le nord (deux blocs d'epaisseur), quatre doigts dresses et le pouce
+        if (sz >= -29.1 && sz <= -27.0) {
+            if (sy >= 83 && sy <= 87.9 && sx >= 12 && sx <= 18) return true;
+            double[][] fg = {{12, 13.1, 93}, {13.1, 14.1, 95}, {14.1, 15.1, 94}, {15.1, 16.1, 92}};
+            for (double[] f : fg) if (sx >= f[0] && sx <= f[1] && sy >= 88 && sy <= f[2]) return true;
+            if (sx >= 18 && sx <= 19.1 && sy >= 85 && sy <= 87.9) return true;
         }
         // poing sur la garde de l'epee plantee devant, pommeau, garde, lame
         if (sx >= -5.6 && sx <= -2.4 && sy >= 61 && sy <= 65.9 && sz >= -8.6 && sz <= -5) return true;

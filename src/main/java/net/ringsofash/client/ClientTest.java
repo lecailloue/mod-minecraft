@@ -325,9 +325,9 @@ public final class ClientTest {
         argT("305_argonath_relief_est", 175, 28, 0, 0, 45, 0, 6000);
         argT("306_argonath_riviere_sud", 0, 3, 70, 0, 48, -10, 6000);
         argT("307_argonath_coucher", 0, 6, -118, 0, 62, 0, 12800);
-        argT("308_argonath_mains", 0, 101, -40, 0, 100, -3, 6000);
+        argT("308_argonath_mains", 0, 96, -85, 0, 90, -27, 6000);
         argT("309_argonath_base_ouest", -20, 14, -56, -25, 10, 0, 6000);
-        argT("310_argonath_profil_drape", 18, 82, -38, -8, 84, -3, 6000);
+        argT("310_argonath_profil_drape", 55, 100, -45, -12, 84, -14, 6000);
         argT("311_argonath_rive_est", -20, 25, -75, 62, 20, -70, 6000);
         argT("312_argonath_rive_ouest", 20, 25, -75, -62, 20, -70, 6000);
         argT("313_argonath_bout_sud", 0, 40, 175, 0, 12, 100, 6000);
