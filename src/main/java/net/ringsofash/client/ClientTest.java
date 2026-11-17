@@ -398,7 +398,7 @@ public final class ClientTest {
                     case 18 -> view(p, lands, TX - 200.5, py + 130, TZ + 20.5, -90F, -10F);                                                      // la montagne, a l'ouest
                     case 19 -> look(p, lands, ox + CX - 34.5, py + 104, oz + CZ + 136.5, ox + CX, py + 108, oz + CZ + 100);                      // le bout de l'eperon : face droite, terrasses blanches
                     case 20 -> look(p, lands, ox + CX + 0.5, top + 16, oz + CZ + 36.5, ox + CX + 0.5, top - 8, oz + CZ + 96);                    // le dessus de l'eperon : sol blanc, barrieres, marches
-                    case 21 -> look(p, lands, ox + CX - 34.5, py + 22, oz + CZ + 124.5, ox + CX - 18, py + 21, oz + CZ + 116);                   // une tour de la grande porte, vue de la rue
+                    case 21 -> look(p, lands, ox + CX - 27.5, py + 20.6, oz + CZ + 123.5, ox + CX - 18, py + 20.4, oz + CZ + 116.5);               // la porte d'une tour de la grande porte, vue de la rue
                     default -> look(p, lands, ox + CX - 30.5, py + 19.8, oz + CZ + 116.5, ox + CX - 8, py + 19.8, oz + CZ + 116.5);               // a travers la tour, la galerie et l'autre tour
                 }
             }));
@@ -419,10 +419,10 @@ public final class ClientTest {
             }));
         }
         // palais d'Or, tour de cloche, village, interieur, champs, etal, forge : positions tirees du plan
-        for (int k = 0; k < 15; k++) {
+        for (int k = 0; k < 17; k++) {
             final int kk = k;
-            if (k != 1 && k != 8 && k != 9 && k != 13 && k != 14) continue;                // les autres vues d'Edoras sont deja validees
-            SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle", "110_edoras_champs", "111_edoras_etal", "112_edoras_forge", "113_edoras_entree", "114_edoras_entree_dessus", "115_edoras_sol", "116_edoras_place", "117_edoras_fontaine", "118_edoras_porte_maison", "119_edoras_porte_aile"}[k], 420, p -> {
+            if (k != 1 && k != 8 && k != 9 && k != 13 && k != 14 && k < 15) continue;                // les autres vues d'Edoras sont deja validees
+            SCENES.add(new Scene(new String[]{"105_edoras_palais", "106_edoras_palais_cote", "107_edoras_tour", "108_edoras_village", "109_edoras_salle", "110_edoras_champs", "111_edoras_etal", "112_edoras_forge", "113_edoras_entree", "114_edoras_entree_dessus", "115_edoras_sol", "116_edoras_place", "117_edoras_fontaine", "118_edoras_porte_maison", "119_edoras_porte_aile", "120_edoras_sortie", "121_edoras_sortie_cote"}[k], 420, p -> {
                 ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
                 for (int dx = -9; dx <= 9; dx++) for (int dz = -8; dz <= 8; dz++) lands.getChunk((EX >> 4) + dx, (EZ >> 4) + dz);
                 net.ringsofash.world.EdorasPlan ep = net.ringsofash.world.EdorasPlan.get();
@@ -445,6 +445,12 @@ public final class ClientTest {
                         int sx = gx + 6, sz = gz + sg * 26;
                         int fy = floorY(lands, sx, sz, py - 20);
                         look(p, lands, sx + 0.5, fy + 4, sz + 0.5, gx, fy - 3, gz + sg * 10);
+                    }
+                    case 15, 16 -> {                                                      // la sortie de la porte : l'escalier jusqu'au sol naturel
+                        int gx = ox + ep.gateX, gz = oz + ep.gateZ;
+                        int sgn = ep.gateX < net.ringsofash.world.EdorasPlan.W - 1 - ep.gateX ? -1 : 1;
+                        if (kk == 15) look(p, lands, gx - sgn * 7.5, py + 7, gz + 0.5, gx + sgn * 12, py - 3, gz + 0.5);
+                        else look(p, lands, gx + sgn * 20.5, py + 9, gz + 15.5, gx + sgn * 8, py - 2, gz + 0.5);
                     }
                     case 9 -> {                                                           // l'entree vue de l'interieur du village, un peu en hauteur
                         int gx = ox + ep.gateX, gz = oz + ep.gateZ;
