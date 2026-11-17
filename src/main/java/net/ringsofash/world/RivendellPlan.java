@@ -5,34 +5,40 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Plan de Fondcombe (Rivendell) : une vallee cachee de 352 x 352 blocs, au creux d'un massif. Un plateau porte la grande maison d'Elrond (salle aux longs toits
- * de cuivre orange et vert, deux ailes, tour ronde a toit conique, tour-fleche), une galerie a arcades au-dessus d'une gorge, la terrasse du Conseil et son grand
- * arbre d'automne, des pavillons ouverts, des gloriettes et des jardins ; une riviere longe le plateau a l'est et au sud, enjambee par deux ponts en arc, et
- * quatre cascades tombent de la paroi nord. Grille de blocs abstraits, sans dependance a Minecraft.
- * Repere local : x de 0 a W - 1 (ouest a est), z de 0 a D - 1 (nord a sud) ; y = 0 : niveau du sol au centre du site ; le plateau est a FLOOR.
+ * Plan de Fondcombe (Rivendell) : 352 x 352 blocs. Une haute falaise au nord, trois etages de roche (la vallee, la grande terrasse, un gradin) et une gorge a l'est ou la plus grande
+ * des cascades tombe de plus de cent blocs dans un bassin ; trois autres cascades descendent par gradins. Sur la terrasse : la maison d'Elrond (longue salle aux toits de tuiles
+ * orange, vert-de-gris et or, trois hauts pignons, tour centrale de cinq etages), la tour grise a toit vert, l'aiguille doree, la maison d'etude, la pagode a quatre etages, le gradin
+ * de la salle du Feu, la terrasse du Conseil et son grand arbre, des gloriettes et deux pavillons de pont ; une grande arche franchit la gorge ; au pied de la falaise, une arcade
+ * a deux niveaux sur de hautes colonnes. Grille de blocs abstraits, sans dependance a Minecraft.
+ * Repere local : x de 0 a W - 1 (ouest a est), z de 0 a D - 1 (nord a sud) ; y = 0 : niveau de la vallee (le sol au centre du site) ; S : la grande terrasse.
  */
 public final class RivendellPlan {
     public static final int W = 352, D = 352, OFF = 30, TOP = 150, H = OFF + TOP + 1, CX = 176, CZ = 176;
-    public static final int FLOOR = 12;                 // niveau du plateau (dernier bloc plein)
+    public static final int S = 32, T2 = 56, T3 = 112;   // grande terrasse, gradin, plateau de la falaise
     public static final int BAND = 30;                  // largeur de la bande de raccord avec le relief naturel, tout autour
 
     // terrain et vegetation
     public static final int AIR = 0, STONE = 1, ANDESITE = 2, TUFF = 3, CALCITE = 4, DIORITE = 5, COBBLE = 6, MOSSC = 7, DIRT = 8, GRASS = 9, PODZOL = 10, GRAVEL = 11,
             SAND = 12, COARSE = 13, MOSS = 14, WATER = 15, WATERF = 16, SHORTG = 17, FERN = 18, POPPY = 19, DANDEL = 20, CORNFL = 21, BLUET = 22, SPRLOG = 23, SPRLEAF = 24;
+    // nouveaux blocs du mod
+    public static final int PLASTER = 25, TIMBER = 26, TSTONE = 27, TILE_O = 28, TILE_G = 29, TILE_Y = 30, FILIG = 31;
     // architecture
-    public static final int WB = 32, WS = 33, WPIL = 34, QB = 35, SQ = 36, GP = 37, GLOG_Y = 38, GLOG_X = 39, GLOG_Z = 40, GOLDB = 41, GLASS = 42, BARS = 43, LANTERN = 44,
-            ENDROD = 45, GFENCE = 46, WWALL = 47, CHAIN = 48, HLANT = 49, LEAF_G = 50, LEAF_Y = 51, LEAF_O = 52, LEAF_R = 53, LEAF_B = 54, CUOB = 55, CUGB = 56, CUWB = 57,
-            STB = 58, MOSSB = 59, PAVE2 = 60, LIGHT = 61, WLOG = 62, BENCHW = 63;
+    public static final int WB = 32, WS = 33, WPIL = 34, QB = 35, SQ = 36, GP = 37, GLOG_Y = 38, GLOG_X = 39, GLOG_Z = 40, GOLDB = 41, GLASS = 42, LADE = 43, LANTERN = 44,
+            ENDROD = 45, GFENCE = 46, WWALL = 47, CHAIN = 48, HLANT = 49, LEAF_G = 50, LEAF_Y = 51, LEAF_O = 52, LEAF_R = 53, LEAF_B = 54, LADW = 55, LADS = 56, LADN = 57,
+            STB = 58, MOSSB = 59, PAVE2 = 60, TWALL = 61, WLOG = 62, BENCHW = 63;
     // familles d'escaliers : base + direction * 2 + moitie haute (direction = sens de la montee : 0 N, 1 E, 2 S, 3 O) ; base + 8 dalle basse, base + 9 dalle haute
-    public static final int WBS = 64, GPS = 76, CUOS = 88, CUGS = 100, CUWS = 112, STBS = 124, QS = 136;
-    public static final int N = 0, E = 1, S = 2, W_ = 3;
+    public static final int WBS = 64, GPS = 76, TOS = 88, TGS = 100, TYS = 112, PLS = 124, TSS = 136, STBS = 148;
+    public static final int N = 0, E = 1, S_ = 2, W_ = 3;
 
     private final byte[] g = new byte[W * H * D];
     private final int[] th = new int[W * D];                       // y du dernier bloc plein du terrain
     private final short[] wl = new short[W * D];                   // niveau de l'eau (sommet), ou -999
     private final byte[] edge = new byte[W * D];                   // 0 en bordure (relief naturel), 255 au coeur : poids du plan
+    private final byte[] ramp = new byte[W * D];                   // 1 + direction de montee des escaliers creuses dans le relief, 0 sinon
+    private final boolean[] res = new boolean[W * D];              // reserve (batiments) : pas d'arbres
     private final int[] top = new int[W * D];
     public final List<int[]> spawns = new ArrayList<>();           // {x, y, z}
+    private final List<int[]> curtains = new ArrayList<>();        // {x, y, z} : eau tombante des cascades
 
     private static RivendellPlan inst;
     public static synchronized RivendellPlan get() { if (inst == null) inst = new RivendellPlan(); return inst; }
@@ -41,6 +47,7 @@ public final class RivendellPlan {
     private static int idx(int x, int y, int z) { return ((y + OFF) * D + z) * W + x; }
     private static boolean ok(int x, int y, int z) { return x >= 0 && x < W && z >= 0 && z < D && y >= -OFF && y < H - OFF; }
     public byte get(int x, int y, int z) { return ok(x, y, z) ? g[idx(x, y, z)] : AIR; }
+    private int gi(int x, int y, int z) { return get(x, y, z) & 255; }
     private void set(int x, int y, int z, int id) { if (ok(x, y, z)) g[idx(x, y, z)] = (byte) id; }
     private void setIfAir(int x, int y, int z, int id) { if (ok(x, y, z) && g[idx(x, y, z)] == AIR) g[idx(x, y, z)] = (byte) id; }
     public static boolean area(int x, int z) { return x >= 0 && x < W && z >= 0 && z < D; }
@@ -48,6 +55,7 @@ public final class RivendellPlan {
     public int terrain(int x, int z) { return th[z * W + x]; }
     public int water(int x, int z) { return wl[z * W + x]; }
     public int weight(int x, int z) { return edge[z * W + x] & 255; }
+    private int tAt(int x, int z) { return area(x, z) ? th[z * W + x] : -999; }
 
     private static int hash(int x, int y, int z) {
         int h = x * 374761393 + y * 668265263 + z * 362437;
@@ -69,15 +77,26 @@ public final class RivendellPlan {
     private void box(int x0, int y0, int z0, int x1, int y1, int z1, int id) {
         for (int x = Math.min(x0, x1); x <= Math.max(x0, x1); x++) for (int y = Math.min(y0, y1); y <= Math.max(y0, y1); y++) for (int z = Math.min(z0, z1); z <= Math.max(z0, z1); z++) set(x, y, z, id);
     }
-    private void walls(int x0, int y0, int z0, int x1, int y1, int z1, int id) {
-        for (int x = x0; x <= x1; x++) for (int y = y0; y <= y1; y++) for (int z = z0; z <= z1; z++) if (x == x0 || x == x1 || z == z0 || z == z1) set(x, y, z, id);
+    private void put(boolean ax, int a, int f, int y, int id) { if (ax) set(a, y, f, id); else set(f, y, a, id); }
+    private void put2(int axis, int perp, int len, int y, int id) { if (axis == 0) set(len, y, perp, id); else set(perp, y, len, id); }
+    private void reserve(int x0, int z0, int x1, int z1, int m) {
+        for (int x = x0 - m; x <= x1 + m; x++) for (int z = z0 - m; z <= z1 + m; z++) if (area(x, z)) res[z * W + x] = true;
+    }
+    private void found(int x0, int z0, int x1, int z1, int yTop, int id) {          // comble sous un batiment jusqu'au terrain
+        for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++) {
+            if (!area(x, z)) continue;
+            for (int y = th[z * W + x] + 1; y <= yTop; y++) if (get(x, y, z) == AIR || get(x, y, z) == WATER) set(x, y, z, id);
+        }
     }
 
-    // ------------------------------------------------------------------ geometrie des eaux
-    private static final double[][] LOW = {{285, 148}, {287, 185}, {272, 232}, {235, 268}, {185, 288}, {125, 300}, {70, 322}, {45, 351}};
-    private static final double[][] UP = {{250, 108}, {268, 118}, {283, 130}, {285, 148}};
-    private static final int WL_LOW = -12, BED_LOW = -19, WL_UP = 9, BED_UP = 6;
-    private static final int[] FALL_X = {70, 122, 205, 250};
+    // ------------------------------------------------------------------ geometrie
+    private static double zA(double x) { return 160 + 5 * vn(x / 23.0, 3.3, 21); }       // bord sud de la terrasse
+    private static double zB(double x) { return 102 + 4 * vn(x / 19.0, 7.7, 22); }       // pied du gradin
+    private static double zC(double x) { if (x > 236 && x < 288) x = 262; return 70 + 5 * vn(x / 21.0, 1.1, 23); }    // pied de la haute falaise (constant face a la grande cascade)
+    private static double cxW(double z) { return 232 + 4 * vn(z / 17.0, 5.1, 26); }       // parois de la gorge
+    private static double cxE(double z) { return 290 + 4 * vn(z / 17.0, 9.2, 27); }
+    private static final double[][] RIV = {{262, 100}, {262, 150}, {262, 185}, {248, 225}, {212, 250}, {160, 262}, {100, 258}, {55, 280}, {22, 325}, {5, 352}};
+    private static final double POOL_X = 262, POOL_Z = 88, POOL_R = 23;
 
     private static double dist(double x, double z, double[][] poly) {
         double best = 1e9;
@@ -94,14 +113,22 @@ public final class RivendellPlan {
     public RivendellPlan() {
         java.util.Arrays.fill(wl, (short) -999);
         terrain();
+        carve();
         materialize();
-        paths();
-        hall();
-        towers();
-        gallery();
+        cascades();
+        stairsOnRamps();
+        mainHall();
+        bellTower();
+        needle();
+        studyHouse();
+        pagoda();
+        fireHall();
+        arcade();
         council();
-        pavilions();
+        gazebos();
         bridges();
+        valley();
+        promenade();
         gardens();
         trees();
         for (int x = 0; x < W; x++) for (int z = 0; z < D; z++) {
@@ -111,61 +138,94 @@ public final class RivendellPlan {
         }
     }
 
-    private double base(int x, int z) {
-        double u = x + 0.5 - CX, v = z + 0.5 - CZ;
-        double d = Math.hypot(u / 1.15, v);
-        double rim = 70 * sm((d - 105) / 80) * (0.8 + 0.4 * vn(x / 37.0, z / 37.0, 3));
-        double north = 95 * sm((100 - z) / 62.0);
-        double west = 42 * sm((72 - x) / 60.0);
-        double east = 58 * sm((x - 340) / 14.0);
-        double south = -22 * sm((z - 258) / 75.0);
-        double far = sm((d - 60) / 60);                                              // le relief ne bouge qu'au-dela du plateau
-        double rough = (9 * vn(x / 30.0, z / 30.0, 1) + 4 * vn(x / 11.0, z / 11.0, 2) + 14 * Math.pow(1 - Math.abs(vn(x / 21.0, z / 21.0, 5)), 2) * sm((100 - z) / 40.0)) * far;
-        double t = FLOOR + rim + north + west + east + south + rough + 0.7 * vn(x / 9.0, z / 9.0, 6) * (1 - far);
-        if (t > 110) t = 110 + (t - 110) * 0.4;
-        return t;
-    }
-
     private void terrain() {
         for (int z = 0; z < D; z++) for (int x = 0; x < W; x++) {
             int i = z * W + x;
-            double t = base(x, z);
-            double dl = dist(x + 0.5, z + 0.5, LOW), du = dist(x + 0.5, z + 0.5, UP);
-            double gorge = BED_LOW + Math.max(0, dl - 7) * 3.2;
-            if (gorge < t) t = gorge;
-            double stream = BED_UP + Math.max(0, du - 5) * 1.0;
-            if (stream < t) t = stream;
+            double xw = x + 0.5, zw = z + 0.5, zA = zA(xw), zB = zB(xw), zC = zC(xw);
+            double side = Math.max(0, 60 - xw) + Math.max(0, xw - 296);
+            double h;
+            boolean valley = false;
+            if (zw >= zA) { h = side * 0.45; valley = true; }
+            else if (zw >= zB) h = S + side * 0.9;
+            else if (zw >= zC) h = T2 + side * 0.9;
+            else h = T3 + Math.min(10, (zC - zw) * 0.08) + 7 * vn(xw / 40.0, zw / 40.0, 24) + 3 * vn(xw / 12.0, zw / 12.0, 25) + side * 0.4;
+            if (h > 138) h = 138 + (h - 138) * 0.2;
+            if (xw > cxW(zw) && xw < cxE(zw) && zw >= zC && zw < zA) { h = 0; valley = true; }
             int water = -999;
-            if (dl < 14 && t < WL_LOW) water = WL_LOW;
-            if (du < 12 && t < WL_UP) water = Math.max(water, WL_UP);
-            th[i] = (int) Math.round(t);
+            if (valley) {
+                double d = dist(xw, zw, RIV);
+                if (d < 14) {
+                    double bed = -9 + Math.max(0, d - 3.5) * 1.3;
+                    if (bed < h) h = bed;
+                }
+                double dp = Math.hypot(xw - POOL_X, zw - POOL_Z);
+                if (dp < POOL_R) {
+                    double bed = -15 + Math.max(0, dp - 9) * 1.1;
+                    if (bed < h) h = bed;
+                }
+                if (h < -2.5) water = -2;
+            }
+            th[i] = (int) Math.round(h);
             wl[i] = (short) water;
             int e = Math.min(Math.min(x, z), Math.min(W - 1 - x, D - 1 - z));
             edge[i] = (byte) Math.round(255 * sm(e / (double) BAND));
         }
-        // cascades de la paroi nord : un filet d'eau de 3 blocs de large (5 pour la plus grande) qui descend la pente jusqu'a une vasque au pied
-        for (int k = 0; k < FALL_X.length; k++) {
-            int fx = FALL_X[k], half = k == 1 ? 2 : 1;
-            int zTop = 108;
-            while (zTop > 20 && th[zTop * W + fx] < 80) zTop--;
-            for (int z = 106; z >= zTop; z--) {
-                int cx = fx + (int) Math.round(3 * vn(z / 14.0, k * 5 + 0.5, 70 + k));
-                for (int dx = -half - 1; dx <= half + 1; dx++) {
-                    int i = z * W + cx + dx;
-                    if (Math.abs(dx) <= half) { th[i] = th[i] - 1; wl[i] = (short) th[i + 0 * W]; }
-                    else th[i] = th[i] + 0;
-                }
-            }
-            int py = 112;                                                                       // vasque
-            for (int dz = -8; dz <= 8; dz++) for (int dx = -8; dx <= 8; dx++) {
-                double r = Math.hypot(dx, dz) * (1 + 0.25 * vn((fx + dx) / 4.0, (py + dz) / 4.0, 80));
-                int i = (py + dz) * W + fx + dx;
-                if (r < 6.5) { th[i] = Math.min(th[i], 6); wl[i] = (short) 11; }
-                else if (r < 8.5) th[i] = Math.min(th[i], 12 + (int) Math.round((r - 6.5) * 0.5) - 2);
+        // etangs au pied des cascades de la terrasse
+        pond(150, (int) Math.round(zA(150)) + 9, 9);
+        pond(46, (int) Math.round(zA(46)) + 9, 9);
+        // escalier de la vallee a la grande terrasse (rampe pleine, marches posees dessus), a cote du Conseil
+        for (int z = 161; z <= 194; z++) {
+            int h = (int) Math.round((194 - z) * (double) S / 33.0);
+            for (int x = 164; x <= 170; x++) { th[z * W + x] = Math.max(th[z * W + x], Math.min(S, h)); ramp[z * W + x] = (byte) (1 + N); }
+        }
+        // escalier de la terrasse au gradin de la salle du Feu : tranchee creusee dans la roche, de plus en plus haute vers le nord
+        for (int z = 101; z >= 78; z--) {
+            int h = S + (102 - z);
+            if (h > T2 - 1) break;
+            for (int x = 128; x <= 130; x++) { th[z * W + x] = h; ramp[z * W + x] = (byte) (1 + N); }
+        }
+    }
+
+    private void pond(int cx, int cz, int r) {
+        for (int dz = -r - 2; dz <= r + 2; dz++) for (int dx = -r - 2; dx <= r + 2; dx++) {
+            int x = cx + dx, z = cz + dz;
+            if (!area(x, z)) continue;
+            double d = Math.hypot(dx, dz) * (1 + 0.15 * vn(x / 4.0, z / 4.0, 80));
+            int i = z * W + x;
+            if (d < r) { th[i] = Math.min(th[i], -6 + (int) Math.round(Math.max(0, d - 4) * 0.6)); wl[i] = (short) -2; }
+            else if (d < r + 2.5) th[i] = Math.min(th[i], 1 - (int) Math.round((r + 2.5 - d) * 0.4));
+        }
+    }
+
+    // ------------------------------------------------------------------ cascades : lits creuses, nappes d'eau tombante devant chaque marche de roche
+    private void carve() {
+        channel(262, 3.0, 9, 2, (int) Math.round(zC(262)) + 2, 3, 91);
+        channel(150, 2.0, 2, 28, (int) Math.round(zA(150)) + 2, 2, 92);
+        channel(46, 2.0, 2, 24, (int) Math.round(zA(46)) + 2, 2, 93);
+    }
+
+    private void channel(int cx, double wob, int hw, int z0, int z1, int thick, int seed) {
+        int[] lv = new int[z1 + 6], cc = new int[z1 + 6];
+        for (int z = z0; z < z1 + 6 && z < D; z++) {
+            cc[z] = cx + (int) Math.round(wob * vn(z / 16.0, seed * 0.37, seed));
+            int i = z * W + cc[z];
+            lv[z] = wl[i] > -999 ? wl[i] : th[i];
+        }
+        for (int z = z0; z <= z1 && z < D; z++) {
+            for (int dx = -hw; dx <= hw; dx++) {
+                int i = z * W + cc[z] + dx;
+                if (wl[i] > -999) continue;
+                th[i] = lv[z] - 1;
+                wl[i] = (short) lv[z];
             }
         }
-        // la derniere cascade alimente le ruisseau (la vasque est a 11, le lit du ruisseau commence a 6 : on les relie)
-        // la cascade est stockee sous forme de cellules d'eau a la surface : on reperera plus loin (materialize) les cellules dont wl == th
+        for (int z = z0; z < z1 && z < D; z++) {
+            int d = lv[z] - lv[z + 1];
+            if (d < 2) continue;
+            for (int dx = -hw; dx <= hw; dx++) for (int k = 1; k <= thick; k++) {
+                for (int y = lv[z + 1] + 1; y <= lv[z]; y++) curtains.add(new int[]{cc[z] + dx, y, z + k});
+            }
+        }
     }
 
     // ------------------------------------------------------------------ matiere du terrain
@@ -175,7 +235,7 @@ public final class RivendellPlan {
         double layer = Math.floor((y + 5 * vn(x / 23.0, z / 23.0, 11) + 2 * vn(x / 7.0, z / 7.0, 12)) / 4.0);
         int k = (int) (rnd((int) layer, 17, 3) * 8) & 7;
         double q = rnd(x, y, z);
-        if (surface && y < 0 && q < 0.25) return MOSSC;
+        if (surface && y < 40 && q < 0.2) return MOSSC;
         if (surface && vn(x / 3.0 + y / 5.0, z / 3.0, 57) > 0.74) return COBBLE;
         if (q < 0.15) return STRATA[(k + 3) & 7];
         return STRATA[k];
@@ -189,7 +249,7 @@ public final class RivendellPlan {
                 int xx = x + o[0], zz = z + o[1];
                 if (area(xx, zz)) s = Math.max(s, Math.abs(th[zz * W + xx] - t));
             }
-            boolean gentle = s <= 2 && t > -3 && t < 105;
+            boolean gentle = s <= 2 && t < 130;
             boolean wet = wl[i] > -999;
             for (int y = -OFF + 2; y <= t; y++) {
                 int id;
@@ -197,6 +257,7 @@ public final class RivendellPlan {
                 if (depth == 0) {
                     double q = rnd(x, 3, z);
                     if (wet && t < wl[i]) id = q < 0.4 ? GRAVEL : q < 0.7 ? SAND : COBBLE;
+                    else if (ramp[i] != 0) id = STB;
                     else if (gentle) id = q < 0.05 ? PODZOL : q < 0.09 ? COARSE : q < 0.10 ? MOSS : GRASS;
                     else id = rock(x, y, z, true);
                 } else if (depth <= 3 && gentle) id = rnd(x, y, z) < 0.2 ? COARSE : DIRT;
@@ -205,440 +266,424 @@ public final class RivendellPlan {
             }
             if (wet) for (int y = t + 1; y <= wl[i]; y++) set(x, y, z, WATER);
         }
-        // cascades : de l'eau tombante au ras de la pente, par-dessus la roche
+    }
+
+    private void cascades() {
+        for (int[] c : curtains) setIfAir(c[0], c[1], c[2], WATERF);
+    }
+
+    private void stairsOnRamps() {
         for (int z = 0; z < D; z++) for (int x = 0; x < W; x++) {
-            int i = z * W + x;
-            if (wl[i] > -999 && wl[i] == th[i] && th[i] > 14) {
-                int y = th[i];
-                set(x, y, z, WATERF);
-                // la roche de dessous devient lit de ruisseau
-                set(x, y - 1, z, STONE);
-            }
+            int r = ramp[z * W + x];
+            if (r == 0) continue;
+            set(x, th[z * W + x], z, stair(WBS, r - 1, false));
         }
-        // chute du ruisseau dans la gorge : filet tombant au droit de la tete de la gorge
-        for (int z = 126; z <= 146; z++) for (int dx = -2; dx <= 2; dx++) {
-            int x = 285 + dx, i = z * W + x;
-            int t = th[i];
-            if (t > WL_LOW && wl[i] == -999) { set(x, t, z, WATERF); }
+        // balustrades de l'escalier de la vallee
+        for (int z = 161; z <= 194; z++) for (int x : new int[]{163, 171}) {
+            if (!area(x, z)) continue;
+            int t = th[z * W + 167];
+            found(x, z, x, z, t, WB);
+            set(x, t + 1, z, WB);
+            set(x, t + 2, z, WWALL);
+            if (z % 8 == 0) set(x, t + 3, z, LANTERN);
         }
-    }
-
-    // ------------------------------------------------------------------ chemins : pierre blanche, en larges rubans
-    private void pave(int x, int z, int id) {
-        if (!area(x, z)) return;
-        int y = th[z * W + x];
-        if (y != FLOOR) return;
-        if (get(x, y, z) == WATERF || get(x, y, z) == WATER) return;
-        set(x, y, z, id);
-    }
-
-    private void line(double x0, double z0, double x1, double z1, int w, boolean alt) {
-        double len = Math.hypot(x1 - x0, z1 - z0);
-        for (double t = 0; t <= len; t += 0.5) {
-            double px = x0 + (x1 - x0) * t / len, pz = z0 + (z1 - z0) * t / len;
-            for (int dx = -w; dx <= w; dx++) for (int dz = -w; dz <= w; dz++) {
-                if (dx * dx + dz * dz > w * w + 1) continue;
-                int x = (int) Math.round(px) + dx, z = (int) Math.round(pz) + dz;
-                double q = rnd(x, 41, z);
-                pave(x, z, alt && ((x / 3 + z / 3) & 1) == 0 ? PAVE2 : (q < 0.1 ? STB : WS));
-            }
+        // l'escalier de la salle du Feu : lanternes
+        for (int z = 78; z <= 101; z++) for (int x : new int[]{127, 131}) {
+            if (th[z * W + 129] >= T2 - 1) continue;
+            if (z % 6 == 0) { set(x, th[z * W + 129] + 1, z, WWALL); set(x, th[z * W + 129] + 2, z, LANTERN); }
         }
-    }
-
-    private void paths() {
-        line(70, 176, 176, 176, 2, true);        // la grande allee, devant la maison
-        line(176, 176, 268, 170, 2, true);       // vers le pont de l'est
-        line(176, 176, 176, 235, 2, true);       // vers les jardins
-        line(176, 176, 210, 262, 1, false);      // vers le pont du sud
-        line(150, 150, 150, 176, 1, false);
-        line(96, 176, 80, 196, 1, false);
-        line(222, 176, 222, 200, 1, false);
-        line(176, 110, 176, 146, 1, false);      // vers la salle du nord
-        line(112, 176, 112, 146, 1, false);
     }
 
     // ------------------------------------------------------------------ toits
-    private int roofStair(int x, int z, int i, int dir) {
-        int m = ((x / 2) + (z / 2) + i) & 3;
-        return stair(m == 0 || m == 3 ? CUOS : m == 1 ? CUGS : CUWS, dir, false);
-    }
-    private int roofBlock(int x, int z, int i) {
-        int m = ((x / 2) + (z / 2) + i) & 3;
-        return m == 0 || m == 3 ? CUOB : m == 1 ? CUGB : CUWB;
-    }
+    private static int pick(int x, int z, int i) { return ((hash(x >> 1, i, z >> 1) >>> 3) % 10); }
+    private int tileB(int x, int z, int i) { int m = pick(x, z, i); return m < 6 ? TILE_O : m < 9 ? TILE_G : TILE_Y; }
+    private int tileS(int x, int z, int i, int dir) { int m = pick(x, z, i); return stair(m < 6 ? TOS : m < 9 ? TGS : TYS, dir, false); }
 
-    /** toit a deux pans dont le faitage suit x : les murs vont de z0 a z1 (1 bloc de debord) ; les pignons sont fermes par du mur blanc */
-    private void gableX(int x0, int x1, int z0, int z1, int y) {
-        int za = z0 - 1, zb = z1 + 1;
-        for (int i = 0; za + i <= zb - i; i++) {
-            int a = za + i, b = zb - i, yy = y + i;
-            for (int x = x0 - 1; x <= x1 + 1; x++) {
-                if (a == b) { set(x, yy, a, roofBlock(x, a, i)); continue; }
-                set(x, yy, a, roofStair(x, a, i, S));
-                set(x, yy, b, roofStair(x, b, i, N));
+    /** toit a deux pans : faitage le long de x (axis 0) ou de z (axis 1), pente 1 ou 2 blocs par rang ; murs exterieurs de pmin a pmax (perpendiculaire) et de l0 a l1 ; yb : premiere rangee du toit */
+    private void gable(int axis, int pmin, int pmax, int l0, int l1, int yb, int rise) {
+        int a0 = pmin - 1, b0 = pmax + 1;
+        for (int i = 0; a0 + i <= b0 - i; i++) {
+            int a = a0 + i, b = b0 - i, hy = yb + rise * i;
+            for (int l = l0 - 1; l <= l1 + 1; l++) {
+                int xl = axis == 0 ? l : a, zl = axis == 0 ? a : l;
+                int xb = axis == 0 ? l : b, zb = axis == 0 ? b : l;
+                if (a == b) { for (int k = 0; k < rise; k++) put2(axis, a, l, hy + k, tileB(xl, zl, i)); }
+                else {
+                    put2(axis, a, l, hy, tileS(xl, zl, i, axis == 0 ? S_ : E));
+                    put2(axis, b, l, hy, tileS(xb, zb, i, axis == 0 ? N : W_));
+                    for (int k = 1; k < rise; k++) { put2(axis, a, l, hy + k, tileB(xl, zl, i)); put2(axis, b, l, hy + k, tileB(xb, zb, i)); }
+                }
             }
-            for (int z = a + 1; z <= b - 1; z++) { set(x0, yy, z, WB); set(x1, yy, z, WB); }
-            if (a == b - 1) { for (int x = x0 - 1; x <= x1 + 1; x++) set(x, yy + 1, a, slab(WBS, false)); }
+            for (int e : new int[]{l0, l1}) for (int p : new int[]{a, b}) {
+                if (p < pmin || p > pmax) continue;
+                for (int y = yb; y < hy; y++) put2(axis, p, e, y, (y == hy - 1 || p == pmin || p == pmax) ? TIMBER : PLASTER);
+            }
+        }
+        int pc = (pmin + pmax) / 2, hc = yb + rise * (pc - a0);
+        for (int e : new int[]{l0, l1}) for (int y = yb + 1; y <= Math.min(hc - 2, yb + 7); y++) {
+            put2(axis, pc, e, y, GLASS);
+            if (hc - y > 4 && (pmax - pmin) > 10) { put2(axis, pc - 1, e, y, GLASS); put2(axis, pc + 1, e, y, GLASS); }
         }
     }
 
-    private void gableZ(int x0, int x1, int z0, int z1, int y) {
-        int xa = x0 - 1, xb = x1 + 1;
-        for (int i = 0; xa + i <= xb - i; i++) {
-            int a = xa + i, b = xb - i, yy = y + i;
-            for (int z = z0 - 1; z <= z1 + 1; z++) {
-                if (a == b) { set(a, yy, z, roofBlock(a, z, i)); continue; }
-                set(a, yy, z, roofStair(a, z, i, E));
-                set(b, yy, z, roofStair(b, z, i, W_));
-            }
-            for (int x = a + 1; x <= b - 1; x++) { set(x, yy, z0, WB); set(x, yy, z1, WB); }
-            if (a == b - 1) { for (int z = z0 - 1; z <= z1 + 1; z++) set(a, yy + 1, z, slab(WBS, false)); }
-        }
-    }
-
-    /** toit en pyramide (pavillons, gloriettes) : on peut le laisser ouvert par en dessous */
-    private void hip(int x0, int z0, int x1, int z1, int y, boolean spire) {
-        int i = 0;
-        while (x0 + i <= x1 - i && z0 + i <= z1 - i) {
-            int xa = x0 + i, xb = x1 - i, za = z0 + i, zb = z1 - i, yy = y + i;
+    /** toit en pyramide sur un rectangle (avec 1 bloc de debord) ; s'arrete quand le demi-cote tombe sous stop (le dessus est alors plein) */
+    private void hip(int x0, int z0, int x1, int z1, int yb, int rise, int stop) {
+        for (int i = 0; ; i++) {
+            int xa = x0 - 1 + i, xb = x1 + 1 - i, za = z0 - 1 + i, zb = z1 + 1 - i, hy = yb + rise * i;
+            if (xa > xb || za > zb) break;
+            if (Math.min(xb - xa, zb - za) < 2 * stop) { for (int x = xa; x <= xb; x++) for (int z = za; z <= zb; z++) for (int k = 0; k < rise; k++) set(x, hy + k, z, tileB(x, z, i)); break; }
             for (int x = xa; x <= xb; x++) for (int z = za; z <= zb; z++) {
                 boolean ring = x == xa || x == xb || z == za || z == zb;
                 if (!ring) continue;
-                if (xa == xb || za == zb) { set(x, yy, z, roofBlock(x, z, i)); continue; }
-                int dir = z == za ? S : z == zb ? N : x == xa ? E : W_;
-                set(x, yy, z, roofStair(x, z, i, dir));
+                if (xa == xb || za == zb) { for (int k = 0; k < rise; k++) set(x, hy + k, z, tileB(x, z, i)); continue; }
+                int dir = z == za ? S_ : z == zb ? N : x == xa ? E : W_;
+                set(x, hy, z, tileS(x, z, i, dir));
+                for (int k = 1; k < rise; k++) set(x, hy + k, z, tileB(x, z, i));
             }
-            i++;
-        }
-        if (spire) {
-            int cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
-            for (int k = 0; k < 6; k++) set(cx, y + i + k, cz, k < 4 ? GFENCE : ENDROD);
         }
     }
 
+    private void finial(int cx, int cz, int y, int len) {
+        for (int k = 0; k < len; k++) set(cx, y + k, cz, k < len - 4 ? GFENCE : k == len - 4 ? GOLDB : ENDROD);
+    }
+
     /** toit conique (tours rondes) */
-    private void cone(int cx, int cz, int r, int y, int height) {
+    private void cone(int cx, int cz, int r, int y, int height, boolean green) {
         for (int i = 0; i < height; i++) {
             double ri = (r + 1.5) * (1 - i / (double) height);
             int R = (int) Math.ceil(ri) + 1;
             for (int dx = -R; dx <= R; dx++) for (int dz = -R; dz <= R; dz++) {
                 double d = Math.hypot(dx, dz);
-                if (d <= ri && d > ri - 1.6) set(cx + dx, y + i, cz + dz, roofBlock(cx + dx, cz + dz, i));
+                if (d <= ri && d > ri - 1.8) set(cx + dx, y + i, cz + dz, green ? (pick(cx + dx, cz + dz, i) < 8 ? TILE_G : TILE_Y) : tileB(cx + dx, cz + dz, i));
             }
         }
-        for (int k = 0; k < 7; k++) set(cx, y + height + k, cz, k < 4 ? GFENCE : k == 4 ? GOLDB : ENDROD);
+        finial(cx, cz, y + height, 9);
     }
 
-    // ------------------------------------------------------------------ murs : pilastres, fenetres en ogive, bandeau dore
-    private void wallX(int x0, int x1, int z, int y0, int h, int bay, boolean glassWall) {
-        for (int x = x0; x <= x1; x++) {
-            int p = (x - x0) % bay;
-            boolean pil = p == 0 || x == x1;
-            for (int y = y0; y < y0 + h; y++) {
-                int id = WB;
-                int dy = y - y0;
-                if (pil) id = (dy == 0 || dy == h - 1) ? QB : WPIL;
-                else if (dy == 2) id = GP;                                                  // appui
-                else if (dy >= 3 && dy <= h - 4) {
-                    int c = bay / 2;
-                    int a = Math.abs(p - c), top = h - 4;
-                    boolean win = a <= 1 && dy <= top - 1 || a == 0 && dy == top;
+    // ------------------------------------------------------------------ murs : pilastres, bandeaux dores, fenetres en ogive
+    private void wall(boolean ax, int a0, int a1, int f, int y0, int floors, int fh, int bay, int mat, int plinth) {
+        int c = bay / 2;
+        for (int a = a0; a <= a1; a++) {
+            int p = (a - a0) % bay;
+            boolean pil = p == 0 || a == a1;
+            boolean full = a0 + ((a - a0) / bay) * bay + bay <= a1;
+            for (int s = 0; s < floors; s++) for (int dy = 0; dy < fh; dy++) {
+                int y = y0 + s * fh + dy, id = mat;
+                if (pil) id = dy == 0 ? QB : WPIL;
+                else if (dy == 0) id = GP;
+                else if (s == floors - 1 && dy == fh - 1) id = GP;
+                else {
+                    int hw = dy <= fh - 5 ? 1 : 0;
+                    boolean win = full && dy >= 2 && dy <= fh - 3 && Math.abs(p - c) <= hw;
                     if (win) id = GLASS;
-                    else if (dy == top - 1 && a == 2 || dy == top && a == 1) id = GP;
-                } else if (dy == h - 3) id = GP;
-                else if (dy == h - 1) id = GP;
-                set(x, y, z, id);
+                    else if (full && dy == fh - 2 && Math.abs(p - c) <= 1) id = GP;
+                    else if (s == 0 && dy < plinth) id = WB;
+                }
+                put(ax, a, f, y, id);
             }
         }
     }
 
-    private void wallZ(int x, int z0, int z1, int y0, int h, int bay) {
-        for (int z = z0; z <= z1; z++) {
-            int p = (z - z0) % bay;
-            boolean pil = p == 0 || z == z1;
-            for (int y = y0; y < y0 + h; y++) {
-                int id = WB, dy = y - y0;
-                if (pil) id = (dy == 0 || dy == h - 1) ? QB : WPIL;
-                else if (dy == 2) id = GP;
-                else if (dy >= 3 && dy <= h - 4) {
-                    int c = bay / 2, a = Math.abs(p - c), top = h - 4;
-                    boolean win = a <= 1 && dy <= top - 1 || a == 0 && dy == top;
-                    if (win) id = GLASS;
-                    else if (dy == top - 1 && a == 2 || dy == top && a == 1) id = GP;
-                } else if (dy == h - 3 || dy == h - 1) id = GP;
-                set(x, y, z, id);
-            }
+    private void doorway(int side, int x0, int z0, int x1, int z1, int yb) {
+        boolean ax = side == 0 || side == 2;
+        int f = side == 0 ? z0 : side == 2 ? z1 : side == 1 ? x1 : x0;
+        int c = ax ? (x0 + x1) / 2 : (z0 + z1) / 2;
+        doorAt(ax, c, f, yb);
+    }
+
+    private void doorAt(boolean ax, int c, int f, int yb) {
+        for (int d = -1; d <= 1; d++) for (int y = yb; y <= yb + 3; y++) put(ax, c + d, f, y, AIR);
+        put(ax, c, f, yb + 4, AIR); put(ax, c, f, yb + 5, AIR);
+        for (int y = yb; y <= yb + 4; y++) { put(ax, c - 2, f, y, WPIL); put(ax, c + 2, f, y, WPIL); }
+        put(ax, c - 1, f, yb + 4, GP); put(ax, c + 1, f, yb + 4, GP); put(ax, c - 1, f, yb + 5, WB); put(ax, c + 1, f, yb + 5, WB); put(ax, c, f, yb + 6, GP);
+    }
+
+    /** maison a etages : murs d'enduit, pilastres blancs, fenetres en ogive, toit de tuiles ; echelle dans le coin nord-ouest */
+    private void house(int x0, int z0, int x1, int z1, int yb, int floors, int fh, int bay, int axis, int rise, int door, boolean spawn) {
+        int hgt = floors * fh, wd = axis == 0 ? z1 - z0 : x1 - x0;
+        box(x0, yb, z0, x1, yb + hgt + rise * (wd / 2 + 3) + 6, z1, AIR);
+        box(x0, yb - 1, z0, x1, yb - 1, z1, GP);
+        found(x0, z0, x1, z1, yb - 2, WB);
+        wall(true, x0, x1, z0, yb, floors, fh, bay, PLASTER, 2);
+        wall(true, x0, x1, z1, yb, floors, fh, bay, PLASTER, 2);
+        wall(false, z0, z1, x0, yb, floors, fh, bay, PLASTER, 2);
+        wall(false, z0, z1, x1, yb, floors, fh, bay, PLASTER, 2);
+        for (int s = 1; s < floors; s++) box(x0 + 1, yb + s * fh, z0 + 1, x1 - 1, yb + s * fh, z1 - 1, GP);
+        for (int y = yb; y < yb + hgt; y++) set(x0 + 1, y, z0 + 1, LADE);
+        int cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+        for (int s = 0; s < floors; s++) {
+            set(cx, yb + s * fh + (s == 0 ? 0 : 1), cz, GFENCE);
+            set(cx, yb + s * fh + (s == 0 ? 1 : 2), cz, LANTERN);
         }
+        if (door >= 0) doorway(door, x0, z0, x1, z1, yb);
+        gable(axis, axis == 0 ? z0 : x0, axis == 0 ? z1 : x1, axis == 0 ? x0 : z0, axis == 0 ? x1 : z1, yb + hgt, rise);
+        reserve(x0, z0, x1, z1, 4);
+        if (spawn) spawns.add(new int[]{cx, yb, cz});
     }
 
-    private void door(int cx, int z, int y0, boolean alongX) {       // porte voutee de 3 de large, 6 de haut, dans un mur de plan z (ou x)
-        for (int d = -1; d <= 1; d++) for (int y = y0; y <= y0 + 4; y++) { if (alongX) set(cx + d, y, z, AIR); else set(z, y, cx + d, AIR); }
-        if (alongX) set(cx, y0 + 5, z, AIR); else set(z, y0 + 5, cx, AIR);
-        for (int d = -2; d <= 2; d++) { if (alongX) set(cx + d, y0 + 5 + (Math.abs(d) <= 0 ? 1 : 0), z, GP); else set(z, y0 + 5 + (Math.abs(d) <= 0 ? 1 : 0), cx + d, GP); }
-        if (alongX) { set(cx - 1, y0 + 5, z, GP); set(cx + 1, y0 + 5, z, GP); } else { set(z, y0 + 5, cx - 1, GP); set(z, y0 + 5, cx + 1, GP); }
+    // ------------------------------------------------------------------ la maison d'Elrond
+    private void mainHall() {
+        int b = S + 1;
+        // longue salle aux toits de tuiles, trois portes sur la promenade
+        house(74, 128, 140, 148, b, 2, 7, 6, 0, 1, 2, true);
+        doorAt(true, 116, 148, b);
+        doorAt(true, 98, 148, b);
+        // table du banquet et bancs
+        for (int x : new int[]{79, 121}) { box(x, b, 140, x + 14, b, 140, GP); for (int k = 0; k <= 14; k += 2) { set(x + k, b, 138, stair(GPS, S_, false)); set(x + k, b, 142, stair(GPS, N, false)); } }
+        // trois hauts pignons : ouest 3 etages, centre 5 (tour), est 4
+        house(76, 114, 90, 134, b, 3, 7, 7, 1, 2, -1, true);
+        house(98, 112, 116, 134, b, 5, 7, 6, 1, 2, -1, true);
+        house(124, 110, 138, 134, b, 4, 7, 7, 1, 2, -1, true);
+        spawns.add(new int[]{107, b, 140});
+        spawns.add(new int[]{85, b, 140});
     }
 
-    private void lanternsHung(int x0, int x1, int z0, int z1, int y, int step) {
-        for (int x = x0; x <= x1; x += step) for (int z = z0; z <= z1; z += step) { set(x, y, z, CHAIN); set(x, y - 1, z, HLANT); }
-    }
-
-    // ------------------------------------------------------------------ la grande salle et ses ailes
-    private void hall() {
-        int y0 = FLOOR + 1, h = 11;
-        // salle principale : faitage est-ouest
-        int x0 = 92, x1 = 200, z0 = 146, z1 = 170;
-        box(x0, FLOOR, z0, x1, FLOOR, z1, GP);
-        walls(x0, y0, z0, x1, y0 + h - 1, z1, WB);
-        wallX(x0, x1, z0, y0, h, 6, true);
-        wallX(x0, x1, z1, y0, h, 6, true);
-        wallZ(x0, z0, z1, y0, h, 6);
-        wallZ(x1, z0, z1, y0, h, 6);
-        for (int d = 0; d < 3; d++) { door(176 - 12 + d * 12, z1, y0, true); }        // trois portes sur le jardin
-        for (int x = x0 + 1; x < x1; x++) for (int z = z0 + 1; z < z1; z++) box(x, y0, z, x, y0 + h + 14, z, AIR);
-        gableX(x0, x1, z0, z1, y0 + h);
-        lanternsHung(x0 + 6, x1 - 6, z0 + 6, z1 - 4, y0 + h - 1, 12);
-        // deux ailes au nord (faitage nord-sud)
-        wing(112, 132, 124, 145, y0, h - 1);
-        wing(164, 184, 124, 145, y0, h - 1);
-        // salle du feu, grande salle du nord
-        int hx0 = 134, hx1 = 162, hz0 = 104, hz1 = 128;
-        box(hx0, FLOOR, hz0, hx1, FLOOR, hz1, GP);
-        walls(hx0, y0, hz0, hx1, y0 + h, hz1, WB);
-        wallX(hx0, hx1, hz0, y0, h + 1, 7, true);
-        wallX(hx0, hx1, hz1, y0, h + 1, 7, true);
-        wallZ(hx0, hz0, hz1, y0, h + 1, 6);
-        wallZ(hx1, hz0, hz1, y0, h + 1, 6);
-        for (int x = hx0 + 1; x < hx1; x++) for (int z = hz0 + 1; z < hz1; z++) box(x, y0, z, x, y0 + h + 12, z, AIR);
-        door((hx0 + hx1) / 2, hz1, y0, true);
-        gableX(hx0, hx1, hz0, hz1, y0 + h + 1);
-        // porche a arcades au sud de la salle
-        porch(106, 194, z1 + 1, z1 + 5, y0);
-        // la tour du grand toit, au milieu de l'arriere (comme sur la maquette) : petite tour carree a toit pointu
-        int tx = 150, tz = 140;
-        walls(tx - 3, y0, tz - 3, tx + 3, y0 + h + 18, tz + 3, WB);
-        for (int d = -1; d <= 1; d++) for (int y = y0; y < y0 + 4; y++) set(tx + d, y, tz + 3, AIR);
-        for (int y = y0 + 6; y < y0 + h + 18; y += 5) { set(tx, y, tz - 3, GLASS); set(tx, y, tz + 3, GLASS); set(tx - 3, y, tz, GLASS); set(tx + 3, y, tz, GLASS); }
-        box(tx - 4, y0 + h + 19, tz - 4, tx + 4, y0 + h + 19, tz + 4, QB);
-        hip(tx - 3, tz - 3, tx + 3, tz + 3, y0 + h + 20, true);
-    }
-
-    private void wing(int x0, int x1, int z0, int z1, int y0, int h) {
-        box(x0, FLOOR, z0, x1, FLOOR, z1 + 2, GP);
-        walls(x0, y0, z0, x1, y0 + h - 1, z1, WB);
-        wallX(x0, x1, z0, y0, h, 7, true);
-        wallZ(x0, z0, z1, y0, h, 7);
-        wallZ(x1, z0, z1, y0, h, 7);
-        for (int x = x0 + 1; x < x1; x++) for (int z = z0 + 1; z <= z1; z++) box(x, y0, z, x, y0 + h + 12, z, AIR);
-        gableZ(x0, x1, z0, z1 + 4, y0 + h);
-    }
-
-    /** galerie ouverte : colonnes fines, arcs en ogive, toit en appentis en tuiles */
-    private void porch(int x0, int x1, int z0, int z1, int y0) {
-        for (int x = x0; x <= x1; x += 6) for (int y = y0; y < y0 + 8; y++) set(x, y, z1, y < y0 + 1 ? QB : WPIL);
-        for (int x = x0; x < x1; x += 6) {
-            set(x + 1, y0 + 7, z1, stair(WBS, E, true)); set(x + 5, y0 + 7, z1, stair(WBS, W_, true));
-            set(x + 2, y0 + 8, z1, stair(WBS, E, true)); set(x + 4, y0 + 8, z1, stair(WBS, W_, true)); set(x + 3, y0 + 8, z1, WB);
-            for (int dx = 2; dx <= 4; dx++) set(x + dx, y0 + 7, z1, GFENCE);
-            set(x + 3, y0 + 6, z1, GFENCE);
-        }
-        for (int x = x0; x <= x1; x++) {
-            for (int z = z0; z <= z1; z++) set(x, y0 + 9, z, roofBlock(x, z, 0));
-            set(x, y0 + 9, z1 + 1, roofStair(x, z1 + 1, 0, N));
-        }
-        for (int x = x0; x <= x1; x += 6) set(x, y0 + 8, z1, QB);
-        for (int x = x0; x <= x1; x += 12) { set(x, y0 + 8, z1 - 2, CHAIN); set(x, y0 + 7, z1 - 2, HLANT); }
-    }
-
-    // ------------------------------------------------------------------ tours
-    private void roundTower(int cx, int cz, int r, int y0, int h, int coneH, boolean bands) {
-        for (int y = y0; y < y0 + h; y++) {
-            for (int dx = -r - 1; dx <= r + 1; dx++) for (int dz = -r - 1; dz <= r + 1; dz++) {
+    // ------------------------------------------------------------------ tour grise a toit vert, beffroi
+    private void bellTower() {
+        int cx = 68, cz = 142, r = 7, yb = S + 1, h = 58;
+        reserve(cx - r, cz - r, cx + r, cz + r, 4);
+        found(cx - r - 1, cz - r - 1, cx + r + 1, cz + r + 1, yb - 1, TSTONE);
+        for (int y = yb; y < yb + h; y++) {
+            int dy = y - yb;
+            for (int dx = -r - 2; dx <= r + 2; dx++) for (int dz = -r - 2; dz <= r + 2; dz++) {
                 double d = Math.hypot(dx, dz);
-                if (d <= r + 0.4 && d > r - 0.8) {
-                    int dy = y - y0;
-                    int id = WB;
-                    boolean slit = dy % 9 == 5 && ((Math.abs(dx) <= 0 && Math.abs(dz) >= r - 1) || (Math.abs(dz) <= 0 && Math.abs(dx) >= r - 1) || (Math.abs(dx) == Math.abs(dz) && d > r - 1));
-                    if (dy % 9 == 8 && bands) id = GP;
-                    if (slit && dy > 2) id = GLASS;
+                boolean wallCell = d <= r + 0.4 && d > r - 0.8;
+                if (dy < 4 && d <= r + 1.5 && d > r - 0.8) wallCell = true;
+                if (wallCell) {
+                    int id = TSTONE;
+                    boolean slit = dy % 11 == 6 && dy > 5 && ((dx == 0 && Math.abs(dz) >= r - 1) || (dz == 0 && Math.abs(dx) >= r - 1) || (Math.abs(dx) == Math.abs(dz) && d > r - 1));
+                    if (dy % 11 == 10) id = QB;
+                    if (slit) id = GLASS;
+                    boolean belfry = dy >= h - 12 && dy <= h - 4;
+                    if (belfry) {
+                        boolean opening = (Math.abs(dx) <= 1 && Math.abs(dz) >= r - 1) || (Math.abs(dz) <= 1 && Math.abs(dx) >= r - 1);
+                        id = opening ? (dy == h - 4 ? QB : AIR) : (dy == h - 12 ? QB : WPIL);
+                    }
                     set(cx + dx, y, cz + dz, id);
                 } else if (d <= r - 0.8) set(cx + dx, y, cz + dz, AIR);
             }
-            if ((y - y0) % 9 == 0 && y > y0) for (int dx = -r; dx <= r; dx++) for (int dz = -r; dz <= r; dz++) if (Math.hypot(dx, dz) <= r - 0.8) set(cx + dx, y, cz + dz, GP);
+            if (dy % 10 == 9 && dy < h - 12) for (int dx = -r; dx <= r; dx++) for (int dz = -r; dz <= r; dz++) if (Math.hypot(dx, dz) <= r - 0.8) set(cx + dx, y, cz + dz, GP);
         }
-        // corniche
-        int yt = y0 + h;
+        for (int y = yb; y < yb + h - 4; y++) set(cx, y, cz - r + 1, LADS);
+        set(cx, yb + h - 6, cz, CHAIN); set(cx, yb + h - 7, cz, GOLDB);                    // la cloche
         for (int dx = -r - 2; dx <= r + 2; dx++) for (int dz = -r - 2; dz <= r + 2; dz++) {
             double d = Math.hypot(dx, dz);
-            if (d <= r + 1.6) set(cx + dx, yt, cz + dz, d > r + 0.6 ? QB : GP);
+            if (d <= r + 1.6) set(cx + dx, yb + h, cz + dz, d > r + 0.4 ? QB : GP);
         }
-        for (int a = 0; a < 16; a++) {
-            double an = a * Math.PI / 8;
-            set(cx + (int) Math.round(Math.cos(an) * (r + 1.3)), yt + 1, cz + (int) Math.round(Math.sin(an) * (r + 1.3)), WWALL);
-        }
-        // porte au sud
-        for (int d = -1; d <= 1; d++) for (int y = y0; y < y0 + 4; y++) { set(cx + d, y, cz + r, AIR); set(cx + d, y, cz + r - 1, AIR); }
-        set(cx, y0 + 4, cz + r, AIR);
-        cone(cx, cz, r + 1, yt + 2, coneH);
+        for (int a = 0; a < 20; a++) { double an = a * Math.PI / 10; set(cx + (int) Math.round(Math.cos(an) * (r + 1.2)), yb + h + 1, cz + (int) Math.round(Math.sin(an) * (r + 1.2)), TWALL); }
+        cone(cx, cz, r + 1, yb + h + 1, 28, true);
+        for (int d = -1; d <= 1; d++) for (int y = yb; y < yb + 4; y++) { set(cx + d, y, cz + r, AIR); set(cx + d, y, cz + r - 1, AIR); }
+        set(cx, yb + 4, cz + r, AIR);
+        for (int y = yb; y < yb + 5; y++) { set(cx - 2, y, cz + r, WPIL); set(cx + 2, y, cz + r, WPIL); }
+        spawns.add(new int[]{cx, yb, cz + 2});
     }
 
-    private void spire(int cx, int cz, int y0, int h) {
-        // tour-fleche : fut carre effile, balcon, pointe doree (comme la haute fleche des maquettes)
-        for (int y = 0; y < h; y++) {
-            int r = y < 10 ? 3 : y < 24 ? 2 : 1;
-            for (int dx = -r; dx <= r; dx++) for (int dz = -r; dz <= r; dz++) {
-                boolean edge = Math.abs(dx) == r || Math.abs(dz) == r;
-                if (y == 0 || y == 9 || y == 23) set(cx + dx, y0 + y, cz + dz, GP);
-                else set(cx + dx, y0 + y, cz + dz, edge ? (Math.abs(dx) == r && Math.abs(dz) == r ? WPIL : (y % 6 == 4 && r >= 2 ? GLASS : WB)) : AIR);
+    // ------------------------------------------------------------------ l'aiguille doree
+    private void needle() {
+        int cx = 84, cz = 106, y = S + 1;
+        reserve(cx - 6, cz - 6, cx + 6, cz + 6, 3);
+        found(cx - 5, cz - 5, cx + 5, cz + 5, y - 1, WB);
+        int[] half = {4, 3, 2, 1}, len = {22, 18, 18, 16};
+        for (int s = 0; s < 4; s++) {
+            int hw = half[s];
+            for (int k = 0; k < len[s]; k++) {
+                for (int dx = -hw; dx <= hw; dx++) for (int dz = -hw; dz <= hw; dz++) {
+                    boolean edge = Math.abs(dx) == hw || Math.abs(dz) == hw, corner = Math.abs(dx) == hw && Math.abs(dz) == hw;
+                    int id = AIR;
+                    if (edge) {
+                        id = corner ? WPIL : PLASTER;
+                        if (!corner && k % 7 == 4 && (dx == 0 || dz == 0)) id = GLASS;
+                        else if (!corner && k % 7 == 0) id = GP;
+                        else if (!corner && hw >= 2 && k % 7 == 5 && Math.abs(dx + dz) % 2 == 0) id = WB;
+                    }
+                    set(cx + dx, y + k, cz + dz, id);
+                }
+            }
+            y += len[s];
+            for (int dx = -hw - 1; dx <= hw + 1; dx++) for (int dz = -hw - 1; dz <= hw + 1; dz++) {
+                boolean ring = Math.abs(dx) == hw + 1 || Math.abs(dz) == hw + 1;
+                set(cx + dx, y, cz + dz, ring ? QB : GP);
+            }
+            y++;
+            if (s < 3) for (int dx = -hw - 1; dx <= hw + 1; dx++) for (int dz = -hw - 1; dz <= hw + 1; dz++) {
+                if (Math.abs(dx) == hw + 1 || Math.abs(dz) == hw + 1) {
+                    int dir = Math.abs(dz) == hw + 1 ? (dz < 0 ? S_ : N) : (dx < 0 ? E : W_);
+                    set(cx + dx, y, cz + dz, tileS(cx + dx, cz + dz, s, dir));
+                }
             }
         }
-        for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++) { if (Math.max(Math.abs(dx), Math.abs(dz)) == 4) set(cx + dx, y0 + 10, cz + dz, WWALL); }
-        for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++) set(cx + dx, y0 + 9, cz + dz, GP);
-        for (int k = 0; k < 14; k++) set(cx, y0 + h + k, cz, k < 9 ? (k % 3 == 2 ? GOLDB : GFENCE) : ENDROD);
-        set(cx, y0 + h + 14, cz, LANTERN);
+        for (int k = 0; k < 4; k++) set(cx, y + k, cz, TILE_Y);
+        finial(cx, cz, y + 4, 16);
+        for (int k = 0; k < 2; k++) set(cx, S + 1 + k, cz + 4, AIR);
     }
 
-    private void towers() {
-        roundTower(84, 158, 7, FLOOR + 1, 36, 20, true);
-        spire(96, 122, FLOOR + 1, 44);
-        roundTower(224, 128, 5, FLOOR + 1, 22, 14, true);
+    // ------------------------------------------------------------------ maison d'etude, a cote du ruisseau
+    private void studyHouse() {
+        house(158, 104, 174, 124, S + 1, 4, 7, 6, 0, 2, 2, true);
+        // balcon sur le ruisseau
+        for (int x = 148; x <= 157; x++) for (int z = 112; z <= 116; z++) set(x, S + 15, z, GP);
+        for (int x = 148; x <= 157; x++) { set(x, S + 16, 112, GFENCE); set(x, S + 16, 116, GFENCE); }
+        for (int z = 112; z <= 116; z++) set(148, S + 16, z, GFENCE);
+        for (int z : new int[]{112, 116}) for (int y = S + 1; y <= S + 14; y++) set(148, y, z, WPIL);
+        for (int dz = -1; dz <= 1; dz++) for (int y = S + 16; y <= S + 18; y++) set(158, y, 114 + dz, AIR);
     }
 
-    // ------------------------------------------------------------------ galerie a arcades au-dessus de la gorge
-    private void gallery() {
-        int x0 = 226, x1 = 276, z0 = 140, z1 = 164, y0 = FLOOR + 1;
-        // plateforme prolongee au-dessus de la gorge, sur des piles
-        for (int x = 262; x <= x1; x++) for (int z = z0; z <= z1; z++) set(x, FLOOR, z, WS);
-        for (int x = 264; x <= x1; x += 6) for (int z = z0 + 1; z <= z1; z += 8) pier(x, z, FLOOR - 1);
-        for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++) if (x < 262) set(x, FLOOR, z, ((x + z) & 1) == 0 ? WS : PAVE2);
-        // deux rangees d'arcades (nord et sud) et le bord est ; toit en pyramide allongee
-        for (int x = x0; x <= x1; x += 5) for (int y = y0; y < y0 + 9; y++) for (int z : new int[]{z0, z1}) set(x, y, z, y == y0 ? QB : WPIL);
-        for (int z = z0; z <= z1; z += 6) for (int y = y0; y < y0 + 9; y++) set(x1, y, z, y == y0 ? QB : WPIL);
-        for (int x = x0; x < x1; x += 5) for (int z : new int[]{z0, z1}) {
-            set(x + 1, y0 + 8, z, stair(WBS, E, true)); set(x + 4, y0 + 8, z, stair(WBS, W_, true));
-            for (int dx = 2; dx <= 3; dx++) { set(x + dx, y0 + 8, z, WB); set(x + dx, y0 + 7, z, GFENCE); set(x + dx, y0 + 6, z, GFENCE); }
-            set(x + 1, y0 + 7, z, GFENCE); set(x + 4, y0 + 7, z, GFENCE);
+    // ------------------------------------------------------------------ pagode a quatre etages
+    private void pagoda() {
+        int cx = 214, cz = 116, y = S + 1;
+        int[] hw = {8, 6, 4, 3};
+        reserve(cx - 11, cz - 11, cx + 11, cz + 11, 3);
+        found(cx - 9, cz - 9, cx + 9, cz + 9, y - 1, WB);
+        box(cx - 10, S, cz - 10, cx + 10, S, cz + 10, WS);
+        for (int t = 0; t < 4; t++) {
+            int w = hw[t], x0 = cx - w, x1 = cx + w, z0 = cz - w, z1 = cz + w;
+            box(x0, y - 1, z0, x1, y - 1, z1, GP);
+            for (int k = 0; k < 7; k++) box(x0 + 1, y + k, z0 + 1, x1 - 1, y + k, z1 - 1, AIR);
+            wall(true, x0, x1, z0, y, 1, 7, 2 * w, PLASTER, t == 0 ? 2 : 0);
+            wall(true, x0, x1, z1, y, 1, 7, 2 * w, PLASTER, t == 0 ? 2 : 0);
+            wall(false, z0, z1, x0, y, 1, 7, 2 * w, PLASTER, t == 0 ? 2 : 0);
+            wall(false, z0, z1, x1, y, 1, 7, 2 * w, PLASTER, t == 0 ? 2 : 0);
+            for (int k = 0; k < 7; k++) set(x0 + 1, y + k, z0 + 1, LADE);
+            set(cx, y, cz, GFENCE); set(cx, y + 1, cz, LANTERN);
+            if (t == 0) doorway(2, x0, z0, x1, z1, y);
+            y += 7;
+            if (t < 3) {
+                int stopHW = hw[t + 1] + 1;
+                hip(x0, z0, x1, z1, y, 1, stopHW);
+                y += w + 1 - stopHW + 1;
+                box(cx - hw[t + 1], y - 1, cz - hw[t + 1], cx + hw[t + 1], y - 1, cz + hw[t + 1], GP);
+            } else {
+                hip(x0, z0, x1, z1, y, 2, 0);
+                y += 2 * (w + 1) + 1;
+                finial(cx, cz, y, 18);
+            }
         }
-        for (int z = z0; z < z1; z += 6) {
-            set(x1, y0 + 8, z + 1, stair(WBS, S, true)); set(x1, y0 + 8, z + 5, stair(WBS, N, true));
-            for (int dz = 2; dz <= 4; dz++) { set(x1, y0 + 8, z + dz, WB); set(x1, y0 + 7, z + dz, GFENCE); }
-        }
-        for (int x = x0 - 1; x <= x1 + 1; x++) for (int z = z0 - 1; z <= z1 + 1; z++) set(x, y0 + 9, z, QB);
-        for (int x = x1; x >= x0 + 6; x -= 0) break;
-        gableX(x0 + 2, x1 - 2, z0 + 1, z1 - 1, y0 + 10);
-        // balustrade au bord de la gorge
-        for (int z = z0; z <= z1; z++) if (z % 2 == 0) { set(x1 + 1, y0, z, WWALL); }
-        lanternsHung(x0 + 4, x1 - 4, z0 + 6, z1 - 4, y0 + 8, 8);
-        spawns.add(new int[]{240, FLOOR + 1, 152});
+        spawns.add(new int[]{cx, S + 1, cz + 3});
     }
 
-    private void pier(int x, int z, int yTop) {
-        for (int y = yTop; y > -OFF + 2; y--) {
-            if (get(x, y, z) != AIR && get(x, y, z) != WATER && get(x, y, z) != WATERF) break;
-            set(x, y, z, y > yTop - 3 ? WPIL : STB);
-            if (y % 6 == 0) { set(x + 1, y, z, STB); set(x - 1, y, z, STB); }
-        }
+    // ------------------------------------------------------------------ gradin : salle du Feu
+    private void fireHall() {
+        house(92, 80, 120, 96, T2 + 1, 1, 10, 6, 0, 2, 2, true);
+        reserve(128, 78, 130, 101, 3);
+        for (int x = 92; x <= 130; x++) for (int z = 97; z <= 99; z++) if (tAt(x, z) == T2) set(x, T2, z, WS);
     }
 
-    // ------------------------------------------------------------------ terrasse du Conseil et son grand arbre
+    // ------------------------------------------------------------------ arcade a deux niveaux au pied de la falaise
+    private void arcade() {
+        for (int x0 = 74; x0 < 152; x0 += 6) {
+            int zc = (int) Math.round(zA(x0 + 3)) + 3;
+            for (int k = 0; k <= 6; k++) {
+                int x = x0 + k, zf = (int) Math.round(zA(x + 0.5));
+                for (int z = zf; z <= zc; z++) { if (tAt(x, z) < S - 1) found(x, z, x, z, 15, STB); }
+            }
+            int base = th[zc * W + x0];
+            for (int y = base + 1; y <= S; y++) set(x0, y, zc, (y - base) % 16 == 1 ? QB : WPIL);
+            // arcs en ogive, deux niveaux
+            for (int tier = 0; tier < 2; tier++) {
+                int yt = 14 + 16 * tier;
+                for (int dx = 1; dx <= 5; dx++) {
+                    int x = x0 + dx;
+                    for (int y = yt - 1; y <= yt + 1; y++) {
+                        int level = y - (yt - 1);
+                        boolean hole = dx == 3 ? level <= 1 : (dx == 2 || dx == 4) ? level <= 0 : false;
+                        set(x, y, zc, hole ? AIR : WB);
+                    }
+                    set(x, yt + 2, zc, GP);
+                    set(x, yt + 3, zc, QB);
+                }
+                if (tier == 1) continue;
+                for (int z = (int) Math.round(zA(x0 + 3)); z <= zc; z++) for (int dx = 0; dx <= 6; dx++) if (get(x0 + dx, 16, z) == AIR) set(x0 + dx, 16, z, WS);
+            }
+        }
+        for (int x = 74; x <= 152; x++) { int zc = (int) Math.round(zA(x + 0.5)) + 3; reserve(x, zc, x, zc, 2); }
+    }
+
+    // ------------------------------------------------------------------ terrasse du Conseil
     private void council() {
-        int cx = 222, cz = 206, r = 22, y = FLOOR;
+        int cx = 195, cz = 150, r = 22;
+        reserve(cx - r, cz - r, cx + r, cz + r, 3);
         for (int dx = -r - 2; dx <= r + 2; dx++) for (int dz = -r - 2; dz <= r + 2; dz++) {
             double d = Math.hypot(dx, dz);
             int x = cx + dx, z = cz + dz;
-            if (!area(x, z) || th[z * W + x] != FLOOR) continue;
-            if (d <= r) {
+            if (!area(x, z)) continue;
+            if (d <= r + 0.5) {
+                found(x, z, x, z, S - 1, d > r - 2 ? WB : STB);
                 double an = Math.atan2(dz, dx);
                 boolean star = d < 13 && Math.abs(Math.cos(an * 4 + 0.4)) * 10 > d - 3 && d > 2;
                 boolean ring = Math.abs(d - 8) < 0.6 || Math.abs(d - 15) < 0.6;
                 int id = star ? GP : ring ? PAVE2 : (((x + z) & 3) == 0 ? PAVE2 : WS);
                 if (d < 2.5) id = GOLDB;
-                set(x, y, z, id);
-            } else if (d <= r + 1.5) { set(x, y, z, QB); set(x, y + 1, z, WWALL); }
+                set(x, S, z, id);
+                for (int y = S + 1; y <= S + 14; y++) if (get(x, y, z) != AIR) set(x, y, z, AIR);
+            }
+            if (d > r - 0.5 && d <= r + 0.6) { set(x, S + 1, z, QB); set(x, S + 2, z, WWALL); }
         }
-        // chaises du Conseil : cercle de bancs tournes vers le centre
+        // chaises du Conseil, tournees vers la table
         for (int k = 0; k < 14; k++) {
             double an = k * Math.PI * 2 / 14 + 0.2;
             int x = cx + (int) Math.round(Math.cos(an) * 10.5), z = cz + (int) Math.round(Math.sin(an) * 10.5);
-            int dir = Math.abs(Math.cos(an)) > Math.abs(Math.sin(an)) ? (Math.cos(an) > 0 ? W_ : E) : (Math.sin(an) > 0 ? N : S);
-            set(x, y + 1, z, stair(GPS, dir, false));
-            if (k % 2 == 0) spawns.add(new int[]{x, y + 1, z});
+            int dir = Math.abs(Math.cos(an)) > Math.abs(Math.sin(an)) ? (Math.cos(an) > 0 ? W_ : E) : (Math.sin(an) > 0 ? N : S_);
+            set(x, S + 1, z, stair(GPS, dir, false));
+            if (k % 2 == 0) spawns.add(new int[]{x, S + 1, z});
         }
-        // le grand arbre : au nord de la terrasse, ses branches couvrent le bout de la maison
-        bigTree(206, FLOOR + 1, 182);
-        // lanternes sur poteaux autour de la terrasse
-        for (int k = 0; k < 10; k++) {
-            double an = k * Math.PI * 2 / 10 + 0.15;
-            int x = cx + (int) Math.round(Math.cos(an) * (r - 0.5)), z = cz + (int) Math.round(Math.sin(an) * (r - 0.5));
-            for (int h = 1; h <= 4; h++) set(x, y + h, z, WWALL);
-            set(x, y + 5, z, LANTERN);
+        set(cx, S + 1, cz, GP);
+        bigTree(cx, S + 1, cz - 17);
+        for (int k = 0; k < 8; k++) {
+            double an = Math.PI * 0.15 + k * Math.PI * 1.7 / 8;
+            int x = cx + (int) Math.round(Math.cos(an) * (r - 1.5)), z = cz + (int) Math.round(Math.sin(an) * (r - 1.5));
+            for (int h = 1; h <= 4; h++) set(x, S + h, z, WWALL);
+            set(x, S + 5, z, LANTERN);
+        }
+        // contreforts sous la terrasse, du cote de la vallee
+        for (int k = -6; k <= 6; k++) {
+            double an = Math.PI / 2 + k * 0.17;
+            int x = cx + (int) Math.round(Math.cos(an) * (r + 1)), z = cz + (int) Math.round(Math.sin(an) * (r + 1));
+            if (!area(x, z)) continue;
+            for (int y = th[z * W + x] + 1; y < S; y++) set(x, y, z, WPIL);
         }
     }
 
-    // ------------------------------------------------------------------ pavillons et gloriettes
-    private void pavilion(int cx, int cz, int hw, int y0) {
-        int x0 = cx - hw, x1 = cx + hw, z0 = cz - hw, z1 = cz + hw;
-        for (int x = x0 - 1; x <= x1 + 1; x++) for (int z = z0 - 1; z <= z1 + 1; z++) if (th[z * W + x] == FLOOR) set(x, FLOOR, z, ((x + z) & 1) == 0 ? WS : PAVE2);
-        for (int x = x0; x <= x1; x += hw) for (int z = z0; z <= z1; z += hw) for (int y = y0; y < y0 + 8; y++) set(x, y, z, y == y0 ? QB : WPIL);
-        for (int s = 0; s < 4; s++) {
-            for (int k = 1; k < hw; k++) {
-                int x = s < 2 ? x0 + k : (s == 2 ? x0 : x1), z = s < 2 ? (s == 0 ? z0 : z1) : z0 + k;
-                if (k == hw / 2 && hw >= 3) continue;
-                set(x, y0 + 7, z, GFENCE); set(x, y0 + 6, z, k % 2 == 0 ? GFENCE : WWALL);
-            }
-            set(s < 2 ? cx : (s == 2 ? x0 : x1), y0 + 7, s < 2 ? (s == 0 ? z0 : z1) : cz, GFENCE);
-        }
-        for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++) if (x == x0 || x == x1 || z == z0 || z == z1) set(x, y0 + 8, z, QB);
-        hip(x0 - 1, z0 - 1, x1 + 1, z1 + 1, y0 + 9, true);
-        set(cx, y0 + 7, cz, CHAIN); set(cx, y0 + 6, cz, HLANT);
-        for (int dx = -1; dx <= 1; dx += 2) { set(cx + dx * 2, y0, cz, stair(GPS, dx > 0 ? W_ : E, false)); }
-    }
-
-    private void gazebo(int cx, int cz, int y0) {
-        // gloriette blanche a colonnes et dentelle de bois dore, toit en dome ajoure
+    // ------------------------------------------------------------------ gloriettes
+    private void gazebo(int cx, int cz, int y0, boolean base) {
         int r = 6;
+        reserve(cx - r, cz - r, cx + r, cz + r, 4);
         for (int dx = -r - 1; dx <= r + 1; dx++) for (int dz = -r - 1; dz <= r + 1; dz++) {
             double d = Math.hypot(dx, dz);
             int x = cx + dx, z = cz + dz;
-            if (!area(x, z) || th[z * W + x] != FLOOR) continue;
-            if (d <= r + 0.8) set(x, FLOOR, z, d > r - 0.6 ? QB : (((x + z) & 1) == 0 ? WS : PAVE2));
+            if (!area(x, z)) continue;
+            if (d <= r + 0.8) {
+                if (base) found(x, z, x, z, y0 - 1, WB);
+                set(x, y0 - 1, z, d > r - 0.6 ? QB : (((x + z) & 1) == 0 ? WS : PAVE2));
+                for (int y = y0; y <= y0 + 14; y++) if (get(x, y, z) != AIR) set(x, y, z, AIR);
+            }
         }
         for (int k = 0; k < 8; k++) {
             double an = k * Math.PI / 4;
             int x = cx + (int) Math.round(Math.cos(an) * (r - 0.5)), z = cz + (int) Math.round(Math.sin(an) * (r - 0.5));
             for (int y = y0; y < y0 + 10; y++) set(x, y, z, y == y0 ? QB : WPIL);
-            // arc entre deux colonnes : dentelle
             double an2 = (k + 0.5) * Math.PI / 4;
             int mx = cx + (int) Math.round(Math.cos(an2) * (r - 0.5)), mz = cz + (int) Math.round(Math.sin(an2) * (r - 0.5));
-            for (int y = y0 + 6; y < y0 + 10; y++) set(mx, y, mz, y == y0 + 9 ? WB : GFENCE);
-            set(mx, y0 + 1, mz, WWALL);
+            for (int y = y0 + 5; y < y0 + 10; y++) set(mx, y, mz, y == y0 + 9 ? WB : (y == y0 + 5 ? FILIG : GFENCE));
+            set(mx, y0, mz, WWALL);
         }
-        for (int i = 0; i < 6; i++) {
-            double ri = (r + 0.6) * Math.cos(i * 0.3) - i * 0.6;
-            for (int dx = -r - 1; dx <= r + 1; dx++) for (int dz = -r - 1; dz <= r + 1; dz++) {
-                double d = Math.hypot(dx, dz);
-                if (d <= ri && d > ri - 1.2 && ((dx + dz + i) & 1) == 0) set(cx + dx, y0 + 10 + i, cz + dz, i % 2 == 0 ? WB : GFENCE);
-            }
-        }
-        for (int k = 0; k < 6; k++) set(cx, y0 + 10 + k, cz, k < 4 ? GFENCE : ENDROD);
-        set(cx, y0 + 9, cz, CHAIN); set(cx, y0 + 8, cz, HLANT);
+        for (int dx = -r - 1; dx <= r + 1; dx++) for (int dz = -r - 1; dz <= r + 1; dz++) if (Math.hypot(dx, dz) <= r + 0.8 && Math.hypot(dx, dz) > r - 0.9) set(cx + dx, y0 + 10, cz + dz, QB);
+        cone(cx, cz, r, y0 + 11, 11, false);
+        set(cx, y0 + 10, cz, CHAIN); set(cx, y0 + 9, cz, HLANT);
+        spawns.add(new int[]{cx, y0, cz + 1});
     }
 
-    private void pavilions() {
-        pavilion(140, 208, 5, FLOOR + 1);
-        pavilion(80, 192, 4, FLOOR + 1);
-        pavilion(246, 244, 5, FLOOR + 1);
-        gazebo(176, 226, FLOOR + 1);
-        gazebo(324, 176, FLOOR + 1);
-        gazebo(120, 112, FLOOR + 1);
-        spawns.add(new int[]{324, FLOOR + 1, 168});
+    private void gazebos() {
+        gazebo(322, 120, S + 1, false);
+        gazebo(205, 218, 1, false);
+        gazebo(60, 112, S + 1, false);
     }
 
-    // ------------------------------------------------------------------ ponts en arc
-    private void bridgeX(int xa, int xb, int z, int y) {
+    // ------------------------------------------------------------------ ponts
+    private void bridgeX(int xa, int xb, int z, int y, int drop) {
         int hw = 3, xm = (xa + xb) / 2, half = (xb - xa) / 2;
         for (int x = xa; x <= xb; x++) {
             double t = (x - xm) / (double) half;
-            int yb = y - 3 - (int) Math.round(22 * t * t);
+            int yb = y - 3 - (int) Math.round(drop * t * t);
             for (int dz = -hw; dz <= hw; dz++) {
                 for (int yy = Math.max(yb, -OFF + 2); yy <= y; yy++) {
                     if (yy == y) set(x, yy, z + dz, ((x + dz) & 1) == 0 ? WS : PAVE2);
@@ -653,11 +698,11 @@ public final class RivendellPlan {
         }
     }
 
-    private void bridgeZ(int x, int za, int zb, int y) {
+    private void bridgeZ(int x, int za, int zb, int y, int drop) {
         int hw = 3, zm = (za + zb) / 2, half = (zb - za) / 2;
         for (int z = za; z <= zb; z++) {
             double t = (z - zm) / (double) half;
-            int yb = y - 3 - (int) Math.round(18 * t * t);
+            int yb = y - 3 - (int) Math.round(drop * t * t);
             for (int dx = -hw; dx <= hw; dx++) {
                 for (int yy = Math.max(yb, -OFF + 2); yy <= y; yy++) {
                     if (yy == y) set(x + dx, yy, z, ((x + z + dx) & 1) == 0 ? WS : PAVE2);
@@ -672,75 +717,119 @@ public final class RivendellPlan {
         }
     }
 
-    private void bridges() {
-        bridgeX(262, 304, 170, FLOOR);
-        // descente de l'est : le pont aboutit sur la terrasse de l'est, a la meme hauteur
-        bridgeZ(210, 256, 304, FLOOR);
-        // escalier du bout sud du pont, jusqu'au sol de la vallee
-        int zEnd = 305;
-        for (int k = 0; k < 14; k++) {
-            int zz = zEnd + k, yy = FLOOR - 1 - k;
-            for (int dx = -3; dx <= 3; dx++) {
-                int x = 210 + dx;
-                if (!area(x, zz)) continue;
-                int t = th[zz * W + x];
-                if (yy <= t) break;
-                set(x, yy, zz, stair(WBS, S, false) - 0);
-                for (int y = yy - 1; y > Math.max(t, yy - 14); y--) set(x, y, zz, WB);
+    private void gate(int cx, int cz, int y0) {                       // pavillon de pont : quatre piliers, toit en pyramide, lanterne
+        reserve(cx - 5, cz - 5, cx + 5, cz + 5, 2);
+        for (int dx : new int[]{-4, 4}) for (int dz : new int[]{-4, 4}) for (int y = y0; y < y0 + 12; y++) set(cx + dx, y, cz + dz, y == y0 ? QB : WPIL);
+        for (int d = -3; d <= 3; d++) {
+            for (int[] e : new int[][]{{d, -4}, {d, 4}, {-4, d}, {4, d}}) {
+                set(cx + e[0], y0 + 11, cz + e[1], GP);
+                if (Math.abs(d) >= 2) { set(cx + e[0], y0 + 10, cz + e[1], GFENCE); set(cx + e[0], y0 + 9, cz + e[1], GFENCE); }
             }
         }
+        hip(cx - 4, cz - 4, cx + 4, cz + 4, y0 + 12, 2, 0);
+        finial(cx, cz, y0 + 12 + 2 * 6 + 1, 10);
+        set(cx, y0 + 11, cz, CHAIN); set(cx, y0 + 10, cz, HLANT);
+    }
+
+    private void bridges() {
+        int zb = 132;
+        int xa = (int) Math.round(cxW(zb)) - 4, xb = (int) Math.round(cxE(zb)) + 4;
+        bridgeX(xa, xb, zb, S, 26);
+        gate(xa + 8, zb, S + 1);
+        gate(xb - 8, zb, S + 1);
+        spawns.add(new int[]{xa + 20, S + 1, zb});
+        // passerelle sur le ruisseau de la terrasse
+        for (int x = 146; x <= 154; x++) for (int z = 136; z <= 138; z++) set(x, S + 1, z, (x == 146 || x == 154) ? stair(WBS, x == 146 ? E : W_, false) : WS);
+        for (int x = 147; x <= 153; x++) { set(x, S + 2, 135, WWALL); set(x, S + 2, 139, WWALL); }
+        for (int x = 147; x <= 153; x++) for (int z = 136; z <= 138; z++) set(x, S, z, WB);
+    }
+
+    // ------------------------------------------------------------------ la vallee : maison du gue, pont sur la riviere
+    private void valley() {
+        house(118, 214, 130, 226, 1, 3, 7, 6, 1, 2, 0, true);
+        house(138, 196, 152, 210, 1, 4, 7, 7, 0, 2, 2, true);                                  // haute maison au pied de l'escalier
+        house(310, 140, 324, 156, S + 1, 3, 7, 7, 1, 2, 3, true);                               // maison de l'epaule est, face a l'arche
+        house(300, 100, 312, 112, S + 1, 4, 7, 6, 0, 2, 2, true);
+        for (int x = 296; x <= 312; x++) for (int z = 136; z <= 138; z++) pave(x, z, S, WS);
+        int xb = 190, ya = 5;
+        bridgeZ(xb, 244, 268, ya, 3);
+        for (int k = 0; k < 6; k++) for (int dx = -3; dx <= 3; dx++) {
+            int yy = ya - 1 - k;
+            if (yy < 1) continue;
+            for (int[] zz : new int[][]{{243 - k, S_}, {269 + k, N}}) {
+                int z = zz[0];
+                set(xb + dx, yy, z, stair(WBS, zz[1] == S_ ? S_ : N, false));
+                for (int y = th[z * W + xb + dx] + 1; y < yy; y++) set(xb + dx, y, z, WB);
+            }
+        }
+        spawns.add(new int[]{xb, ya + 1, 256});
+    }
+
+    // ------------------------------------------------------------------ dallage
+    private void pave(int x, int z, int level, int id) {
+        if (!area(x, z) || th[z * W + x] != level || ramp[z * W + x] != 0) return;
+        int t = gi(x, level, z);
+        if (t != GRASS && t != PODZOL && t != COARSE && t != MOSS && t != DIRT) return;
+        set(x, level, z, id);
+    }
+
+    private void band(double x0, double z0, double x1, double z1, int w, int level, boolean alt) {
+        double len = Math.hypot(x1 - x0, z1 - z0);
+        for (double t = 0; t <= len; t += 0.5) {
+            double px = x0 + (x1 - x0) * t / len, pz = z0 + (z1 - z0) * t / len;
+            for (int dx = -w; dx <= w; dx++) for (int dz = -w; dz <= w; dz++) {
+                if (dx * dx + dz * dz > w * w + 1) continue;
+                int x = (int) Math.round(px) + dx, z = (int) Math.round(pz) + dz;
+                pave(x, z, level, alt && ((x / 3 + z / 3) & 1) == 0 ? PAVE2 : (rnd(x, 41, z) < 0.1 ? STB : WS));
+            }
+        }
+    }
+
+    private void promenade() {
+        for (int x = 62; x <= 226; x++) {
+            int zf = (int) Math.round(zA(x + 0.5));
+            for (int z = 149; z < zf; z++) pave(x, z, S, (x / 3 + z / 3) % 2 == 0 ? PAVE2 : WS);
+            if (x > 74 && x % 2 == 0 && !(x >= 164 && x <= 170) && tAt(x, zf - 1) == S) { set(x, S + 1, zf - 1, WWALL); if (x % 10 == 0) { set(x, S + 2, zf - 1, WWALL); set(x, S + 3, zf - 1, LANTERN); } }
+        }
+        band(176, 124, 176, 149, 1, S, false);
+        band(142, 112, 142, 148, 1, S, false);
+        band(150, 125, 227, 134, 1, S, true);
+        band(92, 99, 130, 101, 1, S, false);
+        band(168, 160, 168, 193, 2, 0, true);
+        band(168, 194, 190, 240, 2, 0, true);
+        band(150, 180, 200, 215, 1, 0, false);
+        band(130, 226, 190, 242, 1, 0, false);
+        band(190, 270, 215, 300, 1, 0, false);
+        for (int x = 294; x <= 330; x++) for (int z = 128; z <= 136; z++) pave(x, z, S, WS);
     }
 
     // ------------------------------------------------------------------ jardins
     private void gardens() {
-        // bassin et fontaine devant la grande allee
-        int fx = 176, fz = 190;
-        for (int dx = -6; dx <= 6; dx++) for (int dz = -6; dz <= 6; dz++) {
-            double d = Math.hypot(dx, dz);
-            if (d <= 6) { set(fx + dx, FLOOR, fz + dz, d > 5 ? QB : WATER); if (d > 5) set(fx + dx, FLOOR + 1, fz + dz, WWALL); }
-        }
-        box(fx - 1, FLOOR, fz - 1, fx + 1, FLOOR + 2, fz + 1, QB);
-        for (int y = 3; y <= 6; y++) set(fx, FLOOR + y, fz, y < 6 ? WPIL : WATERF);
-        set(fx, FLOOR + 7, fz, LANTERN);
-        // haies et massifs le long de l'allee
-        for (int x = 100; x <= 252; x += 1) {
-            if (x > 164 && x < 188) continue;
-            for (int s = 0; s < 2; s++) {
-                int z = 180 + s * 12;
-                if (area(x, z) && th[z * W + x] == FLOOR && get(x, FLOOR, z) == GRASS) {
-                    double q = rnd(x, 7 + s, z);
-                    if (q < 0.5) { set(x, FLOOR + 1, z, LEAF_G); if (q < 0.2) set(x, FLOOR + 2, z, LEAF_G); }
-                    else if (q < 0.65) set(x, FLOOR + 1, z, POPPY);
-                    else if (q < 0.8) set(x, FLOOR + 1, z, CORNFL);
-                    else if (q < 0.9) set(x, FLOOR + 1, z, DANDEL);
-                }
-            }
-        }
-        // petite herbe, fougeres et fleurs sur tout le plateau
         for (int z = 20; z < D - 20; z++) for (int x = 20; x < W - 20; x++) {
             int t = th[z * W + x];
-            if (get(x, t, z) != GRASS || get(x, t + 1, z) != AIR) continue;
+            if (res[z * W + x] || gi(x, t, z) != GRASS || get(x, t + 1, z) != AIR) continue;
             double q = rnd(x, 9, z);
             if (q < 0.10) set(x, t + 1, z, SHORTG);
             else if (q < 0.125) set(x, t + 1, z, FERN);
-            else if (q < 0.135) set(x, t + 1, z, ((x * 7 + z) & 3) == 0 ? POPPY : ((x + z) & 1) == 0 ? BLUET : DANDEL);
+            else if (q < 0.14) set(x, t + 1, z, ((x * 7 + z) & 3) == 0 ? POPPY : ((x + z) & 1) == 0 ? BLUET : (q < 0.135 ? DANDEL : CORNFL));
         }
-        // lanternes sur poteaux le long des allees
-        for (int x = 80; x <= 260; x += 12) lamp(x, 178);
-        for (int z = 190; z <= 250; z += 12) lamp(178, z);
-        for (int x = 190; x <= 250; x += 12) lamp(x, 172);
+        for (int x = 80; x <= 220; x += 14) lamp(x, 151);
+        for (int z = 170; z <= 240; z += 12) lamp(172, z);
+        for (int x = 200; x <= 320; x += 14) lamp(x, 129);
     }
 
     private void lamp(int x, int z) {
-        if (!area(x, z) || th[z * W + x] != FLOOR || get(x, FLOOR + 1, z) != AIR) return;
-        for (int h = 1; h <= 3; h++) set(x, FLOOR + h, z, WWALL);
-        set(x, FLOOR + 4, z, LANTERN);
+        if (!area(x, z)) return;
+        int t = th[z * W + x];
+        if (get(x, t + 1, z) != AIR) return;
+        for (int h = 1; h <= 3; h++) set(x, t + h, z, WWALL);
+        set(x, t + 4, z, LANTERN);
     }
 
     // ------------------------------------------------------------------ arbres : automne dore, orange et rouille, quelques verts
     private int leafFor(int x, int y, int z, int main) {
         double q = rnd(x, y, z);
-        if (q < 0.16) return LEAF_G;
+        if (q < 0.14) return LEAF_G;
         if (q < 0.30) return main == LEAF_O ? LEAF_Y : LEAF_O;
         if (q < 0.36) return LEAF_R;
         return main;
@@ -788,13 +877,13 @@ public final class RivendellPlan {
 
     private void bigTree(int x, int y0, int z) {
         Random r = new Random(4242);
-        int h = 36;
+        int h = 30;
         for (int y = 0; y < h; y++) {
             double t = y / (double) h;
-            double rad = y < 4 ? 3.4 : t < 0.5 ? 2.6 : t < 0.75 ? 1.9 : 1.2;
+            double rad = y < 4 ? 3.2 : t < 0.5 ? 2.5 : t < 0.75 ? 1.8 : 1.2;
             for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++) if (Math.hypot(dx, dz) <= rad) set(x + dx, y0 + y, z + dz, GLOG_Y);
         }
-        for (int i = 0; i < 7; i++) {                                           // racines
+        for (int i = 0; i < 7; i++) {
             double a = i * Math.PI * 2 / 7 + r.nextDouble() * 0.4;
             double px = x, pz = z; int py = y0 + 2;
             for (int k = 0; k < 6; k++) { px += Math.cos(a); pz += Math.sin(a); if (k > 1 && r.nextBoolean()) py--; set((int) Math.round(px + Math.cos(a) * 2.5), Math.max(y0, py), (int) Math.round(pz + Math.sin(a) * 2.5), GLOG_Y); }
@@ -803,49 +892,47 @@ public final class RivendellPlan {
         for (int i = 0; i < 9; i++) {
             double a = i * Math.PI * 2 / 9 + r.nextDouble() * 0.6;
             double bx = x, bz = z, by = y0 + h * (0.4 + 0.4 * r.nextDouble());
-            int len = 8 + r.nextInt(7);
+            int len = 7 + r.nextInt(6);
             for (int k = 0; k < len; k++) {
                 bx += Math.cos(a); bz += Math.sin(a); by += 0.5; a += (r.nextDouble() - 0.5) * 0.3;
                 set((int) Math.round(bx), (int) Math.round(by), (int) Math.round(bz), Math.abs(Math.cos(a)) > 0.7 ? GLOG_X : GLOG_Z);
                 if (k > 2) set((int) Math.round(bx), (int) Math.round(by) - 1, (int) Math.round(bz), GLOG_Y);
             }
-            tips.add(new double[]{bx, by, bz, 6.5 + r.nextDouble() * 2.5});
+            tips.add(new double[]{bx, by, bz, 6 + r.nextDouble() * 2.5});
         }
-        tips.add(new double[]{x, y0 + h + 3, z, 9.5});
-        for (double[] t : tips) blob(t[0], t[1], t[2], t[3], 0.62, i2main(t));
+        tips.add(new double[]{x, y0 + h + 3, z, 8.5});
+        for (double[] t : tips) blob(t[0], t[1], t[2], t[3], 0.62, ((int) (t[0] * 3 + t[2]) & 3) < 2 ? LEAF_Y : LEAF_O);
     }
-
-    private int i2main(double[] t) { return ((int) (t[0] * 3 + t[2]) & 3) < 2 ? LEAF_Y : LEAF_O; }
 
     private boolean clear(int x, int z, int r) {
         for (int dx = -r; dx <= r; dx += 2) for (int dz = -r; dz <= r; dz += 2) {
             int xx = x + dx, zz = z + dz;
-            if (!area(xx, zz)) return false;
+            if (!area(xx, zz) || res[zz * W + xx] || ramp[zz * W + xx] != 0) return false;
             int t = th[zz * W + xx];
-            int id = get(xx, t, zz);
+            int id = gi(xx, t, zz);
             if (id != GRASS && id != PODZOL && id != COARSE && id != MOSS) return false;
-            if (get(xx, t + 1, zz) != AIR && get(xx, t + 1, zz) != SHORTG && get(xx, t + 1, zz) != FERN) return false;
+            int up = gi(xx, t + 1, zz);
+            if (up != AIR && up != SHORTG && up != FERN) return false;
         }
         return true;
     }
 
     private void trees() {
-        // arbres d'automne sur les pentes de l'ouest, le plateau et la terrasse de l'est ; epicea sur les hauteurs
-        for (int i = 0; i < 2600; i++) {
+        for (int i = 0; i < 4200; i++) {
             int x = BAND + 2 + (int) (rnd(i, 1, 2) * (W - 2 * BAND - 4)), z = BAND + 2 + (int) (rnd(i, 3, 4) * (D - 2 * BAND - 4));
             int t = th[z * W + x];
-            if (wl[z * W + x] > -999) continue;
+            if (wl[z * W + x] > -999 || t < 0) continue;
+            if (Math.hypot(x - POOL_X, z - POOL_Z) < 40 && t < 30) continue;                     // le bassin de la grande cascade reste degage
             if (t >= 62) {
-                if (rnd(i, 5, 6) < 0.5 && clear(x, z, 2) && get(x, t, z) == GRASS && t < 108) conifer(x, z, 9 + (int) (rnd(i, 7, 8) * 8));
+                if (rnd(i, 5, 6) < 0.6 && clear(x, z, 2) && gi(x, t, z) == GRASS && t < 130) conifer(x, z, 9 + (int) (rnd(i, 7, 8) * 8));
                 continue;
             }
-            if (t < FLOOR - 4) continue;
-            boolean inHouse = x > 84 && x < 280 && z > 100 && z < 262;
-            if (inHouse && rnd(i, 9, 10) < 0.82) continue;                                   // le plateau reste degage, quelques arbres seulement
+            boolean shelf = t >= S - 1 && t <= S + 1;
+            if (shelf && rnd(i, 9, 10) < 0.55) continue;                                      // la terrasse reste degagee
             if (!clear(x, z, 3)) continue;
             double q = rnd(i, 11, 12);
             int main = q < 0.4 ? LEAF_O : q < 0.75 ? LEAF_Y : q < 0.9 ? LEAF_R : LEAF_G;
-            tree(x, z, 9 + (int) (rnd(i, 13, 14) * 7), 3.6 + rnd(i, 15, 16) * 2.2, main, i * 31L + 7);
+            tree(x, z, 8 + (int) (rnd(i, 13, 14) * 7), 3.4 + rnd(i, 15, 16) * 2.2, main, i * 31L + 7);
         }
     }
 }

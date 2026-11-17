@@ -317,18 +317,19 @@ public final class ClientTest {
         eyeFar("97_oeil_loin_cache", 1712, 1742, 700, false, 18000);
         eyeFar("98_oeil_tres_loin_jour", 1712, 1742, 1800, true, 6000);
         rivT("399_fondcombe_chargement", 176, 60, 395, 176, 20, 176, 6000);    // charge les chunks du site (tres long) : sa capture ne compte pas
-        rivT("401_fondcombe_vue_sud", 176, 105, 372, 176, 20, 150, 6000);
-        rivT("402_fondcombe_dessus", 176, 230, 177, 176, 0, 176, 6000);
-        rivT("403_fondcombe_maison", 132, 24, 236, 140, 28, 160, 6000);
-        rivT("404_fondcombe_salle", 96, 16, 158, 190, 18, 158, 6000);
-        rivT("405_fondcombe_conseil", 222, 30, 250, 214, 22, 190, 6000);
-        rivT("406_fondcombe_galerie", 300, 32, 215, 250, 22, 152, 6000);
-        rivT("407_fondcombe_pont", 232, 24, 170, 300, 6, 170, 6000);
-        rivT("408_fondcombe_cascades", 158, 40, 190, 158, 70, 100, 6000);
-        rivT("409_fondcombe_tours", 120, 40, 215, 90, 40, 140, 6000);
-        rivT("410_fondcombe_gloriette", 176, 18, 252, 176, 18, 226, 6000);
-        rivT("411_fondcombe_riviere_sud", 120, 30, 250, 230, -8, 300, 6000);
-        rivT("412_fondcombe_coucher", 232, 22, 250, 176, 30, 150, 12800);
+        rivT("401_fondcombe_vue_sud", 110, 70, 310, 110, 45, 140, 6000);
+        rivT("402_fondcombe_maison_vallee", 112, 50, 188, 108, 52, 140, 6000);
+        rivT("403_fondcombe_promenade", 107, 35, 158, 107, 52, 128, 6000);
+        rivT("404_fondcombe_conseil", 195, 36, 176, 195, 42, 136, 6000);
+        rivT("405_fondcombe_grande_cascade", 262, 22, 178, 262, 62, 80, 6000);
+        rivT("406_fondcombe_pont", 214, 46, 152, 262, 30, 132, 6000);
+        rivT("407_fondcombe_tours", 104, 52, 168, 74, 62, 126, 6000);
+        rivT("408_fondcombe_pagode", 214, 46, 152, 214, 62, 116, 6000);
+        rivT("409_fondcombe_salle", 80, 35, 138, 132, 36, 138, 6000);
+        rivT("410_fondcombe_vue_haute", 176, 125, 335, 176, 40, 140, 6000);
+        rivT("411_fondcombe_gradin", 112, 62, 112, 106, 68, 88, 6000);
+        rivT("412_fondcombe_arcade", 110, 16, 200, 110, 20, 163, 6000);
+        rivT("413_fondcombe_coucher", 236, 42, 170, 110, 55, 130, 12800);
         argT("299_argonath_chargement", 0, 60, -30, 0, 50, 40, 6000);       // charge les chunks du site (long) : sa capture ne compte pas
         argT("301_argonath_vue_haute", 70, 135, -122, 0, 50, 0, 6000);
         argT("302_argonath_visages", 0, 98, -48, 0, 92, 0, 6000);

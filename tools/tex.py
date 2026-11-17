@@ -261,3 +261,67 @@ def polearm(head_art, head_pal, shaft='#6b4a2a', size=16, ox=7, oy=0, shaft_from
 def save(im, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     im.save(path)
+
+def tiles(base, seed=0, size=16, accent=None):
+    """tuiles de toit en ecailles : rangees decalees, bord bas sombre, haut clair"""
+    rnd = random.Random(seed); base = rgb(base)
+    acc = rgb(accent) if accent else None
+    im = new(size)
+    rows, tw = 4, 8
+    for r in range(rows):
+        off = (tw // 2) if r % 2 else 0
+        for bx in range(-1, size // tw + 1):
+            f = 1 + (rnd.random() - 0.5) * 0.18
+            col = shade(base, f)
+            if acc and rnd.random() < 0.12: col = shade(acc, f)
+            for yy in range(4):
+                for xx in range(tw):
+                    x = bx * tw + off + xx; y = r * 4 + yy
+                    if not (0 <= x < size): continue
+                    edge = xx == 0 or xx == tw - 1
+                    if yy == 3: c = shade(col, 0.6)
+                    elif yy == 2: c = shade(col, 0.84 if not edge else 0.7)
+                    elif edge: c = shade(col, 0.8)
+                    elif yy == 0: c = shade(col, 1.14)
+                    else: c = shade(col, 1.0 + (rnd.random() - 0.5) * 0.06)
+                    im.putpixel((x, y), c + (255,))
+    return im
+
+def plaster(base, seed=0, size=16):
+    """enduit creme legerement ride"""
+    rnd = random.Random(seed); base = rgb(base)
+    n = vnoise(size, 4, rnd)
+    im = new(size)
+    for y in range(size):
+        for x in range(size):
+            f = 0.94 + n[y][x] * 0.1 + (rnd.random() - 0.5) * 0.035
+            im.putpixel((x, y), shade(base, f) + (255,))
+    return im
+
+def timber(base, plast, seed=0, size=16):
+    """colombage dore : cadre de bois sur enduit, croix de saint-andre"""
+    rnd = random.Random(seed)
+    im = plaster(plast, seed + 1, size)
+    wood = rgb(base)
+    for i in range(size):
+        for (x, y) in ((i, i), (size - 1 - i, i)):
+            im.putpixel((x, y), shade(wood, 0.95 + (rnd.random() - 0.5) * 0.1) + (255,))
+    for i in range(size):
+        for (x, y) in ((i, 0), (i, size - 1), (0, i), (size - 1, i), (i, 1), (1, i)):
+            im.putpixel((x, y), shade(wood, 1.0 + (rnd.random() - 0.5) * 0.1) + (255,))
+    return im
+
+def filigree(base, gold, seed=0, size=16):
+    """panneau ajoure orne : arc en ogive et rinceaux dores sur fond clair"""
+    rnd = random.Random(seed)
+    im = framed(base, seed, size)
+    g = rgb(gold)
+    for y in range(2, size - 2):
+        half = max(0, 5 - max(0, (7 - y)) * 1)
+        for x in range(size):
+            d = abs(x - 7.5)
+            if y >= 7 and abs(d - 3.5) < 0.7: im.putpixel((x, y), shade(g, 0.9) + (255,))
+            elif y < 7 and abs(d - (7 - y) * 0.75) < 0.7 and y > 2: im.putpixel((x, y), shade(g, 1.05) + (255,))
+    for x in (7, 8):
+        for y in range(3, 14): im.putpixel((x, y), shade(g, 0.85) + (255,))
+    return im

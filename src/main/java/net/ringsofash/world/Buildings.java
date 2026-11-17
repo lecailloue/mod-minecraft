@@ -1038,6 +1038,13 @@ public final class Buildings {
         p[RivendellPlan.BLUET] = Blocks.AZURE_BLUET.defaultBlockState();
         p[RivendellPlan.SPRLOG] = log(Blocks.SPRUCE_LOG, Direction.Axis.Y);
         p[RivendellPlan.SPRLEAF] = leaf(Blocks.SPRUCE_LEAVES);
+        p[RivendellPlan.PLASTER] = Reg.ELVEN_PLASTER.get().defaultBlockState();
+        p[RivendellPlan.TIMBER] = Reg.ELVEN_TIMBER.get().defaultBlockState();
+        p[RivendellPlan.TSTONE] = Reg.TOWER_STONE.get().defaultBlockState();
+        p[RivendellPlan.TILE_O] = Reg.ELVEN_TILES_ORANGE.get().defaultBlockState();
+        p[RivendellPlan.TILE_G] = Reg.ELVEN_TILES_GREEN.get().defaultBlockState();
+        p[RivendellPlan.TILE_Y] = Reg.ELVEN_TILES_GOLD.get().defaultBlockState();
+        p[RivendellPlan.FILIG] = Reg.ELVEN_FILIGREE.get().defaultBlockState();
         p[RivendellPlan.WB] = Reg.WHITE_BRICKS.get().defaultBlockState();
         p[RivendellPlan.WS] = Reg.WHITE_STONE.get().defaultBlockState();
         p[RivendellPlan.WPIL] = Reg.WHITE_PILLAR.get().defaultBlockState();
@@ -1049,7 +1056,10 @@ public final class Buildings {
         p[RivendellPlan.GLOG_Z] = log(Reg.GOLDEN_LOG.get(), Direction.Axis.Z);
         p[RivendellPlan.GOLDB] = Blocks.GOLD_BLOCK.defaultBlockState();
         p[RivendellPlan.GLASS] = Blocks.GLASS_PANE.defaultBlockState();
-        p[RivendellPlan.BARS] = Blocks.IRON_BARS.defaultBlockState();
+        p[RivendellPlan.LADE] = ladder(Direction.EAST);
+        p[RivendellPlan.LADW] = ladder(Direction.WEST);
+        p[RivendellPlan.LADS] = ladder(Direction.SOUTH);
+        p[RivendellPlan.LADN] = ladder(Direction.NORTH);
         p[RivendellPlan.LANTERN] = Blocks.LANTERN.defaultBlockState();
         p[RivendellPlan.ENDROD] = Blocks.END_ROD.defaultBlockState();
         p[RivendellPlan.GFENCE] = Reg.GOLDEN_PLANKS_FENCE.get().defaultBlockState();
@@ -1061,22 +1071,20 @@ public final class Buildings {
         p[RivendellPlan.LEAF_O] = leaf(Reg.AUTUMN_ORANGE_LEAVES.get());
         p[RivendellPlan.LEAF_R] = leaf(Reg.AUTUMN_RED_LEAVES.get());
         p[RivendellPlan.LEAF_B] = leaf(Blocks.BIRCH_LEAVES);
-        p[RivendellPlan.CUOB] = Blocks.WAXED_CUT_COPPER.defaultBlockState();
-        p[RivendellPlan.CUGB] = Blocks.WAXED_OXIDIZED_CUT_COPPER.defaultBlockState();
-        p[RivendellPlan.CUWB] = Blocks.WAXED_EXPOSED_CUT_COPPER.defaultBlockState();
         p[RivendellPlan.STB] = Blocks.STONE_BRICKS.defaultBlockState();
         p[RivendellPlan.MOSSB] = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
         p[RivendellPlan.PAVE2] = Reg.LIMESTONE_BRICKS.get().defaultBlockState();
-        p[RivendellPlan.LIGHT] = Blocks.LANTERN.defaultBlockState();
+        p[RivendellPlan.TWALL] = Reg.TOWER_STONE_WALL.get().defaultBlockState();
         p[RivendellPlan.WLOG] = log(Blocks.BIRCH_LOG, Direction.Axis.Y);
         p[RivendellPlan.BENCHW] = Reg.GOLDEN_PLANKS.get().defaultBlockState();
         rivFamily(p, RivendellPlan.WBS, Reg.WHITE_BRICKS_STAIRS.get(), Reg.WHITE_BRICKS_SLAB.get());
         rivFamily(p, RivendellPlan.GPS, Reg.GOLDEN_PLANKS_STAIRS.get(), Reg.GOLDEN_PLANKS_SLAB.get());
-        rivFamily(p, RivendellPlan.CUOS, Blocks.WAXED_CUT_COPPER_STAIRS, Blocks.WAXED_CUT_COPPER_SLAB);
-        rivFamily(p, RivendellPlan.CUGS, Blocks.WAXED_OXIDIZED_CUT_COPPER_STAIRS, Blocks.WAXED_OXIDIZED_CUT_COPPER_SLAB);
-        rivFamily(p, RivendellPlan.CUWS, Blocks.WAXED_EXPOSED_CUT_COPPER_STAIRS, Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB);
+        rivFamily(p, RivendellPlan.TOS, Reg.ELVEN_TILES_ORANGE_STAIRS.get(), Reg.ELVEN_TILES_ORANGE_SLAB.get());
+        rivFamily(p, RivendellPlan.TGS, Reg.ELVEN_TILES_GREEN_STAIRS.get(), Reg.ELVEN_TILES_GREEN_SLAB.get());
+        rivFamily(p, RivendellPlan.TYS, Reg.ELVEN_TILES_GOLD_STAIRS.get(), Reg.ELVEN_TILES_GOLD_SLAB.get());
+        rivFamily(p, RivendellPlan.PLS, Reg.ELVEN_PLASTER_STAIRS.get(), Reg.ELVEN_PLASTER_SLAB.get());
+        rivFamily(p, RivendellPlan.TSS, Reg.TOWER_STONE_STAIRS.get(), Reg.TOWER_STONE_SLAB.get());
         rivFamily(p, RivendellPlan.STBS, Blocks.STONE_BRICK_STAIRS, Blocks.STONE_BRICK_SLAB);
-        rivFamily(p, RivendellPlan.QS, Blocks.QUARTZ_STAIRS, Blocks.QUARTZ_SLAB);
         return rivPal = p;
     }
 
