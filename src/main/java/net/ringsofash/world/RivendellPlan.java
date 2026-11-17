@@ -880,9 +880,9 @@ public final class RivendellPlan {
         for (int x = 147; x <= 153; x++) for (int z = 136; z <= 138; z++) set(x, S, z, WB);
     }
 
-    private int pierMix(int x, int y, int z) {
+    private int pierMix(int x, int y, int z) {                                       // pont tout blanc : briques blanches, quelques pierres lisses
         double q = rnd(x * 3 + z, y, z * 7 + x);
-        return q < 0.5 ? STB : q < 0.7 ? MOSSB : q < 0.82 ? TSTONE : q < 0.9 ? COBBLE : q < 0.96 ? ANDESITE : WB;
+        return q < 0.8 ? WB : q < 0.92 ? WS : QB;
     }
 
     private void turret(int cx, int cz, int yb, int h) {
@@ -912,14 +912,14 @@ public final class RivendellPlan {
             if (pier < 0) for (int k = 0; k < n; k++) if (x >= xp[k] && x <= xp[k + 1]) bay = k;
             for (int dz = -hw; dz <= hw; dz++) {
                 int z = zc + dz;
-                if (x < xw || x > xe) found(x, z, x, z, S - 1, STB);
+                if (x < xw || x > xe) found(x, z, x, z, S - 1, WB);
                 else if (pier >= 0) {
-                    for (int y = Math.max(th[z * W + x] + 1, -OFF + 2); y <= S - 1; y++) if (get(x, y, z) == AIR || get(x, y, z) == WATER) set(x, y, z, y >= S - 3 ? ((x + z) % 3 == 0 ? WB : STB) : pierMix(x, y, z));
+                    for (int y = Math.max(th[z * W + x] + 1, -OFF + 2); y <= S - 1; y++) if (get(x, y, z) == AIR || get(x, y, z) == WATER) set(x, y, z, pierMix(x, y, z));
                 } else if (bay >= 0) {
                     double xc = (xp[bay] + xp[bay + 1]) / 2.0, half = (xp[bay + 1] - xp[bay]) / 2.0 - 1.6;
                     double t = Math.abs(x - xc) / half;
                     int top = t > 1 ? -OFF : spring + (int) Math.round(9 * (1 - Math.pow(t, 1.7)));
-                    for (int y = Math.max(top, th[z * W + x]) + 1; y <= S - 1; y++) if (get(x, y, z) == AIR || get(x, y, z) == WATER) set(x, y, z, y == top + 1 ? (((x + z) & 1) == 0 ? WB : MOSSB) : pierMix(x, y, z));
+                    for (int y = Math.max(top, th[z * W + x]) + 1; y <= S - 1; y++) if (get(x, y, z) == AIR || get(x, y, z) == WATER) set(x, y, z, y == top + 1 ? QB : pierMix(x, y, z));
                 }
                 set(x, S, z, ((x + z) & 1) == 0 ? WS : PAVE2);
                 if (Math.abs(dz) == hw) { set(x, S + 1, z, WWALL); if ((x - xw) % 12 == 6) { set(x, S + 2, z, WWALL); set(x, S + 3, z, LANTERN); } }
@@ -938,7 +938,7 @@ public final class RivendellPlan {
                     double ddx = Math.abs(dx - c);
                     for (int l = 0; l <= 8; l++) {
                         boolean open = l <= 5 || (l == 6 && ddx <= c - 1.4) || (l == 7 && ddx <= c - 2.4) || (l == 8 && ddx <= 0.6);
-                        set(c0 + dx, S + 1 + l, zs, open ? AIR : (((c0 + dx + l) % 3 == 0) ? TSTONE : WB));
+                        set(c0 + dx, S + 1 + l, zs, open ? AIR : WB);
                     }
                     set(c0 + dx, S + 10, zs, Math.abs(dx - c) <= 0.6 ? FILIG : GP);
                 }
@@ -1122,7 +1122,7 @@ public final class RivendellPlan {
         int[][] dd = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
         for (int z = 4; z < D - 4; z++) for (int x = 4; x < W - 4; x++) for (int y = -OFF + 4; y <= S + 12; y++) {
             int id = gi(x, y, z);
-            if (id != WB && id != STB && id != TSTONE && id != WS) continue;
+            if (id != STB && id != TSTONE) continue;
             boolean exposed = false;
             for (int[] o : dd) if (gi(x + o[0], y, z + o[1]) == AIR) { exposed = true; break; }
             double q = rnd(x * 11 + z, y, x + z * 13);
