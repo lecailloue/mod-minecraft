@@ -46,10 +46,12 @@ public final class RivendellPlan {
     // ------------------------------------------------------------------ outils
     private static int idx(int x, int y, int z) { return ((y + OFF) * D + z) * W + x; }
     private static boolean ok(int x, int y, int z) { return x >= 0 && x < W && z >= 0 && z < D && y >= -OFF && y < H - OFF; }
-    public byte get(int x, int y, int z) { return ok(x, y, z) ? g[idx(x, y, z)] : AIR; }
+    public static final int AIRC = 158;                            // air creuse par l'erosion (ne doit pas etre rebouche par du sol)
+    public byte raw(int x, int y, int z) { return ok(x, y, z) ? g[idx(x, y, z)] : AIR; }
+    public byte get(int x, int y, int z) { byte v = raw(x, y, z); return v == (byte) AIRC ? AIR : v; }
     private int gi(int x, int y, int z) { return get(x, y, z) & 255; }
     private void set(int x, int y, int z, int id) { if (ok(x, y, z)) g[idx(x, y, z)] = (byte) id; }
-    private void setIfAir(int x, int y, int z, int id) { if (ok(x, y, z) && g[idx(x, y, z)] == AIR) g[idx(x, y, z)] = (byte) id; }
+    private void setIfAir(int x, int y, int z, int id) { if (ok(x, y, z) && (g[idx(x, y, z)] == AIR || g[idx(x, y, z)] == (byte) AIRC)) g[idx(x, y, z)] = (byte) id; }
     public static boolean area(int x, int z) { return x >= 0 && x < W && z >= 0 && z < D; }
     public int top(int x, int z) { return top[z * W + x]; }
     public int terrain(int x, int z) { return th[z * W + x]; }
@@ -128,6 +130,7 @@ public final class RivendellPlan {
         materialize();
         cascades();
         stairsOnRamps();
+        erode();
         mainHall();
         bellTower();
         needle();
@@ -141,11 +144,12 @@ public final class RivendellPlan {
         valley();
         promenade();
         gardens();
+        decorate();
         trees();
         drape();
         for (int x = 0; x < W; x++) for (int z = 0; z < D; z++) {
             int t = -OFF - 1;
-            for (int y = H - OFF - 1; y >= -OFF; y--) if (g[idx(x, y, z)] != AIR) { t = y; break; }
+            for (int y = H - OFF - 1; y >= -OFF; y--) if (g[idx(x, y, z)] != AIR && g[idx(x, y, z)] != (byte) AIRC) { t = y; break; }
             top[z * W + x] = t;
         }
     }
@@ -163,7 +167,7 @@ public final class RivendellPlan {
             int i = z * W + x;
             double xw = x + 0.5, zw = z + 0.5, zA = zA(xw), zB = zB(xw), zC = zC(xw);
             double nearFall = Math.min(Math.min(Math.abs(xw - 262) / 14.0, Math.abs(xw - 150) / 6.0), Math.abs(xw - 46) / 6.0);
-            double w = 1.0 + 8.0 * sm(nearFall - 0.4) * (0.6 + 0.4 * (vn(xw / 17.0, 6.6, 46) + 1) / 2);   // falaise droite pres des cascades, plus couchee ailleurs
+            double w = 1.0 + 10.0 * sm(nearFall - 0.4) * (0.6 + 0.4 * (vn(xw / 17.0, 6.6, 46) + 1) / 2);   // falaise droite pres des cascades, plus couchee ailleurs
             double side = Math.max(0, 60 - xw) + Math.max(0, xw - 296);
             double sideK = 0.9 + 0.35 * vn(zw / 25.0, xw / 30.0, 47);
             double h;
@@ -183,7 +187,14 @@ public final class RivendellPlan {
                 if (zw < zB) { double hh = face(zC, zw, lowerT2, mount, 1.0 + 7.0 * sm(nearFall - 0.4), xw); h = zw >= zC ? face(zB, zw, lowerS, lowerT2, w, xw) : hh; }
             }
             if (h > 138) h = 138 + (h - 138) * 0.2;
-            if (xw > cxW(zw) && xw < cxE(zw) && zw >= zC && zw < zA) { h = 0; valley = true; }
+            if (zw >= zC && zw < zA) {                                                     // gorge : parois en pente, bosselees, au lieu d'un mur
+                double cw = cxW(zw), ce = cxE(zw);
+                if (xw > cw && xw < ce) {
+                    double d = Math.min(xw - cw, ce - xw) + 3.5 * vn(xw / 8.0, zw / 8.0, 49) + 2 * vn(xw / 3.0, zw / 3.0, 50);
+                    h = d <= 0 ? h : h * sm(1 - d / 15.0);
+                    valley = true;
+                }
+            }
             int water = -999;
             if (valley) {
                 double d = dist(xw, zw, RIV) + 2.5 * vn(xw / 15.0, zw / 15.0, 38);
@@ -262,7 +273,7 @@ public final class RivendellPlan {
     }
 
     // ------------------------------------------------------------------ matiere du terrain
-    private static final int[] STRATA = {STONE, ANDESITE, STONE, TUFF, CALCITE, DIORITE, STONE, ANDESITE};
+    private static final int[] STRATA = {STONE, ANDESITE, TUFF, STONE, ANDESITE, STONE, CALCITE, COBBLE};
 
     private int rock(int x, int y, int z, boolean surface) {
         double layer = Math.floor((y + 5 * vn(x / 23.0, z / 23.0, 11) + 2 * vn(x / 7.0, z / 7.0, 12)) / 4.0);
@@ -270,7 +281,8 @@ public final class RivendellPlan {
         double q = rnd(x, y, z);
         if (surface && y < 40 && q < 0.2) return MOSSC;
         if (surface && vn(x / 3.0 + y / 5.0, z / 3.0, 57) > 0.74) return COBBLE;
-        if (q < 0.15) return STRATA[(k + 3) & 7];
+        if (y > 4 && vn(x / 2.2, z / 2.2, 58) > 0.62 && vn(x / 11.0, z / 11.0, 59) > -0.1) return q < 0.5 ? MOSSC : MOSS;   // coulees de mousse le long des parois
+        if (q < 0.18) return STRATA[(k + 3) & 7];
         return STRATA[k];
     }
 
@@ -298,6 +310,57 @@ public final class RivendellPlan {
                 set(x, y, z, id);
             }
             if (wet) for (int y = t + 1; y <= wl[i]; y++) set(x, y, z, WATER);
+        }
+    }
+
+    private boolean rockId(int id) { return id >= STONE && id <= MOSSC; }
+
+    private boolean nearWater(int x, int y, int z) {
+        for (int dx = -1; dx <= 1; dx++) for (int dy = -1; dy <= 1; dy++) for (int dz = -1; dz <= 1; dz++) {
+            int id = gi(x + dx, y + dy, z + dz);
+            if (id == WATER || id == WATERF) return true;
+        }
+        return false;
+    }
+
+    /** erosion des parois : les couches tendres reculent (surplombs, replats), les dures font saillie (blocs, eperons) ; plus de falaise lisse */
+    private void erode() {
+        boolean[] avoid = new boolean[W * D];
+        for (int z = 0; z < D; z++) for (int x = 0; x < W; x++) if (ramp[z * W + x] != 0)
+            for (int dz = -5; dz <= 5; dz++) for (int dx = -5; dx <= 5; dx++) if (area(x + dx, z + dz)) avoid[(z + dz) * W + x + dx] = true;
+        int[] buf = new int[1 << 18];
+        for (int pass = 0; pass < 4; pass++) {
+            boolean carve = pass < 2;
+            int ps = pass & 1, n = 0;
+            for (int y = -OFF + 4; y < 142; y++) for (int z = 8; z < D - 8; z++) for (int x = 8; x < W - 8; x++) {
+                if (avoid[z * W + x]) continue;
+                int id = gi(x, y, z);
+                if (carve ? !rockId(id) : id != AIR) continue;
+                int c = 0;
+                int[][] dd = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+                for (int[] o : dd) {
+                    int nid = gi(x + o[0], y, z + o[1]);
+                    if (carve ? nid == AIR : (rockId(nid) && rockId(gi(x + o[0], y + 1, z + o[1])))) c++;
+                }
+                if (c == 0 || (carve && c > 2)) continue;
+                double lay = Math.floor((y + 4 * vn(x / 19.0, z / 19.0, 61)) / 3.0);
+                boolean soft = rnd((int) lay, 29, 5) < 0.4;
+                boolean hit;
+                if (carve) {
+                    double nz = vn(x / 4.5 + y * 0.13, z / 4.5 - y * 0.11, 62 + ps);
+                    hit = nz > (soft ? (ps == 0 ? 0.0 : 0.2) : (ps == 0 ? 0.5 : 0.62));
+                } else {
+                    double nz = vn(x / 3.5 - y * 0.09, z / 3.5 + y * 0.1, 64 + ps);
+                    hit = nz > (soft ? 0.72 : 0.4);
+                }
+                if (!hit || nearWater(x, y, z)) continue;
+                if (n == buf.length) buf = java.util.Arrays.copyOf(buf, n * 2);
+                buf[n++] = idx(x, y, z);
+            }
+            for (int k = 0; k < n; k++) {
+                int i = buf[k], x = i % W, z = (i / W) % D, y = i / (W * D) - OFF;
+                g[i] = (byte) (carve ? AIRC : rock(x, y, z, true));
+            }
         }
     }
 
@@ -411,7 +474,18 @@ public final class RivendellPlan {
     }
 
     // ------------------------------------------------------------------ murs : pilastres, bandeaux dores, fenetres en ogive
-    private void wall(boolean ax, int a0, int a1, int f, int y0, int floors, int fh, int bay, int mat, int plinth) {
+    private final List<int[]> decos = new ArrayList<>();       // {x, y, z, id} : reliefs de facade, poses apres coup (sauf devant les portes)
+    private final List<int[]> doors = new ArrayList<>();        // {x, z, y}
+
+    private void deco(boolean ax, int a, int f, int y, int id) { if (ax) decos.add(new int[]{a, y, f, id}); else decos.add(new int[]{f, y, a, id}); }
+
+    private int plinthMix(int a, int f, int y) {
+        double q = rnd(a * 7 + f, y, f * 3 + a);
+        return q < 0.3 ? WB : q < 0.55 ? STB : q < 0.75 ? MOSSB : q < 0.9 ? TSTONE : COBBLE;
+    }
+
+    /** murs : enduit a colombages, volets de bois, pilastres en relief, appuis de fenetre fleuris, corniches, lierre, soubassement de pierre mousseuse ; out = sens vers l'exterieur */
+    private void wall(boolean ax, int a0, int a1, int f, int y0, int floors, int fh, int bay, int mat, int plinth, int out) {
         int c = bay / 2;
         for (int a = a0; a <= a1; a++) {
             int p = (a - a0) % bay;
@@ -428,9 +502,24 @@ public final class RivendellPlan {
                     if (win) id = GLASS;
                     else if (full && dy == fh - 2 && Math.abs(p - c) <= 1) id = GP;
                     else if (full && s > 0 && dy == 1 && Math.abs(p - c) <= 1) id = FILIG;
-                    else if (s == 0 && dy < plinth) id = WB;
+                    else if (s == 0 && dy < plinth) id = plinthMix(a, f, y);
+                    else if (full && dy >= 2 && dy <= fh - 3 && Math.abs(p - c) == 2) id = TIMBER;                  // volets
+                    else if (full && s == 0 && dy == 1 && Math.abs(p - c) <= 1) id = TIMBER;                       // panneau a croix sous la fenetre
+                    else if (dy == fh - 2 && !pil) id = TIMBER;                                                   // poutre sous le plafond
+                    else if (rnd(a, y, f) < 0.05) id = WS;
                 }
                 put(ax, a, f, y, id);
+                int fo = f + out;
+                if (pil) {
+                    if (dy == 0) deco(ax, a, fo, y, QB);
+                    else if (dy == fh - 1) deco(ax, a, fo, y, QB);
+                    else deco(ax, a, fo, y, WPIL);
+                } else if (full) {
+                    if (dy == fh - 1 && Math.abs(p - c) <= 2) deco(ax, a, fo, y, slab(GPS, true));                // corniche / bandeau saillant
+                    if (dy == 1 && Math.abs(p - c) <= 1) deco(ax, a, fo, y, slab(GPS, false));                    // appui de fenetre
+                    if (dy == 2 && Math.abs(p - c) <= 1 && rnd(a, y, f) < 0.7) deco(ax, a, fo, y, rnd(a, f, y) < 0.5 ? LEAF_R : LEAF_Y);   // jardiniere
+                }
+                if (s == 0 && !pil && dy < fh - 1 && rnd(a * 5, f, a) < 0.07 && dy < 2 + 4 * rnd(a, f, 9)) deco(ax, a, fo, y, LEAF_G);   // lierre
             }
         }
     }
@@ -443,6 +532,7 @@ public final class RivendellPlan {
     }
 
     private void doorAt(boolean ax, int c, int f, int yb) {
+        doors.add(ax ? new int[]{c, f, yb} : new int[]{f, c, yb});
         for (int d = -1; d <= 1; d++) for (int y = yb; y <= yb + 3; y++) put(ax, c + d, f, y, AIR);
         put(ax, c, f, yb + 4, AIR); put(ax, c, f, yb + 5, AIR);
         for (int y = yb; y <= yb + 4; y++) { put(ax, c - 2, f, y, WPIL); put(ax, c + 2, f, y, WPIL); }
@@ -455,10 +545,10 @@ public final class RivendellPlan {
         box(x0, yb, z0, x1, yb + hgt + rise * (wd / 2 + 3) + 6, z1, AIR);
         box(x0, yb - 1, z0, x1, yb - 1, z1, GP);
         found(x0, z0, x1, z1, yb - 2, WB);
-        wall(true, x0, x1, z0, yb, floors, fh, bay, PLASTER, 2);
-        wall(true, x0, x1, z1, yb, floors, fh, bay, PLASTER, 2);
-        wall(false, z0, z1, x0, yb, floors, fh, bay, PLASTER, 2);
-        wall(false, z0, z1, x1, yb, floors, fh, bay, PLASTER, 2);
+        wall(true, x0, x1, z0, yb, floors, fh, bay, PLASTER, 2, -1);
+        wall(true, x0, x1, z1, yb, floors, fh, bay, PLASTER, 2, 1);
+        wall(false, z0, z1, x0, yb, floors, fh, bay, PLASTER, 2, -1);
+        wall(false, z0, z1, x1, yb, floors, fh, bay, PLASTER, 2, 1);
         for (int s = 1; s < floors; s++) box(x0 + 1, yb + s * fh, z0 + 1, x1 - 1, yb + s * fh, z1 - 1, GP);
         for (int y = yb; y < yb + hgt; y++) set(x0 + 1, y, z0 + 1, LADE);
         int cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
@@ -590,10 +680,10 @@ public final class RivendellPlan {
             int w = hw[t], x0 = cx - w, x1 = cx + w, z0 = cz - w, z1 = cz + w;
             box(x0, y - 1, z0, x1, y - 1, z1, GP);
             for (int k = 0; k < 7; k++) box(x0 + 1, y + k, z0 + 1, x1 - 1, y + k, z1 - 1, AIR);
-            wall(true, x0, x1, z0, y, 1, 7, 2 * w, PLASTER, t == 0 ? 2 : 0);
-            wall(true, x0, x1, z1, y, 1, 7, 2 * w, PLASTER, t == 0 ? 2 : 0);
-            wall(false, z0, z1, x0, y, 1, 7, 2 * w, PLASTER, t == 0 ? 2 : 0);
-            wall(false, z0, z1, x1, y, 1, 7, 2 * w, PLASTER, t == 0 ? 2 : 0);
+            wall(true, x0, x1, z0, y, 1, 7, 2 * w, PLASTER, t == 0 ? 2 : 0, -1);
+            wall(true, x0, x1, z1, y, 1, 7, 2 * w, PLASTER, t == 0 ? 2 : 0, 1);
+            wall(false, z0, z1, x0, y, 1, 7, 2 * w, PLASTER, t == 0 ? 2 : 0, -1);
+            wall(false, z0, z1, x1, y, 1, 7, 2 * w, PLASTER, t == 0 ? 2 : 0, 1);
             for (int k = 0; k < 7; k++) set(x0 + 1, y + k, z0 + 1, LADE);
             set(cx, y, cz, GFENCE); set(cx, y + 1, cz, LANTERN);
             if (t == 0) doorway(2, x0, z0, x1, z1, y);
@@ -790,6 +880,11 @@ public final class RivendellPlan {
         for (int x = 147; x <= 153; x++) for (int z = 136; z <= 138; z++) set(x, S, z, WB);
     }
 
+    private int pierMix(int x, int y, int z) {
+        double q = rnd(x * 3 + z, y, z * 7 + x);
+        return q < 0.5 ? STB : q < 0.7 ? MOSSB : q < 0.82 ? TSTONE : q < 0.9 ? COBBLE : q < 0.96 ? ANDESITE : WB;
+    }
+
     private void turret(int cx, int cz, int yb, int h) {
         found(cx - 3, cz - 3, cx + 3, cz + 3, yb - 1, TSTONE);
         for (int k = 0; k < h; k++) for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++) {
@@ -819,12 +914,12 @@ public final class RivendellPlan {
                 int z = zc + dz;
                 if (x < xw || x > xe) found(x, z, x, z, S - 1, STB);
                 else if (pier >= 0) {
-                    for (int y = Math.max(th[z * W + x] + 1, -OFF + 2); y <= S - 1; y++) if (get(x, y, z) == AIR || get(x, y, z) == WATER) set(x, y, z, (y >= S - 5 || (x + y + z) % 11 == 0) ? WB : STB);
+                    for (int y = Math.max(th[z * W + x] + 1, -OFF + 2); y <= S - 1; y++) if (get(x, y, z) == AIR || get(x, y, z) == WATER) set(x, y, z, y >= S - 3 ? ((x + z) % 3 == 0 ? WB : STB) : pierMix(x, y, z));
                 } else if (bay >= 0) {
                     double xc = (xp[bay] + xp[bay + 1]) / 2.0, half = (xp[bay + 1] - xp[bay]) / 2.0 - 1.6;
                     double t = Math.abs(x - xc) / half;
                     int top = t > 1 ? -OFF : spring + (int) Math.round(9 * (1 - Math.pow(t, 1.7)));
-                    for (int y = Math.max(top, th[z * W + x]) + 1; y <= S - 1; y++) if (get(x, y, z) == AIR || get(x, y, z) == WATER) set(x, y, z, y == top + 1 ? WB : STB);
+                    for (int y = Math.max(top, th[z * W + x]) + 1; y <= S - 1; y++) if (get(x, y, z) == AIR || get(x, y, z) == WATER) set(x, y, z, y == top + 1 ? (((x + z) & 1) == 0 ? WB : MOSSB) : pierMix(x, y, z));
                 }
                 set(x, S, z, ((x + z) & 1) == 0 ? WS : PAVE2);
                 if (Math.abs(dz) == hw) { set(x, S + 1, z, WWALL); if ((x - xw) % 12 == 6) { set(x, S + 2, z, WWALL); set(x, S + 3, z, LANTERN); } }
@@ -843,7 +938,7 @@ public final class RivendellPlan {
                     double ddx = Math.abs(dx - c);
                     for (int l = 0; l <= 8; l++) {
                         boolean open = l <= 5 || (l == 6 && ddx <= c - 1.4) || (l == 7 && ddx <= c - 2.4) || (l == 8 && ddx <= 0.6);
-                        set(c0 + dx, S + 1 + l, zs, open ? AIR : WB);
+                        set(c0 + dx, S + 1 + l, zs, open ? AIR : (((c0 + dx + l) % 3 == 0) ? TSTONE : WB));
                     }
                     set(c0 + dx, S + 10, zs, Math.abs(dx - c) <= 0.6 ? FILIG : GP);
                 }
@@ -1015,6 +1110,28 @@ public final class RivendellPlan {
         }
         tips.add(new double[]{x, y0 + h + 3, z, 8.5});
         for (double[] t : tips) blob(t[0], t[1], t[2], t[3], 0.62, ((int) (t[0] * 3 + t[2]) & 3) < 2 ? LEAF_Y : LEAF_O);
+    }
+
+    /** reliefs de facade (hors portes), puis patine generale des pierres basses : mousse, lierre qui pend des ponts et des soubassements */
+    private void decorate() {
+        for (int[] d : decos) {
+            boolean skip = false;
+            for (int[] o : doors) if (Math.abs(d[0] - o[0]) <= 3 && Math.abs(d[2] - o[1]) <= 3 && d[1] >= o[2] - 1 && d[1] <= o[2] + 7) { skip = true; break; }
+            if (!skip) setIfAir(d[0], d[1], d[2], d[3]);
+        }
+        int[][] dd = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        for (int z = 4; z < D - 4; z++) for (int x = 4; x < W - 4; x++) for (int y = -OFF + 4; y <= S + 12; y++) {
+            int id = gi(x, y, z);
+            if (id != WB && id != STB && id != TSTONE && id != WS) continue;
+            boolean exposed = false;
+            for (int[] o : dd) if (gi(x + o[0], y, z + o[1]) == AIR) { exposed = true; break; }
+            double q = rnd(x * 11 + z, y, x + z * 13);
+            if (exposed && y <= S + 3 && id != WS && q < 0.12) { set(x, y, z, q < 0.04 ? MOSS : MOSSB); continue; }
+            if (gi(x, y - 1, z) == AIR && y <= S + 2 && q > 0.9 && y > 3) {
+                int len = 1 + (int) (rnd(x, y, z) * 5);
+                for (int k = 1; k <= len; k++) { if (gi(x, y - k, z) != AIR) break; set(x, y - k, z, q > 0.96 ? LEAF_Y : LEAF_G); }
+            }
+        }
     }
 
     /** la roche est vivante : taches de mousse sur les parois et buissons accroches aux replats, pour casser les falaises nues */

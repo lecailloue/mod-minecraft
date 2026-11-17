@@ -1010,6 +1010,12 @@ public final class Buildings {
         p[base + 9] = slab(slab, true);
     }
 
+    private static BlockState rivRock(int x, int y, int z) {
+        int h = (x * 73856093) ^ (y * 19349663) ^ (z * 83492791);
+        int q = (h >>> 7) & 15;
+        return q < 8 ? Blocks.STONE.defaultBlockState() : q < 11 ? Blocks.ANDESITE.defaultBlockState() : q < 13 ? Blocks.TUFF.defaultBlockState() : q < 15 ? Blocks.COBBLESTONE.defaultBlockState() : Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+    }
+
     private static synchronized BlockState[] rivendellPal() {
         if (rivPal != null) return rivPal;
         BlockState[] p = new BlockState[160];
@@ -1108,14 +1114,15 @@ public final class Buildings {
                 int top = p.top(x, z), t = p.terrain(x, z);
                 if (w < 255) {                                                                  // bande de raccord : sol melange, sans batiments
                     double a = w / 255.0;
-                    int hb = (int) Math.round(ground * (1 - a) + t * a);
+                    a = a * a * (3 - 2 * a);
+                    int hb = (int) Math.round(ground * (1 - a) + t * a + 1.6 * Math.sin(x * 0.37 + z * 0.23) * a * (1 - a) * 2);
                     int wlv = p.water(x, z);
                     boolean wet = wlv > -999 && hb < wlv && a > 0.3;
                     if (hb == ground && !wet) continue;
                     int surf = p.get(x, t, z) & 255, sub = p.get(x, t - 1, z) & 255;
                     BlockState topB = surf == RivendellPlan.AIR ? pal[RivendellPlan.GRASS] : pal[surf], subB = sub == RivendellPlan.AIR ? pal[RivendellPlan.DIRT] : pal[sub];
                     if (hb > ground) {
-                        for (int y = ground + 1; y <= hb; y++) b.s(lx, y, lz, y == hb ? topB : (y >= hb - 3 ? subB : stone));
+                        for (int y = ground + 1; y <= hb; y++) b.s(lx, y, lz, y == hb ? topB : (y >= hb - 3 ? subB : rivRock(x, y, z)));
                     } else {
                         for (int y = ground; y > hb; y--) if (!b.get(lx, y, lz).isAir()) b.s(lx, y, lz, Build.AIR);
                         b.s(lx, hb, lz, topB);
@@ -1131,11 +1138,11 @@ public final class Buildings {
                 }
                 int hi = Math.min(Math.max(top, ground) + 18, maxY + 1);
                 for (int y = top + 1; y <= hi; y++) {
-                    if (p.get(x, y, z) != RivendellPlan.AIR) continue;
+                    if (p.raw(x, y, z) != RivendellPlan.AIR) continue;
                     if (!b.get(lx, y, lz).isAir()) b.s(lx, y, lz, Build.AIR);
                 }
                 for (int y = -RivendellPlan.OFF; y <= top; y++) {
-                    byte id = p.get(x, y, z);
+                    byte id = p.raw(x, y, z);
                     if (id != RivendellPlan.AIR) b.s(lx, y, lz, pal[id & 255]);
                     else if (y <= t) b.s(lx, y, lz, stone);
                 }
