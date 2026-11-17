@@ -45,6 +45,7 @@ public final class ClientSetup {
         SwordAura.init();
         BowDraw.init();
         SylvanRender.init();
+        EyeOfSauronSky.init();
         SwordSwing.init();
         RingTabs.init();
         modBus.addListener(ClientSetup::addLayers);

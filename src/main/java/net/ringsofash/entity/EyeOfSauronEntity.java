@@ -11,7 +11,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * L'Oeil de Sauron : un decor vivant. Il ne bouge pas, ne vieillit pas, ne disparait jamais et ne peut pas etre touche ; c'est le client
- * (EyeOfSauronRenderer) qui le dessine et le tourne en permanence vers le joueur. Il est pose au sommet de Barad-dur, ou par un oeuf.
+ * (EyeOfSauronRenderer) qui le dessine et le tourne en permanence vers le joueur. Il se pose avec un oeuf ; celui de Barad-dur est dessine par le client (EyeOfSauronSky).
  */
 public class EyeOfSauronEntity extends Mob {
     public EyeOfSauronEntity(EntityType<? extends EyeOfSauronEntity> type, Level level) {
@@ -32,6 +32,15 @@ public class EyeOfSauronEntity extends Mob {
     @Override public void move(MoverType t, Vec3 v) {}
     @Override public void travel(Vec3 v) {}
     @Override public boolean canAttack(net.minecraft.world.entity.LivingEntity e) { return false; }
+
+    /** les anciens mondes ont un oeil pose a Barad-dur : l'oeil est desormais dessine par le client (EyeOfSauronSky), on retire le doublon */
+    @Override public void tick() {
+        super.tick();
+        if (!level().isClientSide && level().dimension() == net.ringsofash.world.ModWorldgen.LANDS) {
+            int[] pl = net.ringsofash.world.MapData.place("barad_dur");
+            if (pl != null && Math.abs(getX() - pl[0]) < 40 && Math.abs(getZ() - pl[1]) < 40) discard();
+        }
+    }
 
     /** le modele depasse un peu la boite de collision : on elargit celle qui sert a decider s'il est visible */
     @Override public AABB getBoundingBoxForCulling() { return getBoundingBox().inflate(6.0); }

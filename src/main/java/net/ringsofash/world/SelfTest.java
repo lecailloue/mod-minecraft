@@ -197,9 +197,10 @@ public final class SelfTest {
             if (!lava.is(net.minecraft.world.level.block.Blocks.LAVA)) fail("barad_dur : pas de lave dans la douve (" + lava + ")");
             if (deck.isAir()) fail("barad_dur : pas de plateforme au sommet de la tour");
             if (prong.isAir()) fail("barad_dur : pas de pointe a la couronne");
-            var eyes = lands.getEntitiesOfClass(net.ringsofash.entity.EyeOfSauronEntity.class, new net.minecraft.world.phys.AABB(bd[0] - 30, by, bd[1] - 30, bd[0] + 30, by + 400, bd[1] + 30));
-            log("barad_dur : yeux de Sauron " + eyes.size() + (eyes.isEmpty() ? "" : " en " + eyes.get(0).blockPosition()) + " (sol " + by + ")");
-            if (eyes.size() != 1) fail("barad_dur : il devrait y avoir exactement un Oeil de Sauron au sommet (" + eyes.size() + ")");
+            int[] eye = EyeOfSauron.pos(lands);
+            log("barad_dur : oeil de Sauron (dessine par le client) " + (eye == null ? "absent" : eye[0] + ", " + eye[1] + ", " + eye[2]) + " (sol " + by + ")");
+            if (eye == null) fail("barad_dur : pas de position pour l'Oeil de Sauron");
+            else if (Math.abs(eye[1] - (by + BaradPlan.TOP + 29)) > 6) fail("barad_dur : l'oeil (" + eye[1] + ") n'est pas au-dessus de la couronne (sol " + by + ")");
         }
         int[] ed = spots.get("edoras");
         if (ed != null) {                                                    // Edoras : colline, palais d'Or, tour de cloche

@@ -24,6 +24,15 @@ public final class Net {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    /** Position de l'Oeil de Sauron (centre) ; y < 0 : pas d'oeil dans cette dimension. */
+    public record EyePos(int x, int y, int z) implements CustomPacketPayload {
+        public static final CustomPacketPayload.Type<EyePos> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("eye_pos"));
+        public static final StreamCodec<FriendlyByteBuf, EyePos> CODEC = StreamCodec.of(
+                (buf, v) -> { buf.writeVarInt(v.x); buf.writeInt(v.y); buf.writeVarInt(v.z); },
+                buf -> new EyePos(buf.readVarInt(), buf.readInt(), buf.readVarInt()));
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
     /** Carte : teleportation vers un lieu (clic droit). */
     public record MapTeleport(int x, int z) implements CustomPacketPayload {
         public static final CustomPacketPayload.Type<MapTeleport> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("map_tp"));
@@ -80,6 +89,8 @@ public final class Net {
     public static final class ClientLore {
         public static int[] rep = new int[People.values().length];
         public static int corruption, eye, quest;
+        /** centre de l'Oeil de Sauron dans la dimension actuelle (y = -1 : aucun) */
+        public static int eyeX, eyeY = -1, eyeZ;
         private ClientLore() {}
     }
 
@@ -97,6 +108,9 @@ public final class Net {
         e.registrar("1").playToClient(LoreSync.TYPE, LoreSync.CODEC, (payload, ctx) -> {
             ClientLore.rep = payload.rep(); ClientLore.corruption = payload.corruption(); ClientLore.eye = payload.eye(); ClientLore.quest = payload.quest();
         });
+        e.registrar("1").playToClient(EyePos.TYPE, EyePos.CODEC, (payload, ctx) -> {
+            ClientLore.eyeX = payload.x(); ClientLore.eyeY = payload.y(); ClientLore.eyeZ = payload.z();
+        });
         e.registrar("1").playToServer(MapTeleport.TYPE, MapTeleport.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
             if (ctx.player() instanceof ServerPlayer sp) net.ringsofash.world.MapTravel.teleport(sp, payload.x(), payload.z());
         }));
@@ -110,6 +124,8 @@ public final class Net {
         PlayerLore l = ModData.lore(p);
         PacketDistributor.sendToPlayer(p, new LoreSync(l.rep.clone(), l.corruption, l.eye, l.quest));
         l.fixActiveRing();
+        int[] eye = p.level().dimension() == net.ringsofash.world.ModWorldgen.LANDS ? net.ringsofash.world.EyeOfSauron.pos(p.serverLevel()) : null;
+        PacketDistributor.sendToPlayer(p, eye == null ? new EyePos(0, -1, 0) : new EyePos(eye[0], eye[1], eye[2]));
         PacketDistributor.sendToPlayer(p, new RingSync(java.util.stream.IntStream.range(0, PlayerLore.RING_SLOTS).mapToObj(l.rings::getItem).map(ItemStack::copy).toList(), l.activeRing));
     }
 }

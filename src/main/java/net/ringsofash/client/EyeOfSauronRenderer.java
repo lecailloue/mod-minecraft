@@ -175,22 +175,39 @@ public class EyeOfSauronRenderer extends EntityRenderer<EyeOfSauronEntity> {
         if (mc.level == null || ROOT == null) return;
         Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
         double cx = Mth.lerp(partial, e.xo, e.getX()), cy = Mth.lerp(partial, e.yo, e.getY()) + e.getBbHeight() / 2.0, cz = Mth.lerp(partial, e.zo, e.getZ());
-        double dx = cam.x - cx, dy = cam.y - cy, dz = cam.z - cz, flat = Math.sqrt(dx * dx + dz * dz), dist = Math.sqrt(flat * flat + dy * dy);
-        float yaw = dist < 1.0E-3 ? 0F : (float) Math.atan2(-dx, -dz);        // l'avant du modele (nord, -z) fait face a la camera
-        float pitch = dist < 1.0E-3 ? 0F : (float) Math.asin(Mth.clamp(dy / dist, -1.0, 1.0));
-        float time = (e.tickCount + partial) / 20F;
-        long seed = e.getUUID().getLeastSignificantBits();
-        float phase = (seed & 1023) / 1023F * 4F;
-        float blinkT = blinkTime(time, seed);
-
         ps.pushPose();
         ps.translate(0, e.getBbHeight() / 2.0, 0);                             // centre de l'oeil = centre de la boite
+        draw(ps, buf, cam.x - cx, cam.y - cy, cam.z - cz, (e.tickCount + partial) / 20F, e.getUUID().getLeastSignificantBits(), 1F, true);
+        ps.popPose();
+    }
+
+    /**
+     * Dessine l'oeil, le centre du modele etant a l'origine de ps ; (dx, dy, dz) = vecteur de l'oeil vers la camera (pour le tourner de face).
+     * mul agrandit le modele ; glow ajoute deux passes additives (l'oeil et un halo un peu plus grand) qui le rendent tres lumineux.
+     */
+    static void draw(PoseStack ps, MultiBufferSource buf, double dx, double dy, double dz, float time, long seed, float mul, boolean glow) {
+        if (ROOT == null) return;
+        double flat = Math.sqrt(dx * dx + dz * dz), dist = Math.sqrt(flat * flat + dy * dy);
+        float yaw = dist < 1.0E-3 ? 0F : (float) Math.atan2(-dx, -dz);        // l'avant du modele (nord, -z) fait face a la camera
+        float pitch = dist < 1.0E-3 ? 0F : (float) Math.asin(Mth.clamp(dy / dist, -1.0, 1.0));
+        float phase = (seed & 1023) / 1023F * 4F;
+        float blinkT = blinkTime(time, seed);
+        ps.pushPose();
         ps.mulPose(Axis.YP.rotation(yaw));
         ps.mulPose(Axis.XP.rotation(pitch));
-        ps.scale(SCALE, SCALE, SCALE);
+        ps.scale(SCALE * mul, SCALE * mul, SCALE * mul);
+        ps.pushPose();
         ps.translate(0, -PIVOT_Y / 16F, 0);
-        VertexConsumer vc = buf.getBuffer(RenderType.entityTranslucent(TEX));
-        drawBone(ROOT, ps, vc, time + phase, blinkT);
+        drawBone(ROOT, ps, buf.getBuffer(RenderType.entityTranslucent(TEX)), time + phase, blinkT, 255);
+        if (glow) drawBone(ROOT, ps, buf.getBuffer(RenderType.eyes(TEX)), time + phase, blinkT, 255);
+        ps.popPose();
+        if (glow) {
+            ps.pushPose();
+            ps.scale(1.16F, 1.16F, 1.16F);
+            ps.translate(0, -PIVOT_Y / 16F, 0);
+            drawBone(ROOT, ps, buf.getBuffer(RenderType.eyes(TEX)), time + phase, blinkT, 110);
+            ps.popPose();
+        }
         ps.popPose();
     }
 
@@ -200,7 +217,7 @@ public class EyeOfSauronRenderer extends EntityRenderer<EyeOfSauronEntity> {
         return t < BLINK.length ? t : -1F;
     }
 
-    private static void drawBone(Bone b, PoseStack ps, VertexConsumer vc, float time, float blinkT) {
+    private static void drawBone(Bone b, PoseStack ps, VertexConsumer vc, float time, float blinkT, int alpha) {
         ps.pushPose();
         float[] v = new float[3];
         float px = b.pivot[0] / 16F, py = b.pivot[1] / 16F, pz = b.pivot[2] / 16F;
@@ -220,11 +237,11 @@ public class EyeOfSauronRenderer extends EntityRenderer<EyeOfSauronEntity> {
         PoseStack.Pose pose = ps.last();
         for (float[] q : b.quads) {
             for (int i = 0; i < 4; i++) {
-                vc.addVertex(pose, q[i * 5] / 16F, q[i * 5 + 1] / 16F, q[i * 5 + 2] / 16F).setColor(255, 255, 255, 255).setUv(q[i * 5 + 3], q[i * 5 + 4])
+                vc.addVertex(pose, q[i * 5] / 16F, q[i * 5 + 1] / 16F, q[i * 5 + 2] / 16F).setColor(255, 255, 255, alpha).setUv(q[i * 5 + 3], q[i * 5 + 4])
                         .setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(0F, 1F, 0F);
             }
         }
-        for (Bone k : b.kids) drawBone(k, ps, vc, time, blinkT);
+        for (Bone k : b.kids) drawBone(k, ps, vc, time, blinkT, alpha);
         ps.popPose();
     }
 }

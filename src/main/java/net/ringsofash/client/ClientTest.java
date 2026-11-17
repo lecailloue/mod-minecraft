@@ -167,6 +167,7 @@ public final class ClientTest {
         view(p, level, x, y, z, yaw, pitch);
     }
     private static void view(ServerPlayer p, ServerLevel level, double x, double y, double z, float yaw, float pitch) {
+        EyeOfSauronSky.force = false;
         p.getAbilities().flying = true;
         p.onUpdateAbilities();
         p.teleportTo(level, x, y, z, yaw, pitch);
@@ -312,6 +313,9 @@ public final class ClientTest {
         // l'Oeil de Sauron en premier : la serie de captures est longue et peut etre coupee par le delai du CI
         eyeT("95_oeil_sud", 1712, 1742, 0, 0, 40, 180F, 0F, 6000);
         eyeT("99_oeil_haut", 1712, 1742, 20, 25, 30, 150F, 35F, 6000);
+        eyeFar("96_oeil_loin_nuit", 1712, 1742, 700, true, 18000);
+        eyeFar("97_oeil_loin_cache", 1712, 1742, 700, false, 18000);
+        eyeFar("98_oeil_tres_loin_jour", 1712, 1742, 1800, true, 6000);
         SCENES.add(new Scene("00_scene", 120, p -> {
             MinecraftServer s = p.server;
             ServerLevel ow = s.overworld();
@@ -987,12 +991,31 @@ public final class ClientTest {
         SCENES.add(new Scene(name, 420, p -> {
             ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
             lands.getChunk(bx >> 4, bz >> 4);
-            int ey = -1;
-            for (var eye : lands.getEntitiesOfClass(net.ringsofash.entity.EyeOfSauronEntity.class, new net.minecraft.world.phys.AABB(bx - 30, 60, bz - 30, bx + 30, 440, bz + 30))) ey = (int) (eye.getY() + 6);
-            if (ey < 0) ey = lands.getHeight(Heightmap.Types.MOTION_BLOCKING, bx, bz) + 236;
+            int[] eye = net.ringsofash.world.EyeOfSauron.pos(lands);
+            int ey = eye != null ? eye[1] : lands.getHeight(Heightmap.Types.MOTION_BLOCKING, bx, bz) + 236;
+            if (eye != null) { net.ringsofash.data.Net.ClientLore.eyeX = eye[0]; net.ringsofash.data.Net.ClientLore.eyeY = eye[1]; net.ringsofash.data.Net.ClientLore.eyeZ = eye[2]; }
             lands.getChunk((bx + dx) >> 4, (bz + dz) >> 4);
             lands.setDayTime(time);
             view(p, lands, bx + dx + 0.5, ey + 0.5 + dy, bz + dz + 0.5, yaw, pitch);
+            EyeOfSauronSky.force = true;
+        }));
+    }
+
+    /** vue de tres loin sur l'oeil (aucun chunk charge autour de lui) ; show = l'anneau est actif et la corruption suffit, sinon il doit etre invisible */
+    private static void eyeFar(String name, int bx, int bz, int off, boolean show, int time) {
+        SCENES.add(new Scene(name, 420, p -> {
+            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+            int[] eye = net.ringsofash.world.EyeOfSauron.pos(lands);
+            if (eye == null) return;
+            net.ringsofash.data.Net.ClientLore.eyeX = eye[0]; net.ringsofash.data.Net.ClientLore.eyeY = eye[1]; net.ringsofash.data.Net.ClientLore.eyeZ = eye[2];
+            int px = bx + off;
+            lands.getChunk(px >> 4, bz >> 4);
+            double y = lands.getHeight(Heightmap.Types.MOTION_BLOCKING, px, bz) + 3;
+            double dx = eye[0] + 0.5 - px, dy = eye[1] - y, dz = eye[2] + 0.5 - bz;
+            float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz)), pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
+            lands.setDayTime(time);
+            view(p, lands, px + 0.5, y, bz + 0.5, yaw, pitch);
+            EyeOfSauronSky.force = show;
         }));
     }
 
