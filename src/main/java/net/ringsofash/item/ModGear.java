@@ -48,6 +48,7 @@ public final class ModGear {
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> ORC = mat("orc", 2, 5, 6, 2, 8, SoundEvents.ARMOR_EQUIP_IRON, 0.5F, 0.0F, () -> Ingredient.of(Reg.BLACK_STEEL_INGOT.get()));
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> ELVEN = mat("elven", 2, 5, 6, 3, 25, SoundEvents.ARMOR_EQUIP_GOLD, 1.0F, 0.0F, () -> Ingredient.of(Reg.SUNSTAR.get()));
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> DWARVEN = mat("dwarven", 3, 6, 8, 3, 12, SoundEvents.ARMOR_EQUIP_NETHERITE, 3.0F, 0.1F, () -> Ingredient.of(Items.IRON_INGOT));
+    public static final DeferredHolder<ArmorMaterial, ArmorMaterial> ROHAN = mat("rohan", 3, 6, 7, 3, 14, SoundEvents.ARMOR_EQUIP_IRON, 1.5F, 0.0F, () -> Ingredient.of(Items.IRON_INGOT));
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> ASHLORD = mat("ashlord", 4, 7, 9, 4, 15, SoundEvents.ARMOR_EQUIP_NETHERITE, 4.0F, 0.2F, () -> Ingredient.of(Reg.BLACK_STEEL_INGOT.get()));
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> ELFKING = mat("elfking", 4, 7, 9, 4, 25, SoundEvents.ARMOR_EQUIP_DIAMOND, 3.5F, 0.0F, () -> Ingredient.of(Reg.LUNARGENT_INGOT.get()));
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> CLOAK = mat("cloak", 0, 0, 2, 0, 20, SoundEvents.ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, () -> Ingredient.of(Items.LEATHER));

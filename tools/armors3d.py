@@ -311,7 +311,7 @@ def dwarf():
     body.box((-1.5, 10, -3.5), (3, 2, 1), 'dgo', 0, 'd_buckle', d_d_buckle)
     for y in (1.3, 4.5): body.box((-1.5, y, -3.1), (3, 2, 1), 'dbr', .1, 'd_pec', d_d_trim)
     ra = Part('right_arm')
-    for i, (py, rz, x0, w) in enumerate(((-2.8, -14, -4.5, 5), (-0.8, -26, -4, 5))):
+    for i, (py, rz, x0, w) in enumerate(((-2.8, -8, -4.5, 5), (-1.0, -17, -4, 5))):
         pa = Part(f'pauld{i}', (0, py, 0), (0, 0, R(rz))); ra.children.append(pa)
         pa.box((x0, -1, -2.5), (w, 1, 5), 'dst', .15, 'd_paul', d_d_pauld)
     ra.box((-3, 4.5, -2), (4, 3, 4), 'dst', .55, 'd_brac', d_d_trim)
@@ -414,7 +414,7 @@ def elf():
     body.box((-4, 0, -2), (8, 12, 4), 'egd', .6, 'e_body', d_e_body)
     body.box((-0.5, 0.8, -3.1), (1, 9, 1), 'egl', .1, 'e_spine', G(leaf=False))
     ra = Part('right_arm')
-    for i, (py, rz, w) in enumerate(((-2.9, -12, 5), (-1.6, -22, 5), (-0.2, -32, 5))):
+    for i, (py, rz, w) in enumerate(((-2.9, -6, 5), (-1.9, -13, 5), (-0.9, -20, 5))):
         pa = Part(f'lam{i}', (0, py, 0), (0, 0, R(rz))); ra.children.append(pa)
         pa.box((-4.5, -0.5, -2.5), (w, 1, 5), 'egl' if i == 0 else 'egd', .1, 'e_lam', G(leaf=False))
     ra.box((-3, 4, -2), (4, 4, 4), 'egd', .55, 'e_brac', G(rows=(1,)))
@@ -441,6 +441,127 @@ def elf():
 
 
 SETS['elven'] = elf
+
+
+# ================================================================== ROHAN (Theoden : cuir bordeaux, plaques dorees, jupe d'ecailles)
+mat('rlb', (96, 48, 34), 5, 6, (1.1, .9, .85))      # cuir bordeaux grave
+mat('rgo', (214, 168, 76), 5, 6, (1.05, 1, .8))     # or
+mat('rld', (58, 36, 28), 4, 5, (1, .92, .85))       # cuir sombre
+mat('rrd', (150, 34, 30), 4, 5, (1.05, .9, .85))    # tunique rouge
+mat('rsc', (86, 84, 92), 5, 6, (1, 1, 1.05))        # ecailles d'acier
+RG, RGD, RGL = (236, 196, 100), (92, 58, 24), (255, 234, 170)
+
+
+def d_r_gold(rows=(), horse=False):
+    def f(face, F, rng):
+        scratches(F, rng, 3, RGL, .3)
+        if face not in ('top', 'bottom'):
+            for y in rows: ridge(F, y, RGD, RGL) if y + 1 < F.h else None
+            if F.h > 2: F.hline(F.h - 1, 0, F.w, RGD, .6)
+            if horse and F.w >= 5 and F.h >= 5:                                             # motif de cheval grave
+                F.art(F.w // 2 - 2, 1, ['.##.', '###.', '.###', '.#.#'][: F.h - 1], {'#': RGD})
+        rivets(F, RGL, 0)
+    return f
+
+
+def d_r_helm(face, F, rng):
+    scratches(F, rng, 4, RGL, .3)
+    if face in ('front', 'back', 'left', 'right'):
+        F.hline(0, 0, F.w, RGL, .8); F.hline(1, 0, F.w, RGD, .5)
+        F.hline(F.h - 1, 0, F.w, RGD, .7)
+        for x in range(1, F.w, 3): F.px(x, 2, RGD, .7)                                      # frise
+    if face == 'front':
+        F.art(1, 3, ['.#..#.', '######'][: max(0, F.h - 3)], {'#': RGD}) if F.h >= 5 else None
+    rivets(F, RGL, 0)
+
+
+def d_r_body(face, F, rng):
+    scratches(F, rng, 8, RGL, .25)
+    if face == 'front':
+        F.rect(0, 0, 8, 12, (110, 54, 38), .0)
+        for y in (3, 6, 9): ridge(F, y, (50, 24, 18), (170, 100, 70))                       # lames horizontales
+        F.rect(2, 0, 4, 3, RG, .8); F.art(3, 0, ['.##.', '####'], {'#': RGD})              # plastron doré haut
+        F.vline(3, 3, 9, RGD, .6); F.vline(4, 3, 9, RGD, .6)
+        F.rect(0, 10, 8, 2, (56, 32, 22))
+        for x, y in ((1, 1), (6, 1), (1, 4), (6, 4), (1, 7), (6, 7)): F.px(x, y, RG, .85)
+    elif face == 'back':
+        for y in (3, 6, 9): ridge(F, y, (50, 24, 18), (170, 100, 70))
+        F.vline(3, 0, 10, RGD, .6); F.vline(4, 0, 10, RGD, .6)
+        F.rect(0, 10, 8, 2, (56, 32, 22))
+    elif face in ('left', 'right'):
+        for y in (3, 6, 9): ridge(F, y, (50, 24, 18), (160, 94, 66))
+        F.rect(0, 10, F.w, 2, (56, 32, 22))
+        F.hline(0, 0, F.w, RG, .7)
+
+
+def d_r_scale(face, F, rng):
+    for y in range(0, F.h, 2):
+        for x in range(F.w):
+            if (x + y // 2) % 2 == 0: F.px(x, y, (40, 40, 48), .55)
+            else: F.px(x, y + 1 if y + 1 < F.h else y, (176, 176, 186), .3)
+    for y in range(1, F.h, 2): F.hline(y, 0, F.w, (30, 30, 38), .35)
+    if face in ('front', 'back'): jagged_bottom(F, rng, 1)
+    scratches(F, rng, 3, (210, 210, 220), .25)
+
+
+def d_r_belt(face, F, rng):
+    for x in range(0, F.w, 2): F.px(x, 0, (30, 18, 12), .5)
+    F.hline(F.h - 1, 0, F.w, (30, 18, 12), .6)
+    if face == 'front' and F.w >= 4: F.rect(F.w // 2 - 1, 0, 2, F.h, RG, .85)
+
+
+def d_r_boot(face, F, rng):
+    scratches(F, rng, 4, (170, 140, 110), .15)
+    for y in range(3, F.h, 3): F.hline(y, 0, F.w, (30, 20, 14), .4)
+    if face == 'bottom': F.rect(0, 0, F.w, F.h, (28, 22, 20))
+    if face in ('front', 'back', 'left', 'right'): F.hline(F.h - 1, 0, F.w, (20, 14, 12), .8)
+
+
+def rohan():
+    G = d_r_gold
+    head = Part('head')
+    head.box((-4, -8, -4), (8, 4, 8), 'rgo', .55, 'r_ring', d_r_helm)
+    head.box((-3, -9.5, -3), (6, 2, 6), 'rgo', .45, 'r_dome', G())
+    cr = Part('crest', (0, -10, -1.5), (R(10), 0, 0)); head.children.append(cr)                # cimier : cheval qui part vers l'arriere
+    cr.box((-0.5, -2, 0), (1, 2, 5), 'rgo', 0, 'r_crest', G())
+    head.box((-4.3, -4, -3), (1, 4, 4), 'rgo', .3, 'r_cheek', G(rows=(1,)))
+    head.cubes.append(Cube((3.3, -4, -3), (1, 4, 4), 'rgo', .3, 'r_cheek', G(rows=(1,)), True))
+    head.box((-0.5, -4, -4.6), (1, 4, 1), 'rgo', .2, 'r_nose', G())
+    neck = Part('neck', (0, -2.6, 3.4), (R(12), 0, 0)); head.children.append(neck)
+    neck.box((-4, 0, 0), (8, 3, 1), 'rld', 0, 'r_neck', d_o_neck)
+
+    body = Part('body')
+    body.box((-4, 0, -2), (8, 12, 4), 'rlb', .6, 'r_body', d_r_body)
+    body.box((-1.5, 4, -3.1), (3, 2, 1), 'rgo', .1, 'r_emblem', G(horse=False))
+    ra = Part('right_arm')
+    for i, (py, rz, x0) in enumerate(((-2.9, -10, -5.0), (-1.0, -22, -4.5))):
+        pa = Part(f'pauld{i}', (0, py, 0), (0, 0, R(rz))); ra.children.append(pa)
+        pa.box((x0, -1, -2.5), (5, 1, 5), 'rlb', .15, 'r_paul', G(horse=True))
+    ra.box((-3, 4.5, -2), (4, 3, 4), 'rgo', .55, 'r_brac', G(rows=(1,)))
+    la = mirrored(ra, 'left_arm')
+    chest = [body, ra, la]
+
+    body = Part('body')
+    body.box((-4, 11, -2), (8, 2, 4), 'rld', .85, 'r_belt2', d_r_belt)
+    body.box((-4, 12.5, -2), (8, 4, 4), 'rsc', .8, 'r_skirt', d_r_scale)
+    body.box((-3.6, 12, -2.9), (3, 5, 1), 'rlb', .85, 'r_tass', G(horse=False))
+    body.cubes.append(Cube((0.6, 12, -2.9), (3, 5, 1), 'rlb', .85, 'r_tass', G(horse=False), True))
+    rl = Part('right_leg')
+    rl.box((-2, 0, -2), (4, 5, 4), 'rlb', .6, 'r_thigh', G(rows=(2,)))
+    rl.box((-2.3, 4.4, -3.2), (4, 3, 2), 'rgo', 0, 'r_knee', G())
+    ll = mirrored(rl, 'left_leg')
+    legs = [body, rl, ll]
+
+    rl = Part('right_leg')
+    rl.box((-2, 6, -2), (4, 6, 4), 'rld', .55, 'r_boot', d_r_boot)
+    rl.box((-2, 2.5, -2.9), (4, 6, 1), 'rgo', .1, 'r_greave', G(rows=(2,), horse=False))
+    rl.box((-2.5, 5.2, -2.5), (5, 1, 5), 'rlb', .1, 'r_cuff', G())
+    rl.box((-2, 10.2, -3.6), (4, 2, 2), 'rld', 0, 'r_toe', G())
+    ll = mirrored(rl, 'left_leg')
+    return {'head': [head], 'chest': chest, 'legs': legs, 'boots': [rl, ll]}
+
+
+SETS['rohan'] = rohan
 
 
 # ------------------------------------------------------------------ sortie / apercu

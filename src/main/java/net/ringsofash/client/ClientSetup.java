@@ -170,6 +170,10 @@ public final class ClientSetup {
         e.registerItem(armorExt("elven", "chest"), Reg.ELVEN_CHESTPLATE.get());
         e.registerItem(armorExt("elven", "legs"), Reg.ELVEN_LEGGINGS.get());
         e.registerItem(armorExt("elven", "boots"), Reg.ELVEN_BOOTS.get());
+        e.registerItem(armorExt("rohan", "head"), Reg.ROHAN_HELMET.get());
+        e.registerItem(armorExt("rohan", "chest"), Reg.ROHAN_CHESTPLATE.get());
+        e.registerItem(armorExt("rohan", "legs"), Reg.ROHAN_LEGGINGS.get());
+        e.registerItem(armorExt("rohan", "boots"), Reg.ROHAN_BOOTS.get());
         e.registerItem(ext, Reg.ORC_CLEAVER.get(), Reg.ORC_SCIMITAR.get(), Reg.ORC_MACHETE.get(), Reg.ORC_SPEAR.get(), Reg.ORC_MACE.get(), Reg.GOBLIN_KING_STAFF.get(), Reg.GOBLIN_PICKAXE.get(),
                 Reg.LUNARGENT_SWORD.get(), Reg.ELVEN_BLADE.get(), Reg.ELVEN_GLAIVE.get(), Reg.FROST_BLADE.get(), Reg.BLOOD_BLADE.get(), Reg.VIPER_DAGGER.get(), Reg.STORM_BLADE.get(), Reg.SENTINEL_BLADE.get(), Reg.SUN_BLADE.get(), Reg.HALFLING_DAGGER.get(), Reg.RANGER_SWORD.get(), Reg.WIGHT_BLADE.get(), Reg.KINGS_BLADE.get(), Reg.VALMOIRE_BLADE.get(), Reg.DWARVEN_AXE.get(), Reg.DWARVEN_HAMMER.get(), Reg.ASH_MACE.get(), Reg.RIDER_SPEAR.get(), Reg.TROLL_CLUB.get(), Reg.LUNARGENT_PICKAXE.get(), Reg.ELVEN_BOW.get(), Reg.STAFF_FIRE.get(), Reg.STAFF_LIGHT.get(), Reg.STAFF_STORM.get(), Reg.STAFF_HEALING.get());
     }
@@ -272,7 +276,7 @@ public final class ClientSetup {
     }
 
     // ---- armures 3D (orc, nain, elfe) : un modele par piece, pose copiee depuis le modele d'origine
-    private static final String[] ARMOR_SETS = {"orc", "dwarven", "elven"};
+    private static final String[] ARMOR_SETS = {"orc", "dwarven", "elven", "rohan"};
     private static final String[] ARMOR_PIECES = {"head", "chest", "legs", "boots"};
     private static final java.util.Map<String, HumanoidModel<LivingEntity>> ARMOR_MODELS = new java.util.HashMap<>();
 
