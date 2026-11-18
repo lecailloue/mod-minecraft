@@ -693,14 +693,14 @@ def gondor():
         seg = Part(f'sp_u{k}', (0, 0 if k == 0 else -2, 0), (0, 0, R(rz))); prev.children.append(seg)
         seg.box((-0.5, -2, -1), (1, 2, 2), 'gst', 0.1, 'g_spine', d_g_spine)
         fe = Part(f'fe_u{k}', (0, -1.0, 0.0), (0, 0, R(fz))); seg.children.append(fe)
-        fe.box((-5, -1, -0.5), (5, 2, 1), 'gfe', 0, 'g_plume', d_g_wing)
+        fe.box((-4, -1, -0.5), (4, 2, 1), 'gfe', 0, 'g_plume', d_g_wing)
         prev = seg
     prev = wing
     for k, (rz, fz) in enumerate(((5, -34), (9, -38), (12, -42))):                    # moitie basse : descend le long de la joue en s'ecartant
         seg = Part(f'sp_d{k}', (0, 0 if k == 0 else 2, 0), (0, 0, R(rz))); prev.children.append(seg)
         seg.box((-0.5, 0, -1), (1, 2, 2), 'gst', 0.1, 'g_spine', d_g_spine)
         fe = Part(f'fe_d{k}', (0, 1.0, 0.0), (0, 0, R(fz))); seg.children.append(fe)
-        fe.box((-5, -1, -0.5), (5, 2, 1), 'gfe', 0, 'g_plume', d_g_wing)
+        fe.box((-4, -1, -0.5), (4, 2, 1), 'gfe', 0, 'g_plume', d_g_wing)
         prev = seg
     head.children.append(mirrored(wing, 'wing_l'))
     neck = Part('neck', (0, -2.6, 3.4), (R(12), 0, 0)); head.children.append(neck)
