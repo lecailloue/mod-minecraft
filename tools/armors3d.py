@@ -1029,6 +1029,78 @@ def dwarfking():
 SETS['dwarfking'] = dwarfking
 
 
+# ================================================================== PIEDS (bottes qui ressemblent a de vrais pieds nus)
+mat('skin', (224, 172, 140), 5, 6, (1.0, .97, .96))
+SK_D, SK_L, SK_V, SK_C, SK_N = (178, 120, 94), (246, 206, 176), (150, 140, 178), (214, 170, 112), (244, 208, 198)
+
+
+def d_ft(kind):
+    """texture de peau detaillee : pores, ombres, veines, tendons, callosites (plante), ongles, plis"""
+    def f(face, F, rng):
+        for y in range(F.h):                                                          # grain de peau
+            for x in range(F.w):
+                r = rng.random()
+                if r < .18: F.px(x, y, SK_D, .30)
+                elif r < .30: F.px(x, y, SK_L, .38)
+                elif r < .33: F.px(x, y, (200, 96, 86), .22)                           # capillaires
+        if face == 'bottom':                                                          # plante du pied
+            if kind in ('heel', 'ball', 'mid'):
+                for y in range(F.h):
+                    for x in range(F.w):
+                        if rng.random() < .7: F.px(x, y, SK_C, .45)                    # callosites jaunes
+                if kind == 'mid': F.rect(0, 0, F.w, F.h, SK_L, .25)                    # voute : peau plus claire, non appuyee
+            for y in range(1, F.h, 2):                                                # plis de la plante
+                for x in range(F.w):
+                    if rng.random() < .35: F.px(x, y, SK_D, .5)
+        elif face == 'top':
+            if kind == 'mid':                                                         # dessus du pied : tendons + veines
+                for x in range(1, F.w, 1):
+                    if x % 2 == 1: F.vline(x, 0, F.h, SK_L, .35)
+                vx = 1
+                for y in range(F.h):
+                    F.px(min(F.w - 1, vx), y, SK_V, .55)
+                    if rng.random() < .45: vx = max(0, min(F.w - 1, vx + int(rng.integers(-1, 2))))
+                F.px(0, F.h // 2, SK_V, .45); F.px(F.w - 1, F.h // 2 + 1, SK_V, .45)
+            elif kind in ('toe', 'toe5', 'big'):                                      # ongle en bout d'orteil
+                nh = 2 if kind == 'big' else 1
+                F.rect(0, 0, F.w, nh, SK_N, .95)
+                if kind == 'big': F.hline(nh - 1, 0, F.w, (206, 150, 140), .6); F.px(0, 0, SK_D, .4); F.px(F.w - 1, 0, SK_D, .4)
+                else: F.px(0, 0, (230, 178, 168), .6)
+                if F.h > nh + 1: F.hline(F.h - 2, 0, F.w, SK_D, .4)                    # pli de l'articulation
+            elif kind == 'ankle':
+                F.rect(0, 0, F.w, F.h, SK_L, .15)
+        elif kind == 'ankle' and face in ('front', 'back', 'left', 'right'):
+            F.vline(F.w // 2, 0, F.h, SK_D, .3)                                       # tendon
+            if face in ('left', 'right') and F.h >= 3: F.px(F.w // 2, F.h - 2, SK_L, .8); F.px(F.w // 2 + 1, F.h - 2, SK_D, .5)   # malleole
+            if face == 'front': F.px(1, 1, SK_V, .5); F.px(2, 2, SK_V, .5)
+            F.hline(F.h - 1, 0, F.w, SK_D, .25)
+        elif kind in ('toe', 'toe5', 'big') and face in ('front', 'left', 'right'):
+            if face == 'front': F.px(F.w // 2, 0, SK_N, .6)                           # bout d'orteil
+            else: F.hline(F.h - 1, 0, F.w, SK_D, .5)                                   # dessous plus sombre
+        elif kind in ('mid', 'ball', 'heel') and face in ('front', 'back', 'left', 'right'):
+            F.hline(F.h - 1, 0, F.w, SK_D, .35)
+            if kind == 'heel': F.rect(0, F.h - 1, F.w, 1, SK_C, .5)
+    return f
+
+
+def feet():
+    rl = Part('right_leg')
+    rl.box((-2, 6, -2), (4, 4, 4), 'skin', .3, 'ft_ankle', d_ft('ankle'))
+    rl.box((-2, 10, -3), (4, 2, 5), 'skin', .12, 'ft_mid', d_ft('mid'))
+    rl.box((-1.5, 10, 0.5), (3, 2, 2), 'skin', .22, 'ft_heel', d_ft('heel'))
+    rl.box((-2, 10, -4), (4, 2, 1), 'skin', .2, 'ft_ball', d_ft('ball'))
+    # orteils : cubes a inflation negative (largeur visible = taille + 2 x inflation)
+    rl.box((0.35, 10.35, -6.35), (2, 2, 3), 'skin', -.35, 'ft_big', d_ft('big'))
+    for nm, x, z in (('t2', -0.15, -5.85), ('t3', -0.85, -5.65), ('t4', -1.55, -5.35)):
+        rl.box((x, 11.15, z), (1, 1, 2), 'skin', -.15, 'ft_toe', d_ft('toe'), nm)
+    rl.box((-2.1, 11.2, -5.1), (1, 1, 1), 'skin', -.2, 'ft_toe5', d_ft('toe5'))
+    ll = mirrored(rl, 'left_leg')
+    return {'head': [], 'chest': [], 'legs': [], 'boots': [rl, ll]}
+
+
+SETS['feet'] = feet
+
+
 def _with_drape(fn, matn, dark, light, trim, tag, drop=()):
     """enveloppe un set : ajoute le drap sur chest (bras), legs (pans + jambes)"""
     def g():

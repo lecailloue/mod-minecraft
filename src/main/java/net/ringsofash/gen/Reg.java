@@ -411,6 +411,7 @@ public final class Reg {
     public static final DeferredItem<Item> ELFKING_RUSTED_LEGGINGS = ITEMS.register("elfking_rusted_leggings", () -> ModGear.rustedArmor("elfking_rusted", ModGear.ELFKING_RUSTED, ArmorItem.Type.LEGGINGS, 40, props().fireResistant().rarity(Rarity.EPIC)));
     public static final DeferredItem<Item> ELFKING_RUSTED_BOOTS = ITEMS.register("elfking_rusted_boots", () -> ModGear.rustedArmor("elfking_rusted", ModGear.ELFKING_RUSTED, ArmorItem.Type.BOOTS, 40, props().fireResistant().rarity(Rarity.EPIC)));
     public static final DeferredItem<Item> INVISIBLE_ARMOR_STAND = ITEMS.register("invisible_armor_stand", () -> new InvisibleStandItem(props()));
+    public static final DeferredItem<Item> FEET_BOOTS = ITEMS.register("feet_boots", () -> ModGear.armor(ModGear.FEET, ArmorItem.Type.BOOTS, 30, props()));
     public static final DeferredItem<Item> ELVEN_CLOAK = ITEMS.register("elven_cloak", () -> ModGear.armor(ModGear.CLOAK, ArmorItem.Type.CHESTPLATE, 12, props()));
     public static final DeferredItem<Item> RANGER_CLOAK = ITEMS.register("ranger_cloak", () -> ModGear.armor(ModGear.CLOAK, ArmorItem.Type.CHESTPLATE, 14, props()));
     public static final DeferredItem<Item> ASH_CLOAK = ITEMS.register("ash_cloak", () -> ModGear.armor(ModGear.CLOAK, ArmorItem.Type.CHESTPLATE, 20, props().fireResistant().rarity(Rarity.EPIC)));

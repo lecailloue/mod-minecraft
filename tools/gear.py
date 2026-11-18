@@ -15,7 +15,7 @@ BOOTS = ['................', '................', '................', '..........
          '.ooaao...ooaao..', '.obaao...obaao..', '.oaaado..oaaado.', '.oddddo..oddddo.', '.oooooo..oooooo.', '................']
 
 def armor_layer(name, base, trim, gem, crown=None, seed=0):
-    if name in ('orc', 'dwarven', 'elven', 'rohan', 'gondor', 'elfking', 'dwarfking') or name.endswith('_rusted'):
+    if name in ('orc', 'dwarven', 'elven', 'rohan', 'gondor', 'elfking', 'dwarfking', 'feet') or name.endswith('_rusted'):
         return                                           # armures 3D : tools/armors3d.py
     from skins import Skin
     b = rgb(base); t = rgb(trim)
@@ -279,6 +279,9 @@ def build():
     item('invisible_armor_stand', "Support d'armure invisible", java='new InvisibleStandItem(props())',
          tex=sprite(['................', '......oooo......', '.....oaaaao.....', '.....oaaaao.....', '......oooo......', '...oooooooooo...', '..oa.oaaaao.ao..', '..oa.oaaaao.ao..', '...o.oaaaao.o...', '......oaaao.....', '......oaaao.....', '.....oo..oo.....', '.....oa..ao.....', '.....oa..ao.....', '..oooooooooooo..', '................'],
                     {'o': (120, 190, 220, 255), 'a': (190, 230, 245, 140)}))
+    item('feet_boots', 'Pieds', java='ModGear.armor(ModGear.FEET, ArmorItem.Type.BOOTS, 30, props())', tags=['foot_armor'],
+         tex=sprite(['................', '................', '....oooooo......', '...oaabbaao.....', '...oaabbaao.....', '...oadabbao.....', '...oaaabbao.....', '...oaaabbao.....', '..oaaaaabbaoo...', '..oaaaaabbbaaoo.', '.oaabbbbbbbbbaao', '.oaabbbbbbbbbbao', '.oadnabnanbnabao', '..oddddddddddddo', '...oooooooooooo.', '................'],
+                    {'o': (128, 78, 58, 255), 'a': (224, 172, 140, 255), 'b': (246, 206, 176, 255), 'd': (178, 120, 94, 255), 'n': (244, 208, 198, 255)}))
     item('elven_cloak', 'Cape elfique', java='ModGear.armor(ModGear.CLOAK, ArmorItem.Type.CHESTPLATE, 12, props())', tex=sprite(FOODS['cloak'], mat('#4a6a4a', trim='#c9c070')), tags=['chest_armor'])
     # la cape est dessinee par un calque 3D cote client : le calque d'armure du plastron reste invisible
     for lay in (1, 2): save(Image.new('RGBA', (64, 32), (0, 0, 0, 0)), f'{A}/textures/models/armor/cloak_layer_{lay}.png')

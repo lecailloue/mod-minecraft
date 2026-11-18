@@ -362,6 +362,20 @@ public final class ClientTest {
                 view(p, ow, SX + 0.5, SY + 1.3, SZ, 0F, 7F);
             }));
         }
+        // bottes « Pieds » : gros plan sur les pieds nus (face, profil, dos)
+        SCENES.add(new Scene("09h_pieds", 70, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            float[] yaws = {180F, 90F, 0F};
+            for (int k = 0; k < 3; k++) {
+                float yw = yaws[k];
+                actor(ow, ModEntities.HUMAN.get(), SX + 0.9 - k * 0.9, SZ + 2.6, m -> {
+                    m.setItemSlot(EquipmentSlot.FEET, new ItemStack(Reg.FEET_BOOTS.get()));
+                    m.setYRot(yw); m.setYHeadRot(yw); m.setYBodyRot(yw);
+                });
+            }
+            view(p, ow, SX + 0.5, SY + 0.75, SZ, 0F, 24F);
+        }));
         // 3 textures de rouille : meme armure, variantes 1 / 2 / 3 (tag rust_variant)
         SCENES.add(new Scene("08i_variantes_rouille", 70, p -> {
             ServerLevel ow = p.server.overworld();

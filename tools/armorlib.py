@@ -175,7 +175,7 @@ def pack(parts, tile=TILE):
     for o in orders:
         place = _maxrects(o, tile)
         if place: break
-    if not place:
+    if not place and items:
         used = sum(r[0] * r[1] for _, r in items)
         raise RuntimeError(f'hors de la case {tile} : aire {used} ; ' + ', '.join(f'{k}:{r[0]}x{r[1]}' for k, r in items))
     for c in all_cubes(parts): c.uv = place[c.key]
