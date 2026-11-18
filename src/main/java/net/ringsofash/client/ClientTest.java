@@ -1272,10 +1272,10 @@ public final class ClientTest {
             if (pl == null) return;
             for (int dx = -9; dx <= 9; dx++) for (int dz = -9; dz <= 9; dz++) lands.getChunk((pl[0] >> 4) + dx, (pl[1] >> 4) + dz);
             int py = net.ringsofash.world.SiteHeight.py(lands, pl[0], pl[1]);
-            double ddx = tx - fx, ddy = ty - fy, ddz = tz - fz;
+            double ddx = -(tx - fx), ddy = ty - fy, ddz = -(tz - fz);                                      // le site est tourne de 180 degres (rot 2)
             float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
             lands.setDayTime(time);
-            view(p, lands, pl[0] + fx - 120 + 0.5, py + fy, pl[1] + fz - 108 + 0.5, yaw, pitch);
+            view(p, lands, pl[0] - (fx - 120) + 0.5, py + fy, pl[1] - (fz - 108) + 0.5, yaw, pitch);
         }));
     }
 

@@ -16,7 +16,7 @@ public final class HelmsDeepPlan {
 
     public static final int AIR = 0, STONE = 1, ANDESITE = 2, TUFF = 3, COBBLE = 4, MOSSC = 5, GRASS = 6, DIRT = 7, GRAVEL = 8, COARSE = 9, BRICK = 10, MBRICK = 11, CRACK = 12,
             CHISEL = 13, POLAND = 14, SMOOTH = 15, WALLB = 16, LANTERN = 17, HLANT = 18, BARS = 19, DKPLANK = 20, DKFENCE = 21, LADN = 22, LADE = 23, LADS = 24, LADW = 25, REDC = 26,
-            PODZOL = 27, SPRLOG = 28, SPRLEAF = 29;
+            PODZOL = 27, SPRLOG = 28, SPRLEAF = 29, VOID = 254 /* vide explicite : creuse meme la roche naturelle */;
     /** formes : id = SHAPE + famille * 16 + code ; code 0..7 escalier (direction de la montee * 2 + moitie haute ; 0 N, 1 E, 2 S, 3 O), 8 dalle basse, 9 dalle haute ; familles : 0 briques, 1 pierre taillee, 2 cobble */
     public static final int SHAPE = 32, SHAPES = 3;
     public static final int N = 0, E = 1, S_ = 2, W_ = 3;
@@ -29,6 +29,7 @@ public final class HelmsDeepPlan {
     private final byte[] g = new byte[W * H * D];
     private final int[] th = new int[W * D];
     private final boolean[] built = new boolean[W * D];
+    private final boolean[] nat = new boolean[W * D];             // colonne de roche : la montagne naturelle plus haute que le plan est conservee
     private final byte[] par = new byte[W * D];
     private final byte[] edge = new byte[W * D];
     private final int[] top = new int[W * D];
@@ -47,6 +48,7 @@ public final class HelmsDeepPlan {
     public int top(int x, int z) { return top[z * W + x]; }
     public int terrain(int x, int z) { return th[z * W + x]; }
     public int weight(int x, int z) { return edge[z * W + x] & 255; }
+    public boolean nat(int x, int z) { return nat[z * W + x]; }
 
     private static int hash(int x, int y, int z) {
         int h = x * 374761393 + y * 668265263 + z * 362437 + 91;
@@ -90,7 +92,7 @@ public final class HelmsDeepPlan {
         keepers();
         for (int x = 0; x < W; x++) for (int z = 0; z < D; z++) {
             int t = -OFF - 1;
-            for (int y = H - OFF - 1; y >= -OFF; y--) if (g[idx(x, y, z)] != AIR) { t = y; break; }
+            for (int y = H - OFF - 1; y >= -OFF; y--) if (g[idx(x, y, z)] != AIR && (g[idx(x, y, z)] & 255) != VOID) { t = y; break; }
             top[z * W + x] = t;
             double e = Math.min(Math.min(x, W - 1 - x), Math.min(z, D - 1 - z));
             edge[z * W + x] = (byte) Math.round(255 * sm(e / BAND));
@@ -137,6 +139,7 @@ public final class HelmsDeepPlan {
             if (m > 0.5) hr = Math.max(hr, m + 2 * vn(x / 5.0, z / 5.0, 21) * sm(m / 8.0));
             hr = Math.min(hr, 88);
             th[i] = hr >= 1 ? (int) Math.round(hr) - 1 : -1;
+            nat[i] = d > 0 || m > 0.5;
         }
     }
 
@@ -384,7 +387,7 @@ public final class HelmsDeepPlan {
         bricks(165, -OFF, 66, 195, 23, 67);
         bricks(165, 24, 55, 195, 34, 55); bricks(165, 24, 55, 165, 34, 65); bricks(195, 24, 55, 195, 34, 65); bricks(165, 34, 55, 195, 34, 67);
         bricks(165, 24, 55, 195, 24, 65);
-        box(166, 25, 56, 194, 33, 65, AIR);
+        box(166, 25, 56, 194, 33, 65, VOID);
         box(166, 24, 56, 194, 24, 65, POLAND);
         box(165, 24, 66, 195, 24, 67, POLAND);
         // facade : mur plein de 25 a 36, percee de cinq arcades en gradins
@@ -392,9 +395,9 @@ public final class HelmsDeepPlan {
         for (int p = 165; p <= 195; p += 6) box(p, 25, 66, p, 36, 67, CHISEL);
         for (int p = 165; p < 195; p += 6) {
             int a = p + 1;
-            box(a, 25, 66, a + 4, 28, 67, AIR);
-            box(a + 1, 29, 66, a + 3, 29, 67, AIR);
-            box(a + 2, 30, 66, a + 2, 30, 67, AIR);
+            box(a, 25, 66, a + 4, 28, 67, VOID);
+            box(a + 1, 29, 66, a + 3, 29, 67, VOID);
+            box(a + 2, 30, 66, a + 2, 30, 67, VOID);
         }
         for (int x = 165; x <= 195; x++) { set(x, 36, 66, CHISEL); set(x, 36, 67, CHISEL); set(x, 37, 66, slab(0, false)); set(x, 37, 67, slab(0, false)); set(x, 37, 68, slab(0, false)); }
         for (int x = 165; x <= 195; x++) set(x, 24, 68, POLAND);

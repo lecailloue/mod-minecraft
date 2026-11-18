@@ -90,7 +90,7 @@ public final class Settlement {
                 int py = h(c, pl[0], pl[1]);
                 if (py < c.chunkGenerator().getSeaLevel()) return Optional.empty();
                 List<Piece> one = new ArrayList<>();
-                single(one, T.HELM, pl[0], py, pl[1], 0, c.seed() ^ 0x48454c4dL, 0);
+                single(one, T.HELM, pl[0], py, pl[1], 2, c.seed() ^ 0x48454c4dL, 0);        // rot 2 : la vallee s'ouvre vers le nord (Edoras), la montagne est au sud
                 return Optional.of(new GenerationStub(new BlockPos(pl[0], py, pl[1]), b -> one.forEach(b::addPiece)));
             }
             if (kind.equals("argonath")) {

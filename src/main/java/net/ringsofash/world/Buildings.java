@@ -1394,7 +1394,7 @@ public final class Buildings {
                     double a = w / 255.0;
                     a = a * a * (3 - 2 * a);
                     int hb = (int) Math.round(ground * (1 - a) + t * a);
-                    if (hb == ground) continue;
+                    if (hb == ground || (p.nat(x, z) && hb < ground)) continue;                  // la montagne naturelle plus haute que le plan est conservee
                     int surf = p.get(x, t, z) & 255, sub = p.get(x, t - 1, z) & 255;
                     BlockState topB = surf == HelmsDeepPlan.AIR ? pal[HelmsDeepPlan.GRASS] : pal[surf], subB = sub == HelmsDeepPlan.AIR ? pal[HelmsDeepPlan.DIRT] : pal[sub];
                     if (hb > ground) {
@@ -1411,11 +1411,13 @@ public final class Buildings {
                     if (cur.isSolidRender(b.level, b.pos(x, y, z)) && !cur.is(net.minecraft.tags.BlockTags.LEAVES) && !cur.is(net.minecraft.tags.BlockTags.LOGS)) break;
                     b.s(x, y, z, stone);
                 }
-                // tout le volume du plan remplace le relief naturel : le plan ecrit ses blocs, et le vide du plan (vallee, salle, tours) est vide, meme sous une montagne naturelle
+                // le plan ecrit ses blocs ; ses vides remplacent le relief naturel (vallee, cours, salle) sauf sous la montagne : la roche naturelle plus haute que le plan est conservee
+                boolean nat = p.nat(x, z);
                 for (int y = -HelmsDeepPlan.OFF; y <= maxY + 1; y++) {
-                    byte id = p.get(x, y, z);
-                    if (id != HelmsDeepPlan.AIR) b.s(x, y, z, pal[id & 255]);
-                    else if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR);
+                    int id = p.get(x, y, z) & 255;
+                    if (id == HelmsDeepPlan.VOID) { if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR); }
+                    else if (id != HelmsDeepPlan.AIR) b.s(x, y, z, pal[id]);
+                    else if (!nat && !b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR);
                 }
             }
         }
