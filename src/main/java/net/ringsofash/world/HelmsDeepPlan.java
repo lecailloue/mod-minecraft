@@ -111,10 +111,13 @@ public final class HelmsDeepPlan {
         double f = sm((67.5 - z) / 2.5);
         if (f <= 0) return 0;
         double dx = Math.abs(x - GX);
-        double h = 46 + 0.8 * Math.max(0, 66 - z) - 1.25 * Math.max(0, dx - 22);
-        double k = 0.45 + 0.55 * sm((66 - z) / 12.0);
-        h += k * (6 * vn(x / 11.0, z / 11.0, 21) + 3 * vn(x / 5.0, z / 5.0, 22) + 1.2 * vn(x / 2.5, z / 2.5, 23));
-        h += 5 * k * (1 - Math.abs(vn(x / 16.0, z / 20.0, 24))) * sm((66 - z) / 25.0);
+        double h = 44 + 0.85 * Math.max(0, 66 - z) - 1.25 * Math.max(0, dx - 22);
+        double k = 0.7 + 0.3 * sm((66 - z) / 12.0);
+        double sp = 1 - Math.abs(vn(x / 9.0, z / 34.0, 44));                                  // contreforts qui descendent vers la salle
+        double cr = 1 - Math.abs(vn(x / 14.0 + z / 40.0, z / 14.0, 45));                      // aretes transversales
+        h += k * (13 * vn(x / 13.0, z / 13.0, 41) + 7 * vn(x / 6.0, z / 6.0, 42) + 2.5 * vn(x / 3.0, z / 3.0, 43) + 16 * sp * sp * sm((64 - z) / 14.0) + 9 * cr * cr * sm((58 - z) / 12.0) - 8);
+        if (dx <= 18 && z >= 54) h = Math.max(h, 41);                                        // la salle reste couverte
+        if (h > 78) h = 78 + (h - 78) * 0.6;
         return Math.max(0, h) * f;
     }
 
@@ -145,7 +148,7 @@ public final class HelmsDeepPlan {
             }
             double m = mound(x, z);
             if (m > 0.5) hr = Math.max(hr, m);
-            hr = Math.min(hr, 88);
+            hr = Math.min(hr, 96);
             th[i] = hr >= 1 ? (int) Math.round(hr) - 1 : -1;
             nat[i] = d > 0 || m > 0.5;
         }
