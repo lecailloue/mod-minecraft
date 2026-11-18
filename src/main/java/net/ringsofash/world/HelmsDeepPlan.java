@@ -112,7 +112,7 @@ public final class HelmsDeepPlan {
         if (f <= 0) return 0;
         double dx = Math.abs(x - GX);
         double h = 46 + 0.8 * Math.max(0, 66 - z) - 1.25 * Math.max(0, dx - 22);
-        double k = sm((66 - z) / 12.0);
+        double k = 0.45 + 0.55 * sm((66 - z) / 12.0);
         h += k * (6 * vn(x / 11.0, z / 11.0, 21) + 3 * vn(x / 5.0, z / 5.0, 22) + 1.2 * vn(x / 2.5, z / 2.5, 23));
         h += 5 * k * (1 - Math.abs(vn(x / 16.0, z / 20.0, 24))) * sm((66 - z) / 25.0);
         return Math.max(0, h) * f;
@@ -238,12 +238,14 @@ public final class HelmsDeepPlan {
                 double r = rnd(x, 9, z);
                 set(x, -1, z, r < 0.06 ? COARSE : r < 0.09 && dd < 3 ? GRAVEL : GRASS);
                 for (int y = -4; y <= -2; y++) set(x, y, z, DIRT);
-            } else if (gentle && t < 24) {
+            } else if (gentle && t < 70 && vn(x / 9.0, z / 9.0, 31) > -0.35 - 0.012 * t) {
                 set(x, t, z, GRASS); for (int y = t - 3; y < t; y++) set(x, y, z, DIRT);
             } else if (t < 10 && dd < 12 && rnd(x, 6, z) < 0.5) {
                 set(x, t, z, GRAVEL);
             } else {
-                set(x, t, z, natural(x, t, z) == STONE && rnd(x, 7, z) < 0.18 ? COBBLE : natural(x, t, z));
+                double q = rnd(x, 7, z), pv = vn(x / 4.0, z / 4.0, 32);
+                int nb0 = natural(x, t, z);
+                set(x, t, z, pv > 0.45 ? GRAVEL : pv < -0.5 ? (q < 0.5 ? COARSE : DIRT) : q < 0.14 ? COBBLE : q < 0.2 ? ANDESITE : nb0);
             }
         }
     }
