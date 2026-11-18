@@ -15,7 +15,7 @@ BOOTS = ['................', '................', '................', '..........
          '.ooaao...ooaao..', '.obaao...obaao..', '.oaaado..oaaado.', '.oddddo..oddddo.', '.oooooo..oooooo.', '................']
 
 def armor_layer(name, base, trim, gem, crown=None, seed=0):
-    if name in ('orc', 'dwarven', 'elven', 'rohan', 'gondor', 'elfking', 'dwarfking', 'feet') or name.endswith('_rusted'):
+    if name in ('orc', 'dwarven', 'elven', 'rohan', 'gondor', 'elfking', 'dwarfking', 'knight', 'nazgul', 'mithril', 'feet') or name.endswith('_rusted'):
         return                                           # armures 3D : tools/armors3d.py
     from skins import Skin
     b = rgb(base); t = rgb(trim)
@@ -263,6 +263,9 @@ def build():
     armor_set('ashlord', 'du Seigneur de Cendre', 'ASHLORD', 40, '#1c1a20', '#c02a10', '#ff5a18', crown='#2a2830', props='props().fireResistant().rarity(Rarity.EPIC)')
     armor_set('dwarfking', 'du roi nain', 'DWARFKING', 36, '#6a6f7a', '#d6b040', '#d03040', crown='#e0c060', props='props().fireResistant().rarity(Rarity.EPIC)')
     armor_set('elfking', 'du roi elfe', 'ELFKING', 40, '#e6e2d0', '#d8b040', '#3090e0', crown='#e0c060', props='props().fireResistant().rarity(Rarity.EPIC)')
+    armor_set('knight', "de chevalier", 'KNIGHT', 30, '#b4b8c0', '#8a2a24', '#d6b254', props='props().rarity(Rarity.RARE)')
+    armor_set('nazgul', 'du Nazgûl', 'NAZGUL', 38, '#2a2a32', '#a0a4b4', '#c8f0e0', props='props().fireResistant().rarity(Rarity.EPIC)')
+    armor_set('mithril', 'en mithril', 'MITHRIL', 38, '#c8d2e0', '#d8c070', '#a04a24', props='props().rarity(Rarity.EPIC)')
     # ---- versions rouillees (meme modele 3D, texture rouillee ; Gondor : aile gauche abimee)
     def _rust(h):
         c = rgb(h); r = (138, 70, 30)
@@ -476,6 +479,9 @@ def build():
         shaped(f'orc_{piece}', pat, {'#': 'black_steel_ingot'}, f'orc_{piece}', cat='equipment')
         shaped(f'rohan_{piece}', pat, {'#': 'minecraft:iron_ingot'}, f'rohan_{piece}', cat='equipment')
         shaped(f'gondor_{piece}', pat, {'#': 'lunargent_ingot'}, f'gondor_{piece}', cat='equipment')
+        shaped(f'knight_{piece}', pat, {'#': 'minecraft:iron_ingot'}, f'knight_{piece}', cat='equipment')
+        shaped(f'nazgul_{piece}', pat, {'#': 'black_steel_ingot'}, f'nazgul_{piece}', cat='equipment')
+        shaped(f'mithril_{piece}', pat, {'#': 'lunargent_ingot'}, f'mithril_{piece}', cat='equipment')
     shaped('orc_scimitar', [' #', '# ', 's '], {'#': 'black_steel_ingot', 's': 'minecraft:stick'}, 'orc_scimitar', cat='equipment')
     shaped('orc_cleaver', [' ##', ' # ', 's  '], {'#': 'black_steel_ingot', 's': 'minecraft:stick'}, 'orc_cleaver', cat='equipment')
     shaped('orc_machete', ['# ', '# ', 's '], {'#': 'black_steel_ingot', 's': 'minecraft:stick'}, 'orc_machete', cat='equipment')

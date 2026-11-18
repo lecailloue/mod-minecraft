@@ -1154,6 +1154,521 @@ SETS['dwarfking'] = _with_drape(dwarfking, 'cl_blue', (14, 20, 70), (54, 72, 150
 SETS['elven'] = _with_drape(elf, 'cl_green', (34, 66, 44), (104, 150, 112), (232, 200, 108), 'ed')
 
 
+
+# ================================================================== CHEVALIER (armure de plates complete, surcot bleu a croix blanche, plumet rouge)
+mat('kst', (178, 184, 196), 4, 5, (1, 1, 1.05))
+mat('kdk', (86, 90, 104), 4, 5, (1, 1, 1.06))
+mat('kbr', (198, 160, 74), 4, 5, (1.05, 1, .82))
+mat('kbl', (36, 56, 128), 4, 5, (.92, .95, 1.1))
+mat('kwh', (232, 232, 238), 3, 4, (1, 1, 1))
+mat('kpl', (172, 34, 38), 5, 6, (1.05, .9, .9))
+mat('kle', (88, 58, 38), 4, 5, (1, .9, .8))
+KL, KM, KD, KB = (244, 246, 252), (150, 156, 170), (52, 56, 70), (214, 176, 84)
+
+
+def d_k_steel(rows=(), trim=False, keel=False, scr=4):
+    """plaque d'acier poli : arete claire en haut / sombre en bas, nervures, rivets, galon de laiton"""
+    def f(face, F, rng):
+        scratches(F, rng, scr, KL, .35)
+        if face not in ('top', 'bottom'):
+            F.hline(0, 0, F.w - 1, KL, .55)
+            if F.h > 2: F.hline(F.h - 1, 0, F.w - 1, KD, .75)
+            for y in rows:
+                if y + 1 < F.h: ridge(F, y, KD, KL)
+            if keel and face in ('front', 'back') and F.w >= 6:
+                F.vline(F.w // 2 - 1, 0, F.h - 1, KD, .55); F.vline(F.w // 2, 0, F.h - 1, KL, .6)
+            if trim and F.h > 3:
+                F.hline(1, 0, F.w - 1, KB, .85); F.hline(F.h - 2, 0, F.w - 1, KB, .85)
+        rivets(F, KL, 0)
+    return f
+
+
+def d_k_helm(face, F, rng):
+    scratches(F, rng, 6, KL, .35)
+    if face in ('front', 'back', 'left', 'right'):
+        F.hline(0, 0, F.w - 1, KL, .6); F.hline(F.h - 1, 0, F.w - 1, KD, .8)
+        F.hline(2, 0, F.w - 1, KB, .8) if face != 'back' else None                          # bandeau de laiton au front
+    if face == 'front':
+        F.rect(0, 3, 8, 1, (12, 12, 18))                                                   # fente de visee continue
+        F.rect(0, 4, 8, 1, KD, .5)
+        F.vline(3, 4, 7, KD, .7); F.vline(4, 4, 7, KL, .55)                                  # arete verticale sous la fente
+        for x in (1, 6):
+            F.vline(x, 5, 7, (12, 12, 18))                                                  # fentes de respiration
+        F.px(2, 6, KD, .8); F.px(5, 6, KD, .8)
+    elif face in ('left', 'right'):
+        F.rect(2, 3, 4, 1, KD, .7)                                                         # rainure
+        F.px(1, 4, KL, .9); F.px(6, 4, KL, .9)
+    elif face == 'top':
+        F.vline(F.w // 2 - 1, 0, F.h - 1, KD, .6); F.vline(F.w // 2, 0, F.h - 1, KL, .6)
+    rivets(F, KL, 0)
+
+
+def d_k_plume(face, F, rng):
+    for y in range(F.h):
+        for x in range(F.w):
+            if rng.random() < .35: F.px(x, y, (230, 70, 66), .35)
+            elif rng.random() < .3: F.px(x, y, (96, 14, 20), .4)
+    if face in ('front', 'back', 'left', 'right'):
+        for x in range(0, F.w, 2): F.px(x, F.h - 1, (96, 14, 20), .7)
+
+
+def d_k_tabard(emblem='cross'):
+    def f(face, F, rng):
+        for y in range(F.h):
+            F.hline(y, 0, F.w - 1, (20, 34, 92) if y % 3 == 0 else (70, 96, 176), .2)
+        if face in ('front', 'back') and F.w >= 5 and F.h >= 6:
+            cx = F.w // 2
+            if emblem == 'cross':
+                F.rect(cx - 1, 1, 2, F.h - 3, (236, 236, 242), .95)                         # croix blanche
+                F.rect(1, 3, F.w - 2, 2, (236, 236, 242), .95)
+                F.vline(cx - 1, 1, F.h - 3, (170, 172, 190), .5)
+        if face not in ('top', 'bottom') and F.h >= 3:
+            F.hline(F.h - 1, 0, F.w - 1, KB, .95); F.hline(F.h - 2, 0, F.w - 1, (18, 28, 80), .5)
+            F.vline(0, 0, F.h - 1, KB, .5); F.vline(F.w - 1, 0, F.h - 1, KB, .5)
+    return f
+
+
+def d_k_leather(face, F, rng):
+    for y in range(0, F.h, 2): F.hline(y, 0, F.w - 1, (40, 26, 16), .3)
+    F.hline(0, 0, F.w - 1, (130, 96, 66), .5)
+    if face == 'front' and F.w >= 3: F.rect(F.w // 2 - 1, 0, 2, F.h, KB, .95); F.rect(F.w // 2, 0, 1, F.h, (120, 90, 30), .5)
+
+
+def d_k_brass(face, F, rng):
+    F.rect(0, 0, F.w, F.h, KB, .9)
+    scratches(F, rng, 2, (255, 240, 190), .4)
+    if face not in ('top', 'bottom') and F.h > 1: F.hline(F.h - 1, 0, F.w - 1, (110, 80, 28), .6)
+
+
+def knight():
+    S = d_k_steel
+    head = Part('head')
+    head.box((-4, -8, -4), (8, 8, 8), 'kst', .55, 'k_helm', d_k_helm)
+    pl = Part('plume', (0, -8.9, -4), (R(-4), 0, 0)); head.children.append(pl)
+    pl.box((-0.5, -4, -1), (1, 4, 10), 'kpl', .0, 'k_pl1', d_k_plume)
+    pl2 = Part('plume2', (0, -3.5, 9), (R(18), 0, 0)); pl.children.append(pl2)
+    pl2.box((-0.5, 0, -1), (1, 7, 2), 'kpl', .0, 'k_pl2', d_k_plume)
+    head.box((-1, -9.6, -4.4), (2, 1, 1), 'kbr', .1, 'k_stud', d_k_brass)
+
+    body = Part('body')
+    body.box((-4, 0, -2), (8, 12, 4), 'kst', .6, 'k_body', S(rows=(7, 9), keel=True))
+    body.box((-3, 1.5, -2.95), (6, 9, 1), 'kbl', 0, 'k_tab_f', d_k_tabard())                    # surcot : croix blanche
+    body.box((-3, 1.5, 1.95), (6, 9, 1), 'kbl', 0, 'k_tab_b', d_k_tabard())
+    body.box((-4, -1.2, -2), (8, 2, 4), 'kst', 1.0, 'k_gorget', S(rows=(0,), trim=True))         # gorgerin
+    ra = Part('right_arm')
+    for i, (py, rz, w) in enumerate(((-2.9, -5, 5), (-1.7, -10, 5), (-0.5, -15, 5))):
+        pa = Part(f'lam{i}', (0, py, 0), (0, 0, R(rz))); ra.children.append(pa)
+        pa.box((-4.5, -0.5, -2.5), (w, 1, 5), 'kst', .15, 'k_lam', S(trim=(i == 0), scr=2))
+    ra.box((-3, 1.2, -2), (4, 3, 4), 'kst', .5, 'k_arm', S(rows=(1,)))
+    ra.box((-3, 4, -2), (4, 2, 4), 'kdk', .75, 'k_couter', S(rows=(), scr=1))
+    ra.box((-4.7, 3.6, -1.5), (1, 3, 3), 'kst', .0, 'k_wing', S(scr=1))                         # aileron de coude
+    ra.box((-3, 6, -2), (4, 3, 4), 'kst', .55, 'k_vamb', S(rows=(1,), trim=True))
+    ra.box((-3, 8.5, -2), (4, 2, 4), 'kdk', .65, 'k_gaunt', S(rows=(0,)))
+    la = mirrored(ra, 'left_arm')
+    chest = [body, ra, la]
+
+    body = Part('body')
+    body.box((-4, 11, -2), (8, 2, 4), 'kle', .72, 'k_belt', d_k_leather)
+    body.box((-2, 11.1, -2.9), (4, 1.8, 1), 'kbr', .2, 'k_buckle', d_k_brass)
+    body.box((-3, 12.5, -2.95), (6, 7, 1), 'kbl', 0, 'k_tab_fl', d_k_tabard('none'))             # jupe du surcot
+    body.box((-3, 12.5, 1.95), (6, 7, 1), 'kbl', 0, 'k_tab_bl', d_k_tabard('none'))
+    body.box((-4.4, 12, -2.4), (1, 5, 4), 'kst', .6, 'k_tass_o', S(rows=(2,), trim=True))         # cuissots lateraux
+    body.cubes.append(Cube((3.4, 12, -2.4), (1, 5, 4), 'kst', .6, 'k_tass_o', S(rows=(2,), trim=True), True))
+    rl = Part('right_leg')
+    rl.box((-2, 0, -2), (4, 5, 4), 'kst', .55, 'k_cuisse', S(rows=(2,)))
+    rl.box((-2, 4.5, -2), (4, 3, 4), 'kdk', .72, 'k_poleyn', S(scr=1))
+    rl.box((-0.5, 4.9, -3.4), (1, 2, 1), 'kst', .0, 'k_kspk', S(scr=0))
+    ll = mirrored(rl, 'left_leg')
+    legs = [body, rl, ll]
+
+    rl = Part('right_leg')
+    rl.box((-2, 6, -2), (4, 6, 4), 'kst', .52, 'k_boot', S(rows=(2,), trim=False))
+    rl.box((-2, 7.5, -2.9), (4, 3, 1), 'kst', .12, 'k_greave', S(rows=(1,), trim=True))
+    rl.box((-2.5, 5.2, -2.5), (5, 1, 5), 'kbr', .1, 'k_cuff', d_k_brass)
+    rl.box((-2, 10.3, -4.4), (4, 1.6, 3), 'kst', 0, 'k_toe', S(scr=1))
+    ll = mirrored(rl, 'left_leg')
+    return {'head': [head], 'chest': chest, 'legs': legs, 'boots': [rl, ll]}
+
+
+SETS['knight'] = knight
+
+
+
+# ================================================================== NAZGUL (roi-sorcier d'Angmar : heaume a pointes, linceul noir en loques, gantelets a griffes)
+mat('nst', (92, 94, 106), 5, 6, (1, 1, 1.06))
+mat('nlt', (150, 150, 158), 5, 6, (1.04, 1.0, .94))
+mat('nbk', (22, 22, 28), 4, 5, (1, 1, 1.06))
+mat('nle', (50, 40, 36), 4, 5, (1.05, .95, .9))
+NV, NL, NH, NB = (8, 8, 12), (170, 172, 184), (104, 106, 118), (160, 140, 100)
+
+
+def d_n_metal(rows=(), vert=(), scr=5, rivet=True, flare=False):
+    """acier noirci et martele : arete claire, nervures sombres, rivets de bronze"""
+    def f(face, F, rng):
+        scratches(F, rng, scr, NL, .3)
+        for _ in range(F.w * F.h // 9):
+            F.px(int(rng.integers(0, F.w)), int(rng.integers(0, F.h)), NH, .18)
+        if face not in ('top', 'bottom'):
+            F.hline(0, 0, F.w - 1, NL, .5)
+            if F.h > 2: F.hline(F.h - 1, 0, F.w - 1, (24, 24, 30), .8)
+            for y in rows:
+                if y + 1 < F.h: ridge(F, y, (24, 24, 30), NL)
+            for x in vert:
+                if x < F.w: F.vline(x, 0, F.h - 1, (24, 24, 30), .6)
+        if rivet: rivets(F, NB, 0)
+    return f
+
+
+def d_n_helm(face, F, rng):
+    scratches(F, rng, 7, NL, .3)
+    for _ in range(14): F.px(int(rng.integers(0, F.w)), int(rng.integers(0, F.h)), NH, .2)
+    if face == 'front':
+        F.hline(0, 0, 7, NL, .55)
+        F.vline(3, 0, 7, (24, 24, 30), .7); F.vline(4, 0, 1, NL, .5)                        # arete centrale
+        F.rect(0, 3, 8, 3, (4, 4, 8), .9)                                                   # fente du heaume, sombre
+        F.rect(1, 4, 6, 1, (210, 245, 225)); F.px(0, 4, (120, 170, 150), .8); F.px(7, 4, (120, 170, 150), .8)  # lueur spectrale
+        F.hline(0, 2, 7, NL, .5); F.hline(0, 6, 7, NL, .4)                                  # bords de la fente
+        F.vline(0, 0, 7, (24, 24, 30), .6); F.vline(7, 0, 7, (24, 24, 30), .6)
+    elif face in ('left', 'right'):
+        F.hline(0, 0, F.w - 1, NL, .5)
+        F.rect(0, 5, F.w, 3, NV)                                                            # capuche noire sous le masque
+        F.hline(4, 0, F.w - 1, (24, 24, 30), .8)
+        F.px(3, 2, NB, .9); F.px(4, 2, NB, .9)
+    elif face == 'back':
+        F.rect(0, 0, F.w, F.h, (20, 20, 26), .85)
+        F.hline(0, 0, F.w - 1, NL, .4)
+        F.vline(F.w // 2, 0, F.h - 1, (50, 50, 60), .5)
+    elif face == 'top':
+        F.vline(F.w // 2 - 1, 0, F.h - 1, (24, 24, 30), .6); F.vline(F.w // 2, 0, F.h - 1, NL, .5)
+    rivets(F, NB, 0)
+
+
+def d_n_hood(face, F, rng):
+    """capuche noire ; calotte de metal sur le dessus, bouche beante noire a l'avant"""
+    for x in range(0, F.w, 2): F.vline(x, 0, F.h - 1, (30, 30, 38), .3)
+    for _ in range(F.w * F.h // 10): F.px(int(rng.integers(0, F.w)), int(rng.integers(0, F.h)), (60, 60, 72), .14)
+    if face == 'top':
+        F.rect(0, 0, F.w, F.h, NH, .9); scratches(F, rng, 6, NL, .35)
+        F.vline(F.w // 2 - 1, 0, F.h - 1, (24, 24, 30), .6); F.vline(F.w // 2, 0, F.h - 1, NL, .5)
+    elif face != 'bottom':
+        for x in range(F.w):
+            n = 2 + int(rng.integers(0, 2))
+            for y in range(n):
+                F.px(x, y, NH if y else NL, .85)                                               # bord ragged de la calotte
+        scratches(F, rng, 3, NL, .25)
+
+
+def d_n_brow(face, F, rng):
+    """bandeau du heaume : yeux en amande obliques, arete centrale"""
+    scratches(F, rng, 6, NL, .3)
+    for _ in range(F.w * F.h // 8): F.px(int(rng.integers(0, F.w)), int(rng.integers(0, F.h)), NH, .2)
+    if face == 'front':
+        F.hline(0, 0, F.w - 1, NL, .5)
+        F.vline(F.w // 2, 0, F.h - 1, (24, 24, 30), .7)
+        for x, y in ((1, 1), (2, 1), (2, 2), (3, 2), (3, 3), (7, 1), (6, 1), (6, 2), (5, 2), (5, 3)): F.px(x, y, NV)
+        for x, y in ((1, 2), (4, 3), (7, 2)): F.px(x, y, NV, .8)
+    elif face not in ('top', 'bottom'):
+        F.hline(0, 0, F.w - 1, NL, .5)
+
+
+def d_n_cheek(face, F, rng):
+    scratches(F, rng, 4, NL, .3)
+    for _ in range(F.w * F.h // 7): F.px(int(rng.integers(0, F.w)), int(rng.integers(0, F.h)), NH, .2)
+    if face == 'front':
+        F.vline(0, 0, F.h - 1, NL, .4); F.vline(F.w - 1, 0, F.h - 1, (24, 24, 30), .7)
+        F.px(0, 0, NV); F.px(F.w - 1, F.h - 1, NV, .6)
+
+
+def d_n_spire(face, F, rng):
+    scratches(F, rng, 3, NL, .3)
+    for _ in range(F.w * F.h // 8): F.px(int(rng.integers(0, F.w)), int(rng.integers(0, F.h)), NH, .2)
+    if face in ('front', 'back'): F.vline(F.w // 2, 0, F.h - 1, NL if face == 'front' else (24, 24, 30), .6)
+
+
+def d_n_cloth(hem=3, holes=.025, folds=3):
+    """linceul noir en loques : plis verticaux, poussiere, bas effiloche, trous"""
+    def f(face, F, rng):
+        for x in range(0, F.w, folds): F.vline(x, 0, F.h - 1, (48, 48, 60), .28)
+        for x in range(1, F.w, folds * 2): F.vline(x, 0, F.h - 1, (10, 10, 14), .4)
+        for _ in range(F.w * F.h // 12): F.px(int(rng.integers(0, F.w)), int(rng.integers(0, F.h)), (70, 70, 82), .16)
+        if face not in ('top', 'bottom'):
+            if F.h > 4:
+                jagged_bottom(F, rng, hem)
+                for y in range(F.h // 2, F.h):
+                    for x in range(F.w):
+                        if rng.random() < holes * (1 + (y - F.h // 2) * .3): F.al[y, x] = 0
+    return f
+
+
+def d_n_robe(face, F, rng):
+    d_n_cloth(hem=0, holes=.012)(face, F, rng)
+    if face == 'front':
+        for k in range(10):                                                                  # sangle en bandouliere
+            F.px(1 + k * 6 // 10 + 1, 1 + k, (70, 54, 44), .95); F.px(2 + k * 6 // 10 + 1, 1 + k, (50, 38, 32), .95)
+        F.px(3, 5, NB, .95)
+    elif face == 'back':
+        F.hline(0, 0, F.w - 1, (60, 60, 72), .4)
+
+
+def d_n_leather(face, F, rng):
+    for y in range(0, F.h, 2): F.hline(y, 0, F.w - 1, (20, 14, 12), .35)
+    F.hline(0, 0, F.w - 1, (100, 80, 64), .5)
+    if face == 'front' and F.w >= 3:
+        F.rect(F.w // 2 - 1, 0, 2, F.h, (120, 110, 100), .9); F.px(F.w // 2 - 1, 0, NL, .8)
+
+
+def d_n_claw(face, F, rng):
+    F.rect(0, 0, F.w, F.h, (96, 98, 110), .6)
+    scratches(F, rng, 1, NL, .5)
+    if face not in ('top', 'bottom') and F.h > 2:
+        F.hline(0, 0, F.w - 1, NL, .6); F.vline(0, 0, F.h - 1, (40, 40, 48), .6)
+        F.px(0, F.h - 1, (40, 40, 48), .9)
+
+
+def d_n_gaunt(face, F, rng):
+    scratches(F, rng, 5, NL, .3)
+    if face not in ('top', 'bottom'):
+        F.hline(0, 0, F.w - 1, NL, .55); F.hline(F.h - 1, 0, F.w - 1, (22, 22, 28), .8)
+        if face in ('front', 'back') and F.h >= 3:
+            for x in range(1, F.w - 1, 2): F.px(x, 1, NB, .95)                               # clous
+            F.hline(2, 0, F.w - 1, (30, 30, 38), .5) if F.h > 3 else None
+    rivets(F, NB, 0)
+
+
+def d_n_greave(face, F, rng):
+    scratches(F, rng, 4, NL, .3)
+    if face not in ('top', 'bottom'):
+        F.hline(0, 0, F.w - 1, NL, .5)
+        for x in range(0, F.w, 2): F.vline(x, 0, F.h - 1, (28, 28, 34), .55)              # lames verticales
+        for y in range(2, F.h, 3): F.hline(y, 0, F.w - 1, NL, .25)
+        F.hline(F.h - 1, 0, F.w - 1, (22, 22, 28), .8)
+    rivets(F, NB, 0)
+
+
+def nazgul():
+    M = d_n_metal
+    head = Part('head')
+    head.box((-4, -8, -4), (8, 8, 8), 'nbk', .5, 'n_hood', d_n_hood)                              # capuche noire, calotte de metal
+    # front : bandeau a yeux fendus, arete du nez
+    head.box((-4.5, -8.4, -5.5), (9, 4, 1), 'nlt', 0, 'n_brow', d_n_brow)
+    head.box((-0.5, -4.4, -5.5), (1, 2, 1), 'nlt', 0, 'n_nose', M(rivet=False, scr=0))
+    # joues : longues lames pendantes de chaque cote de la bouche beante
+    for sg, mir in ((-1, False), (1, True)):
+        x0 = -4.4 if sg < 0 else 2.4
+        head.box((x0, -4.4, -5.5), (2, 4, 1), 'nlt', 0, 'n_cheek1', d_n_cheek)
+        if mir: head.cubes[-1].mirror = True
+        x1 = -3.9 if sg < 0 else 2.9
+        head.box((x1, -0.4, -5.5), (1, 5, 1), 'nlt', 0, 'n_cheek2', M(rivet=False, scr=0, vert=(0,)))
+        if mir: head.cubes[-1].mirror = True
+    # fleche du heaume : lame haute, effilee, plate
+    head.box((-3, -11.5, -4.1), (6, 3, 2), 'nlt', 0, 'n_s1', d_n_spire)
+    head.box((-2, -14.5, -3.6), (4, 3, 1), 'nlt', 0, 'n_s2', d_n_spire)
+    head.box((-1, -17.5, -3.6), (2, 3, 1), 'nlt', 0, 'n_s3', d_n_spire)
+    head.box((-0.5, -20.5, -3.6), (1, 3, 1), 'nlt', 0, 'n_s4', d_n_spire)
+    # pointes : trois par cote, en eventail, au niveau des sourcils ; deux petites dressees sur le front
+    for sg in (-1, 1):
+        for yw, py in ((62, -7.6), (90, -7.0), (118, -6.6)):
+            o = Part(f'spk_y{sg}_{yw}', (0, py, 0), (0, R(-sg * yw), 0)); head.children.append(o)
+            i = Part(f'spk_p{sg}_{yw}', (0, 0, 0), (R(-10), 0, 0)); o.children.append(i)
+            i.box((-0.5, -0.5, -9), (1, 1, 5), 'nlt', 0, 'n_spk', M(rivet=False, scr=0))
+        o = Part(f'spk_t{sg}', (sg * 2.2, -8.8, -3.4), (0, R(-sg * 55), 0)); head.children.append(o)
+        i = Part(f'spk_tp{sg}', (0, 0, 0), (R(-42), 0, 0)); o.children.append(i)
+        i.box((-0.5, -0.5, -6), (1, 1, 5), 'nlt', 0, 'n_spk', M(rivet=False, scr=0))
+
+    body = Part('body')
+    body.box((-4, 0, -2), (8, 12, 4), 'nbk', .5, 'n_robe', d_n_robe)
+    cape = Part('cape', (0, -0.6, 2.4), (R(3), 0, 0)); body.children.append(cape)
+    cape.box((-5, 0, 0), (10, 21, 1), 'nbk', 0.3, 'n_cape', d_n_cloth(hem=3, holes=.03, folds=4))
+    ra = Part('right_arm')
+    for i, (py, rz, w) in enumerate(((-2.9, -8, 6), (-1.6, -17, 6))):         # grande epaulette a lames, cote droit
+        pa = Part(f'lam{i}', (0, py, 0), (0, 0, R(rz))); ra.children.append(pa)
+        pa.box((-5, -0.5, -3), (w, 1, 6), 'nst', .12, f'n_lam{w}', M(rows=(), scr=3))
+    ra.box((-4.6, -4.4, -0.5), (1, 3, 1), 'nlt', 0, 'n_pspk', M(rivet=False, scr=0))             # pointe d'epaule
+    ra.box((-3, -2, -2), (4, 8, 4), 'nbk', .35, 'n_sleeve', d_n_cloth(hem=2, holes=.02))
+    ra.box((-3, 6, -2), (4, 4, 4), 'nst', .5, 'n_vamb', d_n_gaunt)
+    ra.box((-3, 9, -2), (4, 2, 4), 'nst', .72, 'n_hand', d_n_gaunt)
+    for k in range(4):                                                                          # griffes
+        ra.box((-3 + k, 11.5, -1.6), (1, 4, 1), 'nlt', .0, 'n_claw', d_n_claw)
+    la = Part('left_arm')
+    la.box((-1, -2, -2), (4, 8, 4), 'nbk', .35, 'n_sleeve', d_n_cloth(hem=2, holes=.02))
+    la.cubes[-1].mirror = True
+    la.box((-1, 6, -2), (4, 4, 4), 'nst', .5, 'n_vamb', d_n_gaunt); la.cubes[-1].mirror = True
+    la.box((-1, 9, -2), (4, 2, 4), 'nst', .72, 'n_hand', d_n_gaunt); la.cubes[-1].mirror = True
+    for k in range(4):
+        la.box((-1 + k, 11.5, -1.6), (1, 4, 1), 'nlt', .0, 'n_claw', d_n_claw)
+    chest = [body, ra, la]
+
+    body = Part('body')
+    body.box((-4, 11, -2), (8, 2, 4), 'nle', .75, 'n_belt', d_n_leather)
+    body.box((-1.5, 11.1, -2.9), (3, 1.8, 1), 'nlt', .2, 'n_buckle', M(rivet=False, scr=1))
+    body.box((-3.6, 12, -2.9), (3, 11, 1), 'nbk', .0, 'n_rf1', d_n_cloth(hem=3, holes=.04))        # pans de linceul devant : le droit est dechire plus court
+    body.box((0.6, 12, -2.9), (3, 7, 1), 'nbk', .0, 'n_rf2', d_n_cloth(hem=3, holes=.04))
+    body.box((-3.5, 12, 1.9), (7, 12, 1), 'nbk', .0, 'n_rb', d_n_cloth(hem=3, holes=.04))
+    rl = Part('right_leg')
+    rl.box((-2, 0, -2), (4, 5, 4), 'nst', .55, 'n_thigh', M(rows=(2,), vert=(1,)))
+    rl.box((-2, 4.5, -2), (4, 3, 4), 'nst', .72, 'n_knee', M(scr=2))
+    rl.box((-0.5, 5, -3.5), (1, 2, 2), 'nlt', 0, 'n_kspk', M(rivet=False, scr=0))
+    ll = mirrored(rl, 'left_leg')
+    legs = [body, rl, ll]
+
+    rl = Part('right_leg')
+    rl.box((-2, 6, -2), (4, 6, 4), 'nst', .52, 'n_boot', d_n_greave)
+    rl.box((-2, 7, -2.9), (4, 4, 1), 'nst', .12, 'n_greave', d_n_greave)
+    rl.box((-2.5, 5.4, -2.5), (5, 1, 5), 'nlt', .1, 'n_cuff', M(rivet=False, scr=2))
+    rl.box((-1.5, 10.2, -4.6), (3, 2, 3), 'nst', 0, 'n_toe', M(scr=1))
+    rl.box((-0.5, 10.6, -6.2), (1, 1, 2), 'nlt', 0, 'n_toespk', M(rivet=False, scr=0))
+    ll = mirrored(rl, 'left_leg')
+    return {'head': [head], 'chest': chest, 'legs': legs, 'boots': [rl, ll]}
+
+
+SETS['nazgul'] = nazgul
+
+
+
+# ================================================================== MITHRIL (cotte de mailles argentee, plaques gravees de feuilles et or, surcot roux)
+mat('mst', (212, 220, 234), 3, 4, (.97, 1, 1.05))
+mat('mgd', (224, 188, 98), 4, 5, (1.05, 1, .82))
+mat('mml', (150, 160, 178), 5, 6, (.95, 1, 1.08))
+mat('mtb', (142, 72, 38), 4, 5, (1.08, .92, .85))
+mat('mle', (92, 62, 42), 4, 5, (1, .9, .82))
+MW, MS, MD, MG, MGD = (252, 254, 255), (176, 188, 208), (92, 104, 128), (236, 198, 108), (126, 92, 36)
+LEAF = ['.#..', '###.', '.###', '..#.']
+
+
+def d_m_plate(rows=(), vine=True, scr=3, gold_hem=True):
+    """plaque de mithril : reflets blancs, ombre bleutee, filet d'or, rinceau de feuilles grave"""
+    def f(face, F, rng):
+        scratches(F, rng, scr, MW, .45)
+        if face not in ('top', 'bottom'):
+            F.hline(0, 0, F.w - 1, MW, .6)
+            if F.h > 2: F.hline(F.h - 1, 0, F.w - 1, MG if gold_hem else MD, .9)
+            for y in rows:
+                if y + 1 < F.h: ridge(F, y, MD, MW)
+            if vine and face in ('front', 'back') and F.w >= 4 and F.h >= 4:
+                y0 = F.h // 2 - 2
+                for x in range(0, F.w - 3, 4): F.art(x, y0, LEAF, {'#': MS})
+                for x in range(0, F.w, 2): F.px(x, y0 + 4 if y0 + 4 < F.h - 1 else F.h - 2, MS, .7)
+        rivets(F, MG, 0)
+    return f
+
+
+def d_m_mail(face, F, rng):
+    for y in range(F.h):
+        for x in range(F.w):
+            if (x + (y % 2)) % 2 == 0: F.px(x, y, MD, .5)
+            else: F.px(x, y, MW, .22)
+    F.hline(0, 0, F.w - 1, MW, .25)
+    if face not in ('top', 'bottom') and F.h > 3:
+        F.hline(F.h - 1, 0, F.w - 1, MG, .55)
+        if face in ('front', 'back'): jagged_bottom(F, rng, 1)
+
+
+def d_m_helm(face, F, rng):
+    scratches(F, rng, 5, MW, .45)
+    if face in ('front', 'back', 'left', 'right'):
+        F.hline(0, 0, F.w - 1, MW, .6); F.hline(2, 0, F.w - 1, MG, .85)
+    if face == 'front':
+        F.al[3:, :] = 0                                                                     # visage ouvert
+        F.vline(3, 3, 6, MS, 1.0); F.vline(4, 3, 6, MW, 1.0)                                  # protege-nez
+        F.px(3, 7, MG, 1.0); F.px(4, 7, MG, 1.0)
+        F.px(0, 3, MS, 1.0); F.px(7, 3, MS, 1.0)
+    elif face in ('left', 'right'):
+        F.rect(2, 3, 4, 3, MS, 1.0); F.rect(3, 4, 2, 1, MG, 1.0)                              # joue : plaque ornee
+        F.hline(3, 2, 5, MW, .8)
+        F.al[6:, :] = 0
+    elif face == 'back':
+        F.rect(0, 3, F.w, F.h - 3, MD, .5)
+        F.hline(F.h - 1, 0, F.w - 1, MG, .8)
+    elif face == 'top':
+        F.vline(F.w // 2 - 1, 0, F.h - 1, MG, .8); F.vline(F.w // 2, 0, F.h - 1, MGD, .6)
+    rivets(F, MG, 0)
+
+
+def d_m_gold(face, F, rng):
+    F.rect(0, 0, F.w, F.h, MG, .92)
+    scratches(F, rng, 2, (255, 246, 200), .5)
+    if face not in ('top', 'bottom') and F.h > 1: F.hline(F.h - 1, 0, F.w - 1, MGD, .7)
+
+
+def d_m_wing(face, F, rng):
+    F.rect(0, 0, F.w, F.h, MS, .9)
+    F.hline(0, 0, F.w - 1, MW, .7)
+    if face not in ('top', 'bottom') and F.h > 1: F.vline(F.w // 2, 0, F.h - 1, MG, .8)
+
+
+def d_m_tabard(knot=True):
+    def f(face, F, rng):
+        for y in range(F.h): F.hline(y, 0, F.w - 1, (96, 44, 22) if y % 3 == 0 else (180, 104, 60), .18)
+        if face in ('front', 'back') and F.w >= 4 and F.h >= 5:
+            cx = F.w // 2
+            F.vline(0, 0, F.h - 1, MG, .85); F.vline(F.w - 1, 0, F.h - 1, MG, .85)
+            if knot and F.h >= 6:                                                           # noeud celtique
+                for k, (dx, dy) in enumerate(((0, 0), (1, 0), (0, 1), (1, 1), (-1, 1), (2, 1), (0, 2), (1, 2), (0, 3), (1, 3))):
+                    F.px(cx - 1 + dx, 1 + dy, MG, .95)
+                F.px(cx - 1, 2, (96, 44, 22), .9); F.px(cx, 3, (96, 44, 22), .9)
+        if face not in ('top', 'bottom') and F.h >= 3:
+            F.hline(F.h - 1, 0, F.w - 1, MG, .95); F.hline(F.h - 2, 0, F.w - 1, (96, 44, 22), .5)
+    return f
+
+
+def d_m_belt(face, F, rng):
+    for y in range(0, F.h, 2): F.hline(y, 0, F.w - 1, (40, 26, 16), .3)
+    F.hline(0, 0, F.w - 1, (140, 104, 74), .5)
+    for x in range(1, F.w, 3): F.px(x, 0, MS, .8)
+    if face == 'front' and F.w >= 3: F.rect(F.w // 2 - 1, 0, 2, F.h, MS, .95); F.px(F.w // 2 - 1, 0, MW, 1)
+
+
+def mithril():
+    P = d_m_plate
+    head = Part('head')
+    head.box((-4, -8, -4), (8, 8, 8), 'mst', .5, 'm_helm', d_m_helm)
+    cr = Part('crest', (0, -9.0, -3.5), (R(-6), 0, 0)); head.children.append(cr)
+    cr.box((-0.5, -3, 0), (1, 3, 8), 'mgd', 0, 'm_crest', d_m_gold)
+    cr2 = Part('crest2', (0, -3, 8), (R(32), 0, 0)); cr.children.append(cr2)
+    cr2.box((-0.5, 0, -1), (1, 3, 2), 'mgd', 0, 'm_crest2', d_m_gold)
+    for sg in (-1, 1):                                                                           # ailerons de tempe
+        w = Part(f'wing{sg}', (sg * 4.4, -5.5, -0.5), (R(-10), 0, R(sg * 28))); head.children.append(w)
+        w.box((-0.5, -3, -1.5), (1, 3, 3), 'mst', .0, 'm_wing', d_m_wing)
+
+    body = Part('body')
+    body.box((-4, 0, -2), (8, 12, 4), 'mml', .6, 'm_body', d_m_mail)
+    body.box((-3, 0.6, -2.85), (6, 5, 1), 'mst', .15, 'm_breast', P(rows=(), vine=True))             # plastron grave
+    body.box((-4, -1.2, -2), (8, 2, 4), 'mst', 1.0, 'm_collar', P(rows=(), vine=False, scr=2))        # collier a goussets
+    ra = Part('right_arm')
+    for i, (py, rz) in enumerate(((-2.9, -7), (-1.9, -15), (-0.9, -23))):
+        pa = Part(f'lam{i}', (0, py, 0), (0, 0, R(rz))); ra.children.append(pa)
+        pa.box((-4.5, -0.5, -2.5), (5, 1, 5), 'mst', .12, 'm_lam', P(vine=(i != 2), scr=2))
+    ra.box((-3, -2, -2), (4, 8, 4), 'mml', .32, 'm_sleeve', d_m_mail)
+    ra.box((-3, 4.4, -2), (4, 2, 4), 'mgd', .62, 'm_couter', d_m_gold)
+    ra.box((-3, 6, -2), (4, 4, 4), 'mst', .55, 'm_brac', P(rows=(1,), vine=True))
+    la = mirrored(ra, 'left_arm')
+    chest = [body, ra, la]
+
+    body = Part('body')
+    body.box((-4, 11, -2), (8, 2, 4), 'mle', .75, 'm_belt', d_m_belt)
+    body.box((-1.5, 11.1, -2.9), (3, 1.8, 1), 'mst', .2, 'm_buckle', P(vine=False, scr=1))
+    body.box((-4, 12.5, -2), (8, 5, 4), 'mml', .85, 'm_skirt', d_m_mail)                           # jupe de mailles
+    body.box((-2.5, 12, -3.1), (5, 11, 1), 'mtb', .0, 'm_tabf', d_m_tabard())                      # pan de surcot roux au noeud dore
+    body.box((-3, 12, 2.1), (6, 11, 1), 'mtb', .0, 'm_tabb', d_m_tabard(False))
+    rl = Part('right_leg')
+    rl.box((-2, 0, -2), (4, 6, 4), 'mml', .45, 'm_thigh', d_m_mail)
+    rl.box((-2, 4.6, -2), (4, 3, 4), 'mst', .68, 'm_knee', P(vine=False, scr=2))
+    ll = mirrored(rl, 'left_leg')
+    legs = [body, rl, ll]
+
+    rl = Part('right_leg')
+    rl.box((-2, 6, -2), (4, 6, 4), 'mst', .5, 'm_boot', P(rows=(2,), vine=False))
+    rl.box((-2, 7, -2.9), (4, 4, 1), 'mst', .12, 'm_greave', P(vine=True))
+    rl.box((-2.5, 5.4, -2.5), (5, 1, 5), 'mgd', .1, 'm_cuff', d_m_gold)
+    tp = Part('toe', (0, 11.2, -2.4), (R(-18), 0, 0)); rl.children.append(tp)
+    tp.box((-2, -1, -2.4), (4, 2, 3), 'mst', 0, 'm_toe', P(vine=False, scr=1, gold_hem=True))       # pointe relevee
+    ll = mirrored(rl, 'left_leg')
+    return {'head': [head], 'chest': chest, 'legs': legs, 'boots': [rl, ll]}
+
+
+SETS['mithril'] = mithril
+
+
 # variantes rouillees (meme modele, texture rouillee ; Gondor : aile gauche abimee)
 for _b in ('orc', 'dwarven', 'elven', 'rohan', 'elfking', 'dwarfking'):
     SETS[_b + '_rusted'] = SETS[_b]
