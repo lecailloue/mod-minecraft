@@ -133,7 +133,8 @@ def all_cubes(parts):
 
 
 def _maxrects(items, tile):
-    free = [(0, 0, tile, tile)]
+    tw, th = tile if isinstance(tile, tuple) else (tile, tile)
+    free = [(0, 0, tw, th)]
     place = {}
     for k, (rw, rh) in items:
         best = None
@@ -176,14 +177,15 @@ def pack(parts, tile=TILE):
         if place: break
     if not place:
         used = sum(r[0] * r[1] for _, r in items)
-        raise RuntimeError(f'hors de la case {tile}x{tile} : aire {used}/{tile * tile} ; ' + ', '.join(f'{k}:{r[0]}x{r[1]}' for k, r in items))
+        raise RuntimeError(f'hors de la case {tile} : aire {used} ; ' + ', '.join(f'{k}:{r[0]}x{r[1]}' for k, r in items))
     for c in all_cubes(parts): c.uv = place[c.key]
     return place, regs
 
 
 def paint(parts, tile=TILE):
     place, regs = pack(parts, tile)
-    im = np.zeros((tile, tile, 4), np.uint8)
+    tw, th = tile if isinstance(tile, tuple) else (tile, tile)
+    im = np.zeros((th, tw, 4), np.uint8)
     for k, (r, c) in regs.items():
         u, v = place[k]
         w, h, d = c.sz

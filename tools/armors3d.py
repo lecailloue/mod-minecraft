@@ -656,9 +656,12 @@ def gondor():
     head.box((-4.3, -4, -3), (1, 4, 4), 'gst', .3, 'g_cheek', G(rows=(2,), gold=True))
     head.cubes.append(Cube((3.3, -4, -3), (1, 4, 4), 'gst', .3, 'g_cheek', G(rows=(2,), gold=True), True))
     head.box((-0.5, -4, -4.6), (1, 4, 1), 'gst', .2, 'g_nose', G())
-    wr = Part('wing_r', (-3.8, -8.4, 0.5), (R(-12), 0, R(-22))); head.children.append(wr)
-    wr.box((-1, -7, -2.5), (1, 7, 5), 'gfe', 0, 'g_wing', d_g_wing)
-    head.children.append(mirrored(wr, 'wing_l'))
+    # ailes : 5 plumes en eventail de chaque cote, courbees vers l'arriere comme sur le casque de la Garde
+    base = Part('wing_base', (-4.4, -6.2, 0.4), (0, 0, 0)); head.children.append(base)
+    for i, (rz, rx, ln) in enumerate(((-6, -4, 7), (-18, -9, 7), (-30, -15, 7), (-42, -20, 7), (-54, -26, 7))):
+        fe = Part(f'plume{i}', (-0.2, -2.0, 0.4), (R(rx), 0, R(rz))); base.children.append(fe)
+        fe.box((-0.5, -ln, -1.5), (1, ln, 3), 'gfe', 0, 'g_plume', d_g_wing)
+    head.children.append(mirrored(base, 'wing_base_l'))
     neck = Part('neck', (0, -2.6, 3.4), (R(12), 0, 0)); head.children.append(neck)
     neck.box((-4, 0, 0), (8, 2, 1), 'gmail', 0, 'g_neck', d_g_mail)
 
@@ -700,6 +703,7 @@ mat('kgl', (240, 214, 130), 4, 5, (1.05, 1, .85))
 mat('kcp', (82, 108, 90), 4, 5, (.92, 1, .95))          # cape vert-gris
 mat('kcl', (176, 140, 70), 4, 5, (1.05, 1, .8))         # tissu dore matelasse
 mat('kle', (96, 72, 44), 4, 5, (1, .9, .8))
+mat('kgr', (64, 104, 76), 4, 5, (.95, 1, .95))          # drap vert sous l'armure
 KG, KGD, KGL = (246, 214, 120), (104, 76, 28), (255, 244, 196)
 
 
@@ -769,6 +773,25 @@ def d_k_cape(face, F, rng):
         F.rect(0, 0, F.w, F.h, KGD, .6)
 
 
+def d_k_drap(face, F, rng):
+    for y in range(F.h):
+        F.hline(y, 0, F.w, (46, 78, 56) if y % 3 == 0 else (86, 128, 96), .3)
+    for x in range(0, F.w, 4): F.vline(x, 0, F.h, (40, 70, 50), .35)
+    if face in ('front', 'back'):
+        F.hline(F.h - 1, 0, F.w, KG, .9); F.hline(F.h - 2, 0, F.w, KGD, .5)
+        if F.w >= 4 and F.h >= 6:
+            for y in range(1, F.h - 3, 3): F.px(F.w // 2, y, KG, .85); F.px(F.w // 2 - 1, y + 1, KGD, .6); F.px(F.w // 2 + 1, y + 1, KGD, .6)
+        F.vline(0, 0, F.h, KG, .6); F.vline(F.w - 1, 0, F.h, KG, .6)
+
+
+def d_k_sleeve(face, F, rng):
+    for y in range(F.h):
+        F.hline(y, 0, F.w, (46, 78, 56) if y % 3 == 0 else (86, 128, 96), .3)
+    if face not in ('top', 'bottom'):
+        F.hline(F.h - 1, 0, F.w, KG, .85); F.hline(F.h - 2, 0, F.w, KGD, .5)
+        if F.h > 6: F.hline(F.h // 2, 0, F.w, KGD, .35)
+
+
 def elfking():
     G = d_k_gold
     head = Part('head')
@@ -778,25 +801,28 @@ def elfking():
         lf.box((-0.5, -4, -0.5), (1, 4, 2), 'kgl', 0, 'k_leaf', G(leaf=True))
         head.children.append(mirrored(lf, f'leaf_l{i}'))
     neck = Part('neck', (0, -2.6, 3.4), (R(12), 0, 0)); head.children.append(neck)
-    neck.box((-4, 0, 0), (8, 2, 1), 'kcl', 0, 'k_neck', d_k_cloth)
+    neck.box((-4, 0, 0), (8, 2, 1), 'kgr', 0, 'k_neck', d_k_drap)
 
     body = Part('body')
     body.box((-4, 0, -2), (8, 12, 4), 'kcl', .6, 'k_body', d_k_body)
-    cape = Part('cape', (0, -0.4, 2.3), (R(5), 0, 0)); body.children.append(cape)
-    cape.box((-4, 0, 0), (8, 12, 1), 'kcp', 0.4, 'k_cape', d_k_cape)
+    cape = Part('cape', (0, -0.6, 2.4), (R(4), 0, 0)); body.children.append(cape)
+    cape.box((-6, 0, 0), (12, 22, 1), 'kcp', 0.3, 'k_cape', d_k_cape)             # grande cape : des epaules aux chevilles
     ra = Part('right_arm')
+    ra.box((-3, -2, -2), (4, 12, 4), 'kgr', .3, 'k_sleeve', d_k_sleeve)            # manche en drap vert
     for i, (py, rz) in enumerate(((-2.8, -8), (-1.4, -18))):
         pa = Part(f'lam{i}', (0, py, 0), (0, 0, R(rz))); ra.children.append(pa)
-        pa.box((-4.5, -1, -2), (3, 1, 4), 'kgo', .12, 'k_lam', G(leaf=True))
-    ra.box((-3, 4, -2), (4, 3, 3), 'kgo', .55, 'k_brac', G(rows=(1,)))
+        pa.box((-4.8, -1, -2.2), (5, 1, 4), 'kgo', .12, 'k_lam', G(leaf=True))
+    ra.box((-3, 4, -2), (4, 4, 4), 'kgo', .62, 'k_brac', G(rows=(1,)))
     la = mirrored(ra, 'left_arm')
     chest = [body, ra, la]
 
     body = Part('body')
     body.box((-4, 11, -2), (8, 2, 4), 'kle', .85, 'k_belt2', d_k_cloth)
-    body.box((-4, 12.5, -2), (8, 4, 4), 'kcl', .8, 'k_skirt', d_k_cloth)
+    body.box((-4, 12.5, -2), (8, 4, 4), 'kgr', .8, 'k_skirt', d_k_drap)
+    body.box((-3.5, 12, -2.9), (7, 11.5, 1), 'kgr', .3, 'k_drapf', d_k_drap)      # drap vert devant, sous la cuirasse doree
+    body.box((-3.5, 12, 1.9), (7, 11.5, 1), 'kgr', .3, 'k_drapf', d_k_drap)       # et derriere
     rl = Part('right_leg')
-    rl.box((-2, 0, -2), (4, 5, 4), 'kcl', .55, 'k_thigh', d_k_cloth)
+    rl.box((-2, 0, -2), (4, 5, 4), 'kgr', .55, 'k_thigh', d_k_drap)
     rl.box((-2.3, 4.4, -3.2), (4, 3, 2), 'kgo', 0, 'k_knee', G(leaf=True))
     ll = mirrored(rl, 'left_leg')
     legs = [body, rl, ll]
@@ -816,6 +842,7 @@ SETS['elfking'] = elfking
 # ------------------------------------------------------------------ sortie / apercu
 PIECES = ('head', 'chest', 'boots', 'legs')
 TILE_OF = {'head': (0, 0, 1), 'chest': (32, 0, 1), 'boots': (0, 32, 1), 'legs': (0, 0, 2)}
+TILE_SIZE = {'head': (32, 32), 'chest': (32, 64), 'boots': (32, 32), 'legs': (64, 64)}   # taille de case disponible dans la feuille 64x64
 
 
 def build_set(name):
@@ -823,7 +850,7 @@ def build_set(name):
     out = {}
     for pc in PIECES:
         parts = pieces[pc]
-        tex = paint(parts)
+        tex = paint(parts, TILE_SIZE[pc])
         out[pc] = (parts, tex)
     return out
 
@@ -832,7 +859,7 @@ def sheet_textures(built):
     sheets = {1: np.zeros((64, 64, 4), np.uint8), 2: np.zeros((64, 64, 4), np.uint8)}
     for pc, (parts, tex) in built.items():
         tx, ty, layer = TILE_OF[pc]
-        sheets[layer][ty:ty + 32, tx:tx + 32] = tex
+        sheets[layer][ty:ty + tex.shape[0], tx:tx + tex.shape[1]] = tex
     return sheets
 
 
