@@ -217,8 +217,8 @@ public final class EsgarothPlan {
             }
             set(x, DK + lift + 1, z0, WFENCE);
             set(x, DK + lift + 1, z1, WFENCE);
-            set(x, DK - 1, z0, WLOG_X);
-            set(x, DK - 1, z1, WLOG_X);
+            if (th[z0 * W + x] > -2 || t < 2 || t >= len - 2) set(x, DK - 1, z0, WLOG_X);                // pas de poutre sous le tablier au-dessus du canal : les barques passent
+            if (th[z1 * W + x] > -2 || t < 2 || t >= len - 2) set(x, DK - 1, z1, WLOG_X);
             if (!arch && (t % 6) == 3) { pile(x, z0, DK - 1); pile(x, z1, DK - 1); }
         }
         for (int zz = z0; zz <= z1; zz++) { if (area(a - 1, zz)) norail[zz * W + a - 1] = true; if (area(b + 1, zz)) norail[zz * W + b + 1] = true; }
@@ -236,8 +236,8 @@ public final class EsgarothPlan {
             for (int xx = x0; xx <= x1; xx++) { set(xx, DK, z, WPLANK); norail[z * W + xx] = true; }
             set(x0, DK + 1, z, WFENCE);
             set(x1, DK + 1, z, WFENCE);
-            set(x0, DK - 1, z, WLOG_Z);
-            set(x1, DK - 1, z, WLOG_Z);
+            if (th[z * W + x0] > -2 || z - a < 2 || b - z < 2) set(x0, DK - 1, z, WLOG_Z);
+            if (th[z * W + x1] > -2 || z - a < 2 || b - z < 2) set(x1, DK - 1, z, WLOG_Z);
             if (((z - a) % 6) == 3) { pile(x0, z, DK - 1); pile(x1, z, DK - 1); }
         }
         for (int xx = x0; xx <= x1; xx++) { if (area(xx, a - 1)) norail[(a - 1) * W + xx] = true; if (area(xx, b + 1)) norail[(b + 1) * W + xx] = true; }
@@ -282,6 +282,7 @@ public final class EsgarothPlan {
     private void causeway(int x, int z, int dir) {
         int x0 = x - 2, x1 = x + 2;
         boolean landed = false;
+        for (int xx = x0; xx <= x1; xx++) if (area(xx, z - dir)) norail[(z - dir) * W + xx] = true;   // pas de garde-corps du bloc en travers de la chaussee
         for (int zz = z; area(x, zz); zz += dir) {
             int t = tAt(x, zz);
             if (t >= 0) {                                                                 // la rive : une marche vers le sol, puis on s'arrete
@@ -293,8 +294,7 @@ public final class EsgarothPlan {
             for (int xx = x0; xx <= x1; xx++) { set(xx, DK, zz, ((zz >> 3) & 1) == 0 ? WPLANK : SPPLANK); norail[zz * W + xx] = true; }
             set(x0, DK + 1, zz, WFENCE);
             set(x1, DK + 1, zz, WFENCE);
-            set(x0, DK - 1, zz, WLOG_Z);
-            set(x1, DK - 1, zz, WLOG_Z);
+            if (Math.abs(zz - z) % 10 < 5) { set(x0, DK - 1, zz, WLOG_Z); set(x1, DK - 1, zz, WLOG_Z); }   // poutres par tronçons : des fenetres laissent passer les barques
             if (Math.abs(zz - z) % 5 == 2) { pile(x0, zz, DK - 1); pile(x1, zz, DK - 1); pile(x, zz, DK - 1); }
             if (Math.abs(zz - z) % 10 == 7) { lamp(x0, zz); lamp(x1, zz); }
         }
@@ -434,8 +434,7 @@ public final class EsgarothPlan {
         set(dx, y0 + 2, dz, door(doorSide, true));
         // plaque au-dessus de la porte et lanterne a l'exterieur
         int ox = doorSide == 1 ? 1 : doorSide == 3 ? -1 : 0, oz = doorSide == 2 ? 1 : doorSide == 0 ? -1 : 0;
-        set(dx + ox, y0 + 1, dz + oz, WFENCE);
-        set(dx + ox, y0 + 2, dz + oz, LANTERN);
+        // (aucune barriere ni lanterne devant la porte : le passage reste libre)
         // toit
         int ridgeTop;
         if (ridge == 0) ridgeTop = gable(0, z0, z1, x0, x1, topY + 1, rf, rb, wallUp, WLOG_X);
@@ -502,14 +501,13 @@ public final class EsgarothPlan {
             set(ix0 + kmin + 1, yf + 1, zr.applyAsInt(0), CRAFT);
             if (wi >= 7) set(ix0 + kmin + 2, yf + 1, zr.applyAsInt(0), BOOKS);
             int kt = wi / 2;                                                                        // table ronde et deux chaises
-            set(ix0 + kt, yf + 1, zr.applyAsInt(2), slab(WS, false));
+            set(ix0 + kt, yf + 1, zr.applyAsInt(2), slab(WS, false));                                 // la rangee de la porte reste libre : on entre et on gagne l'echelle sans escalader le mobilier
             set(ix0 + kt - 1, yf + 1, zr.applyAsInt(2), stair(WS, W_, false));
             set(ix0 + kt + 1, yf + 1, zr.applyAsInt(2), stair(WS, E, false));
-            set(ix0 + kt, yf + 1, zr.applyAsInt(3), stair(WS, back, false));
-            set(ix0 + kb, yf + 1, zr.applyAsInt(Math.min(rows - 1, 4)), BARREL);
-            set(ix0 + kmin, yf + 1, zr.applyAsInt(Math.min(rows - 1, 3)), CAULD);
-            set(ix0 + wi - 2, yf + 2, zr.applyAsInt(0), WFENCE);
-            set(ix0 + wi - 2, yf + 3, zr.applyAsInt(0), LANTERN);
+            set(ix0 + kt, yf + 1, zr.applyAsInt(1), stair(WS, back, false));
+            set(ix0 + kb, yf + 1, zr.applyAsInt(2), BARREL);
+            set(ix0 + kmin, yf + 1, zr.applyAsInt(doorSide == 2 ? Math.min(rows - 2, 2) : 1), CAULD);
+            set(ix0 + wi - 2, yf + 2, zr.applyAsInt(0), LANTERN);
         } else if (f < floors - 1 || floors == 1 || variant % 2 == 0) {                              // chambres
             for (int b = 0; b < 2; b++) {
                 int kb = wi - 1 - b * 3;
@@ -622,6 +620,7 @@ public final class EsgarothPlan {
         for (int x = x0 - 1; x <= x1 + 1; x++) for (int z = z0 - 1; z <= z1 + 1; z++) {
             if (x != x0 - 1 && x != x1 + 1 && z != z0 - 1 && z != z1 + 1) continue;
             if ((x == x0 - 1 || x == x1 + 1) && (z == z0 - 1 || z == z1 + 1)) { for (int y = DK + 1; y <= DK + 5; y++) setIfAir(x, y, z, BLKB); continue; }
+            if (z == z1 + 1 && Math.abs(x - (x0 + x1) / 2) <= 1) continue;                      // le seuil de la porte reste degage
             if ((x + z) % 2 == 0) for (int y = DK + 1; y <= DK + 2; y++) setIfAir(x, y, z, BLKB);
         }
         // terrasse 13 x 13 en encorbellement
@@ -682,8 +681,8 @@ public final class EsgarothPlan {
         for (int y = topY + 3; y <= topY + 9; y++) set(fx, y, fz, DKFENCE);
         for (int u = 1; u <= 3; u++) for (int y = topY + 7; y <= topY + 8; y++) set(lx(fx, dir, u, 0) - 0, y, lz(fz, dir, u, 0), BLKWOOL);
         // carquois au pied de la tour : tonneaux d'ou sortent de grands carreaux dresses
-        for (int k = 0; k < 3; k++) {
-            int bx = cx - 3 + k * 3, bz = cz + 5;
+        for (int k = 0; k < 2; k++) {
+            int bx = k == 0 ? cx - 3 : cx + 3, bz = cz + 5;
             if (get(bx, DK, bz) == AIR) continue;
             set(bx, DK + 1, bz, BARREL);
             arrowUp(bx, DK + 2, bz, 5);
@@ -902,8 +901,7 @@ public final class EsgarothPlan {
         for (int x : new int[]{cx - 4, cx + 1}) for (int y = hy + 1; y <= hy + 4; y++) set(x, y, hz1, DKLOG_Y);
         for (int x = cx - 4; x <= cx + 1; x++) set(x, hy + 4, hz1, DKPLANK);
         for (int x = cx - 3; x <= cx; x++) set(x, hy + 3, hz1, GLASS);
-        set(cx - 2, hy + 1, hz1, door(S_, false)); set(cx - 2, hy + 2, hz1, door(S_, true));
-        set(cx - 1, hy + 1, hz1, door(S_, false)); set(cx - 1, hy + 2, hz1, door(S_, true));
+        // grande porte : portail ouvert de quatre blocs de large (pas de battants a moitie poses)
         // grands vitrages sur la facade
         for (int k = 0; k < 5; k++) { int x = hx0 + 3 + k * 6; if (Math.abs(x - cx + 2) <= 3) continue; for (int y = hy + 7; y <= hy + 10; y++) set(x, y, hz1, GLASS); for (int y = hy + 2; y <= hy + 4; y++) set(x, y, hz1, GLASS); }
         // porche : quatre poteaux et un auvent
@@ -912,6 +910,11 @@ public final class EsgarothPlan {
         for (int x = cx - 7; x <= cx + 4; x += 11) set(x, hy + 7, hz1 + 4, LANTERN);
         // tour a fleche, accolee a la halle
         tower(hx1 + 1, hz0, 8, hy, 8, 2);
+        for (int x = hx1 + 3; x <= hx1 + 7; x++) {                                                              // perron devant la porte de la tour : deux rangs de plancher, puis un escalier vers la place
+            int zt = hz0 + 8;
+            for (int z = zt; z <= zt + 1; z++) { set(x, DK + 1, z, WLOG_Y); set(x, DK + 2, z, WPLANK); }
+            set(x, DK + 1, zt + 2, WLOG_Y); set(x, DK + 2, zt + 2, stair(WS, N, false)); set(x, DK + 1, zt + 3, stair(WS, N, false));
+        }
         // kiosques a toit pointu, aux angles
         kiosk(x0 + 9, z1 - 8);
         kiosk(x1 - 13, z1 - 8);
@@ -973,7 +976,7 @@ public final class EsgarothPlan {
         int len = 7, wd = 3;
         for (int a = 0; a < len; a++) for (int b = 0; b < wd; b++) {
             int xx = ax == 0 ? x + a : x + b, zz = ax == 0 ? z + b : z + a;
-            if (!area(xx, zz) || get(xx, -1, zz) != WATER || get(xx, 0, zz) != AIR || get(xx, 1, zz) != AIR || get(xx, DK, zz) != AIR) return;
+            if (!area(xx, zz) || get(xx, -1, zz) != WATER || get(xx, 0, zz) != AIR || get(xx, 1, zz) != AIR || get(xx, DK, zz) != AIR || get(xx, DK + 1, zz) != AIR || get(xx, DK + 4, zz) != AIR) return;
         }
         for (int a = 0; a < len; a++) for (int b = 0; b < wd; b++) {
             int xx = ax == 0 ? x + a : x + b, zz = ax == 0 ? z + b : z + a;
@@ -983,23 +986,23 @@ public final class EsgarothPlan {
             if (side) set(xx, 0, zz, a == 0 || a == len - 1 ? SPPLANK : slab(SPS, false));
         }
         int mx = ax == 0 ? x + 3 : x + 1, mz = ax == 0 ? z + 1 : z + 3;
-        if (sail) {                                                                                  // mat et voile blanche
-            for (int y = 0; y <= 6; y++) set(mx, y, mz, y == 0 ? DKLOG_Y : DKFENCE);
-            for (int a = -1; a <= 1; a++) for (int y = 3; y <= 5; y++) { int sx = ax == 0 ? mx + a : mx, sz = ax == 0 ? mz : mz + a; set(sx, y, sz, WOOL_W); }
-            set(ax == 0 ? x : x + 1, 1, ax == 0 ? z + 1 : z, LANTERN);
-        } else {
-            set(mx, 0, mz, rnd(x, z, 5) < 0.5 ? BARREL : HAY);
-            if (rnd(x, z, 6) < 0.5) set(ax == 0 ? x + 5 : x + 1, 0, ax == 0 ? z + 1 : z + 5, CHEST + N);
-            if (rnd(x, z, 8) < 0.35) set(ax == 0 ? x : x + 1, 1, ax == 0 ? z + 1 : z, LANTERN);
-        }
+        if (sail) {                                                                                  // mat et voile blanche, rien d'autre
+            for (int y = 0; y <= 5; y++) set(mx, y, mz, y == 0 ? DKLOG_Y : DKFENCE);
+            for (int a = -1; a <= 1; a++) for (int y = 2; y <= 4; y++) { int sx = ax == 0 ? mx + a : mx, sz = ax == 0 ? mz : mz + a; set(sx, y, sz, WOOL_W); }
+        } else if (rnd(x, z, 5) < 0.5) set(ax == 0 ? x + 5 : x + 1, 0, ax == 0 ? z + 1 : z + 5, BARREL);   // une barrique a l'arriere, parfois
     }
 
     private void boats() {
         for (int[] bs : boatSpots) boatAt(bs[0], bs[1], bs[2]);
-        for (int k = 0; k < 320; k++) {                                                       // barques amarrees dans les canaux
+        List<int[]> placed = new ArrayList<>();
+        for (int k = 0; k < 900 && placed.size() < 14; k++) {                                 // quelques barques amarrees dans les canaux, bien espacees
             int x = 20 + (int) (rnd(k, 3, 7) * (W - 40)), z = 20 + (int) (rnd(k, 4, 8) * (D - 40));
-            if (!wetAt(x, z) || Math.hypot(x - CX, z - CZ) > 100) continue;
+            if (!wetAt(x, z) || Math.hypot(x - CX, z - CZ) > 90) continue;
+            boolean near = false;
+            for (int[] q : placed) if (Math.hypot(q[0] - x, q[1] - z) < 24) { near = true; break; }
+            if (near) continue;
             boatAt(x, z, hash(k, 5, 9) & 1);
+            if (get(x + 1, -1, z + 1) == SPPLANK) placed.add(new int[]{x, z});
         }
     }
 
