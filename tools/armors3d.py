@@ -964,24 +964,44 @@ TILE_SIZE = {'head': (32, 32), 'chest': (32, 64), 'boots': (32, 32), 'legs': (64
 
 
 def rustify(tex, seed):
-    """version rouillee : taches de rouille, ternissure, points d'oxydation (meme geometrie, seule la texture change)"""
+    """version tres rouillee (200 ans d'abandon) : rouille epaisse, ecailles, piqures, vert-de-gris sur l'or, coulures, trous"""
     rng = np.random.default_rng(seed)
     h, w = tex.shape[:2]
-    a = tex[..., :3].astype(float); al = tex[..., 3]
+    a = tex[..., :3].astype(float); al = tex[..., 3].copy()
+    opaque = al > 0
     yy, xx = np.ogrid[:h, :w]
     noise = np.zeros((h, w))
-    for _ in range(max(12, h * w // 90)):
-        cx, cy, r = int(rng.integers(0, w)), int(rng.integers(0, h)), int(rng.integers(1, 4))
-        noise += (((xx - cx) ** 2 + (yy - cy) ** 2) <= r * r) * rng.uniform(.4, 1)
-    noise = np.clip(noise, 0, 1)
-    pick = rng.random((h, w))
-    rust = np.where((pick < .45)[..., None], np.array((88., 42., 22.)), np.where((pick < .85)[..., None], np.array((148., 74., 34.)), np.array((196., 112., 54.))))
-    k = (noise * .85)[..., None]
+    for _ in range(max(30, h * w // 45)):                                 # grandes plaques de corrosion
+        cx, cy, r = int(rng.integers(0, w)), int(rng.integers(0, h)), int(rng.integers(2, 6))
+        noise += (((xx - cx) ** 2 + (yy - cy) ** 2) <= r * r) * rng.uniform(.35, .9)
+    noise = np.clip(noise, 0, 1.4)
+    # vert-de-gris : sur les pixels dores/bronze d'origine
+    gold = (a[..., 0] > 140) & (a[..., 0] > a[..., 2] + 50) & (a[..., 1] > a[..., 2] + 20)
+    verd = np.array((74., 118., 96.))
+    a = np.where((gold & (noise < .9))[..., None], a * .35 + verd * .65, a)
+    tone = np.zeros((h, w))                                                # teinte de rouille : plaques, pas du sel et poivre
+    for _ in range(max(14, h * w // 80)):
+        cx, cy, r = int(rng.integers(0, w)), int(rng.integers(0, h)), int(rng.integers(2, 5))
+        tone += (((xx - cx) ** 2 + (yy - cy) ** 2) <= r * r) * rng.uniform(.3, .8)
+    pick = np.clip(tone / 1.2, 0, 1) * .8 + rng.random((h, w)) * .2
+    rust = np.where((pick < .33)[..., None], np.array((84., 40., 20.)), np.where((pick < .7)[..., None], np.array((136., 66., 28.)), np.array((188., 102., 44.))))
+    k = np.clip(noise * .95 + .02, 0, .9)[..., None]                       # couverture ~65 %, le reste laisse voir la couleur d'origine
     out = a * (1 - k) + rust * k
+    # ecailles de rouille claires et piqures sombres
+    flake = (rng.random((h, w)) < .06) & (noise > .3)
+    pit = (rng.random((h, w)) < .035) & (noise > .3)
+    out[flake] = np.array((205., 120., 52.)) * .75 + out[flake] * .25
+    out[pit] = np.array((38., 20., 12.))
+    # coulures : la rouille descend sur 1 a 4 pixels
+    drip = (rng.random((h, w)) < .045) & (noise > .45)
+    for y, x in zip(*np.nonzero(drip)):
+        for d in range(1, int(rng.integers(2, 5))):
+            if y + d < h and opaque[y + d, x]: out[y + d, x] = out[y + d, x] * .45 + np.array((96., 44., 20.)) * .55
     g = out.mean(axis=2, keepdims=True)
-    out = (out * .8 + g * .2) * .88                                   # ternit et assombrit
-    spots = rng.random((h, w)) < .05
-    out[spots] = rust[spots]
+    out = (out * .88 + g * .12) * .9                                      # ternit
+    # trous (tissu pourri / metal perfore) dans les zones tres corrodees
+    hole = (rng.random((h, w)) < .05) & (noise > .6)
+    al[hole] = 0
     return np.dstack([np.clip(out, 0, 255), al]).astype(np.uint8)
 
 
