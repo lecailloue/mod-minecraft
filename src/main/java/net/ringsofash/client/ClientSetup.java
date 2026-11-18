@@ -320,6 +320,24 @@ public final class ClientSetup {
     private static final String[] ARMOR_PIECES = {"head", "chest", "legs", "boots"};
     private static final java.util.Map<String, HumanoidModel<LivingEntity>> ARMOR_MODELS = new java.util.HashMap<>();
 
+    private static net.minecraft.client.model.geom.ModelPart child(net.minecraft.client.model.geom.ModelPart p, String n) { return p.hasChild(n) ? p.getChild(n) : null; }
+
+    /** Animations discretes : la cape ondule quand on marche, les ailes du casque de Gondor bougent tres legerement. */
+    private static void animate(HumanoidModel<LivingEntity> m, LivingEntity e, String set) {
+        double t = System.nanoTime() / 1.0e9 + e.getId() * 1.7;
+        float amp = set.endsWith("_rusted") ? 0.6F : 1F;
+        float sp = net.minecraft.util.Mth.clamp(e.walkAnimation.speed(), 0F, 1F);
+        var cape = child(m.body, "cape");
+        if (cape != null) {
+            cape.resetPose();
+            cape.xRot += amp * sp * (0.22F + (float) Math.sin(t * 5.0) * 0.06F);          // se souleve et ondule a la marche
+            cape.zRot += amp * sp * (float) Math.sin(t * 3.3) * 0.04F;
+        }
+        float flap = (float) Math.sin(t * 2.0) * 0.045F * amp;                           // battement tres leger
+        var wr = child(m.head, "wing"); if (wr != null) { wr.resetPose(); wr.zRot += flap; }
+        var wl = child(m.head, "wing_l"); if (wl != null) { wl.resetPose(); wl.zRot -= flap; }
+    }
+
     private static net.neoforged.neoforge.client.extensions.common.IClientItemExtensions armorExt(String set, String piece) {
         return new net.neoforged.neoforge.client.extensions.common.IClientItemExtensions() {
             @Override
@@ -332,6 +350,7 @@ public final class ClientSetup {
                 m.head.visible = original.head.visible; m.hat.visible = original.hat.visible; m.body.visible = original.body.visible;
                 m.rightArm.visible = original.rightArm.visible; m.leftArm.visible = original.leftArm.visible;
                 m.rightLeg.visible = original.rightLeg.visible; m.leftLeg.visible = original.leftLeg.visible;
+                animate(m, living, set);
                 return m;
             }
         };
