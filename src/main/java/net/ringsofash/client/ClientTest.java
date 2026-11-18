@@ -341,6 +341,12 @@ public final class ClientTest {
         esgT("427_esgaroth_tour", 100, 22, 130, 84, 24, 160, 7000);
         esgT("428_esgaroth_rive", 160, 40, 60, 160, 6, 120, 7000);
         esgT("429_esgaroth_crepuscule", 130, 12, 214, 160, 12, 150, 12600);
+        esgT("430_esgaroth_arbalete", 62, 46, 136, 84, 38, 151, 7000);
+        esgT("431_esgaroth_arbalete_haut", 90, 44, 140, 82, 36, 152, 7000);
+        esgT("432_esgaroth_interieur", 83, 5, 134, 87, 3, 139, 6000);
+        esgT("433_esgaroth_peche", 100, 12, 126, 78, 2, 108, 7000);
+        esgT("434_esgaroth_peche_sud", 196, 14, 236, 178, 2, 258, 7000);
+        esgT("435_esgaroth_halle_interieur", 150, 8, 150, 160, 7, 140, 6000);
         argT("299_argonath_chargement", 0, 60, -30, 0, 50, 40, 6000);       // charge les chunks du site (long) : sa capture ne compte pas
         argT("301_argonath_vue_haute", 70, 135, -122, 0, 50, 0, 6000);
         argT("302_argonath_visages", 0, 98, -48, 0, 92, 0, 6000);

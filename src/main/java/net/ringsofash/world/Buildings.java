@@ -1163,7 +1163,7 @@ public final class Buildings {
 
     private static synchronized BlockState[] esgarothPal() {
         if (esgPal != null) return esgPal;
-        BlockState[] p = new BlockState[200];
+        BlockState[] p = new BlockState[210];
         java.util.Arrays.fill(p, Build.AIR);
         p[EsgarothPlan.SAND] = Blocks.SAND.defaultBlockState();
         p[EsgarothPlan.GRAVEL] = Blocks.GRAVEL.defaultBlockState();
@@ -1231,6 +1231,37 @@ public final class Buildings {
         rivFamily(p, EsgarothPlan.OKS, Blocks.OAK_STAIRS, Blocks.OAK_SLAB);
         rivFamily(p, EsgarothPlan.STS, Blocks.STONE_BRICK_STAIRS, Blocks.STONE_BRICK_SLAB);
         rivFamily(p, EsgarothPlan.THS, Reg.THATCH_STAIRS.get(), Reg.THATCH_SLAB.get());
+        rivFamily(p, EsgarothPlan.BKS, Blocks.BLACKSTONE_STAIRS, Blocks.BLACKSTONE_SLAB);
+        // mobilier
+        for (int d = 0; d < 4; d++) for (int h = 0; h < 2; h++) {
+            var part = h == 1 ? net.minecraft.world.level.block.state.properties.BedPart.HEAD : net.minecraft.world.level.block.state.properties.BedPart.FOOT;
+            p[EsgarothPlan.BED + d * 2 + h] = Blocks.RED_BED.defaultBlockState().setValue(net.minecraft.world.level.block.BedBlock.FACING, dirs[d]).setValue(net.minecraft.world.level.block.BedBlock.PART, part);
+            p[EsgarothPlan.BEDB + d * 2 + h] = Blocks.BLUE_BED.defaultBlockState().setValue(net.minecraft.world.level.block.BedBlock.FACING, dirs[d]).setValue(net.minecraft.world.level.block.BedBlock.PART, part);
+        }
+        for (int d = 0; d < 4; d++) {
+            p[EsgarothPlan.CHEST + d] = Blocks.CHEST.defaultBlockState().setValue(net.minecraft.world.level.block.ChestBlock.FACING, dirs[d]);
+            p[EsgarothPlan.FURN + d] = Blocks.FURNACE.defaultBlockState().setValue(net.minecraft.world.level.block.FurnaceBlock.FACING, dirs[d]);
+            p[EsgarothPlan.TRAPD + d] = Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(net.minecraft.world.level.block.TrapDoorBlock.FACING, dirs[d])
+                    .setValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN, true);
+        }
+        p[EsgarothPlan.CARPR] = Blocks.RED_CARPET.defaultBlockState();
+        p[EsgarothPlan.CARPB] = Blocks.BLUE_CARPET.defaultBlockState();
+        p[EsgarothPlan.PLATE] = Blocks.SPRUCE_PRESSURE_PLATE.defaultBlockState();
+        p[EsgarothPlan.CAULD] = Blocks.CAULDRON.defaultBlockState();
+        // armes noires : fut de mur de pierre noire (axe x, z, ou poteau), pointe, penne
+        var low = net.minecraft.world.level.block.state.properties.WallSide.LOW;
+        BlockState wall = Blocks.BLACKSTONE_WALL.defaultBlockState();
+        p[EsgarothPlan.BWX] = wall.setValue(net.minecraft.world.level.block.WallBlock.EAST_WALL, low).setValue(net.minecraft.world.level.block.WallBlock.WEST_WALL, low).setValue(net.minecraft.world.level.block.WallBlock.UP, false);
+        p[EsgarothPlan.BWZ] = wall.setValue(net.minecraft.world.level.block.WallBlock.NORTH_WALL, low).setValue(net.minecraft.world.level.block.WallBlock.SOUTH_WALL, low).setValue(net.minecraft.world.level.block.WallBlock.UP, false);
+        p[EsgarothPlan.BWP] = wall;
+        p[EsgarothPlan.BLKB] = Blocks.BLACKSTONE.defaultBlockState();
+        p[EsgarothPlan.BLKWOOL] = Blocks.BLACK_WOOL.defaultBlockState();
+        p[EsgarothPlan.BLKCARP] = Blocks.BLACK_CARPET.defaultBlockState();
+        p[EsgarothPlan.BLKPOL] = Blocks.POLISHED_BLACKSTONE.defaultBlockState();
+        p[EsgarothPlan.CAMP] = Blocks.CAMPFIRE.defaultBlockState();
+        p[EsgarothPlan.WEB] = Blocks.COBWEB.defaultBlockState();
+        p[EsgarothPlan.CHAINX] = Blocks.CHAIN.defaultBlockState().setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS, Direction.Axis.X);
+        p[EsgarothPlan.CHAINZ] = Blocks.CHAIN.defaultBlockState().setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS, Direction.Axis.Z);
         return esgPal = p;
     }
 

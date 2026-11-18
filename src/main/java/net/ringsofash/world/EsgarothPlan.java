@@ -21,6 +21,9 @@ public final class EsgarothPlan {
             WFENCE = 35, DKFENCE = 36, GLASS = 37, LANTERN = 38, HLANT = 39, CHAIN = 40, BARREL = 41, HAY = 42, STB = 43, CHIM = 44, BOOKS = 45, CRAFT = 46,
             WOOL_R = 47, WOOL_Y = 48, WOOL_W = 49, WOOL_B = 50, THATCH = 51, LADN = 52, LADE = 53, LADS = 54, LADW = 55, DOOR = 56 /* 56..63 : direction * 2 + moitie haute */;
     // familles d'escaliers : base + direction * 2 + moitie haute (direction = sens de la montee : 0 N, 1 E, 2 S, 3 O) ; base + 8 dalle basse, base + 9 dalle haute
+    // mobilier et armes : lits (rouge 64..71, bleu 72..79 : base + direction du pied vers la tete * 2 + tete), tapis, coffres, fours, volets, fleches noires
+    public static final int BED = 64, BEDB = 72, CARPR = 80, CARPB = 81, PLATE = 82, CHEST = 83 /* 83..86 */, FURN = 87 /* 87..90 */, CAULD = 91, TRAPD = 92 /* 92..95 : sens vers l'exterieur */;
+    public static final int BKS = 180 /* famille : pierre noire */, BWX = 190, BWZ = 191, BWP = 192, BLKB = 193, BLKWOOL = 194, BLKCARP = 195, CAMP = 196, WEB = 197, CHAINX = 198, CHAINZ = 199, BLKPOL = 200;
     public static final int WS = 96, SPS = 108, DKS = 120, SLS = 132, OKS = 144, STS = 156, THS = 168;
     public static final int N = 0, E = 1, S_ = 2, W_ = 3;
 
@@ -70,6 +73,7 @@ public final class EsgarothPlan {
     private static int stair(int base, int dir, boolean topHalf) { return base + dir * 2 + (topHalf ? 1 : 0); }
     private static int slab(int base, boolean topHalf) { return base + (topHalf ? 9 : 8); }
     private static int door(int dir, boolean upper) { return DOOR + dir * 2 + (upper ? 1 : 0); }
+    private static int bed(int dir, boolean head, boolean blue) { return (blue ? BEDB : BED) + dir * 2 + (head ? 1 : 0); }
     private static int ladder(int dir) { return LADN + dir; }              // dir : cote ou se trouve le mur (N, E, S, W)
 
     private void box(int x0, int y0, int z0, int x1, int y1, int z1, int id) {
@@ -101,6 +105,7 @@ public final class EsgarothPlan {
         plaza();
         for (int[] b : blocks) district(b);
         railings();
+        fishing();
         boats();
         shore();
         trees();
@@ -357,6 +362,8 @@ public final class EsgarothPlan {
      * Maison de bois : coins en grumes, murs de planches vieillies, bandeaux a chaque etage, fenetres, porte cote 'door' (0 N, 1 E, 2 S, 3 O), echelle interieure, toit raide.
      * (x0, z0)-(x1, z1) : emprise ; y0 : niveau du pont ; fh : hauteur d'etage ; ridge : 0 = faitage le long de x, 1 = le long de z.
      */
+    private boolean furnish = true;
+
     private void house(int x0, int z0, int x1, int z1, int y0, int floors, int fh, int ridge, int roof, int doorSide, int variant) {
         int rf = ROOFF[roof], rb = ROOFB[roof];
         int wallLow = (variant & 1) == 0 ? WPLANK : OAKPLANK, wallUp = (variant & 2) == 0 ? WPLANK : SPPLANK;
@@ -389,13 +396,8 @@ public final class EsgarothPlan {
                         setIfAir(x + p, yf + 2, z + o, slab(WS, false)); setIfAir(x + p, yf + 3, z + o, OAKLEAF); }
                 }
             }
-            // eclairage et meubles
-            set((x0 + x1) / 2, yf + 1, (z0 + z1) / 2, WFENCE);
-            set((x0 + x1) / 2, yf + 2, (z0 + z1) / 2, LANTERN);
-            if (f == 0) {
-                set(x0 + 1, yf + 1, z0 + 1, BARREL);
-                if (rnd(x0, y0, z0) < 0.5) set(x1 - 1, yf + 1, z0 + 1, CRAFT); else set(x1 - 1, yf + 1, z1 - 1, BOOKS);
-            }
+            if (furnish) furnish(x0, z0, x1, z1, yf, f, floors, fh, doorSide, variant);
+            facade(x0, z0, x1, z1, yf, f, fh, doorSide, variant);
         }
         // echelle interieure
         int lx = x0 + 1, lz = z1 - 1;
@@ -423,11 +425,91 @@ public final class EsgarothPlan {
             int hx = ridge == 0 ? x0 + 2 : (x0 + x1) / 2, hz = ridge == 0 ? (z0 + z1) / 2 : z0 + 2;
             for (int y = topY - 1; y <= ridgeTop + 1; y++) set(hx, y, hz, STB);
             set(hx, ridgeTop + 2, hz, CHIM);
-            set(hx, ridgeTop + 3, hz, CHIM);
+            set(hx, ridgeTop + 3, hz, CAMP);                                                    // feu qui fume : la maison est habitee
         }
         // balcon sur la rue
         if ((variant & 4) != 0 && floors >= 2) balcony(x0, z0, x1, z1, y0 + fh, doorSide);
         spawns.add(new int[]{cx, y0 + 1, cz});
+    }
+
+    /** relief des murs : volets ouverts de chaque cote des fenetres, auvents, bandeaux saillants aux etages, contreforts d'angle, jardinieres, caisses */
+    private void facade(int x0, int z0, int x1, int z1, int yf, int f, int fh, int doorSide, int variant) {
+        for (int s = 0; s < 4; s++) {
+            boolean along = s == 0 || s == 2;
+            int o = s == 0 ? -1 : s == 2 ? 1 : 0, pq = s == 3 ? -1 : s == 1 ? 1 : 0;
+            int a0 = along ? x0 : z0, a1 = along ? x1 : z1, wf = along ? (s == 0 ? z0 : z1) : (s == 3 ? x0 : x1);
+            for (int a = a0 + 1; a < a1; a++) {
+                int x = along ? a : wf, z = along ? wf : a;
+                int w = gi(x, yf + 2, z);
+                if (w == GLASS) {
+                    for (int sd = -1; sd <= 1; sd += 2) {                                   // volets ouverts, a plat contre le mur
+                        int sx = along ? x + sd : x, sz = along ? z : z + sd;
+                        if ((along ? sx : sz) <= a0 || (along ? sx : sz) >= a1 || gi(sx, yf + 2, sz) == GLASS) continue;
+                        setIfAir(sx + pq, yf + 2, sz + o, TRAPD + s);
+                        setIfAir(sx + pq, yf + 3, sz + o, TRAPD + s);
+                    }
+                    for (int sd = -1; sd <= 1; sd++) setIfAir((along ? x + sd : x) + pq, yf + fh, (along ? z : z + sd) + o, slab(DKS, true));      // auvent
+                }
+                if (f > 0 && (s != doorSide) && !(a == a0 + 1 && false)) setIfAir(x + pq, yf, z + o, slab(DKS, true));                      // bandeau saillant sous l'etage
+            }
+        }
+        for (int[] c : new int[][]{{x0, z0, -1, -1}, {x1, z0, 1, -1}, {x0, z1, -1, 1}, {x1, z1, 1, 1}})                                  // contreforts d'angle
+            for (int y = yf + 1; y <= yf + fh; y++) { setIfAir(c[0] + c[2], y, c[1], WLOG_Y); setIfAir(c[0], y, c[1] + c[3], WLOG_Y); }
+        if (f == 0 && (variant & 8) != 0) {                                                                                                 // caisses et tonneaux devant la maison
+            int o = doorSide == 0 ? -1 : 1, cx = (x0 + x1) / 2, cz = doorSide == 0 ? z0 - 1 : z1 + 1;
+            setIfAir(cx + 2, yf + 1, cz, BARREL); setIfAir(cx + 3, yf + 1, cz, HAY); setIfAir(cx - 2, yf + 1, cz, BARREL);
+        }
+    }
+
+    /** interieur : lits, tapis, table et chaises, coffre, four, etabli, bibliotheque, lanterne ; porte au nord ou au sud (0 / 2) */
+    private void furnish(int x0, int z0, int x1, int z1, int yf, int f, int floors, int fh, int doorSide, int variant) {
+        int ix0 = x0 + 1, ix1 = x1 - 1, wi = ix1 - ix0 + 1;
+        int di = doorSide == 2 ? 1 : -1, back = doorSide == 2 ? N : S_, front = doorSide == 2 ? S_ : N;
+        if ((doorSide != 0 && doorSide != 2) || wi < 4) { setIfAir((x0 + x1) / 2, yf + 1, (z0 + z1) / 2, WFENCE); setIfAir((x0 + x1) / 2, yf + 2, (z0 + z1) / 2, LANTERN); return; }
+        boolean blue = (variant & 1) != 0;
+        int rows = z1 - z0 - 1;
+        java.util.function.IntUnaryOperator zr = r -> doorSide == 2 ? z0 + 1 + r : z1 - 1 - r;       // rang r : 0 = fond de la piece
+        int lad = doorSide == 0 ? 0 : -1;                                                           // l'echelle occupe le coin (x0 + 1, z1 - 1)
+        int kmin = doorSide == 0 ? 1 : 0;
+        if (f == 0) {
+            int kb = wi - 1;                                                                        // lit contre le mur du fond, au bout est
+            set(ix0 + kb, yf + 1, zr.applyAsInt(0), bed(back, true, blue));
+            set(ix0 + kb, yf + 1, zr.applyAsInt(1), bed(back, false, blue));
+            set(ix0 + kb - 1, yf + 1, zr.applyAsInt(0), CARPR);
+            set(ix0 + kb - 1, yf + 1, zr.applyAsInt(1), CARPR);
+            set(ix0 + Math.max(kmin, kb - 3), yf + 1, zr.applyAsInt(0), CHEST + front);
+            set(ix0 + kmin, yf + 1, zr.applyAsInt(0), FURN + front);
+            set(ix0 + kmin + 1, yf + 1, zr.applyAsInt(0), CRAFT);
+            if (wi >= 7) set(ix0 + kmin + 2, yf + 1, zr.applyAsInt(0), BOOKS);
+            int kt = wi / 2;                                                                        // table ronde et deux chaises
+            set(ix0 + kt, yf + 1, zr.applyAsInt(2), slab(WS, false));
+            set(ix0 + kt - 1, yf + 1, zr.applyAsInt(2), stair(WS, W_, false));
+            set(ix0 + kt + 1, yf + 1, zr.applyAsInt(2), stair(WS, E, false));
+            set(ix0 + kt, yf + 1, zr.applyAsInt(3), stair(WS, back, false));
+            set(ix0 + kb, yf + 1, zr.applyAsInt(Math.min(rows - 1, 4)), BARREL);
+            set(ix0 + kmin, yf + 1, zr.applyAsInt(Math.min(rows - 1, 3)), CAULD);
+            set(ix0 + wi - 2, yf + 2, zr.applyAsInt(0), WFENCE);
+            set(ix0 + wi - 2, yf + 3, zr.applyAsInt(0), LANTERN);
+        } else if (f < floors - 1 || floors == 1 || variant % 2 == 0) {                              // chambres
+            for (int b = 0; b < 2; b++) {
+                int kb = wi - 1 - b * 3;
+                if (kb < kmin + 1) break;
+                set(ix0 + kb, yf + 1, zr.applyAsInt(0), bed(back, true, (variant & 2) != 0 ^ b == 1));
+                set(ix0 + kb, yf + 1, zr.applyAsInt(1), bed(back, false, (variant & 2) != 0 ^ b == 1));
+                set(ix0 + kb - 1, yf + 1, zr.applyAsInt(0), b == 0 ? CARPB : CARPR);
+            }
+            set(ix0 + kmin, yf + 1, zr.applyAsInt(0), CHEST + front);
+            set(ix0 + kmin + 1, yf + 1, zr.applyAsInt(0), BOOKS);
+            set(ix0 + kmin + 1, yf + 2, zr.applyAsInt(0), BOOKS);
+            set(ix0 + wi / 2, yf + 1, zr.applyAsInt(3), CARPR);
+            set(ix0 + wi / 2 - 1, yf + 1, zr.applyAsInt(3), CARPR);
+            set(ix0 + wi / 2, yf + 1, zr.applyAsInt(2), WFENCE);
+            set(ix0 + wi / 2, yf + 2, zr.applyAsInt(2), LANTERN);
+        } else {                                                                                    // grenier : reserves
+            for (int k = 0; k < wi; k += 2) { set(ix0 + k, yf + 1, zr.applyAsInt(0), BARREL); if (k % 4 == 0) set(ix0 + k, yf + 2, zr.applyAsInt(0), HAY); }
+            set(ix0 + wi / 2, yf + 1, zr.applyAsInt(2), WFENCE);
+            set(ix0 + wi / 2, yf + 2, zr.applyAsInt(2), LANTERN);
+        }
     }
 
     private void balcony(int x0, int z0, int x1, int z1, int yf, int side) {
@@ -472,7 +554,12 @@ public final class EsgarothPlan {
             int za = row == 0 ? rowN1 - depth + 1 : rowS0, zb = za + depth - 1;
             int h = hash(i * 7 + row, j * 5 + half, 86) & 0x7fffffff;
             int len = xb - xa + 1, doorSide = row == 0 ? 2 : 0;
-            if (towerBlock && row == 0 && half == 0) { tower(xa + 1, za - 1, 7, DK, 7, 2); continue; }
+            if (towerBlock && row == 0 && half == 0) {
+                if (i == -2 && j == 0) ballistaTower(xa + 1, za - 1, W_);                       // deux tours de guet a arbalete geante, vers l'exterieur du lac
+                else if (i == 2 && j == 1) ballistaTower(xa + 1, za - 1, E);
+                else tower(xa + 1, za - 1, 7, DK, 7, 2);
+                continue;
+            }
             double q = (h & 1023) / 1024.0;
             int[] pos = (i + j) % 5 == 0 && row == 0 && half == 1 ? null : new int[0];
             if (pos == null) { market(xa, za, xb, zb); continue; }
@@ -494,7 +581,275 @@ public final class EsgarothPlan {
             if (Math.abs(x - xc) <= 2) continue;
             set(x, DK + 1, z, rnd(x, z, 3) < 0.5 ? BARREL : HAY);
         }
+        for (int s = 0; s < 2; s++) if (rnd(i, j, 110 + s) < 0.55) { int lxs = x0 + 3 + (int) (rnd(i, j, 120 + s) * (x1 - x0 - 12)); if (Math.abs(lxs - xc) > 6 && Math.abs(lxs + 4 - xc) > 6) laundry(lxs, zs - 2 + s * 4, 4); }
         for (int s = 0; s < 4; s++) spawns.add(new int[]{x0 + 3 + (int) (rnd(i, j, 100 + s) * (x1 - x0 - 6)), DK + 1, zs});
+    }
+
+    // ------------------------------------------------------------------ armes : tours a arbalete geante
+    private static final int[] DXA = {0, 1, 0, -1}, DZA = {-1, 0, 1, 0};
+
+    /** local (u : devant, v : droite) vers x / z */
+    private int lx(int cx, int dir, int u, int v) { return cx + DXA[dir] * u + DXA[(dir + 1) & 3] * v; }
+    private int lz(int cz, int dir, int u, int v) { return cz + DZA[dir] * u + DZA[(dir + 1) & 3] * v; }
+
+    /** tour de guet de six etages, terrasse en encorbellement et arbalete geante dressee vers dir */
+    private void ballistaTower(int x0, int z0, int dir) {
+        int size = 7, floors = 8, fh = 4, x1 = x0 + size - 1, z1 = z0 + size - 1, topY = DK + floors * fh;
+        int cx = x0 + 3, cz = z0 + 3;
+        house(x0, z0, x1, z1, DK, floors, fh, 0, 0, 2, 1);
+        box(x0 - 3, topY + 1, z0 - 3, x1 + 3, topY + 24, z1 + 3, AIR);
+        // pied : contreforts de pierre noire
+        for (int x = x0 - 1; x <= x1 + 1; x++) for (int z = z0 - 1; z <= z1 + 1; z++) {
+            if (x != x0 - 1 && x != x1 + 1 && z != z0 - 1 && z != z1 + 1) continue;
+            if ((x == x0 - 1 || x == x1 + 1) && (z == z0 - 1 || z == z1 + 1)) { for (int y = DK + 1; y <= DK + 5; y++) setIfAir(x, y, z, BLKB); continue; }
+            if ((x + z) % 2 == 0) for (int y = DK + 1; y <= DK + 2; y++) setIfAir(x, y, z, BLKB);
+        }
+        // terrasse 13 x 13 en encorbellement
+        for (int u = -6; u <= 6; u++) for (int v = -6; v <= 6; v++) {
+            int x = lx(cx, dir, u, v), z = lz(cz, dir, u, v);
+            set(x, topY, z, (Math.abs(u) + Math.abs(v)) % 5 == 0 ? DKPLANK : SPPLANK);
+            int m = Math.max(Math.abs(u), Math.abs(v));
+            if (m >= 4 && m <= 5) set(x, topY - 1, z, DKPLANK);
+            if (m == 5 && (Math.abs(u) == 5 || Math.abs(v) == 5) && (u + v) % 2 == 0) set(x, topY - 2, z, stair(DKS, dirOut(u, v), true));
+            if (m == 6) { set(x, topY - 1, z, DKLOG_Y); }
+        }
+        // trappe : le haut de l'echelle debouche sur la terrasse
+        set(x0 + 1, topY, z1 - 1, AIR);
+        set(x0 + 1, topY, z1 - 1, ladder(N));
+        for (int u = -6; u <= 6; u++) for (int v = -6; v <= 6; v++) {                          // parapet de bois sombre, poteaux et lanternes
+            int m = Math.max(Math.abs(u), Math.abs(v));
+            if (m != 6) continue;
+            int x = lx(cx, dir, u, v), z = lz(cz, dir, u, v);
+            boolean post = (Math.abs(u) + Math.abs(v)) % 4 == 0 || (Math.abs(u) == 6 && Math.abs(v) == 6);
+            set(x, topY + 1, z, post ? DKLOG_Y : DKFENCE);
+            if (post) { set(x, topY + 2, z, DKFENCE); set(x, topY + 3, z, LANTERN); }
+            else set(x, topY + 2, z, DKFENCE);
+        }
+        // grande arbalete : piedestal, arc et corde de chaine
+        boolean axX = dir == E || dir == W_;
+        int stock = axX ? DKLOG_X : DKLOG_Z, bar = axX ? DKLOG_Z : DKLOG_X;
+        for (int y = topY + 1; y <= topY + 2; y++) set(cx, y, cz, DKLOG_Y);
+        for (int v = -1; v <= 1; v += 2) { for (int y = topY + 1; y <= topY + 2; y++) set(lx(cx, dir, -3, v), y, lz(cz, dir, -3, v), DKFENCE); }
+        for (int y = topY + 1; y <= topY + 2; y++) set(lx(cx, dir, 3, 0), y, lz(cz, dir, 3, 0), DKFENCE);
+        int sy = topY + 3, by = topY + 4;
+        for (int u = -4; u <= 5; u++) set(lx(cx, dir, u, 0), sy, lz(cz, dir, u, 0), stock);
+        for (int u = -4; u <= -3; u++) { set(lx(cx, dir, u, 1), sy, lz(cz, dir, u, 1), DKPLANK); set(lx(cx, dir, u, -1), sy, lz(cz, dir, u, -1), DKPLANK); }   // crosse
+        for (int v = -3; v <= 3; v++) { set(lx(cx, dir, 4, v), by, lz(cz, dir, 4, v), bar); set(lx(cx, dir, 4, v), sy, lz(cz, dir, 4, v), v == 0 ? stock : AIR); }
+        for (int sg = -1; sg <= 1; sg += 2) {                                                   // bras recourbes vers l'arriere
+            set(lx(cx, dir, 3, sg * 4), by, lz(cz, dir, 3, sg * 4), bar);
+            set(lx(cx, dir, 3, sg * 5), by, lz(cz, dir, 3, sg * 5), DKLOG_Y);
+            set(lx(cx, dir, 2, sg * 5), by, lz(cz, dir, 2, sg * 5), DKLOG_Y);
+            set(lx(cx, dir, 2, sg * 6), by, lz(cz, dir, 2, sg * 6), DKPLANK);
+            // corde : de la pointe du bras a l'encoche
+            int ux = 2, vx = sg * 6, un = -1, vn_ = 0, n = Math.max(Math.abs(ux - un), Math.abs(vx - vn_));
+            for (int k = 0; k <= n; k++) {
+                int u = ux + (un - ux) * k / n, v = vx + (vn_ - vx) * k / n;
+                int x = lx(cx, dir, u, v), z = lz(cz, dir, u, v);
+                setIfAir(x, by, z, (axX ^ (Math.abs(vn_ - vx) > Math.abs(un - ux))) ? CHAINX : CHAINZ);
+            }
+        }
+        arrow(cx, cz, dir, 0, by, -3, 6, 1);                                                      // carreau charge, 10 blocs
+        // carreaux en reserve, couches sur la terrasse, de chaque cote
+        for (int sg = -1; sg <= 1; sg += 2) {
+            arrow(cx, cz, dir, sg * 3, topY + 1, -4, 5, 1);
+            arrow(cx, cz, dir, sg * 4, topY + 1, -4, 5, 1);
+            arrow(cx, cz, dir, sg * 3, topY + 2, -4, 5, 1);
+            // chevalet de pose
+            for (int u : new int[]{-3, 3}) for (int v : new int[]{sg * 3, sg * 4}) set(lx(cx, dir, u, v), topY + 1, lz(cz, dir, u, v), DKPLANK);
+        }
+        // fanion noir
+        int fx = lx(cx, dir, -5, 5), fz = lz(cz, dir, -5, 5);
+        for (int y = topY + 3; y <= topY + 9; y++) set(fx, y, fz, DKFENCE);
+        for (int u = 1; u <= 3; u++) for (int y = topY + 7; y <= topY + 8; y++) set(lx(fx, dir, u, 0) - 0, y, lz(fz, dir, u, 0), BLKWOOL);
+        // carquois au pied de la tour : tonneaux d'ou sortent de grands carreaux dresses
+        for (int k = 0; k < 3; k++) {
+            int bx = cx - 3 + k * 3, bz = cz + 5;
+            if (get(bx, DK, bz) == AIR) continue;
+            set(bx, DK + 1, bz, BARREL);
+            arrowUp(bx, DK + 2, bz, 5);
+        }
+        for (int s = 0; s < 3; s++) spawns.add(new int[]{cx, topY + 1, cz});
+        reserve(cx - 7, cz - 7, cx + 7, cz + 7, 2);
+    }
+
+    private int dirOut(int u, int v) { return Math.abs(u) >= Math.abs(v) ? (u > 0 ? E : W_) : (v > 0 ? S_ : N); }
+
+    /**
+     * grand carreau noir couche : axe a la distance v du centre, de u0 a u1 (fut de mur de pierre noire, penne de laine noire, pointe de pierre noire).
+     */
+    private void arrow(int cx, int cz, int dir, int v, int y, int u0, int u1, int unused) {
+        boolean axX = dir == E || dir == W_;
+        for (int u = u0; u <= u1; u++) {
+            int x = lx(cx, dir, u, v), z = lz(cz, dir, u, v);
+            int id;
+            if (u <= u0 + 1) id = BLKWOOL;                                                       // penne
+            else if (u >= u1 - 1) id = BLKB;                                                     // pointe
+            else id = axX ? BWX : BWZ;
+            if (u == u1) id = BKS + 8;                                                           // pointe : dalle de pierre noire
+            if (u <= u0 + 1) { set(x, y, z, id); if (u == u0) { set(lx(cx, dir, u, v + 1), y, lz(cz, dir, u, v + 1), id); set(lx(cx, dir, u, v - 1), y, lz(cz, dir, u, v - 1), id); set(x, y + 1, z, id); } }
+            else set(x, y, z, id);
+        }
+        // tete elargie : deux ailerons
+        for (int sg = -1; sg <= 1; sg += 2) set(lx(cx, dir, u1 - 2, v + sg), y, lz(cz, dir, u1 - 2, v + sg), BKS + 8);
+    }
+
+    /** carreau dresse (poteau de pierre noire, penne en bas, pointe en haut) */
+    private void arrowUp(int x, int y, int z, int h) {
+        for (int k = 0; k < h; k++) set(x, y + k, z, k == 0 ? BLKWOOL : BWP);
+        set(x, y + h, z, BLKB);
+        set(x, y + h + 1, z, BKS + 8);
+    }
+
+    private void hallFurniture(int hx0, int hz0, int hx1, int hz1, int hy) {
+        for (int t = 0; t < 2; t++) {
+            int z = hz0 + 4 + t * 6;
+            for (int x = hx0 + 5; x <= hx1 - 5; x++) {
+                set(x, hy + 1, z, slab(DKS, false));
+                if ((x - hx0) % 3 == 0) { set(x, hy + 1, z - 1, stair(WS, N, false)); set(x, hy + 1, z + 1, stair(WS, S_, false)); set(x + 1, hy + 1, z - 1, stair(WS, N, false)); set(x + 1, hy + 1, z + 1, stair(WS, S_, false)); }
+                if ((x - hx0) % 6 == 2) { set(x, hy + 2, z, WFENCE); set(x, hy + 3, z, LANTERN); }
+                if ((x - hx0) % 5 == 1) set(x, hy + 2, z, rnd(x, z, 77) < 0.5 ? PLATE : AIR);
+            }
+        }
+        for (int x = hx0 + 5; x <= hx1 - 5; x += 6) { set(x, hy + 4, hz0 + 7, CHAIN); set(x, hy + 3, hz0 + 7, CHAIN); set(x, hy + 2, hz0 + 7, HLANT); }
+        for (int x = hx0 + 2; x <= hx1 - 2; x += 5) { set(x, hy + 1, hz0 + 1, BARREL); }
+        set((hx0 + hx1) / 2 - 1, hy + 1, hz0 + 1, stair(DKS, S_, false)); set((hx0 + hx1) / 2, hy + 1, hz0 + 1, stair(DKS, S_, false));        // sieges du maitre de la ville
+        for (int x = hx0 + 3; x < hx1 - 2; x += 4) { set(x, hy + 1, hz0 + 13, CHEST + N); }
+    }
+
+    // ------------------------------------------------------------------ la peche
+    /** ponton de pecheurs : jusqu'a deux, sur les rives libres du lac, avec cabane, sechoirs a filets, feu, barque retournee et lignes */
+    private void fishing() {
+        List<int[]> done = new ArrayList<>();
+        for (int len = 14; len >= 8 && done.size() < 2; len -= 3) {
+            for (int a = 0; a < 72 && done.size() < 2; a++) {
+                double th0 = Math.toRadians(a * 5 + 12);
+                int sx = -1, sz = -1;
+                for (int r = 40; r < 190; r++) {
+                    int x = (int) Math.round(CX + r * Math.cos(th0)), z = (int) Math.round(CZ + r * Math.sin(th0));
+                    if (!area(x, z)) break;
+                    boolean wet = wl[z * W + x] > -999;
+                    if (wet) { sx = x; sz = z; continue; }
+                    if (sx >= 0 && th[z * W + x] >= 0) break;
+                }
+                if (sx < 0) continue;
+                double ca = Math.cos(th0), sa = Math.sin(th0);
+                int d = Math.abs(ca) > Math.abs(sa) ? (ca > 0 ? W_ : E) : (sa > 0 ? N : S_);
+                int dx = DXA[d], dz = DZA[d], px = DXA[(d + 1) & 3], pz = DZA[(d + 1) & 3];
+                boolean good = true;
+                for (int k = -2; k <= len + 6 && good; k++) for (int w = -5; w <= 5 && good; w++) {
+                    int x = sx + dx * k + px * w, z = sz + dz * k + pz * w;
+                    if (!area(x, z) || res[z * W + x]) { good = false; break; }
+                    if (k >= 1 && (wl[z * W + x] <= -999 || th[z * W + x] > -2)) { good = false; break; }
+                    for (int y = 0; y <= 6; y++) if (k >= 0 && get(x, y, z) != AIR && get(x, y, z) != WATER) { good = false; break; }
+                }
+                if (!good) continue;
+                boolean far = true;
+                for (int[] o : done) if (Math.hypot(o[0] - sx, o[1] - sz) < 50) far = false;
+                if (!far) continue;
+                done.add(new int[]{sx, sz});
+                quay(sx, sz, d, len);
+            }
+        }
+    }
+
+    private void quay(int sx, int sz, int d, int len) {
+        int dx = DXA[d], dz = DZA[d], px = DXA[(d + 1) & 3], pz = DZA[(d + 1) & 3];
+        java.util.function.IntBinaryOperator X = (k, w) -> sx + dx * k + px * w, Z = (k, w) -> sz + dz * k + pz * w;
+        int xmn = Integer.MAX_VALUE, xmx = -1, zmn = Integer.MAX_VALUE, zmx = -1;
+        for (int k = -14; k <= len + 6; k++) for (int w = -8; w <= 8; w++) { int x = X.applyAsInt(k, w), z = Z.applyAsInt(k, w); xmn = Math.min(xmn, x); xmx = Math.max(xmx, x); zmn = Math.min(zmn, z); zmx = Math.max(zmx, z); }
+        reserve(xmn, zmn, xmx, zmx, 0);
+        // ponton
+        for (int k = -1; k <= len; k++) {
+            int hw = k <= 5 ? 2 : 1;
+            for (int w = -hw; w <= hw; w++) {
+                int x = X.applyAsInt(k, w), z = Z.applyAsInt(k, w);
+                int t = tAt(x, z);
+                if (k <= 0 && t >= 1) continue;
+                set(x, 0, z, ((k + w) & 3) == 0 ? DKPLANK : WPLANK);
+                for (int y = 1; y <= 3; y++) if (get(x, y, z) == WATER) set(x, y, z, AIR);
+                if (k % 4 == 0 && Math.abs(w) == hw) pile(x, z, -1);
+            }
+        }
+        // plateforme terminale en T
+        for (int k = len + 1; k <= len + 4; k++) for (int w = -4; w <= 4; w++) {
+            int x = X.applyAsInt(k, w), z = Z.applyAsInt(k, w);
+            set(x, 0, z, ((k * 3 + w) & 3) == 0 ? DKPLANK : WPLANK);
+            if (((k - len) % 3 == 1 && Math.abs(w) == 4) || (k == len + 4 && w % 4 == 0)) pile(x, z, -1);
+        }
+        for (int k = len + 1; k <= len + 4; k++) for (int w = -4; w <= 4; w++) {
+            boolean edge = k == len + 4 || Math.abs(w) == 4;
+            if (!edge) continue;
+            int x = X.applyAsInt(k, w), z = Z.applyAsInt(k, w);
+            if (k == len + 4 && (w == -3 || w == 0 || w == 3)) {                                  // cannes a peche : ligne de chaine et flotteur rouge
+                set(x, 1, z, DKFENCE); set(x, 2, z, DKFENCE);
+                int ox = X.applyAsInt(k + 1, w), oz = Z.applyAsInt(k + 1, w);
+                set(ox, 3, oz, DKFENCE); set(ox, 2, oz, CHAIN); set(ox, 1, oz, CHAIN); set(ox, 0, oz, CHAIN); set(ox, -1, oz, WOOL_R);
+                continue;
+            }
+            set(x, 1, z, DKFENCE);
+            if (Math.abs(w) == 4 && k == len + 2) { set(x, 2, z, DKFENCE); set(x, 3, z, LANTERN); }
+        }
+        // siege de pecheur, seaux et paniers
+        for (int sg = -1; sg <= 1; sg += 2) {
+            set(X.applyAsInt(len + 3, sg * 2), 1, Z.applyAsInt(len + 3, sg * 2), BARREL);
+            set(X.applyAsInt(len + 2, sg * 2), 1, Z.applyAsInt(len + 2, sg * 2), CAULD);
+        }
+        set(X.applyAsInt(len + 2, 1), 1, Z.applyAsInt(len + 2, 1), HAY);
+        set(X.applyAsInt(len + 3, 0), 1, Z.applyAsInt(len + 3, 0), stair(WS, (d + 2) & 3, false));
+        // sechoirs a filets le long de la partie large
+        for (int sg = -1; sg <= 1; sg += 2) {
+            int xa = X.applyAsInt(1, sg * 2), za = Z.applyAsInt(1, sg * 2), xb = X.applyAsInt(5, sg * 2), zb = Z.applyAsInt(5, sg * 2);
+            for (int y = 1; y <= 3; y++) { set(xa, y, za, DKFENCE); set(xb, y, zb, DKFENCE); }
+            for (int k = 2; k <= 4; k++) { int x = X.applyAsInt(k, sg * 2), z = Z.applyAsInt(k, sg * 2); set(x, 3, z, DKFENCE); set(x, 2, z, WEB); }
+        }
+        // cabane de pecheur sur la rive, porte vers le ponton (lateral si le mur est est-ouest)
+        int hxc = X.applyAsInt(-8, 0), hzc = Z.applyAsInt(-8, 0);
+        int hx0 = hxc - 3, hz0 = hzc - 3, hx1 = hx0 + 6, hz1 = hz0 + 5;
+        int base = 0;
+        for (int x = hx0 - 1; x <= hx1 + 1; x++) for (int z = hz0 - 1; z <= hz1 + 1; z++) base = Math.max(base, tAt(x, z));
+        base = Math.min(base, 6);
+        for (int x = hx0 - 1; x <= hx1 + 1; x++) for (int z = hz0 - 1; z <= hz1 + 1; z++) { for (int y = Math.max(tAt(x, z), -OFF + 1) + 1; y <= base; y++) set(x, y, z, WLOG_Y); set(x, base, z, WPLANK); }
+        int doorSide = (d == N || d == S_) ? ((d == N) ? 0 : 2) : 2;
+        house(hx0, hz0, hx1, hz1, base, 2, 4, 1, 0, doorSide, 0x1b);
+        // chemin de planches de la cabane au ponton
+        for (int k = -7; k <= 0; k++) for (int w = -1; w <= 1; w++) { int x = X.applyAsInt(k, w), z = Z.applyAsInt(k, w), t = tAt(x, z); if (get(x, t + 1, z) == AIR && t >= 0 && !(x >= hx0 && x <= hx1 && z >= hz0 && z <= hz1)) set(x, t, z, WPLANK); }
+        // abords : feu, bancs, barque retournee, tonneaux, sechoir et linge
+        int fx = X.applyAsInt(-4, 5), fz = Z.applyAsInt(-4, 5), ft = tAt(fx, fz);
+        set(fx, ft + 1, fz, CAMP);
+        for (int k = 0; k < 4; k++) { int bx = fx + DXA[k], bz = fz + DZA[k]; set(bx, tAt(bx, bz) + 1, bz, stair(WS, (k + 2) & 3, false)); }
+        int bx0 = X.applyAsInt(-5, -5), bz0 = Z.applyAsInt(-5, -5);
+        for (int a = 0; a < 7; a++) for (int b = 0; b < 3; b++) {
+            int x = d == E || d == W_ ? bx0 + a : bx0 + b, z = d == E || d == W_ ? bz0 + b : bz0 + a;
+            int t = tAt(x, z);
+            if (t < 0) continue;
+            int hh = (a == 0 || a == 6) ? 0 : 1;
+            if (hh == 0 && b != 1) continue;
+            set(x, t + 1, z, b == 1 ? SPPLANK : slab(SPS, false));
+            if (b == 1 && a > 0 && a < 6) set(x, t + 2, z, slab(SPS, false));
+        }
+        for (int k = 0; k < 3; k++) { int x = X.applyAsInt(-6 - k, 4), z = Z.applyAsInt(-6 - k, 4); set(x, tAt(x, z) + 1, z, k == 1 ? HAY : BARREL); }
+        for (int sg = -1; sg <= 1; sg += 2) {                                                         // sechoir terrestre
+            int xa = X.applyAsInt(-3, sg * 6), za = Z.applyAsInt(-3, sg * 6), xb = X.applyAsInt(1, sg * 6), zb = Z.applyAsInt(1, sg * 6);
+            for (int y = 1; y <= 3; y++) { set(xa, tAt(xa, za) + y, za, DKFENCE); set(xb, tAt(xb, zb) + y, zb, DKFENCE); }
+            for (int k = -3; k <= 1; k++) { int x = X.applyAsInt(k, sg * 6), z = Z.applyAsInt(k, sg * 6), t = tAt(x, z); if (k > -3 && k < 1) { set(x, t + 3, z, DKFENCE); set(x, t + 2, z, WEB); set(x, t + 1, z, k == -1 ? HAY : AIR); } }
+        }
+        int lxa = X.applyAsInt(-12, -2), lza = Z.applyAsInt(-12, -2), lxb = X.applyAsInt(-12, 4), lzb = Z.applyAsInt(-12, 4);                    // corde a linge
+        for (int y = 1; y <= 4; y++) { set(lxa, tAt(lxa, lza) + y, lza, DKFENCE); set(lxb, tAt(lxb, lzb) + y, lzb, DKFENCE); }
+        for (int w = -1; w <= 3; w++) { int x = X.applyAsInt(-12, w), z = Z.applyAsInt(-12, w); int t = tAt(x, z); set(x, t + 4, z, w % 2 == 0 ? WOOL_W : WOOL_B); set(x, t + 3, z, w % 2 == 0 ? WOOL_R : AIR); }
+        // barques amarrees de chaque cote, voile pour l'une
+        for (int sg = -1; sg <= 1; sg += 2) {
+            int cx = X.applyAsInt(len - 3, sg * 4), cz = Z.applyAsInt(len - 3, sg * 4);
+            boolean ax0 = dx != 0;
+            boatAt(ax0 ? cx - 3 : cx - 1, ax0 ? cz - 1 : cz - 3, ax0 ? 0 : 1, sg > 0);
+        }
+        spawns.add(new int[]{X.applyAsInt(len + 3, 1), 1, Z.applyAsInt(len + 3, 1)});
+        spawns.add(new int[]{X.applyAsInt(len + 2, -2), 1, Z.applyAsInt(len + 2, -2)});
+        spawns.add(new int[]{fx, tAt(fx, fz) + 1, fz});
+    }
+
+    private void laundry(int x0, int z, int len) {
+        for (int y = DK + 1; y <= DK + 4; y++) { setIfAir(x0, y, z, DKFENCE); setIfAir(x0 + len, y, z, DKFENCE); }
+        for (int x = x0 + 1; x < x0 + len; x++) { setIfAir(x, DK + 4, z, DKFENCE); setIfAir(x, DK + 3, z, (x - x0) % 2 == 0 ? WOOL_W : (x % 3 == 0 ? WOOL_R : WOOL_B)); }
     }
 
     private void market(int xa, int za, int xb, int zb) {                                    // petit marche couvert : etals a auvents
@@ -519,7 +874,10 @@ public final class EsgarothPlan {
         }
         for (int x = cx - 8; x <= cx + 3; x++) { set(x, DK + 1, hz1 + 8, WLOG_Y); set(x, DK + 2, hz1 + 8, stair(WS, N, false)); set(x, DK + 1, hz1 + 9, stair(WS, N, false)); }
         // la halle : trois etages hauts, faitage le long de x
+        furnish = false;
         house(hx0, hz0, hx1, hz1, hy, 3, 5, 0, 0, 2, 0);
+        furnish = true;
+        hallFurniture(hx0, hz0, hx1, hz1, hy);
         for (int y = hy + 1; y <= hy + 3; y++) for (int x = cx - 3; x <= cx; x++) set(x, y, hz1, AIR);                  // grande porte a deux battants
         for (int x : new int[]{cx - 4, cx + 1}) for (int y = hy + 1; y <= hy + 4; y++) set(x, y, hz1, DKLOG_Y);
         for (int x = cx - 4; x <= cx + 1; x++) set(x, hy + 4, hz1, DKPLANK);
@@ -589,7 +947,9 @@ public final class EsgarothPlan {
         }
     }
 
-    private void boatAt(int x, int z, int ax) {                                               // barque de 7 x 3 au ras de l'eau : coque de planches, bordages bas
+    private void boatAt(int x, int z, int ax) { boatAt(x, z, ax, rnd(x, z, 41) < 0.22); }
+
+    private void boatAt(int x, int z, int ax, boolean sail) {                                               // barque de 7 x 3 au ras de l'eau : coque de planches, bordages bas
         int len = 7, wd = 3;
         for (int a = 0; a < len; a++) for (int b = 0; b < wd; b++) {
             int xx = ax == 0 ? x + a : x + b, zz = ax == 0 ? z + b : z + a;
@@ -603,14 +963,22 @@ public final class EsgarothPlan {
             if (side) set(xx, 0, zz, a == 0 || a == len - 1 ? SPPLANK : slab(SPS, false));
         }
         int mx = ax == 0 ? x + 3 : x + 1, mz = ax == 0 ? z + 1 : z + 3;
-        set(mx, 0, mz, rnd(x, z, 5) < 0.5 ? BARREL : HAY);
+        if (sail) {                                                                                  // mat et voile blanche
+            for (int y = 0; y <= 6; y++) set(mx, y, mz, y == 0 ? DKLOG_Y : DKFENCE);
+            for (int a = -1; a <= 1; a++) for (int y = 3; y <= 5; y++) { int sx = ax == 0 ? mx + a : mx, sz = ax == 0 ? mz : mz + a; set(sx, y, sz, WOOL_W); }
+            set(ax == 0 ? x : x + 1, 1, ax == 0 ? z + 1 : z, LANTERN);
+        } else {
+            set(mx, 0, mz, rnd(x, z, 5) < 0.5 ? BARREL : HAY);
+            if (rnd(x, z, 6) < 0.5) set(ax == 0 ? x + 5 : x + 1, 0, ax == 0 ? z + 1 : z + 5, CHEST + N);
+            if (rnd(x, z, 8) < 0.35) set(ax == 0 ? x : x + 1, 1, ax == 0 ? z + 1 : z, LANTERN);
+        }
     }
 
     private void boats() {
         for (int[] bs : boatSpots) boatAt(bs[0], bs[1], bs[2]);
-        for (int k = 0; k < 90; k++) {                                                        // barques amarrees dans les canaux
+        for (int k = 0; k < 320; k++) {                                                       // barques amarrees dans les canaux
             int x = 20 + (int) (rnd(k, 3, 7) * (W - 40)), z = 20 + (int) (rnd(k, 4, 8) * (D - 40));
-            if (!wetAt(x, z) || Math.hypot(x - CX, z - CZ) > 98) continue;
+            if (!wetAt(x, z) || Math.hypot(x - CX, z - CZ) > 100) continue;
             boatAt(x, z, hash(k, 5, 9) & 1);
         }
     }
