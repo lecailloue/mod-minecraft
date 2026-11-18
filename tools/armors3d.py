@@ -1670,7 +1670,7 @@ SETS['mithril'] = mithril
 
 
 # variantes rouillees (meme modele, texture rouillee ; Gondor : aile gauche abimee)
-for _b in ('orc', 'dwarven', 'elven', 'rohan', 'elfking', 'dwarfking'):
+for _b in ('orc', 'dwarven', 'elven', 'rohan', 'elfking', 'dwarfking', 'knight'):
     SETS[_b + '_rusted'] = SETS[_b]
 SETS['gondor_rusted'] = _with_drape(lambda: gondor(rusted=True), 'cl_lgrey', (110, 112, 122), (226, 228, 236), (214, 178, 84), 'gd')
 

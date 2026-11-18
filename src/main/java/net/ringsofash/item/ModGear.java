@@ -59,6 +59,7 @@ public final class ModGear {
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> DWARFKING = mat("dwarfking", 4, 7, 9, 4, 18, SoundEvents.ARMOR_EQUIP_NETHERITE, 3.5F, 0.15F, () -> Ingredient.of(Items.GOLD_INGOT));
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> DWARFKING_RUSTED = mat("dwarfking_rusted", 4, 7, 9, 4, 18, SoundEvents.ARMOR_EQUIP_NETHERITE, 3.5F, 0.15F, () -> Ingredient.of(Items.GOLD_INGOT));
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> KNIGHT = mat("knight", 3, 6, 8, 3, 14, SoundEvents.ARMOR_EQUIP_IRON, 2.0F, 0.05F, () -> Ingredient.of(Items.IRON_INGOT));
+    public static final DeferredHolder<ArmorMaterial, ArmorMaterial> KNIGHT_RUSTED = mat("knight_rusted", 3, 6, 8, 3, 14, SoundEvents.ARMOR_EQUIP_IRON, 2.0F, 0.05F, () -> Ingredient.of(Items.IRON_INGOT));
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> NAZGUL = mat("nazgul", 4, 7, 9, 4, 20, SoundEvents.ARMOR_EQUIP_NETHERITE, 3.5F, 0.1F, () -> Ingredient.of(Reg.BLACK_STEEL_INGOT.get()));
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> MITHRIL = mat("mithril", 4, 7, 9, 4, 28, SoundEvents.ARMOR_EQUIP_DIAMOND, 3.0F, 0.0F, () -> Ingredient.of(Reg.LUNARGENT_INGOT.get()));
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> FEET = mat("feet", 1, 0, 0, 0, 5, SoundEvents.ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, () -> Ingredient.of(Items.LEATHER));

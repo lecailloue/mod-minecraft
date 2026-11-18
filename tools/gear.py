@@ -276,7 +276,8 @@ def build():
                                                ('gondor', 'de la Garde de Gondor', 'GONDOR', 34, '#b8bec8', '#d6b254', '#e8e8f0', 'props().rarity(Rarity.RARE)'),
                                                ('rohan', 'de Rohan', 'ROHAN', 28, '#6a3022', '#d6a84c', '#a02020', 'props().rarity(Rarity.RARE)'),
                                                ('dwarfking', 'du roi nain', 'DWARFKING', 36, '#6a6f7a', '#d6b040', '#d03040', 'props().fireResistant().rarity(Rarity.EPIC)'),
-                                               ('elfking', 'du roi elfe', 'ELFKING', 40, '#e6e2d0', '#d8b040', '#3090e0', 'props().fireResistant().rarity(Rarity.EPIC)')):
+                                               ('elfking', 'du roi elfe', 'ELFKING', 40, '#e6e2d0', '#d8b040', '#3090e0', 'props().fireResistant().rarity(Rarity.EPIC)'),
+                                               ('knight', 'de chevalier', 'KNIGHT', 30, '#b4b8c0', '#8a2a24', '#d6b254', 'props().rarity(Rarity.RARE)')):
         armor_set(f'{pre}_rusted', fr_, f'{M}_RUSTED', dur_, _rust(b_), _rust(t_), _rust(g_), props=pr_, adj=('rouillé', 'rouillée'))
     LANG[f'entity.{MOD}.invisible_armor_stand'] = "Support d'armure invisible"
     item('invisible_armor_stand', "Support d'armure invisible", java='new InvisibleStandItem(props())',

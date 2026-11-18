@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"00_", "07i_", "07j_", "07k_"};
+    private static final String[] ONLY = {"00_", "07i_", "07j_", "07k_", "08j_"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -350,10 +350,11 @@ public final class ClientTest {
                 {Reg.DWARFKING_RUSTED_HELMET.get(), Reg.DWARFKING_RUSTED_CHESTPLATE.get(), Reg.DWARFKING_RUSTED_LEGGINGS.get(), Reg.DWARFKING_RUSTED_BOOTS.get(), Reg.DWARVEN_AXE.get()},
                 {Reg.KNIGHT_HELMET.get(), Reg.KNIGHT_CHESTPLATE.get(), Reg.KNIGHT_LEGGINGS.get(), Reg.KNIGHT_BOOTS.get(), net.minecraft.world.item.Items.IRON_SWORD},
                 {Reg.NAZGUL_HELMET.get(), Reg.NAZGUL_CHESTPLATE.get(), Reg.NAZGUL_LEGGINGS.get(), Reg.NAZGUL_BOOTS.get(), Reg.ORC_SCIMITAR.get()},
-                {Reg.MITHRIL_HELMET.get(), Reg.MITHRIL_CHESTPLATE.get(), Reg.MITHRIL_LEGGINGS.get(), Reg.MITHRIL_BOOTS.get(), Reg.KINGS_BLADE.get()}};
+                {Reg.MITHRIL_HELMET.get(), Reg.MITHRIL_CHESTPLATE.get(), Reg.MITHRIL_LEGGINGS.get(), Reg.MITHRIL_BOOTS.get(), Reg.KINGS_BLADE.get()},
+                {Reg.KNIGHT_RUSTED_HELMET.get(), Reg.KNIGHT_RUSTED_CHESTPLATE.get(), Reg.KNIGHT_RUSTED_LEGGINGS.get(), Reg.KNIGHT_RUSTED_BOOTS.get(), net.minecraft.world.item.Items.IRON_SWORD}};
         String[] closeNames = {"07b_orc_3d", "07c_nain_3d", "07d_elfe_3d", "07e_rohan_3d", "07f_gondor_3d", "07g_roi_elfe_3d",
-                "08b_orc_rouille", "08c_nain_rouille", "08d_elfe_rouille", "08e_rohan_rouille", "08f_gondor_rouille", "08g_roi_elfe_rouille", "07h_roi_nain_3d", "08h_roi_nain_rouille", "07i_chevalier_3d", "07j_nazgul_3d", "07k_mithril_3d"};
-        for (int ci = 0; ci < 17; ci++) {
+                "08b_orc_rouille", "08c_nain_rouille", "08d_elfe_rouille", "08e_rohan_rouille", "08f_gondor_rouille", "08g_roi_elfe_rouille", "07h_roi_nain_3d", "08h_roi_nain_rouille", "07i_chevalier_3d", "07j_nazgul_3d", "07k_mithril_3d", "08j_chevalier_rouille"};
+        for (int ci = 0; ci < 18; ci++) {
             Item[] set = close[ci];
             SCENES.add(new Scene(closeNames[ci], 70, p -> {
                 ServerLevel ow = p.server.overworld();
