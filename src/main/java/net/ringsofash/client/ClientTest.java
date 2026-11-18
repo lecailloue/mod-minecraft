@@ -373,6 +373,10 @@ public final class ClientTest {
                 ow.addFreshEntity(st);
                 st.hurt(ow.damageSources().generic(), 1000F);
                 st.hurt(ow.damageSources().playerAttack(p), 1000F);
+                p.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
+                p.attack(st); p.attack(st);
+                st.hurt(ow.damageSources().explosion(null, null), 1000F);
+                st.hurt(ow.damageSources().onFire(), 1000F);
                 System.out.println("[ClientTest] support invisible " + k + " vivant apres coups : " + st.isAlive() + " invisible : " + st.isInvisible());
             }
             view(p, ow, SX + 0.5, SY + 1.3, SZ, 0F, 7F);

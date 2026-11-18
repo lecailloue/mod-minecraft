@@ -23,5 +23,11 @@ public class InvisibleStand extends ArmorStand {
     }
 
     @Override
+    public boolean isAttackable() { return false; }                          // les coups de joueur (survie ou creatif) sont ignores
+
+    @Override
+    public boolean skipAttackInteraction(net.minecraft.world.entity.Entity attacker) { return true; }
+
+    @Override
     public ItemStack getPickResult() { return new ItemStack(Reg.INVISIBLE_ARMOR_STAND.get()); }
 }
