@@ -60,6 +60,8 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<BossEntity>> ASH_LORD = boss("ash_lord", 1.8F, 4.8F, true);
     public static final DeferredHolder<EntityType<?>, EntityType<BossEntity>> DRAGON = boss("dragon", 3.4F, 2.6F, true);
     public static final DeferredHolder<EntityType<?>, EntityType<BossEntity>> SORCERER = boss("sorcerer", 0.6F, 2.1F, false);
+    public static final DeferredHolder<EntityType<?>, EntityType<InvisibleStand>> INVISIBLE_STAND = ENTITIES.register("invisible_armor_stand",
+            () -> EntityType.Builder.<InvisibleStand>of(InvisibleStand::new, MobCategory.MISC).sized(0.5F, 1.975F).clientTrackingRange(10).updateInterval(3).build("invisible_armor_stand"));
     public static final DeferredHolder<EntityType<?>, EntityType<PeopleEntity>> HUMAN = people("human", 0.6F, 1.9F);
     public static final DeferredHolder<EntityType<?>, EntityType<PeopleEntity>> ELF = people("elf", 0.6F, 2.05F);
     public static final DeferredHolder<EntityType<?>, EntityType<PeopleEntity>> DWARF = people("dwarf", 0.7F, 1.4F);
@@ -107,6 +109,7 @@ public final class ModEntities {
     }
 
     private static void attributes(EntityAttributeCreationEvent e) {
+        e.put(INVISIBLE_STAND.get(), net.minecraft.world.entity.LivingEntity.createLivingAttributes().build());
         e.put(ORC.get(), mon(24, 5, 0.27, 2, 32, 0));
         e.put(WAR_ORC.get(), mon(36, 7, 0.28, 8, 40, 0.2));
         e.put(ORC_CHIEF.get(), mon(90, 10, 0.27, 10, 40, 0.5));

@@ -273,10 +273,10 @@ def build():
                                                ('rohan', 'de Rohan', 'ROHAN', 28, '#6a3022', '#d6a84c', '#a02020', 'props().rarity(Rarity.RARE)'),
                                                ('elfking', 'du roi elfe', 'ELFKING', 40, '#e6e2d0', '#d8b040', '#3090e0', 'props().fireResistant().rarity(Rarity.EPIC)')):
         armor_set(f'{pre}_rusted', fr_, f'{M}_RUSTED', dur_, _rust(b_), _rust(t_), _rust(g_), props=pr_, adj=('rouillé', 'rouillée'))
-        for piece in ('helmet', 'chestplate', 'leggings', 'boots'):
-            recipe(f'{pre}_rusted_{piece}', {'type': 'minecraft:crafting_shapeless', 'category': 'equipment',
-                                             'ingredients': [{'item': f'ringsofash:{pre}_{piece}'}, {'item': 'minecraft:iron_nugget'}],
-                                             'result': {'id': f'ringsofash:{pre}_rusted_{piece}', 'count': 1}})
+    LANG[f'entity.{MOD}.invisible_armor_stand'] = "Support d'armure invisible"
+    item('invisible_armor_stand', "Support d'armure invisible", java='new InvisibleStandItem(props())',
+         tex=sprite(['................', '......oooo......', '.....oaaaao.....', '.....oaaaao.....', '......oooo......', '...oooooooooo...', '..oa.oaaaao.ao..', '..oa.oaaaao.ao..', '...o.oaaaao.o...', '......oaaao.....', '......oaaao.....', '.....oo..oo.....', '.....oa..ao.....', '.....oa..ao.....', '..oooooooooooo..', '................'],
+                    {'o': (120, 190, 220, 255), 'a': (190, 230, 245, 140)}))
     item('elven_cloak', 'Cape elfique', java='ModGear.armor(ModGear.CLOAK, ArmorItem.Type.CHESTPLATE, 12, props())', tex=sprite(FOODS['cloak'], mat('#4a6a4a', trim='#c9c070')), tags=['chest_armor'])
     # la cape est dessinee par un calque 3D cote client : le calque d'armure du plastron reste invisible
     for lay in (1, 2): save(Image.new('RGBA', (64, 32), (0, 0, 0, 0)), f'{A}/textures/models/armor/cloak_layer_{lay}.png')

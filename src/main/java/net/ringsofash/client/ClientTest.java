@@ -360,6 +360,23 @@ public final class ClientTest {
                 view(p, ow, SX + 0.5, SY + 1.3, SZ, 0F, 7F);
             }));
         }
+        // supports invisibles : armures visibles, support invisible, incassable (on tente de le detruire)
+        SCENES.add(new Scene("06_support_invisible", 70, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            Item[][] sets = {close[3], close[4], close[5]};
+            for (int k = 0; k < 3; k++) {
+                net.ringsofash.entity.InvisibleStand st = ModEntities.INVISIBLE_STAND.get().create(ow);
+                st.moveTo(SX + 1.3 - k * 1.3, SY, SZ + 3.7, 180F, 0F);
+                EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET, EquipmentSlot.MAINHAND};
+                for (int i = 0; i < 5; i++) st.setItemSlot(slots[i], new ItemStack(sets[k][i]));
+                ow.addFreshEntity(st);
+                st.hurt(ow.damageSources().generic(), 1000F);
+                st.hurt(ow.damageSources().playerAttack(p), 1000F);
+                System.out.println("[ClientTest] support invisible " + k + " vivant apres coups : " + st.isAlive() + " invisible : " + st.isInvisible());
+            }
+            view(p, ow, SX + 0.5, SY + 1.3, SZ, 0F, 7F);
+        }));
     }
 
     private static void scenes() {
