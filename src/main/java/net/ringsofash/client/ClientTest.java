@@ -910,6 +910,28 @@ public final class ClientTest {
             }
             view(p, ow, SX + 0.5, SY + 1.2, SZ, 0F, 2F);
         }));
+        Item[][] close = {
+                {Reg.ORC_HELMET.get(), Reg.ORC_CHESTPLATE.get(), Reg.ORC_LEGGINGS.get(), Reg.ORC_BOOTS.get(), Reg.ORC_SCIMITAR.get()},
+                {Reg.DWARVEN_HELMET.get(), Reg.DWARVEN_CHESTPLATE.get(), Reg.DWARVEN_LEGGINGS.get(), Reg.DWARVEN_BOOTS.get(), Reg.DWARVEN_AXE.get()},
+                {Reg.ELVEN_HELMET.get(), Reg.ELVEN_CHESTPLATE.get(), Reg.ELVEN_LEGGINGS.get(), Reg.ELVEN_BOOTS.get(), Reg.ELVEN_BLADE.get()}};
+        String[] closeNames = {"07b_orc_3d", "07c_nain_3d", "07d_elfe_3d"};
+        for (int ci = 0; ci < 3; ci++) {
+            Item[] set = close[ci];
+            SCENES.add(new Scene(closeNames[ci], 70, p -> {
+                ServerLevel ow = p.server.overworld();
+                clear(ow);
+                float[] yaws = {180F, 90F, 0F};
+                for (int k = 0; k < 3; k++) {
+                    float yw = yaws[k];
+                    actor(ow, ModEntities.HUMAN.get(), SX + 1.5 - k * 1.5, SZ + 3.8, m -> {
+                        EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET, EquipmentSlot.MAINHAND};
+                        for (int i = 0; i < 5; i++) m.setItemSlot(slots[i], new ItemStack(set[i]));
+                        m.setYRot(yw); m.setYHeadRot(yw); m.setYBodyRot(yw);
+                    });
+                }
+                view(p, ow, SX + 0.5, SY + 1.15, SZ, 0F, 0F);
+            }));
+        }
         SCENES.add(new Scene("08_objets", 90, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);

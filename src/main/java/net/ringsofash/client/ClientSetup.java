@@ -3,6 +3,7 @@ package net.ringsofash.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.PartPose;
@@ -157,6 +158,18 @@ public final class ClientSetup {
             @Override public net.minecraft.resources.ResourceLocation getStillTexture() { return RingsOfAsh.id("block/morgul_ichor_still"); }
             @Override public net.minecraft.resources.ResourceLocation getFlowingTexture() { return RingsOfAsh.id("block/morgul_ichor_flow"); }
         }, net.ringsofash.fluid.ModFluids.ICHOR_TYPE.get());
+        e.registerItem(armorExt("orc", "head"), Reg.ORC_HELMET.get());
+        e.registerItem(armorExt("orc", "chest"), Reg.ORC_CHESTPLATE.get());
+        e.registerItem(armorExt("orc", "legs"), Reg.ORC_LEGGINGS.get());
+        e.registerItem(armorExt("orc", "boots"), Reg.ORC_BOOTS.get());
+        e.registerItem(armorExt("dwarven", "head"), Reg.DWARVEN_HELMET.get());
+        e.registerItem(armorExt("dwarven", "chest"), Reg.DWARVEN_CHESTPLATE.get());
+        e.registerItem(armorExt("dwarven", "legs"), Reg.DWARVEN_LEGGINGS.get());
+        e.registerItem(armorExt("dwarven", "boots"), Reg.DWARVEN_BOOTS.get());
+        e.registerItem(armorExt("elven", "head"), Reg.ELVEN_HELMET.get());
+        e.registerItem(armorExt("elven", "chest"), Reg.ELVEN_CHESTPLATE.get());
+        e.registerItem(armorExt("elven", "legs"), Reg.ELVEN_LEGGINGS.get());
+        e.registerItem(armorExt("elven", "boots"), Reg.ELVEN_BOOTS.get());
         e.registerItem(ext, Reg.ORC_CLEAVER.get(), Reg.ORC_SCIMITAR.get(), Reg.ORC_MACHETE.get(), Reg.ORC_SPEAR.get(), Reg.ORC_MACE.get(), Reg.GOBLIN_KING_STAFF.get(), Reg.GOBLIN_PICKAXE.get(),
                 Reg.LUNARGENT_SWORD.get(), Reg.ELVEN_BLADE.get(), Reg.ELVEN_GLAIVE.get(), Reg.FROST_BLADE.get(), Reg.BLOOD_BLADE.get(), Reg.VIPER_DAGGER.get(), Reg.STORM_BLADE.get(), Reg.SENTINEL_BLADE.get(), Reg.SUN_BLADE.get(), Reg.HALFLING_DAGGER.get(), Reg.RANGER_SWORD.get(), Reg.WIGHT_BLADE.get(), Reg.KINGS_BLADE.get(), Reg.VALMOIRE_BLADE.get(), Reg.DWARVEN_AXE.get(), Reg.DWARVEN_HAMMER.get(), Reg.ASH_MACE.get(), Reg.RIDER_SPEAR.get(), Reg.TROLL_CLUB.get(), Reg.LUNARGENT_PICKAXE.get(), Reg.ELVEN_BOW.get(), Reg.STAFF_FIRE.get(), Reg.STAFF_LIGHT.get(), Reg.STAFF_STORM.get(), Reg.STAFF_HEALING.get());
     }
@@ -252,6 +265,32 @@ public final class ClientSetup {
         e.registerLayerDefinition(CLOAK, CloakLayer::definition);
         for (String g : GEO) e.registerLayerDefinition(layer("geo_" + g), () -> GeoDef.layer(g));
         for (String h : HUMAN) e.registerLayerDefinition(layer("human_" + h), () -> human(h));
+        for (String set : ARMOR_SETS) for (String pc : ARMOR_PIECES) {
+            String n = "armor_" + set + "_" + pc;
+            e.registerLayerDefinition(layer(n), () -> GeoDef.layer(n));
+        }
+    }
+
+    // ---- armures 3D (orc, nain, elfe) : un modele par piece, pose copiee depuis le modele d'origine
+    private static final String[] ARMOR_SETS = {"orc", "dwarven", "elven"};
+    private static final String[] ARMOR_PIECES = {"head", "chest", "legs", "boots"};
+    private static final java.util.Map<String, HumanoidModel<LivingEntity>> ARMOR_MODELS = new java.util.HashMap<>();
+
+    private static net.neoforged.neoforge.client.extensions.common.IClientItemExtensions armorExt(String set, String piece) {
+        return new net.neoforged.neoforge.client.extensions.common.IClientItemExtensions() {
+            @Override
+            public HumanoidModel<?> getHumanoidArmorModel(LivingEntity living, net.minecraft.world.item.ItemStack stack, net.minecraft.world.entity.EquipmentSlot slot, HumanoidModel<?> original) {
+                HumanoidModel<LivingEntity> m = ARMOR_MODELS.computeIfAbsent(set + "_" + piece,
+                        k -> new HumanoidModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(layer("armor_" + set + "_" + piece))));
+                m.head.copyFrom(original.head); m.hat.copyFrom(original.hat); m.body.copyFrom(original.body);
+                m.rightArm.copyFrom(original.rightArm); m.leftArm.copyFrom(original.leftArm);
+                m.rightLeg.copyFrom(original.rightLeg); m.leftLeg.copyFrom(original.leftLeg);
+                m.head.visible = original.head.visible; m.hat.visible = original.hat.visible; m.body.visible = original.body.visible;
+                m.rightArm.visible = original.rightArm.visible; m.leftArm.visible = original.leftArm.visible;
+                m.rightLeg.visible = original.rightLeg.visible; m.leftLeg.visible = original.leftLeg.visible;
+                return m;
+            }
+        };
     }
 
     private static String peopleTex(PeopleEntity e, String base, int n) {

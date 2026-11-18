@@ -15,6 +15,8 @@ BOOTS = ['................', '................', '................', '..........
          '.ooaao...ooaao..', '.obaao...obaao..', '.oaaado..oaaado.', '.oddddo..oddddo.', '.oooooo..oooooo.', '................']
 
 def armor_layer(name, base, trim, gem, crown=None, seed=0):
+    if name in ('orc', 'dwarven', 'elven'):
+        return                                           # armures 3D : tools/armors3d.py
     from skins import Skin
     b = rgb(base); t = rgb(trim)
     for layer in (1, 2):
