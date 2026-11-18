@@ -344,13 +344,13 @@ public final class ClientTest {
                 float[] yaws = {180F, 90F, 0F};
                 for (int k = 0; k < 3; k++) {
                     float yw = yaws[k];
-                    actor(ow, ModEntities.HUMAN.get(), SX + 1.0 - k * 1.0, SZ + 2.5, m -> {
+                    actor(ow, ModEntities.HUMAN.get(), SX + 1.3 - k * 1.3, SZ + 3.7, m -> {
                         EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET, EquipmentSlot.MAINHAND};
                         for (int i = 0; i < 5; i++) m.setItemSlot(slots[i], new ItemStack(set[i]));
                         m.setYRot(yw); m.setYHeadRot(yw); m.setYBodyRot(yw);
                     });
                 }
-                view(p, ow, SX + 0.5, SY + 1.05, SZ, 0F, 2F);
+                view(p, ow, SX + 0.5, SY + 1.3, SZ, 0F, 7F);
             }));
         }
     }
