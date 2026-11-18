@@ -31,6 +31,7 @@ public final class TirithPlan {
     private final byte[] kind = new byte[W * D];                                 // 0 rien, 1 terrasse, 2 montagne, 3 eperon, 4 rampe, 5 contrefort
     private final byte[] ring = new byte[W * D];                                 // niveau de la terrasse (-1 hors terrasses)
     private final int[] top = new int[W * D];
+    private final boolean[] flank = new boolean[W * D];                         // escalier du flanc de l'eperon (monte vers le sud)
     private final boolean[] occ = new boolean[W * D];                            // emprise prise par un batiment
     public final List<int[]> spawns = new ArrayList<>();                    // {genre (0 civil, 1 garde, 2 cheval, 3 poule), x, y, z}
     public int houses, towers;
@@ -78,8 +79,11 @@ public final class TirithPlan {
         keelTunnels();
         parapets();
         terraces();
+        bridgeRamps();
         citadel();
         rocks();
+        carveStreets();
+        openStairTop();
         for (int x = 0; x < W; x++) for (int z = 0; z < D; z++) {
             int t = -OFF - 1;
             for (int y = H - OFF - 1; y >= -OFF; y--) if (g[idx(x, y, z)] != AIR) { t = y; break; }
@@ -147,7 +151,7 @@ public final class TirithPlan {
 
     private void columns() {
         ramps.add(new int[]{CX, 5, CZ + (int) R[0], 0, FL[0]});
-        double[][] rp = {{46, 1}, {-40, 2}, {32, 3}, {-30, 4}, {27, 5}};
+        double[][] rp = {{46, 1}, {-40, 2}, {32, 3}, {-30, 4}, {29, 5}};
         for (int k = 0; k < 5; k++) {
             int xr = CX + (int) rp[k][0];
             double dx = rp[k][0];
@@ -170,15 +174,15 @@ public final class TirithPlan {
                 if (fh > 5) { fill[i] = (int) fh; kind[i] = 5; }
             }
         }
-        // rampe du flanc de l'eperon (niveau 5 -> 6), au bord est de l'eperon
-        for (int z = CZ + 7; z <= CZ + 25; z++) {
-            double dz = z + 0.5 - CZ, hw = prowHW(dz);
-            for (int x = CX + (int) hw - 4; x <= CX + (int) hw + 6; x++) {
-                int i = z * W + x;
-                if (kind[i] == 3) continue;
-                fill[i] = FL[5] - 1 + (int) Math.round(18 - (z - (CZ + 7))); kind[i] = 4;
-                if (fill[i] > PROW_TOP - 1) fill[i] = PROW_TOP - 1;
-            }
+        // escalier du flanc de l'eperon (niveau 6 -> cour) : il part de la rue du niveau 6, longe le bord est de l'eperon vers le sud et debouche sur un palier de la cour
+        for (int z = CZ + 6; z <= CZ + 27; z++) for (int x = CX + 22; x <= CX + 25; x++) {
+            int i = z * W + x;
+            if (z > CZ + 24 && x > CX + 22) continue;
+            fill[i] = Math.min(PROW_TOP - 1, FL[5] - 1 + (z - (CZ + 6))); kind[i] = 4; flank[i] = true;
+        }
+        for (int z = CZ + 24; z <= CZ + 27; z++) for (int x = CX + 14; x <= CX + 22; x++) {          // palier de debarquement, a la hauteur de la cour
+            int i = z * W + x;
+            fill[i] = PROW_TOP - 1; kind[i] = 3;
         }
         // rampes des murs
         for (int[] rp2 : ramps) {
@@ -303,7 +307,7 @@ public final class TirithPlan {
             boolean slope = below != f || f < PROW_TOP - 1;
             boolean step = false;
             for (int[] r2 : ramps) if (x >= r2[0] - r2[1] && x <= r2[0] + r2[1] && z >= r2[2] - (r2[4] - r2[3]) && z <= r2[2]) step = true;
-            if (z >= CZ + 7 && z <= CZ + 25) step = true;
+            if (flank[i]) { set(x, f, z, f < PROW_TOP - 1 ? stair(WB_STAIR, S, false) : WB); continue; }
             if (step && f < PROW_TOP - 1 && f > -1) set(x, f, z, stair(WB_STAIR, N, false));
             else set(x, f, z, WB);
         }
@@ -339,6 +343,54 @@ public final class TirithPlan {
             if (area(xx, zz) && kind[zz * W + xx] == 4) return true;
         }
         return false;
+    }
+
+    /** la rue de chaque niveau traverse la tranchee de la rampe qui monte au niveau suivant : un pont de pierre a hauteur de rue l'enjambe, sans parapet ni obstacle */
+    private void bridgeRamps() {
+        for (int n = 0; n < ramps.size(); n++) {
+            int[] r = ramps.get(n);
+            int xr = r[0], hw = r[1], b = r[4];
+            int band = n;                                                          // la rampe n traverse la bande n (niveau b)
+            double ro = R[band];
+            for (int x = xr - hw - 1; x <= xr + hw + 1; x++) for (int z = r[2] - (r[4] - r[3]) - 2; z <= r[2] + 2; z++) {
+                if (!area(x, z)) continue;
+                double rr = Math.hypot(x + 0.5 - CX, z + 0.5 - CZ);
+                if (rr < ro - 12.5 || rr > ro - 7.5) continue;
+                for (int y = b; y <= b + 3; y++) set(x, y, z, AIR);
+                int below = get(x, b - 1, z);
+                if (below == AIR || below == WB_WALL || below == FENCE_B) set(x, b - 1, z, PAVE);
+            }
+        }
+    }
+
+    /** garantit une rue continue (3 blocs de large, 4 de haut) sur chaque niveau : les tours de garde, maisons et decors ne la barrent jamais */
+    private void carveStreets() {
+        for (int k = 0; k < 6; k++) {
+            double rm = R[k] - 10;
+            int b = FL[k];
+            for (int x = 0; x < W; x++) for (int z = 0; z < D; z++) {
+                int i = z * W + x;
+                if (kind[i] != 1 && kind[i] != 4) continue;
+                if (kind[i] == 1 && ring[i] != k) continue;
+                double rr = Math.hypot(x + 0.5 - CX, z + 0.5 - CZ);
+                if (Math.abs(rr - rm) > 1.7) continue;
+                if (kind[i] == 4 && (flank[i] || !(fill[i] >= b - 1 && fill[i] <= b))) continue;
+                for (int y = b; y <= b + 3; y++) set(x, y, z, AIR);
+                int below = get(x, b - 1, z);
+                if (below == AIR || below == WB_WALL || below == FENCE_B) set(x, b - 1, z, PAVE);
+            }
+        }
+    }
+
+    /** le haut de l'escalier du flanc debouche dans la cour : le parapet du bord de l'eperon y est ouvert */
+    private void openStairTop() {
+        for (int x = CX + 14; x <= CX + 26; x++) for (int z = CZ + 19; z <= CZ + 25; z++) {
+            for (int y = PROW_TOP; y <= PROW_TOP + 3; y++) set(x, y, z, AIR);
+            if (x >= CX + 20 && z >= CZ + 23) {
+                int b = get(x, PROW_TOP - 1, z);
+                if (b == AIR || b == 111 || b == 20 || b == WB_STAIR) set(x, PROW_TOP - 1, z, WB);
+            }
+        }
     }
 
     private void terraces() {
@@ -798,6 +850,31 @@ public final class TirithPlan {
         // grande porte de la tour, cote cour
         for (int y = 0; y < 5; y++) for (int dx = -1; dx <= 1; dx++) set(cx + dx, y0 + y, cz + 8, AIR);
         for (int dx = -2; dx <= 2; dx++) set(cx + dx, y0 + 5, cz + 8, QB);
+        towerStair(cx, cz, y0);
+    }
+
+    /** escalier en colimacon a l'interieur de la tour : un couloir d'un bloc autour d'un pilier central, de la grande porte jusqu'a la plate-forme sous la lanterne sommitale */
+    private void towerStair(int cx, int cz, int y0) {
+        int[][] ring = {{0, 2}, {-1, 2}, {-2, 2}, {-2, 1}, {-2, 0}, {-2, -1}, {-2, -2}, {-1, -2}, {0, -2}, {1, -2}, {2, -2}, {2, -1}, {2, 0}, {2, 1}, {2, 2}, {1, 2}};
+        final int top = 104, last = 105;
+        for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
+            boolean isRing = Math.max(Math.abs(dx), Math.abs(dz)) == 2;
+            for (int y = 0; y <= top; y++) set(cx + dx, y0 + y, cz + dz, isRing ? AIR : WB);
+        }
+        for (int z = 3; z <= 7; z++) for (int dx = -1; dx <= 1; dx++) for (int y = 0; y <= 3; y++) set(cx + dx, y0 + y, cz + z, AIR);   // le couloir d'entree
+        for (int n = 1; n <= last; n++) {
+            int[] p = ring[n % 16], q = ring[(n + 1) % 16];
+            int dx = q[0] - p[0], dz = q[1] - p[1];
+            int dir = dz < 0 ? N : dx > 0 ? E : dz > 0 ? S : W_;
+            set(cx + p[0], y0 + n - 1, cz + p[1], stair(WB_STAIR, dir, false));
+            if (n % 8 == 0 && n + 16 <= last) set(cx + p[0], y0 + n + 14, cz + p[1], HLANTERN);   // suspendue sous la marche du tour suivant
+        }
+        int[] e = ring[last % 16], e2 = ring[(last - 1) % 16], e3 = ring[(last - 2) % 16];
+        for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
+            if ((dx == e[0] && dz == e[1]) || (dx == e2[0] && dz == e2[1]) || (dx == e3[0] && dz == e3[1])) continue;              // les deux dernieres marches gardent leur plafond haut
+            set(cx + dx, y0 + last, cz + dz, WB);                                 // la plate-forme sommitale
+        }
+        set(cx, y0 + last + 1, cz, LANTERN);
     }
 
     private void wings(int cx, int cz, int y0) {
