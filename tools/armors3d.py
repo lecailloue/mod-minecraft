@@ -1063,7 +1063,7 @@ def d_ft(kind):
                 F.px(0, F.h // 2, SK_V, .45); F.px(F.w - 1, F.h // 2 + 1, SK_V, .45)
             elif kind in ('toe', 'toe5', 'big'):                                      # ongle en bout d'orteil
                 nh = 2 if kind in ('big', 'toe') else 1
-                F.rect(0, 0, F.w, nh, SK_N, .95)
+                F.rect(0, 0, F.w, nh, (242, 226, 200), 1.0)
                 if kind == 'big': F.hline(nh - 1, 0, F.w, (206, 150, 140), .6); F.px(0, 0, SK_D, .4); F.px(F.w - 1, 0, SK_D, .4)
                 else: F.px(0, 0, (230, 178, 168), .6)
                 if F.h > nh + 1: F.hline(F.h - 2, 0, F.w, SK_D, .4)                    # pli de l'articulation
@@ -1078,24 +1078,24 @@ def d_ft(kind):
             if face == 'front': F.px(1, 1, SK_V, .5); F.px(2, 2, SK_V, .5)
             F.hline(F.h - 1, 0, F.w, SK_D, .25)
         elif kind in ('toe', 'toe5', 'big') and face in ('front', 'left', 'right'):
-            if face == 'front': F.px(F.w // 2, 0, SK_N, .6)                           # bout d'orteil
-            else: F.hline(F.h - 1, 0, F.w, SK_D, .5)                                   # dessous plus sombre
+            if face == 'front': F.rect(0, 0, F.w, F.h, SK_D, .25); F.px(F.w // 2, 0, (242, 226, 200), .9)   # bout d'orteil
+            else:
+                F.rect(0, 0, F.w, F.h, SK_D, .3); F.vline(0, 0, F.h, (120, 76, 58), .55); F.vline(F.w - 1, 0, F.h, (120, 76, 58), .55)   # plis entre orteils
         elif kind in ('mid', 'ball', 'heel') and face in ('front', 'back', 'left', 'right'):
             F.hline(F.h - 1, 0, F.w, SK_D, .35)
             if kind == 'heel': F.rect(0, F.h - 1, F.w, 1, SK_C, .5)
     return f
 
 
-mat('hair', (112, 76, 42), 4, 5, (1.05, .98, .9))
+mat('hair', (150, 98, 50), 4, 5, (1.05, .98, .9))
 
 
 def d_hair(face, F, rng):
     for y in range(F.h):
         for x in range(F.w):
             r = rng.random()
-            if r < .3: F.px(x, y, (74, 46, 22), .55)
-            elif r < .5: F.px(x, y, (168, 118, 66), .5)
-    if face == 'top' and F.w >= 1: F.px(0, 0, (190, 140, 84), .6)
+            if r < .33: F.px(x, y, (92, 56, 28), .65)
+            elif r < .6: F.px(x, y, (204, 148, 82), .6)
 
 
 def feet():
@@ -1105,21 +1105,22 @@ def feet():
     rl.box((-3, 10, -3), (5, 2, 5), 'skin', .12, 'ft_mid', d_ft('mid'))
     rl.box((-2, 10, 0.5), (3, 2, 2), 'skin', .22, 'ft_heel', d_ft('heel'))
     rl.box((-3, 10, -4), (5, 2, 1), 'skin', .2, 'ft_ball', d_ft('ball'))
-    # orteils : cubes (2,2,3) a inflation negative -> larges de ~0.9, ongle sur 2x2 pixels ; le gros orteil est plus gros
+    # orteils : cubes (2,2,3) a inflation negative -> visibles 0.8 x 0.8 x 1.8, ongle sur 2x2 pixels, espaces de 0.2 ; le gros orteil (1.4) est plus gros
     rl.box((0.3, 10.3, -6.7), (2, 2, 3), 'skin', -.3, 'ft_big', d_ft('big'))
-    for nm, x, y, z in (('t2', -0.85, 10.5, -6.55), ('t3', -1.75, 10.6, -6.35), ('t4', -2.65, 10.7, -6.05)):
-        rl.box((x, y, z), (2, 2, 3), 'skin', -.55, 'ft_toe', d_ft('toe'), nm)
-    rl.box((-3.55, 10.65, -5.65), (2, 2, 2), 'skin', -.65, 'ft_toe5', d_ft('toe5'))
-    # poils : touffes inclinees (pivot a la base)
-    rnd = np.random.default_rng(11)
-    tufts = [(-2.2, -2.4), (-1.2, -2.8), (-0.2, -2.5), (0.8, -2.9), (-1.7, -1.6), (-0.6, -1.4), (0.5, -1.7), (-2.3, -0.6), (-1.1, -0.3), (0.1, -0.5), (1.1, -1.0), (-0.4, 0.4)]
-    for i, (x, z) in enumerate(tufts):
-        h = Part(f'h{i}', (x, 9.9, z), (R(float(rnd.integers(-25, 26))), R(float(rnd.integers(-40, 41))), R(float(rnd.integers(-25, 26)))))
-        h.box((-0.5, -2, -0.5), (1, 2, 1), 'hair', -.2, 'ft_hair', d_hair); rl.children.append(h)
-    for i, (x, y, z, rx, rz) in enumerate(((-2.4, 8.6, 0.0, 0, -60), (-2.3, 7.2, -1.0, 10, -70), (2.1, 8.4, -0.8, 0, 60), (-2.5, 9.4, -2.6, -20, -50),   # chevilles et flancs
-                                            (-0.5, 11.0, -4.6, -35, 0), (-1.5, 11.0, -4.6, -35, 0), (-2.5, 11.0, -4.6, -35, 5), (0.7, 11.0, -4.6, -35, 0))):    # base des orteils
-        h = Part(f'hh{i}', (x, y, z), (R(rx), 0, R(rz)))
-        h.box((-0.5, -2, -0.5), (1, 2, 1), 'hair', -.2, 'ft_hair', d_hair); rl.children.append(h)
+    for nm, x, y, z in (('t2', -1.0, 10.6, -6.5), ('t3', -2.0, 10.6, -6.2), ('t4', -2.9, 10.6, -5.8)):
+        rl.box((x, y, z), (2, 2, 3), 'skin', -.6, 'ft_toe', d_ft('toe'), nm)
+    rl.box((-3.75, 10.75, -5.55), (2, 2, 2), 'skin', -.75, 'ft_toe5', d_ft('toe5'))
+    # poils : bouquets touffus de cubes inclines (cou-de-pied, chevilles, flancs, base des orteils)
+    rnd = np.random.default_rng(5)
+    groups = [(-0.6, 9.9, -1.4, 6, 1.0), (-1.9, 9.9, -2.4, 3, .6), (0.7, 9.9, -2.2, 3, .6),            # dessus du pied
+              (-0.2, 6.9, -2.1, 4, .9), (-2.3, 7.8, -1.0, 3, .7), (2.1, 8.0, -0.6, 3, .7),            # cheville et flancs
+              (-3.1, 10.2, -3.4, 3, .5), (1.9, 10.2, -3.3, 2, .5), (-0.6, 10.3, -4.1, 4, .9)]         # flancs du pied, base des orteils
+    k = 0
+    for gx, gy, gz, n, sp in groups:
+        for _ in range(n):
+            x = gx + float(rnd.uniform(-sp, sp)); z = gz + float(rnd.uniform(-sp, sp)); y = gy + float(rnd.uniform(-.2, .15))
+            h = Part(f'h{k}', (x, y, z), (R(float(rnd.integers(-45, 46))), R(float(rnd.integers(-60, 61))), R(float(rnd.integers(-45, 46)))))
+            h.box((-1, -2, -1), (2, 2, 2), 'hair', -.4, 'ft_hair', d_hair); rl.children.append(h); k += 1
     ll = mirrored(rl, 'left_leg')
     return {'head': [], 'chest': [], 'legs': [], 'boots': [rl, ll]}
 

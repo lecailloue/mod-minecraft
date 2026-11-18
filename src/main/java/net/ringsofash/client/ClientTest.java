@@ -369,12 +369,12 @@ public final class ClientTest {
             float[] yaws = {180F, 140F};
             for (int k = 0; k < 2; k++) {
                 float yw = yaws[k];
-                actor(ow, ModEntities.HUMAN.get(), SX + 0.05 + k * 0.9, SZ + 1.5, m -> {
+                actor(ow, ModEntities.HUMAN.get(), SX + 0.2 + k * 0.6, SZ + 1.0, m -> {
                     m.setItemSlot(EquipmentSlot.FEET, new ItemStack(Reg.FEET_BOOTS.get()));
                     m.setYRot(yw); m.setYHeadRot(yw); m.setYBodyRot(yw);
                 });
             }
-            view(p, ow, SX + 0.5, SY + 0.85, SZ, 0F, 38F);
+            view(p, ow, SX + 0.5, SY + 0.6, SZ, 0F, 34F);
         }));
         // 3 textures de rouille : meme armure, variantes 1 / 2 / 3 (tag rust_variant)
         SCENES.add(new Scene("08i_variantes_rouille", 70, p -> {
