@@ -564,6 +564,255 @@ def rohan():
 SETS['rohan'] = rohan
 
 
+# ================================================================== GARDE DE GONDOR (acier clair, ailes, arbre blanc)
+mat('gst', (172, 178, 190), 5, 6, (1, 1, 1.06))
+mat('gdk', (74, 78, 90), 4, 5, (1, 1, 1.08))
+mat('gwh', (226, 224, 214), 3, 4, (1, 1, .97))
+mat('gmail', (104, 108, 120), 6, 7, (1, 1, 1.05))
+mat('gbk', (34, 34, 42), 3, 4, (1, 1, 1.1))
+mat('gfe', (240, 238, 232), 4, 5, (1, 1, 1))
+mat('gle', (50, 40, 36), 4, 5, (1, .92, .85))
+GG, GGD, GS = (214, 178, 84), (86, 66, 26), (236, 238, 246)
+
+
+def d_g_steel(rows=(), gold=False):
+    def f(face, F, rng):
+        scratches(F, rng, 4, (255, 255, 255), .3)
+        if face not in ('top', 'bottom'):
+            for y in rows: ridge(F, y, (70, 74, 88), GS) if y + 1 < F.h else None
+            if F.h > 2: F.hline(F.h - 1, 0, F.w, GG if gold else (70, 74, 88), .8)
+            if gold: F.hline(0, 0, F.w, GG, .8)
+        rivets(F, (250, 250, 255), 0)
+    return f
+
+
+def d_g_helm(face, F, rng):
+    scratches(F, rng, 4, (255, 255, 255), .3)
+    if face in ('front', 'back', 'left', 'right'):
+        F.hline(0, 0, F.w, GG, .85); F.hline(F.h - 1, 0, F.w, (70, 74, 88), .7)
+        if face == 'front': F.art(1, 1, ['#...#.#...#'][:1], {'#': GGD}) if F.w >= 8 and F.h >= 3 else None
+    rivets(F, (250, 250, 255), 0)
+
+
+def d_g_wing(face, F, rng):
+    for y in range(F.h):
+        F.hline(y, 0, F.w, (205, 208, 214) if y % 2 else (250, 250, 250), .55)
+    if face in ('front', 'back', 'left', 'right'):
+        F.hline(0, 0, F.w, GG, .7)
+        F.vline(0, 0, F.h, GG, .6) if face in ('left', 'right') else None
+
+
+def d_g_body(face, F, rng):
+    scratches(F, rng, 7, (255, 255, 255), .3)
+    if face == 'front':
+        for x, y in ((3, 1), (4, 1)): F.px(x, y, GG, .9)
+        # l'Arbre Blanc grave : tronc, branches, feuilles
+        F.vline(3, 4, 9, GG, .9); F.vline(4, 4, 9, GG, .9)
+        for k, (x, y) in enumerate(((2, 3), (5, 3), (1, 5), (6, 5), (2, 6), (5, 6))): F.px(x, y, GG, .85)
+        F.px(3, 3, GG, .9); F.px(4, 3, GG, .9); F.px(3, 2, GG, .8); F.px(4, 2, GG, .8)
+        for x in (1, 6): F.px(x, 4, GGD, .6)
+        F.rect(0, 10, 8, 2, (60, 62, 74)); F.hline(9, 0, 8, GS, .45)
+    elif face == 'back':
+        F.vline(3, 0, 10, (70, 74, 88), .7); F.vline(4, 0, 10, GS, .35)
+        for y in (3, 6): ridge(F, y, (70, 74, 88), GS)
+        F.rect(0, 10, 8, 2, (60, 62, 74))
+    elif face in ('left', 'right'):
+        for y in (3, 6): ridge(F, y, (70, 74, 88), GS)
+        F.rect(0, 10, F.w, 2, (60, 62, 74))
+        F.hline(0, 0, F.w, GG, .7)
+
+
+def d_g_mail(face, F, rng):
+    for y in range(F.h):
+        for x in range(F.w):
+            if (x + y) % 2 == 0: F.px(x, y, (44, 46, 56), .55)
+            elif y % 2 == 0: F.px(x, y, (190, 194, 206), .22)
+    if face in ('front', 'back'): jagged_bottom(F, rng, 1)
+
+
+def d_g_tabard(face, F, rng):
+    for y in range(0, F.h, 3): F.hline(y, 0, F.w, (190, 188, 178), .25)
+    if face == 'front':
+        F.vline(0, 0, F.h, GG, .8); F.vline(F.w - 1, 0, F.h, GG, .8)
+        F.hline(F.h - 1, 0, F.w, GG, .9); F.hline(F.h - 2, 0, F.w, GGD, .5)
+        F.vline(F.w // 2, 2, F.h - 4, (150, 150, 144), .4)
+    else:
+        F.hline(F.h - 1, 0, F.w, GGD, .5)
+
+
+def d_g_boot(face, F, rng):
+    scratches(F, rng, 4, (150, 130, 110), .15)
+    for y in range(3, F.h, 3): F.hline(y, 0, F.w, (20, 16, 14), .4)
+    if face == 'bottom': F.rect(0, 0, F.w, F.h, (26, 22, 22))
+    if face in ('front', 'back', 'left', 'right'): F.hline(F.h - 1, 0, F.w, (16, 14, 14), .8)
+
+
+def gondor():
+    G = d_g_steel
+    head = Part('head')
+    head.box((-4, -8, -4), (8, 3, 8), 'gst', .55, 'g_ring', d_g_helm)
+    head.box((-3, -9, -2.5), (6, 1, 5), 'gst', .45, 'g_dome', G(gold=True))
+    head.box((-0.5, -10.2, -2), (1, 1, 4), 'gdk', 0, 'g_fin', G())
+    head.box((-4.3, -4, -3), (1, 4, 4), 'gst', .3, 'g_cheek', G(rows=(2,), gold=True))
+    head.cubes.append(Cube((3.3, -4, -3), (1, 4, 4), 'gst', .3, 'g_cheek', G(rows=(2,), gold=True), True))
+    head.box((-0.5, -4, -4.6), (1, 4, 1), 'gst', .2, 'g_nose', G())
+    wr = Part('wing_r', (-3.8, -8.4, 0.5), (R(-12), 0, R(-22))); head.children.append(wr)
+    wr.box((-1, -7, -2.5), (1, 7, 5), 'gfe', 0, 'g_wing', d_g_wing)
+    head.children.append(mirrored(wr, 'wing_l'))
+    neck = Part('neck', (0, -2.6, 3.4), (R(12), 0, 0)); head.children.append(neck)
+    neck.box((-4, 0, 0), (8, 2, 1), 'gmail', 0, 'g_neck', d_g_mail)
+
+    body = Part('body')
+    body.box((-4, 0, -2), (8, 12, 4), 'gst', .6, 'g_body', d_g_body)
+    ra = Part('right_arm')
+    for i, (py, rz) in enumerate(((-2.9, -8), (-1.4, -18))):
+        pa = Part(f'pauld{i}', (0, py, 0), (0, 0, R(rz))); ra.children.append(pa)
+        pa.box((-5, -1, -2.5), (6, 1, 5), 'gst', .15, 'g_paul', G(rows=(), gold=True))
+    ra.box((-3, 4, -2), (4, 4, 4), 'gmail', .5, 'g_brac', d_g_mail)
+    la = mirrored(ra, 'left_arm')
+    chest = [body, ra, la]
+
+    body = Part('body')
+    body.box((-4, 11, -2), (8, 2, 4), 'gdk', .85, 'g_belt', G())
+    body.box((-4, 12.5, -2), (8, 3, 4), 'gmail', .8, 'g_skirt', d_g_mail)
+    body.box((-3, 11.5, -3.0), (6, 11, 1), 'gwh', .35, 'g_tab', d_g_tabard)
+    rl = Part('right_leg')
+    rl.box((-2, 0, -2), (4, 5, 4), 'gdk', .55, 'g_thigh', G(rows=(2,)))
+    rl.box((-2.3, 4.4, -3.2), (4, 3, 2), 'gst', 0, 'g_knee', G(gold=True))
+    ll = mirrored(rl, 'left_leg')
+    legs = [body, rl, ll]
+
+    rl = Part('right_leg')
+    rl.box((-2, 6, -2), (4, 6, 4), 'gle', .55, 'g_boot', d_g_boot)
+    rl.box((-2, 2.5, -2.9), (4, 6, 1), 'gst', .1, 'g_greave', G(rows=(2,), gold=True))
+    rl.box((-2.5, 5.2, -2.5), (5, 1, 5), 'gst', .1, 'g_cuff', G())
+    rl.box((-2, 10.2, -3.6), (4, 2, 2), 'gdk', 0, 'g_toe', G())
+    ll = mirrored(rl, 'left_leg')
+    return {'head': [head], 'chest': chest, 'legs': legs, 'boots': [rl, ll]}
+
+
+SETS['gondor'] = gondor
+
+
+# ================================================================== ROI ELFE (diademe de laurier, tunique doree, cape verte a dorures)
+mat('kgo', (206, 168, 84), 4, 5, (1.05, 1, .8))
+mat('kgl', (240, 214, 130), 4, 5, (1.05, 1, .85))
+mat('kcp', (82, 108, 90), 4, 5, (.92, 1, .95))          # cape vert-gris
+mat('kcl', (176, 140, 70), 4, 5, (1.05, 1, .8))         # tissu dore matelasse
+mat('kle', (96, 72, 44), 4, 5, (1, .9, .8))
+KG, KGD, KGL = (246, 214, 120), (104, 76, 28), (255, 244, 196)
+
+
+def d_k_gold(rows=(), leaf=False):
+    def f(face, F, rng):
+        scratches(F, rng, 3, KGL, .3)
+        if face not in ('top', 'bottom'):
+            for y in rows: ridge(F, y, KGD, KGL) if y + 1 < F.h else None
+            if F.h > 2: F.hline(F.h - 1, 0, F.w, KGD, .6)
+            if leaf and F.h >= 3: F.vline(F.w // 2, 0, F.h, KGD, .6)
+        rivets(F, KGL, 0)
+    return f
+
+
+def d_k_band(face, F, rng):
+    if face in ('top', 'bottom'):
+        F.al[:, :] = 0                                    # diademe ouvert : on garde les cheveux
+        return
+    F.hline(0, 0, F.w, KGL, .9); F.hline(F.h - 1, 0, F.w, KGD, .7)
+    for x in range(1, F.w, 3): F.px(x, 0, KGD, .7)        # rinceau
+    if face == 'front' and F.w >= 8:
+        F.px(3, 1, KGL, .9); F.px(4, 1, KGL, .9)
+    scratches(F, rng, 2, KGL, .3)
+
+
+def d_k_cloth(face, F, rng):
+    for y in range(0, F.h, 2):
+        for x in range(F.w):
+            if (x + y) % 4 == 0: F.px(x, y, (120, 90, 40), .3)
+    if F.h > 4: F.hline(F.h - 1, 0, F.w, KGD, .5)
+
+
+def d_k_body(face, F, rng):
+    for y in range(F.h):
+        for x in range(F.w):
+            if (x + y) % 4 == 0: F.px(x, y, (120, 90, 40), .3)
+    scratches(F, rng, 4, KGL, .3)
+    if face == 'front':
+        for k in range(8):                                                                   # sangles croisees a runes
+            for t in (0, 1):
+                F.px(min(7, k), min(11, k + 1 + t), KG, .9); F.px(max(0, 7 - k), min(11, k + 1 + t), KG, .9)
+        for k in range(1, 8): F.px(k, 4 if k % 2 else 5, KGD, .5)
+        F.rect(0, 8, 8, 4, (150, 118, 54), .95)                                              # large ceinture drapee
+        for y in (8, 10): F.hline(y, 0, 8, KGL, .6)
+        F.px(2, 11, KGL, .9); F.px(5, 11, KGL, .9)
+    elif face == 'back':
+        F.rect(0, 8, 8, 4, (150, 118, 54), .95)
+        for y in (8, 10): F.hline(y, 0, 8, KGL, .6)
+    elif face in ('left', 'right'):
+        F.rect(0, 8, F.w, 4, (150, 118, 54), .95)
+        F.hline(8, 0, F.w, KGL, .6)
+
+
+def d_k_cape(face, F, rng):
+    for y in range(F.h):
+        F.hline(y, 0, F.w, (70, 94, 78) if y % 3 == 0 else (96, 124, 104), .35)
+    if face == 'back':
+        F.hline(F.h - 1, 0, F.w, KG, .9); F.hline(F.h - 2, 0, F.w, KGD, .5)
+        F.vline(0, 0, F.h, KG, .9); F.vline(F.w - 1, 0, F.h, KG, .9)
+        for y in range(2, F.h - 2, 3):                                                       # dorures : feuilles
+            for x in (2, F.w - 3): F.px(x, y, KG, .85); F.px(x, y + 1, KGD, .5)
+        for y in range(1, F.h - 2, 4):
+            F.px(F.w // 2, y, KG, .85); F.px(F.w // 2 - 1, y + 1, KG, .6); F.px(F.w // 2 + 1, y + 1, KG, .6)
+    elif face in ('left', 'right'):
+        F.vline(0, 0, F.h, KG, .8)
+    elif face == 'bottom':
+        F.rect(0, 0, F.w, F.h, KGD, .6)
+
+
+def elfking():
+    G = d_k_gold
+    head = Part('head')
+    head.box((-4, -8, -4), (8, 2, 8), 'kgo', .5, 'k_band', d_k_band)
+    for i, (rx, ry, rz, px, py, pz) in enumerate(((-14, 0, -10, -1.2, -8.3, -2.0), (-26, 0, -26, -2.6, -8.1, 0.0), (-38, 0, -42, -3.4, -7.8, 2.2))):
+        lf = Part(f'leaf_r{i}', (px, py, pz), (R(rx), 0, R(rz))); head.children.append(lf)
+        lf.box((-0.5, -4, -0.5), (1, 4, 2), 'kgl', 0, 'k_leaf', G(leaf=True))
+        head.children.append(mirrored(lf, f'leaf_l{i}'))
+    neck = Part('neck', (0, -2.6, 3.4), (R(12), 0, 0)); head.children.append(neck)
+    neck.box((-4, 0, 0), (8, 2, 1), 'kcl', 0, 'k_neck', d_k_cloth)
+
+    body = Part('body')
+    body.box((-4, 0, -2), (8, 12, 4), 'kcl', .6, 'k_body', d_k_body)
+    cape = Part('cape', (0, -0.4, 2.3), (R(5), 0, 0)); body.children.append(cape)
+    cape.box((-4, 0, 0), (8, 12, 1), 'kcp', 0.4, 'k_cape', d_k_cape)
+    ra = Part('right_arm')
+    for i, (py, rz) in enumerate(((-2.8, -8), (-1.4, -18))):
+        pa = Part(f'lam{i}', (0, py, 0), (0, 0, R(rz))); ra.children.append(pa)
+        pa.box((-4.5, -1, -2), (3, 1, 4), 'kgo', .12, 'k_lam', G(leaf=True))
+    ra.box((-3, 4, -2), (4, 3, 3), 'kgo', .55, 'k_brac', G(rows=(1,)))
+    la = mirrored(ra, 'left_arm')
+    chest = [body, ra, la]
+
+    body = Part('body')
+    body.box((-4, 11, -2), (8, 2, 4), 'kle', .85, 'k_belt2', d_k_cloth)
+    body.box((-4, 12.5, -2), (8, 4, 4), 'kcl', .8, 'k_skirt', d_k_cloth)
+    rl = Part('right_leg')
+    rl.box((-2, 0, -2), (4, 5, 4), 'kcl', .55, 'k_thigh', d_k_cloth)
+    rl.box((-2.3, 4.4, -3.2), (4, 3, 2), 'kgo', 0, 'k_knee', G(leaf=True))
+    ll = mirrored(rl, 'left_leg')
+    legs = [body, rl, ll]
+
+    rl = Part('right_leg')
+    rl.box((-2, 6, -2), (4, 6, 4), 'kle', .5, 'k_boot', d_o_boot)
+    rl.box((-2, 2, -2.9), (4, 7, 1), 'kgo', .1, 'k_greave', G(rows=(2, 4)))
+    rl.box((-2.5, 4.6, -2.5), (5, 1, 5), 'kgl', .1, 'k_cuff', G())
+    rl.box((-1, 10.4, -4.2), (2, 1, 2), 'kgo', 0, 'k_toe', G())
+    ll = mirrored(rl, 'left_leg')
+    return {'head': [head], 'chest': chest, 'legs': legs, 'boots': [rl, ll]}
+
+
+SETS['elfking'] = elfking
+
+
 # ------------------------------------------------------------------ sortie / apercu
 PIECES = ('head', 'chest', 'boots', 'legs')
 TILE_OF = {'head': (0, 0, 1), 'chest': (32, 0, 1), 'boots': (0, 32, 1), 'legs': (0, 0, 2)}

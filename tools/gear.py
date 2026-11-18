@@ -15,7 +15,7 @@ BOOTS = ['................', '................', '................', '..........
          '.ooaao...ooaao..', '.obaao...obaao..', '.oaaado..oaaado.', '.oddddo..oddddo.', '.oooooo..oooooo.', '................']
 
 def armor_layer(name, base, trim, gem, crown=None, seed=0):
-    if name in ('orc', 'dwarven', 'elven', 'rohan'):
+    if name in ('orc', 'dwarven', 'elven', 'rohan', 'gondor', 'elfking'):
         return                                           # armures 3D : tools/armors3d.py
     from skins import Skin
     b = rgb(base); t = rgb(trim)
@@ -258,6 +258,7 @@ def build():
     armor_set('orc', 'orque', 'ORC', 14, '#3d3a42', '#6a2018', '#c03020')
     armor_set('elven', 'elfique', 'ELVEN', 22, '#c8d0b0', '#d8c070', '#40c080')
     armor_set('dwarven', 'naine', 'DWARVEN', 30, '#6a6f7a', '#c9a23a', '#d04030')
+    armor_set('gondor', 'de la Garde de Gondor', 'GONDOR', 34, '#b8bec8', '#d6b254', '#e8e8f0', props='props().rarity(Rarity.RARE)')
     armor_set('rohan', 'de Rohan', 'ROHAN', 28, '#6a3022', '#d6a84c', '#a02020', props='props().rarity(Rarity.RARE)')
     armor_set('ashlord', 'du Seigneur de Cendre', 'ASHLORD', 40, '#1c1a20', '#c02a10', '#ff5a18', crown='#2a2830', props='props().fireResistant().rarity(Rarity.EPIC)')
     armor_set('elfking', 'du roi elfe', 'ELFKING', 40, '#e6e2d0', '#d8b040', '#3090e0', crown='#e0c060', props='props().fireResistant().rarity(Rarity.EPIC)')
@@ -454,6 +455,7 @@ def build():
         shaped(f'lunargent_{piece}', pat, {'#': 'lunargent_ingot'}, f'lunargent_{piece}', cat='equipment')
         shaped(f'orc_{piece}', pat, {'#': 'black_steel_ingot'}, f'orc_{piece}', cat='equipment')
         shaped(f'rohan_{piece}', pat, {'#': 'minecraft:iron_ingot'}, f'rohan_{piece}', cat='equipment')
+        shaped(f'gondor_{piece}', pat, {'#': 'lunargent_ingot'}, f'gondor_{piece}', cat='equipment')
     shaped('orc_scimitar', [' #', '# ', 's '], {'#': 'black_steel_ingot', 's': 'minecraft:stick'}, 'orc_scimitar', cat='equipment')
     shaped('orc_cleaver', [' ##', ' # ', 's  '], {'#': 'black_steel_ingot', 's': 'minecraft:stick'}, 'orc_cleaver', cat='equipment')
     shaped('orc_machete', ['# ', '# ', 's '], {'#': 'black_steel_ingot', 's': 'minecraft:stick'}, 'orc_machete', cat='equipment')

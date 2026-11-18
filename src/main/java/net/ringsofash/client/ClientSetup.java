@@ -170,6 +170,14 @@ public final class ClientSetup {
         e.registerItem(armorExt("elven", "chest"), Reg.ELVEN_CHESTPLATE.get());
         e.registerItem(armorExt("elven", "legs"), Reg.ELVEN_LEGGINGS.get());
         e.registerItem(armorExt("elven", "boots"), Reg.ELVEN_BOOTS.get());
+        e.registerItem(armorExt("gondor", "head"), Reg.GONDOR_HELMET.get());
+        e.registerItem(armorExt("gondor", "chest"), Reg.GONDOR_CHESTPLATE.get());
+        e.registerItem(armorExt("gondor", "legs"), Reg.GONDOR_LEGGINGS.get());
+        e.registerItem(armorExt("gondor", "boots"), Reg.GONDOR_BOOTS.get());
+        e.registerItem(armorExt("elfking", "head"), Reg.ELFKING_HELMET.get());
+        e.registerItem(armorExt("elfking", "chest"), Reg.ELFKING_CHESTPLATE.get());
+        e.registerItem(armorExt("elfking", "legs"), Reg.ELFKING_LEGGINGS.get());
+        e.registerItem(armorExt("elfking", "boots"), Reg.ELFKING_BOOTS.get());
         e.registerItem(armorExt("rohan", "head"), Reg.ROHAN_HELMET.get());
         e.registerItem(armorExt("rohan", "chest"), Reg.ROHAN_CHESTPLATE.get());
         e.registerItem(armorExt("rohan", "legs"), Reg.ROHAN_LEGGINGS.get());
@@ -276,7 +284,7 @@ public final class ClientSetup {
     }
 
     // ---- armures 3D (orc, nain, elfe) : un modele par piece, pose copiee depuis le modele d'origine
-    private static final String[] ARMOR_SETS = {"orc", "dwarven", "elven", "rohan"};
+    private static final String[] ARMOR_SETS = {"orc", "dwarven", "elven", "rohan", "gondor", "elfking"};
     private static final String[] ARMOR_PIECES = {"head", "chest", "legs", "boots"};
     private static final java.util.Map<String, HumanoidModel<LivingEntity>> ARMOR_MODELS = new java.util.HashMap<>();
 

@@ -362,6 +362,10 @@ public final class Reg {
     public static final DeferredItem<Item> DWARVEN_CHESTPLATE = ITEMS.register("dwarven_chestplate", () -> ModGear.armor(ModGear.DWARVEN, ArmorItem.Type.CHESTPLATE, 30, props()));
     public static final DeferredItem<Item> DWARVEN_LEGGINGS = ITEMS.register("dwarven_leggings", () -> ModGear.armor(ModGear.DWARVEN, ArmorItem.Type.LEGGINGS, 30, props()));
     public static final DeferredItem<Item> DWARVEN_BOOTS = ITEMS.register("dwarven_boots", () -> ModGear.armor(ModGear.DWARVEN, ArmorItem.Type.BOOTS, 30, props()));
+    public static final DeferredItem<Item> GONDOR_HELMET = ITEMS.register("gondor_helmet", () -> ModGear.armor(ModGear.GONDOR, ArmorItem.Type.HELMET, 34, props().rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> GONDOR_CHESTPLATE = ITEMS.register("gondor_chestplate", () -> ModGear.armor(ModGear.GONDOR, ArmorItem.Type.CHESTPLATE, 34, props().rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> GONDOR_LEGGINGS = ITEMS.register("gondor_leggings", () -> ModGear.armor(ModGear.GONDOR, ArmorItem.Type.LEGGINGS, 34, props().rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> GONDOR_BOOTS = ITEMS.register("gondor_boots", () -> ModGear.armor(ModGear.GONDOR, ArmorItem.Type.BOOTS, 34, props().rarity(Rarity.RARE)));
     public static final DeferredItem<Item> ROHAN_HELMET = ITEMS.register("rohan_helmet", () -> ModGear.armor(ModGear.ROHAN, ArmorItem.Type.HELMET, 28, props().rarity(Rarity.RARE)));
     public static final DeferredItem<Item> ROHAN_CHESTPLATE = ITEMS.register("rohan_chestplate", () -> ModGear.armor(ModGear.ROHAN, ArmorItem.Type.CHESTPLATE, 28, props().rarity(Rarity.RARE)));
     public static final DeferredItem<Item> ROHAN_LEGGINGS = ITEMS.register("rohan_leggings", () -> ModGear.armor(ModGear.ROHAN, ArmorItem.Type.LEGGINGS, 28, props().rarity(Rarity.RARE)));
