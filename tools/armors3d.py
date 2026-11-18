@@ -1112,9 +1112,9 @@ def feet():
     rl.box((-3.75, 10.75, -5.55), (2, 2, 2), 'skin', -.75, 'ft_toe5', d_ft('toe5'))
     # poils : bouquets touffus de cubes inclines (cou-de-pied, chevilles, flancs, base des orteils)
     rnd = np.random.default_rng(5)
-    groups = [(-0.6, 9.9, -1.4, 6, 1.0), (-1.9, 9.9, -2.4, 3, .6), (0.7, 9.9, -2.2, 3, .6),            # dessus du pied
-              (-0.2, 6.9, -2.1, 4, .9), (-2.3, 7.8, -1.0, 3, .7), (2.1, 8.0, -0.6, 3, .7),            # cheville et flancs
-              (-3.1, 10.2, -3.4, 3, .5), (1.9, 10.2, -3.3, 2, .5), (-0.6, 10.3, -4.1, 4, .9)]         # flancs du pied, base des orteils
+    groups = [(-0.6, 9.9, -1.4, 3, .9), (-1.9, 9.9, -2.4, 1, .3), (0.7, 9.9, -2.2, 1, .3),            # dessus du pied
+              (-0.2, 6.9, -2.1, 2, .8), (-2.3, 7.8, -1.0, 2, .5), (2.1, 8.0, -0.6, 2, .5),            # cheville et flancs
+              (-3.1, 10.2, -3.4, 2, .4), (1.9, 10.2, -3.3, 1, .3), (-0.6, 10.3, -4.1, 2, .8)]         # flancs du pied, base des orteils
     k = 0
     for gx, gy, gz, n, sp in groups:
         for _ in range(n):
