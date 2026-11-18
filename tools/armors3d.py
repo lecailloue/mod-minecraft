@@ -441,8 +441,8 @@ def elf():
     chest = [body, ra, la]
 
     body = Part('body')
-    body.box((-4, 11, -2), (8, 2, 4), 'ele', .85, 'e_belt2', d_e_sash)
-    body.box((-4, 12.5, -2), (8, 3, 4), 'cl_green', .85, 'e_skirt', d_e_cloth)
+    body.box((-4, 11, -2), (8, 2, 4), 'ele', .7, 'e_belt2', d_e_sash)
+    body.box((-4, 12.5, -2), (8, 3, 4), 'cl_green', 1.2, 'e_skirt', d_e_cloth)   # faces ni coplanaires avec le drap (-2.9) ni avec la jambiere (-3.1)
     rl = Part('right_leg')
     rl.box((-2, 0, -2), (4, 4, 4), 'egd', .55, 'e_thigh', G(leaf=False))
     rl.box((-2, 0.5, -2.9), (4, 11, 1), 'cl_green', .1, 'e_drape', d_e_cloth)
@@ -452,7 +452,7 @@ def elf():
 
     rl = Part('right_leg')
     rl.box((-2, 6, -2), (4, 6, 4), 'ele', .5, 'e_boot', d_o_boot)
-    rl.box((-2, 2, -2.9), (4, 7, 1), 'egd', .1, 'e_greave', G(rows=(2, 5)))
+    rl.box((-2, 2, -2.9), (4, 7, 1), 'egd', .2, 'e_greave', G(rows=(2, 5)))   # .2 : sa face avant (-3.1) ne se confond plus avec le drap du pagne (-3.0)
     rl.box((-2.5, 4.6, -2.5), (5, 1, 5), 'egl', .1, 'e_cuff', G(leaf=False))
     rl.box((-1, 10.4, -4.2), (2, 1, 2), 'egd', 0, 'e_toe', G(leaf=False))
     ll = mirrored(rl, 'left_leg')
