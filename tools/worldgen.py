@@ -312,6 +312,9 @@ def structures():
     # Esgaroth (Lac-ville) : une seule instance, au sud-est d'Erebor (places.json) ; ville de bois sur pilotis au milieu d'un lac creuse par la structure
     settlement('esgaroth', ['plaines_jaunes', 'plaines_vertes', 'plaines_cendre', 'bosquets', 'foret_clairsemee', 'grande_foret', 'riviere', 'rivage', 'monts_rocheux'], 1, 0, 5118, [])
     LANG['structure.ringsofash.esgaroth'] = 'Esgaroth'
+    # Gouffre de Helm : une seule instance, au lieu marque sur la carte (places.json) ; 240 x 216
+    settlement('gouffre_de_helm', ['plaines_jaunes', 'plaines_vertes', 'plaines_cendre', 'bosquets', 'foret_clairsemee', 'grande_foret', 'riviere', 'rivage', 'monts_rocheux', 'monts_de_cendre', 'cimes_neigeuses'], 1, 0, 5119, [])
+    LANG['structure.ringsofash.gouffre_de_helm'] = 'Gouffre de Helm'
     tag('worldgen/structure', 'volcanoes', R('volcano'), R('mont_funeste'), ns=MOD)
     tag('worldgen/structure', 'doom', R('mont_funeste'), ns=MOD)
     LANG['structure.ringsofash.volcano'] = 'Volcan'

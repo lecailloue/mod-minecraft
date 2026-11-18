@@ -64,6 +64,7 @@ public final class Buildings {
             case ARGONATH -> argonath(b);
             case RIVEND -> rivendell(b, aux);
             case ESGA -> esgaroth(b, aux);
+            case HELM -> helm(b);
         }
     }
 
@@ -1325,6 +1326,108 @@ public final class Buildings {
             if (lx < 0 || lx >= 160 || lz < 0 || lz >= 160 || !b.in(lx, sp[1], lz)) continue;
             n++;
             people(b, ModEntities.HUMAN.get(), lx, sp[1], lz, n % 7 == 0 ? PeopleEntity.GUARD : PeopleEntity.CIVIL, n % 7 == 0 ? -1 : n % 4, 30);
+        }
+    }
+
+    // ================================================================= GOUFFRE DE HELM
+    private static BlockState[] helmPal;
+
+    private static synchronized BlockState[] helmPal() {
+        if (helmPal != null) return helmPal;
+        BlockState[] p = new BlockState[HelmsDeepPlan.SHAPE + HelmsDeepPlan.SHAPES * 16];
+        java.util.Arrays.fill(p, Build.AIR);
+        p[HelmsDeepPlan.STONE] = Blocks.STONE.defaultBlockState();
+        p[HelmsDeepPlan.ANDESITE] = Blocks.ANDESITE.defaultBlockState();
+        p[HelmsDeepPlan.TUFF] = Blocks.TUFF.defaultBlockState();
+        p[HelmsDeepPlan.COBBLE] = Blocks.COBBLESTONE.defaultBlockState();
+        p[HelmsDeepPlan.MOSSC] = Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+        p[HelmsDeepPlan.GRASS] = Blocks.GRASS_BLOCK.defaultBlockState();
+        p[HelmsDeepPlan.DIRT] = Blocks.DIRT.defaultBlockState();
+        p[HelmsDeepPlan.GRAVEL] = Blocks.GRAVEL.defaultBlockState();
+        p[HelmsDeepPlan.COARSE] = Blocks.COARSE_DIRT.defaultBlockState();
+        p[HelmsDeepPlan.PODZOL] = Blocks.PODZOL.defaultBlockState();
+        p[HelmsDeepPlan.BRICK] = Blocks.STONE_BRICKS.defaultBlockState();
+        p[HelmsDeepPlan.MBRICK] = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
+        p[HelmsDeepPlan.CRACK] = Blocks.CRACKED_STONE_BRICKS.defaultBlockState();
+        p[HelmsDeepPlan.CHISEL] = Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
+        p[HelmsDeepPlan.POLAND] = Blocks.POLISHED_ANDESITE.defaultBlockState();
+        p[HelmsDeepPlan.SMOOTH] = Blocks.SMOOTH_STONE.defaultBlockState();
+        p[HelmsDeepPlan.WALLB] = Blocks.STONE_BRICK_WALL.defaultBlockState();
+        p[HelmsDeepPlan.LANTERN] = Blocks.LANTERN.defaultBlockState();
+        p[HelmsDeepPlan.HLANT] = hang(Blocks.LANTERN);
+        p[HelmsDeepPlan.BARS] = Blocks.IRON_BARS.defaultBlockState();
+        p[HelmsDeepPlan.DKPLANK] = Blocks.DARK_OAK_PLANKS.defaultBlockState();
+        p[HelmsDeepPlan.DKFENCE] = Blocks.DARK_OAK_FENCE.defaultBlockState();
+        p[HelmsDeepPlan.LADN] = ladder(Direction.NORTH);
+        p[HelmsDeepPlan.LADE] = ladder(Direction.EAST);
+        p[HelmsDeepPlan.LADS] = ladder(Direction.SOUTH);
+        p[HelmsDeepPlan.LADW] = ladder(Direction.WEST);
+        p[HelmsDeepPlan.REDC] = Blocks.RED_CARPET.defaultBlockState();
+        p[HelmsDeepPlan.SPRLOG] = log(Blocks.SPRUCE_LOG, Direction.Axis.Y);
+        p[HelmsDeepPlan.SPRLEAF] = leaf(Blocks.SPRUCE_LEAVES);
+        Block[] stairs = {Blocks.STONE_BRICK_STAIRS, Blocks.POLISHED_ANDESITE_STAIRS, Blocks.COBBLESTONE_STAIRS};
+        Block[] slabs = {Blocks.STONE_BRICK_SLAB, Blocks.POLISHED_ANDESITE_SLAB, Blocks.COBBLESTONE_SLAB};
+        Direction[] dirs = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+        for (int m = 0; m < HelmsDeepPlan.SHAPES; m++) {
+            int o = HelmsDeepPlan.SHAPE + m * 16;
+            for (int d = 0; d < 4; d++) for (int h = 0; h < 2; h++) p[o + d * 2 + h] = stairs(stairs[m], dirs[d], h == 1);
+            p[o + 8] = slab(slabs[m], false);
+            p[o + 9] = slab(slabs[m], true);
+        }
+        return helmPal = p;
+    }
+
+    /** Gouffre de Helm : le plan remplace le relief au coeur du site, une bande de raccord (26 blocs) fond le sol naturel dans le relief du plan. */
+    private static void helm(Build b) {
+        HelmsDeepPlan p = HelmsDeepPlan.get();
+        BlockState[] pal = helmPal();
+        BlockState stone = Blocks.STONE.defaultBlockState();
+        int maxY = HelmsDeepPlan.TOP - 2;
+        for (int x = 0; x < HelmsDeepPlan.W; x++) {
+            for (int z = 0; z < HelmsDeepPlan.D; z++) {
+                if (!b.in(x, 0, z)) continue;
+                int w = p.weight(x, z);
+                if (w == 0) continue;
+                int ground = Math.min(b.groundY(x, z), maxY);
+                int top = p.top(x, z), t = p.terrain(x, z);
+                if (w < 255) {                                                                  // bande de raccord : sol melange, sans batiments
+                    double a = w / 255.0;
+                    a = a * a * (3 - 2 * a);
+                    int hb = (int) Math.round(ground * (1 - a) + t * a);
+                    if (hb == ground) continue;
+                    int surf = p.get(x, t, z) & 255, sub = p.get(x, t - 1, z) & 255;
+                    BlockState topB = surf == HelmsDeepPlan.AIR ? pal[HelmsDeepPlan.GRASS] : pal[surf], subB = sub == HelmsDeepPlan.AIR ? pal[HelmsDeepPlan.DIRT] : pal[sub];
+                    if (hb > ground) {
+                        for (int y = ground + 1; y <= hb; y++) b.s(x, y, z, y == hb ? topB : (y >= hb - 3 ? subB : stone));
+                    } else {
+                        for (int y = ground; y > hb; y--) if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR);
+                        b.s(x, hb, z, topB);
+                    }
+                    for (int y = Math.max(hb, ground) + 1; y <= Math.max(hb, ground) + 14; y++) if (b.get(x, y, z).is(net.minecraft.tags.BlockTags.LEAVES)) b.s(x, y, z, Build.AIR);
+                    continue;
+                }
+                for (int y = -HelmsDeepPlan.OFF - 1; y >= -HelmsDeepPlan.OFF - 28; y--) {      // fondation : sous le plan, jusqu'au sol ferme
+                    BlockState cur = b.get(x, y, z);
+                    if (cur.isSolidRender(b.level, b.pos(x, y, z)) && !cur.is(net.minecraft.tags.BlockTags.LEAVES) && !cur.is(net.minecraft.tags.BlockTags.LOGS)) break;
+                    b.s(x, y, z, stone);
+                }
+                int hi = Math.min(Math.max(top, ground) + 18, maxY + 1);
+                for (int y = top + 1; y <= hi; y++) {
+                    if (p.get(x, y, z) != HelmsDeepPlan.AIR) continue;
+                    if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR);
+                }
+                for (int y = -HelmsDeepPlan.OFF; y <= top; y++) {
+                    byte id = p.get(x, y, z);
+                    if (id != HelmsDeepPlan.AIR) b.s(x, y, z, pal[id & 255]);
+                    else if (y <= t) b.s(x, y, z, stone);
+                }
+            }
+        }
+        int n = 0;
+        for (int[] sp : p.spawns) {                                                            // la garde du Gouffre : des hommes d'armes sur les murs, dans la salle et dans les cours
+            if (!b.in(sp[0], sp[1], sp[2])) continue;
+            n++;
+            people(b, ModEntities.HUMAN.get(), sp[0], sp[1], sp[2], PeopleEntity.GUARD, -1, 24);
         }
     }
 

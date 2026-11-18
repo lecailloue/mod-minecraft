@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"00_", "07i_", "07j_", "07k_", "08j_"};
+    private static final String[] ONLY = {"00_", "43"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -451,6 +451,16 @@ public final class ClientTest {
         rivT("411_fondcombe_gradin", 112, 62, 112, 106, 68, 88, 6000);
         rivT("412_fondcombe_arcade", 110, 16, 200, 110, 20, 163, 6000);
         rivT("413_fondcombe_coucher", 236, 42, 170, 110, 55, 130, 12800);
+        helmT("430_helm_chargement", 120, 40, 215, 150, 15, 80, 6000);              // charge les chunks du site : sa capture ne compte pas
+        helmT("431_helm_vue_sud", 130, 46, 214, 150, 18, 80, 6000);
+        helmT("432_helm_muraille", 80, 12, 130, 92, 14, 86, 6000);
+        helmT("433_helm_burg", 214, 34, 160, 180, 16, 84, 6000);
+        helmT("434_helm_tour", 112, 22, 114, 142, 30, 82, 6000);
+        helmT("435_helm_cour", 180, 12, 110, 180, 22, 82, 6000);
+        helmT("436_helm_salle", 180, 27, 79, 180, 28, 58, 6000);
+        helmT("437_helm_rampe", 138, 9, 172, 168, 5, 124, 6000);
+        helmT("438_helm_vue_haute", 120, 120, 215, 150, 30, 80, 6000);
+        helmT("439_helm_vallee", 96, 14, 80, 100, 28, 30, 6000);
         esgT("419_esgaroth_chargement", 160, 30, 290, 160, 4, 160, 6000);          // charge les chunks du site (tres long) : sa capture ne compte pas
         esgT("421_esgaroth_vue_sud", 160, 50, 300, 160, 8, 150, 7000);
         esgT("422_esgaroth_vue_haute", 40, 90, 290, 150, 5, 150, 7000);
@@ -1251,6 +1261,21 @@ public final class ClientTest {
             float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
             lands.setDayTime(time);
             view(p, lands, pl[0] + fx - 176 + 0.5, py + fy, pl[1] + fz - 176 + 0.5, yaw, pitch);
+        }));
+    }
+
+    /** vue relative au Gouffre de Helm : coordonnees du plan (240 x 216, centre en 120, 108 ; y = niveau du sol de la plaine) */
+    private static void helmT(String name, double fx, double fy, double fz, double tx, double ty, double tz, int time) {
+        SCENES.add(new Scene(name, name.startsWith("430") ? 3600 : 420, p -> {
+            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+            int[] pl = net.ringsofash.world.MapData.place("gouffre_de_helm");
+            if (pl == null) return;
+            for (int dx = -9; dx <= 9; dx++) for (int dz = -9; dz <= 9; dz++) lands.getChunk((pl[0] >> 4) + dx, (pl[1] >> 4) + dz);
+            int py = net.ringsofash.world.SiteHeight.py(lands, pl[0], pl[1]);
+            double ddx = tx - fx, ddy = ty - fy, ddz = tz - fz;
+            float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
+            lands.setDayTime(time);
+            view(p, lands, pl[0] + fx - 120 + 0.5, py + fy, pl[1] + fz - 108 + 0.5, yaw, pitch);
         }));
     }
 
