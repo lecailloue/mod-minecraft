@@ -1411,14 +1411,11 @@ public final class Buildings {
                     if (cur.isSolidRender(b.level, b.pos(x, y, z)) && !cur.is(net.minecraft.tags.BlockTags.LEAVES) && !cur.is(net.minecraft.tags.BlockTags.LOGS)) break;
                     b.s(x, y, z, stone);
                 }
-                int hi = Math.min(Math.max(top, ground) + 18, maxY + 1);
-                for (int y = top + 1; y <= hi; y++) {
-                    if (p.get(x, y, z) != HelmsDeepPlan.AIR) continue;
-                    if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR);
-                }
-                for (int y = -HelmsDeepPlan.OFF; y <= top; y++) {
+                // tout le volume du plan remplace le relief naturel : le plan ecrit ses blocs, et le vide du plan (vallee, salle, tours) est vide, meme sous une montagne naturelle
+                for (int y = -HelmsDeepPlan.OFF; y <= maxY + 1; y++) {
                     byte id = p.get(x, y, z);
                     if (id != HelmsDeepPlan.AIR) b.s(x, y, z, pal[id & 255]);
+                    else if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR);
                 }
             }
         }
