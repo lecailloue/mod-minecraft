@@ -210,7 +210,11 @@ public final class HelmsDeepPlan {
     // ------------------------------------------------------------------ matiere du relief
     private int natural(int x, int y, int z) {
         double v = vn(x / 7.0 + y / 9.0, z / 7.0 + y / 13.0, 21);
-        return v > 0.5 ? ANDESITE : v < -0.55 ? TUFF : STONE;
+        double w = vn(x / 4.0 + y / 5.0, z / 4.0 + y / 6.0, 34), r = rnd(x, y, z);
+        if (w > 0.55) return COARSE;
+        if (w < -0.6) return MOSSC;
+        if (r < 0.07) return COBBLE;
+        return v > 0.3 ? ANDESITE : v < -0.35 ? TUFF : STONE;
     }
 
     private void materialize() {
