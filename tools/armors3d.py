@@ -1103,14 +1103,76 @@ def rustify(tex, seed):
             if y + d < h and opaque[y + d, x]: out[y + d, x] = out[y + d, x] * .45 + np.array((96., 44., 20.)) * .55
     g = out.mean(axis=2, keepdims=True)
     out = (out * .88 + g * .12) * .9                                      # ternit
+    # --- details supplementaires ---
+    # relief de la croute : cote eclaire clair / cote a l'ombre sombre
+    nz = np.pad(noise, 1, mode='edge')
+    rel = (nz[:-2, 1:-1] + nz[1:-1, :-2]) - (nz[2:, 1:-1] + nz[1:-1, 2:])
+    out = out * 1.12 + (rel * 16)[..., None] * (noise > .25)[..., None]
+    # usure des aretes : les contours (garnitures, rivets, jonctions) rongent en brun sombre
+    lum = a.mean(axis=2); lp = np.pad(lum, 1, mode='edge')
+    edge = (np.abs(lp[1:-1, 2:] - lp[1:-1, :-2]) + np.abs(lp[2:, 1:-1] - lp[:-2, 1:-1])) > 38
+    ed = edge & (rng.random((h, w)) < .4)
+    out[ed] = out[ed] * .6 + np.array((70., 32., 16.)) * .4
+    # acier mis a nu : rayures claires dans la rouille
+    for _ in range(max(4, h * w // 260)):
+        x0, y0 = int(rng.integers(0, w)), int(rng.integers(0, h)); dx, dy = [(1, 0), (0, 1), (1, 1), (1, -1)][int(rng.integers(0, 4))]
+        for t in range(int(rng.integers(3, 8))):
+            x, y = x0 + dx * t, y0 + dy * t
+            if 0 <= x < w and 0 <= y < h and opaque[y, x]: out[y, x] = out[y, x] * .4 + np.array((150., 146., 140.)) * .6
+    # fissures sombres (marche aleatoire)
+    for _ in range(max(2, h * w // 600)):
+        x, y = int(rng.integers(0, w)), int(rng.integers(0, h)); dx = int(rng.integers(-1, 2)); dy = int(rng.integers(0, 2)) or -1
+        for t in range(int(rng.integers(5, 14))):
+            if 0 <= x < w and 0 <= y < h and opaque[y, x]: out[y, x] = np.array((30., 16., 10.))
+            if rng.random() < .5: x += dx
+            else: y += dy
+            if rng.random() < .25: dx = int(rng.integers(-1, 2))
+    # mousse / lichen verdatre dans les creux (taches ponctuees)
+    moss = np.zeros((h, w))
+    for _ in range(max(3, h * w // 520)):
+        cx, cy, r = int(rng.integers(0, w)), int(rng.integers(0, h)), int(rng.integers(1, 3))
+        moss += (((xx - cx) ** 2 + (yy - cy) ** 2) <= r * r) * rng.uniform(.4, 1.0)
+    mm = (moss > .55) & (rng.random((h, w)) < .7) & (noise > .3)
+    out[mm] = out[mm] * .3 + np.array((84., 104., 44.)) * .7
+    spot = mm & (rng.random((h, w)) < .22)
+    out[spot] = np.array((128., 146., 70.))
+    # crasse sombre (terre, huile seche) en taches basses opacite
+    grime = np.zeros((h, w))
+    for _ in range(max(3, h * w // 300)):
+        cx, cy, r = int(rng.integers(0, w)), int(rng.integers(0, h)), int(rng.integers(2, 5))
+        grime += (((xx - cx) ** 2 + (yy - cy) ** 2) <= r * r) * .3
+    out *= (1 - np.clip(grime, 0, .5) * .3)[..., None]
+    # coulures de rouille plus longues et plus marquees sous les zones tres corrodees
+    drip2 = (rng.random((h, w)) < .03) & (noise > .8)
+    for y, x in zip(*np.nonzero(drip2)):
+        for d in range(1, int(rng.integers(4, 8))):
+            if y + d < h and opaque[y + d, x]: out[y + d, x] = out[y + d, x] * (.5 + .05 * d) + np.array((110., 50., 22.)) * (.5 - .05 * d)
     # trous (tissu pourri / metal perfore) dans les zones tres corrodees
     hole = (rng.random((h, w)) < .05) & (noise > .6)
     al[hole] = 0
+    # bords rongés : quelques pixels d'aretes manquants
+    bite = edge & (rng.random((h, w)) < .07) & (noise > .5)
+    al[bite] = 0
     return np.dstack([np.clip(out, 0, 255), al]).astype(np.uint8)
+
+
+RUIN_KEYS = ('dk_spk', 'dk_spk2', 'r_spike', 'r_spike_c', 'dk_pspk', 'o_spike', 'o_spike2', 'o_spikez', 'dk_kspk')
+
+
+def _ruin(parts, rng):
+    """version rouillee : pointes cassees / manquantes, feuilles arrachees"""
+    for p in parts:
+        p.cubes = [c for c in p.cubes if not (c.key in RUIN_KEYS and rng.random() < .4)]
+        p.children = [ch for ch in p.children if not (ch.name.startswith('leaf_') and rng.random() < .4)]
+        for c in p.cubes:
+            if c.key in RUIN_KEYS and c.sz[1] > 1 and rng.random() < .5: c.key += '_t'; c.sz = (c.sz[0], max(1, c.sz[1] - 1), c.sz[2]); c.o = (c.o[0], c.o[1] + 1, c.o[2])   # pointe tronquee
+        _ruin(p.children, rng)
 
 
 def build_set(name):
     pieces = SETS[name]()
+    if name.endswith('_rusted') and name != 'gondor_rusted':
+        for pc in PIECES: _ruin(pieces[pc], np.random.default_rng(zlib.crc32((name + pc + 'ruin').encode())))
     out = {}
     for pc in PIECES:
         parts = pieces[pc]
