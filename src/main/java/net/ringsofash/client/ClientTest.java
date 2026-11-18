@@ -63,7 +63,9 @@ public final class ClientTest {
     private static int state = 0, wait = 0, index = 0;
     private static final int SX = 0, SY = 200, SZ = 0;
     /** true : seulement les scenes d armures (iteration rapide) */
-    private static final boolean ARMOR_ONLY = true;
+    private static final boolean ARMOR_ONLY = false;
+    /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
+    private static final String[] ONLY = {"00_", "07d_", "08d_", "399_", "40", "41", "419_", "42", "43", "199_", "20", "21", "22"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -97,7 +99,10 @@ public final class ClientTest {
                     } else if (++wait > 6000) throw new IllegalStateException("le monde ne s'est pas charge ; ecran=" + (mc.screen == null ? "aucun" : mc.screen.getClass().getName()));
                 }
                 case 2 -> {
-                    if (SCENES.isEmpty()) scenes();
+                    if (SCENES.isEmpty()) {
+                        scenes();
+                        if (ONLY.length > 0) SCENES.removeIf(sc -> { for (String pf : ONLY) if (sc.name().startsWith(pf)) return false; return true; });
+                    }
                     if (index >= SCENES.size()) { state = 9; break; }
                     Scene s = SCENES.get(index);
                     MinecraftServer server = mc.getSingleplayerServer();
