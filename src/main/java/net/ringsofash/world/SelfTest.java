@@ -140,7 +140,7 @@ public final class SelfTest {
             for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) lands.getChunk((px >> 4) + dx, (pz >> 4) + dz);
             for (int x = px - 24; x <= px + 24; x += 6) {
                 for (int z = pz - 24; z <= pz + 24; z += 6) {
-                    if (e.getKey().equals("barad_dur") || e.getKey().equals("edoras") || e.getKey().equals("minas_terith") || e.getKey().equals("orthanc") || e.getKey().equals("argonath") || e.getKey().equals("fondcombe")) continue;                // site nivele et creuse (douve) expres
+                    if (e.getKey().equals("barad_dur") || e.getKey().equals("edoras") || e.getKey().equals("minas_terith") || e.getKey().equals("orthanc") || e.getKey().equals("argonath") || e.getKey().equals("fondcombe") || e.getKey().equals("esgaroth")) continue;                // site nivele et creuse (douve) expres
                     n++;
                     BlockPos at = new BlockPos(x, MapData.height(x, z), z);
                     var st = lands.getBlockState(at);
@@ -260,6 +260,22 @@ public final class SelfTest {
             }
             log("fondcombe : sol " + py + " ; colonnes manquantes " + miss + " / " + tot);
             if (miss * 50 > tot) fail("fondcombe : trop de colonnes manquantes (" + miss + " / " + tot + ")");
+        }
+        int[] es = spots.get("esgaroth");
+        if (es != null) {                                                    // Esgaroth : quatre quartiers qui doivent se raccorder sans trou, et un lac plein d'eau
+            for (int dx = -11; dx <= 11; dx++) for (int dz = -11; dz <= 11; dz++) lands.getChunk((es[0] >> 4) + dx, (es[1] >> 4) + dz);
+            EsgarothPlan ep = EsgarothPlan.get();
+            int py = SiteHeight.py(lands, es[0], es[1]);
+            topDown(lands, es[0] - 160, es[1] - 160, es[0] + 159, es[1] + 159, new File(OUT, "esgaroth_dessus.png"), 2);
+            int ox = es[0] - EsgarothPlan.CX, oz = es[1] - EsgarothPlan.CZ, miss = 0, tot = 0, wet = 0, wetOk = 0;
+            for (int x = EsgarothPlan.BAND + 2; x < EsgarothPlan.W - EsgarothPlan.BAND - 2; x += 5) for (int z = EsgarothPlan.BAND + 2; z < EsgarothPlan.D - EsgarothPlan.BAND - 2; z += 5) {
+                tot++;
+                int hw = lands.getHeight(Heightmap.Types.WORLD_SURFACE, ox + x, oz + z) - 1 - py;
+                if (hw < ep.top(x, z) - 1) { miss++; if (miss < 6) log("esgaroth : trou en plan " + x + "," + z + " : monde " + hw + " < plan " + ep.top(x, z)); }
+                if (ep.water(x, z) > -999) { wet++; if (!lands.getBlockState(new BlockPos(ox + x, py + EsgarothPlan.WL, oz + z)).getFluidState().isEmpty()) wetOk++; }
+            }
+            log("esgaroth : sol " + py + " ; colonnes manquantes " + miss + " / " + tot + " ; eau " + wetOk + " / " + wet);
+            if (miss * 50 > tot) fail("esgaroth : trop de colonnes manquantes (" + miss + " / " + tot + ")");
         }
         int[] mt = spots.get("minas_terith");
         if (mt != null) {                                                    // Minas Tirith : sept niveaux, tour d'Ecthelion, cour, montagne

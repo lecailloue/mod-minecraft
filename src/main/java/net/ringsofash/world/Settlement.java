@@ -30,7 +30,7 @@ public final class Settlement {
         BURROW(11, 11, 9, 4), FARM(9, 9, 4, 4), INN(13, 10, 11, 4), HOUSE(7, 9, 10, 4), HALL(15, 21, 14, 5), SMITHY(7, 7, 6, 4), STALL(5, 4, 5, 4),
         STABLE(9, 7, 6, 4), WATCHTOWER(5, 5, 15, 4), PLAZA(25, 25, 16, 3), PAVILION(9, 9, 13, 4), ETOWER(7, 7, 26, 4),
         GATE(15, 8, 13, 3), POOL(11, 9, 3, 6), STAIR(7, 48, 8, 50), DHALL(33, 27, 12, 2), MINE(21, 17, 9, 10), LAIR(27, 27, 15, 3),
-        FORT(33, 33, 15, 5), DTOWER(13, 13, 46, 5), BARROW(13, 13, 7, 6), HOARD(41, 41, 7, 28), PYRE(5, 5, 13, 5), RUIN(9, 9, 9, 3), MORGUL(150, 150, 150, 50), ORTHANC(200, 200, 236, 24), BARADDUR(200, 200, 256, 20), EDORAS(260, 220, 64, 24), TIRITH(320, 340, 282, 24), ARGONATH(256, 256, 126, 30), RIVEND(176, 176, 150, 60);
+        FORT(33, 33, 15, 5), DTOWER(13, 13, 46, 5), BARROW(13, 13, 7, 6), HOARD(41, 41, 7, 28), PYRE(5, 5, 13, 5), RUIN(9, 9, 9, 3), MORGUL(150, 150, 150, 50), ORTHANC(200, 200, 236, 24), BARADDUR(200, 200, 256, 20), EDORAS(260, 220, 64, 24), TIRITH(320, 340, 282, 24), ARGONATH(256, 256, 126, 30), RIVEND(176, 176, 150, 60), ESGA(160, 160, 66, 50);
         public final int w, d, h, below;
         T(int w, int d, int h, int below) { this.w = w; this.d = d; this.h = h; this.below = below; }
     }
@@ -106,6 +106,22 @@ public final class Settlement {
                     if (py < c.chunkGenerator().getSeaLevel()) return Optional.empty();
                     List<Piece> one = new ArrayList<>();
                     one.add(new Piece(T.RIVEND, ox, py, oz, 0, c.seed() ^ 0x464f4e44L, q));
+                    return Optional.of(new GenerationStub(new BlockPos(mx, py, mz), b -> one.forEach(b::addPiece)));
+                }
+                return Optional.empty();
+            }
+            if (kind.equals("esgaroth")) {
+                // une seule instance de 320 x 320, au lieu marque sur la carte : quatre departs de 160 x 160 qui partagent le meme niveau de sol (celui du centre du site)
+                int[] pl = MapData.place("esgaroth");
+                if (pl == null) return Optional.empty();
+                for (int q = 0; q < 4; q++) {
+                    int ox = pl[0] - 160 + (q & 1) * 160, oz = pl[1] - 160 + (q >> 1) * 160;
+                    int mx = ox + 80, mz = oz + 80;
+                    if (cp.x != (mx >> 4) || cp.z != (mz >> 4)) continue;
+                    int py = h(c, pl[0], pl[1]);
+                    if (py < c.chunkGenerator().getSeaLevel()) return Optional.empty();
+                    List<Piece> one = new ArrayList<>();
+                    one.add(new Piece(T.ESGA, ox, py, oz, 0, c.seed() ^ 0x455347L, q));
                     return Optional.of(new GenerationStub(new BlockPos(mx, py, mz), b -> one.forEach(b::addPiece)));
                 }
                 return Optional.empty();

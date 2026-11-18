@@ -331,6 +331,16 @@ public final class ClientTest {
         rivT("411_fondcombe_gradin", 112, 62, 112, 106, 68, 88, 6000);
         rivT("412_fondcombe_arcade", 110, 16, 200, 110, 20, 163, 6000);
         rivT("413_fondcombe_coucher", 236, 42, 170, 110, 55, 130, 12800);
+        esgT("419_esgaroth_chargement", 160, 30, 290, 160, 4, 160, 6000);          // charge les chunks du site (tres long) : sa capture ne compte pas
+        esgT("421_esgaroth_vue_sud", 160, 50, 300, 160, 8, 150, 7000);
+        esgT("422_esgaroth_vue_haute", 40, 90, 290, 150, 5, 150, 7000);
+        esgT("423_esgaroth_halle", 160, 9, 190, 158, 14, 140, 7000);
+        esgT("424_esgaroth_canal", 108, 6, 190, 108, 4, 140, 7000);
+        esgT("425_esgaroth_chaussee", 160, 8, 262, 160, 6, 190, 7000);
+        esgT("426_esgaroth_ponton", 108, 3, 164, 142, 9, 150, 7000);
+        esgT("427_esgaroth_tour", 100, 22, 130, 84, 24, 160, 7000);
+        esgT("428_esgaroth_rive", 160, 40, 60, 160, 6, 120, 7000);
+        esgT("429_esgaroth_crepuscule", 130, 12, 214, 160, 12, 150, 12600);
         argT("299_argonath_chargement", 0, 60, -30, 0, 50, 40, 6000);       // charge les chunks du site (long) : sa capture ne compte pas
         argT("301_argonath_vue_haute", 70, 135, -122, 0, 50, 0, 6000);
         argT("302_argonath_visages", 0, 98, -48, 0, 92, 0, 6000);
@@ -1115,6 +1125,21 @@ public final class ClientTest {
             float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
             lands.setDayTime(time);
             view(p, lands, pl[0] + fx - 176 + 0.5, py + fy, pl[1] + fz - 176 + 0.5, yaw, pitch);
+        }));
+    }
+
+    /** vue relative a Esgaroth : coordonnees du plan (320 x 320, centre en 160, 160 ; y = niveau du sol au centre, l'eau est a -1, les ponts a 2) */
+    private static void esgT(String name, double fx, double fy, double fz, double tx, double ty, double tz, int time) {
+        SCENES.add(new Scene(name, name.startsWith("419") ? 3600 : 420, p -> {
+            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+            int[] pl = net.ringsofash.world.MapData.place("esgaroth");
+            if (pl == null) return;
+            for (int dx = -11; dx <= 11; dx++) for (int dz = -11; dz <= 11; dz++) lands.getChunk((pl[0] >> 4) + dx, (pl[1] >> 4) + dz);
+            int py = net.ringsofash.world.SiteHeight.py(lands, pl[0], pl[1]);
+            double ddx = tx - fx, ddy = ty - fy, ddz = tz - fz;
+            float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
+            lands.setDayTime(time);
+            view(p, lands, pl[0] + fx - 160 + 0.5, py + fy, pl[1] + fz - 160 + 0.5, yaw, pitch);
         }));
     }
 

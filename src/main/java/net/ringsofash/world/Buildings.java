@@ -63,6 +63,7 @@ public final class Buildings {
             case TIRITH -> tirith(b);
             case ARGONATH -> argonath(b);
             case RIVEND -> rivendell(b, aux);
+            case ESGA -> esgaroth(b, aux);
         }
     }
 
@@ -1154,6 +1155,145 @@ public final class Buildings {
             int lx = sp[0] - qx, lz = sp[2] - qz;
             if (lx < 0 || lx >= 176 || lz < 0 || lz >= 176 || !b.in(lx, sp[1], lz)) continue;
             people(b, ModEntities.ELF.get(), lx, sp[1], lz, n++ % 3 == 0 ? PeopleEntity.GUARD : PeopleEntity.CIVIL, n % 3 == 0 ? -1 : n % 3, 30);
+        }
+    }
+
+    // ================================================================= ESGAROTH
+    private static BlockState[] esgPal;
+
+    private static synchronized BlockState[] esgarothPal() {
+        if (esgPal != null) return esgPal;
+        BlockState[] p = new BlockState[200];
+        java.util.Arrays.fill(p, Build.AIR);
+        p[EsgarothPlan.SAND] = Blocks.SAND.defaultBlockState();
+        p[EsgarothPlan.GRAVEL] = Blocks.GRAVEL.defaultBlockState();
+        p[EsgarothPlan.DIRT] = Blocks.DIRT.defaultBlockState();
+        p[EsgarothPlan.GRASS] = Blocks.GRASS_BLOCK.defaultBlockState();
+        p[EsgarothPlan.STONE] = Blocks.STONE.defaultBlockState();
+        p[EsgarothPlan.CLAY] = Blocks.CLAY.defaultBlockState();
+        p[EsgarothPlan.COARSE] = Blocks.COARSE_DIRT.defaultBlockState();
+        p[EsgarothPlan.WATER] = Blocks.WATER.defaultBlockState();
+        p[EsgarothPlan.PODZOL] = Blocks.PODZOL.defaultBlockState();
+        p[EsgarothPlan.SHORTG] = Blocks.SHORT_GRASS.defaultBlockState();
+        p[EsgarothPlan.FERN] = Blocks.FERN.defaultBlockState();
+        p[EsgarothPlan.DANDEL] = Blocks.DANDELION.defaultBlockState();
+        p[EsgarothPlan.POPPY] = Blocks.POPPY.defaultBlockState();
+        p[EsgarothPlan.CORNFL] = Blocks.CORNFLOWER.defaultBlockState();
+        p[EsgarothPlan.BLUET] = Blocks.AZURE_BLUET.defaultBlockState();
+        p[EsgarothPlan.OAKLOG] = log(Blocks.OAK_LOG, Direction.Axis.Y);
+        p[EsgarothPlan.OAKLEAF] = leaf(Blocks.OAK_LEAVES);
+        p[EsgarothPlan.BIRCHLEAF] = leaf(Blocks.BIRCH_LEAVES);
+        p[EsgarothPlan.COBBLE] = Blocks.COBBLESTONE.defaultBlockState();
+        p[EsgarothPlan.MOSSC] = Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+        p[EsgarothPlan.SPRLOG] = log(Blocks.SPRUCE_LOG, Direction.Axis.Y);
+        p[EsgarothPlan.SPRLEAF] = leaf(Blocks.SPRUCE_LEAVES);
+        p[EsgarothPlan.BIRCHLOG] = log(Blocks.BIRCH_LOG, Direction.Axis.Y);
+        p[EsgarothPlan.WLOG_Y] = log(Reg.WEATHERED_LOG.get(), Direction.Axis.Y);
+        p[EsgarothPlan.WLOG_X] = log(Reg.WEATHERED_LOG.get(), Direction.Axis.X);
+        p[EsgarothPlan.WLOG_Z] = log(Reg.WEATHERED_LOG.get(), Direction.Axis.Z);
+        p[EsgarothPlan.WPLANK] = Reg.WEATHERED_PLANKS.get().defaultBlockState();
+        p[EsgarothPlan.DKPLANK] = Blocks.DARK_OAK_PLANKS.defaultBlockState();
+        p[EsgarothPlan.SPPLANK] = Blocks.SPRUCE_PLANKS.defaultBlockState();
+        p[EsgarothPlan.OAKPLANK] = Blocks.OAK_PLANKS.defaultBlockState();
+        p[EsgarothPlan.SLATE] = Blocks.DEEPSLATE_TILES.defaultBlockState();
+        p[EsgarothPlan.DKLOG_Y] = log(Blocks.DARK_OAK_LOG, Direction.Axis.Y);
+        p[EsgarothPlan.DKLOG_X] = log(Blocks.DARK_OAK_LOG, Direction.Axis.X);
+        p[EsgarothPlan.DKLOG_Z] = log(Blocks.DARK_OAK_LOG, Direction.Axis.Z);
+        p[EsgarothPlan.WFENCE] = Reg.WEATHERED_PLANKS_FENCE.get().defaultBlockState();
+        p[EsgarothPlan.DKFENCE] = Blocks.DARK_OAK_FENCE.defaultBlockState();
+        p[EsgarothPlan.GLASS] = Blocks.GLASS_PANE.defaultBlockState();
+        p[EsgarothPlan.LANTERN] = Blocks.LANTERN.defaultBlockState();
+        p[EsgarothPlan.HLANT] = hang(Blocks.LANTERN);
+        p[EsgarothPlan.CHAIN] = Blocks.CHAIN.defaultBlockState();
+        p[EsgarothPlan.BARREL] = Blocks.BARREL.defaultBlockState();
+        p[EsgarothPlan.HAY] = Blocks.HAY_BLOCK.defaultBlockState();
+        p[EsgarothPlan.STB] = Blocks.STONE_BRICKS.defaultBlockState();
+        p[EsgarothPlan.CHIM] = Blocks.COBBLESTONE_WALL.defaultBlockState();
+        p[EsgarothPlan.BOOKS] = Blocks.BOOKSHELF.defaultBlockState();
+        p[EsgarothPlan.CRAFT] = Blocks.CRAFTING_TABLE.defaultBlockState();
+        p[EsgarothPlan.WOOL_R] = Blocks.RED_WOOL.defaultBlockState();
+        p[EsgarothPlan.WOOL_Y] = Blocks.YELLOW_WOOL.defaultBlockState();
+        p[EsgarothPlan.WOOL_W] = Blocks.WHITE_WOOL.defaultBlockState();
+        p[EsgarothPlan.WOOL_B] = Blocks.BLUE_WOOL.defaultBlockState();
+        p[EsgarothPlan.THATCH] = Reg.THATCH.get().defaultBlockState();
+        p[EsgarothPlan.LADN] = ladder(Direction.NORTH);
+        p[EsgarothPlan.LADE] = ladder(Direction.EAST);
+        p[EsgarothPlan.LADS] = ladder(Direction.SOUTH);
+        p[EsgarothPlan.LADW] = ladder(Direction.WEST);
+        Direction[] dirs = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+        for (int d = 0; d < 4; d++) for (int h = 0; h < 2; h++)
+            p[EsgarothPlan.DOOR + d * 2 + h] = Blocks.SPRUCE_DOOR.defaultBlockState().setValue(net.minecraft.world.level.block.DoorBlock.FACING, dirs[d])
+                    .setValue(net.minecraft.world.level.block.DoorBlock.HALF, h == 1 ? net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER : net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER);
+        rivFamily(p, EsgarothPlan.WS, Reg.WEATHERED_PLANKS_STAIRS.get(), Reg.WEATHERED_PLANKS_SLAB.get());
+        rivFamily(p, EsgarothPlan.SPS, Blocks.SPRUCE_STAIRS, Blocks.SPRUCE_SLAB);
+        rivFamily(p, EsgarothPlan.DKS, Blocks.DARK_OAK_STAIRS, Blocks.DARK_OAK_SLAB);
+        rivFamily(p, EsgarothPlan.SLS, Blocks.DEEPSLATE_TILE_STAIRS, Blocks.DEEPSLATE_TILE_SLAB);
+        rivFamily(p, EsgarothPlan.OKS, Blocks.OAK_STAIRS, Blocks.OAK_SLAB);
+        rivFamily(p, EsgarothPlan.STS, Blocks.STONE_BRICK_STAIRS, Blocks.STONE_BRICK_SLAB);
+        rivFamily(p, EsgarothPlan.THS, Reg.THATCH_STAIRS.get(), Reg.THATCH_SLAB.get());
+        return esgPal = p;
+    }
+
+    /**
+     * Esgaroth : un quartier de 160 x 160 du site de 320 x 320 (aux = 0 nord-ouest, 1 nord-est, 2 sud-ouest, 3 sud-est). Meme principe que Fondcombe : le plan remplace le relief
+     * au coeur du site, et une bande de 30 blocs raccorde le sol naturel aux rives du lac.
+     */
+    private static void esgaroth(Build b, int aux) {
+        EsgarothPlan p = EsgarothPlan.get();
+        BlockState[] pal = esgarothPal();
+        BlockState stone = Blocks.STONE.defaultBlockState(), water = Blocks.WATER.defaultBlockState();
+        int qx = (aux & 1) * 160, qz = (aux >> 1) * 160;
+        int maxY = EsgarothPlan.TOP - 2;
+        for (int lx = 0; lx < 160; lx++) {
+            for (int lz = 0; lz < 160; lz++) {
+                if (!b.in(lx, 0, lz)) continue;
+                int x = qx + lx, z = qz + lz;
+                int w = p.weight(x, z);
+                if (w == 0) continue;
+                int ground = Math.min(b.groundY(lx, lz), maxY);
+                int top = p.top(x, z), t = p.terrain(x, z);
+                if (w < 255) {                                                                  // bande de raccord : sol melange, sans batiments
+                    double a = w / 255.0;
+                    a = a * a * (3 - 2 * a);
+                    int hb = (int) Math.round(ground * (1 - a) + t * a);
+                    int wlv = p.water(x, z);
+                    boolean wet = wlv > -999 && hb < wlv && a > 0.3;
+                    if (hb == ground && !wet) continue;
+                    int surf = p.get(x, t, z) & 255, sub = p.get(x, t - 1, z) & 255;
+                    BlockState topB = surf == EsgarothPlan.AIR ? pal[EsgarothPlan.GRASS] : pal[surf], subB = sub == EsgarothPlan.AIR ? pal[EsgarothPlan.DIRT] : pal[sub];
+                    if (hb > ground) {
+                        for (int y = ground + 1; y <= hb; y++) b.s(lx, y, lz, y == hb ? topB : (y >= hb - 3 ? subB : stone));
+                    } else {
+                        for (int y = ground; y > hb; y--) if (!b.get(lx, y, lz).isAir()) b.s(lx, y, lz, Build.AIR);
+                        b.s(lx, hb, lz, topB);
+                    }
+                    for (int y = Math.max(hb, ground) + 1; y <= Math.max(hb, ground) + 14; y++) if (!b.get(lx, y, lz).isAir() && b.get(lx, y, lz).is(net.minecraft.tags.BlockTags.LEAVES)) b.s(lx, y, lz, Build.AIR);
+                    if (wet) for (int y = hb + 1; y <= wlv; y++) b.s(lx, y, lz, water);
+                    continue;
+                }
+                for (int y = -EsgarothPlan.OFF - 1; y >= -EsgarothPlan.OFF - 28; y--) {         // fondation : sous le plan, jusqu'au sol ferme
+                    BlockState cur = b.get(lx, y, lz);
+                    if (cur.isSolidRender(b.level, b.pos(lx, y, lz)) && !cur.is(net.minecraft.tags.BlockTags.LEAVES) && !cur.is(net.minecraft.tags.BlockTags.LOGS)) break;
+                    b.s(lx, y, lz, stone);
+                }
+                int hi = Math.min(Math.max(top, ground) + 18, maxY + 1);
+                for (int y = top + 1; y <= hi; y++) {
+                    if (p.raw(x, y, z) != EsgarothPlan.AIR) continue;
+                    if (!b.get(lx, y, lz).isAir()) b.s(lx, y, lz, Build.AIR);
+                }
+                for (int y = -EsgarothPlan.OFF; y <= top; y++) {
+                    byte id = p.raw(x, y, z);
+                    if (id != EsgarothPlan.AIR) b.s(lx, y, lz, pal[id & 255]);
+                    else if (y <= t) b.s(lx, y, lz, stone);
+                }
+            }
+        }
+        int n = 0;
+        for (int[] sp : p.spawns) {                                                            // habitants : des hommes du lac sur les ponts et dans les maisons
+            int lx = sp[0] - qx, lz = sp[2] - qz;
+            if (lx < 0 || lx >= 160 || lz < 0 || lz >= 160 || !b.in(lx, sp[1], lz)) continue;
+            n++;
+            people(b, ModEntities.HUMAN.get(), lx, sp[1], lz, n % 7 == 0 ? PeopleEntity.GUARD : PeopleEntity.CIVIL, n % 7 == 0 ? -1 : n % 4, 30);
         }
     }
 

@@ -309,6 +309,9 @@ def structures():
     # Fondcombe : une seule instance de 352 x 352 (quatre departs, un par quartier), au lieu marque sur la carte (places.json) ; tous les biomes terrestres
     settlement('fondcombe', ['plaines_jaunes', 'plaines_vertes', 'plaines_cendre', 'bosquets', 'foret_clairsemee', 'grande_foret', 'riviere', 'rivage', 'monts_rocheux', 'monts_de_cendre', 'cimes_neigeuses'], 1, 0, 5117, [])
     LANG['structure.ringsofash.fondcombe'] = 'Fondcombe'
+    # Esgaroth (Lac-ville) : une seule instance, au sud-est d'Erebor (places.json) ; ville de bois sur pilotis au milieu d'un lac creuse par la structure
+    settlement('esgaroth', ['plaines_jaunes', 'plaines_vertes', 'plaines_cendre', 'bosquets', 'foret_clairsemee', 'grande_foret', 'riviere', 'rivage', 'monts_rocheux'], 1, 0, 5118, [])
+    LANG['structure.ringsofash.esgaroth'] = 'Esgaroth'
     tag('worldgen/structure', 'volcanoes', R('volcano'), R('mont_funeste'), ns=MOD)
     tag('worldgen/structure', 'doom', R('mont_funeste'), ns=MOD)
     LANG['structure.ringsofash.volcano'] = 'Volcan'
