@@ -362,6 +362,25 @@ public final class ClientTest {
                 view(p, ow, SX + 0.5, SY + 1.3, SZ, 0F, 7F);
             }));
         }
+        // 3 textures de rouille : meme armure, variantes 1 / 2 / 3 (tag rust_variant)
+        SCENES.add(new Scene("08i_variantes_rouille", 70, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            Item[] set = close[7];
+            for (int k = 0; k < 3; k++) {
+                final int variant = k + 1;
+                actor(ow, ModEntities.HUMAN.get(), SX + 1.3 - k * 1.3, SZ + 3.7, m -> {
+                    EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
+                    for (int i = 0; i < 4; i++) {
+                        ItemStack st = new ItemStack(set[i]);
+                        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, st, t -> t.putInt("rust_variant", variant));
+                        m.setItemSlot(slots[i], st);
+                    }
+                    m.setYRot(180F); m.setYHeadRot(180F); m.setYBodyRot(180F);
+                });
+            }
+            view(p, ow, SX + 0.5, SY + 1.3, SZ, 0F, 7F);
+        }));
         // supports invisibles : armures visibles, support invisible, incassable (on tente de le detruire)
         SCENES.add(new Scene("06_support_invisible", 70, p -> {
             ServerLevel ow = p.server.overworld();

@@ -60,7 +60,7 @@ def armor_set(prefix, fr, mat, dur, base, trim, gem, crown=None, fem=False, tags
              'leggings': ('Jambières', 'LEGGINGS', LEGS, 'leg_armor'), 'boots': ('Bottes', 'BOOTS', BOOTS, 'foot_armor')}
     pal = matpal(base, trim=trim, gem=gem)
     for k, (frn, typ, art, tg) in names.items():
-        item(f'{prefix}_{k}', f'{frn} {fr}' + (f' {adj[0 if k in ("helmet", "chestplate") else 1]}' if adj else ''), java=f'ModGear.armor(ModGear.{mat}, ArmorItem.Type.{typ}, {dur}, {props})', tex=sprite(art, pal), tags=[tg])
+        item(f'{prefix}_{k}', f'{frn} {fr}' + (f' {adj[0 if k in ("helmet", "chestplate") else 1]}' if adj else ''), java=(f'ModGear.rustedArmor("{prefix}", ModGear.{mat}, ArmorItem.Type.{typ}, {dur}, {props})' if prefix.endswith('_rusted') else f'ModGear.armor(ModGear.{mat}, ArmorItem.Type.{typ}, {dur}, {props})'), tex=sprite(art, pal), tags=[tg])
     armor_layer(prefix if prefix != 'elven_cloak' else 'cloak', base, trim, gem, crown)
 
 def axe_icon(blade, shaft='#6b4a2a', double=False):

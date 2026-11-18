@@ -1067,7 +1067,7 @@ TILE_OF = {'head': (0, 0, 1), 'chest': (32, 0, 1), 'boots': (0, 32, 1), 'legs': 
 TILE_SIZE = {'head': (32, 32), 'chest': (32, 64), 'boots': (32, 32), 'legs': (64, 64)}   # taille de case disponible dans la feuille 64x64
 
 
-def rustify(tex, seed):
+def rustify(tex, seed, style=1):
     """version tres rouillee (200 ans d'abandon) : rouille epaisse, ecailles, piqures, vert-de-gris sur l'or, coulures, trous"""
     rng = np.random.default_rng(seed)
     h, w = tex.shape[:2]
@@ -1088,11 +1088,14 @@ def rustify(tex, seed):
         cx, cy, r = int(rng.integers(0, w)), int(rng.integers(0, h)), int(rng.integers(2, 5))
         tone += (((xx - cx) ** 2 + (yy - cy) ** 2) <= r * r) * rng.uniform(.3, .8)
     pick = np.clip(tone / 1.2, 0, 1) * .8 + rng.random((h, w)) * .2
-    rust = np.where((pick < .33)[..., None], np.array((84., 40., 20.)), np.where((pick < .7)[..., None], np.array((136., 66., 28.)), np.array((188., 102., 44.))))
+    pal = {1: ((84., 40., 20.), (136., 66., 28.), (188., 102., 44.)),
+           2: ((62., 38., 26.), (104., 62., 36.), (150., 98., 56.)),          # style 2 : brun terne, tres moussu
+           3: ((110., 44., 14.), (172., 78., 22.), (222., 124., 44.))}[style]  # style 3 : orange vif, croute epaisse
+    rust = np.where((pick < .33)[..., None], np.array(pal[0]), np.where((pick < .7)[..., None], np.array(pal[1]), np.array(pal[2])))
     k = np.clip(noise * .95 + .02, 0, .9)[..., None]                       # couverture ~65 %, le reste laisse voir la couleur d'origine
     out = a * (1 - k) + rust * k
     # ecailles de rouille claires et piqures sombres
-    flake = (rng.random((h, w)) < .06) & (noise > .3)
+    flake = (rng.random((h, w)) < {1: .06, 2: .04, 3: .13}[style]) & (noise > .3)
     pit = (rng.random((h, w)) < .035) & (noise > .3)
     out[flake] = np.array((205., 120., 52.)) * .75 + out[flake] * .25
     out[pit] = np.array((38., 20., 12.))
@@ -1129,8 +1132,8 @@ def rustify(tex, seed):
             if rng.random() < .25: dx = int(rng.integers(-1, 2))
     # mousse / lichen verdatre dans les creux (taches ponctuees)
     moss = np.zeros((h, w))
-    for _ in range(max(3, h * w // 520)):
-        cx, cy, r = int(rng.integers(0, w)), int(rng.integers(0, h)), int(rng.integers(1, 3))
+    for _ in range(max(3, h * w // {1: 520, 2: 150, 3: 2000}[style])):
+        cx, cy, r = int(rng.integers(0, w)), int(rng.integers(0, h)), int(rng.integers(1, 3 if style != 2 else 4))
         moss += (((xx - cx) ** 2 + (yy - cy) ** 2) <= r * r) * rng.uniform(.4, 1.0)
     mm = (moss > .55) & (rng.random((h, w)) < .7) & (noise > .3)
     out[mm] = out[mm] * .3 + np.array((84., 104., 44.)) * .7
@@ -1169,7 +1172,7 @@ def _ruin(parts, rng):
         _ruin(p.children, rng)
 
 
-def build_set(name):
+def build_set(name, variant=1):
     pieces = SETS[name]()
     if name.endswith('_rusted') and name != 'gondor_rusted':
         for pc in PIECES: _ruin(pieces[pc], np.random.default_rng(zlib.crc32((name + pc + 'ruin').encode())))
@@ -1177,7 +1180,7 @@ def build_set(name):
     for pc in PIECES:
         parts = pieces[pc]
         tex = paint(parts, TILE_SIZE[pc])
-        if name.endswith('_rusted'): tex = rustify(tex, zlib.crc32((name + pc).encode()))
+        if name.endswith('_rusted'): tex = rustify(tex, zlib.crc32((name + pc + ('' if variant == 1 else f'v{variant}')).encode()), variant)
         out[pc] = (parts, tex)
     return out
 
@@ -1223,14 +1226,17 @@ def preview(names):
 
 def gen(names):
     for name in names:
-        built = build_set(name)
-        sheets = sheet_textures(built)
         os.makedirs(f'{A}/textures/models/armor', exist_ok=True)
         os.makedirs(f'{A}/geo', exist_ok=True)
-        for layer in (1, 2):
-            Image.fromarray(sheets[layer], 'RGBA').save(f'{A}/textures/models/armor/{name}_layer_{layer}.png')
-        for pc in PIECES:
-            json.dump(piece_geo(built, pc), open(f'{A}/geo/armor_{name}_{pc}.json', 'w'), separators=(',', ':'))
+        for variant in ((1, 2, 3) if name.endswith('_rusted') else (1,)):        # 3 textures de rouille : variante 1 = <nom>, 2 = <nom>_v2, 3 = <nom>_v3
+            built = build_set(name, variant)
+            sheets = sheet_textures(built)
+            suf = '' if variant == 1 else f'_v{variant}'
+            for layer in (1, 2):
+                Image.fromarray(sheets[layer], 'RGBA').save(f'{A}/textures/models/armor/{name}{suf}_layer_{layer}.png')
+            if variant == 1:
+                for pc in PIECES:
+                    json.dump(piece_geo(built, pc), open(f'{A}/geo/armor_{name}_{pc}.json', 'w'), separators=(',', ':'))
         print('ecrit', name)
 
 

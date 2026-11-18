@@ -88,6 +88,11 @@ public final class ModGear {
         return new ArmorItem(m, type, p.durability(type.getDurability(durability)));
     }
 
+    /** armure rouillee : 3 textures possibles, tirees au hasard une fois pour toutes quand l'objet est cree (tag rust_variant) */
+    public static Item rustedArmor(String name, Holder<ArmorMaterial> m, ArmorItem.Type type, int durability, Item.Properties p) {
+        return new RustedArmorItem(name, m, type, p.durability(type.getDurability(durability)));
+    }
+
     public static boolean fullSet(Player p, Holder<ArmorMaterial> m) {
         for (EquipmentSlot s : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
             ItemStack st = p.getItemBySlot(s);
