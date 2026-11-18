@@ -380,6 +380,10 @@ public final class HelmsDeepPlan {
 
     // ------------------------------------------------------------------ la salle a arcades, taillee dans la roche
     private void hall() {
+        // coque de briques autour de la salle (la pierre nue y attirerait des sources de lave) et socle plein sous la facade
+        bricks(165, -OFF, 66, 195, 23, 67);
+        bricks(165, 24, 55, 195, 34, 55); bricks(165, 24, 55, 165, 34, 65); bricks(195, 24, 55, 195, 34, 65); bricks(165, 34, 55, 195, 34, 67);
+        bricks(165, 24, 55, 195, 24, 65);
         box(166, 25, 56, 194, 33, 65, AIR);
         box(166, 24, 56, 194, 24, 65, POLAND);
         box(165, 24, 66, 195, 24, 67, POLAND);
@@ -394,6 +398,7 @@ public final class HelmsDeepPlan {
         }
         for (int x = 165; x <= 195; x++) { set(x, 36, 66, CHISEL); set(x, 36, 67, CHISEL); set(x, 37, 66, slab(0, false)); set(x, 37, 67, slab(0, false)); set(x, 37, 68, slab(0, false)); }
         for (int x = 165; x <= 195; x++) set(x, 24, 68, POLAND);
+        for (int x = 165; x <= 195; x++) { set(x, 25, 68, AIR); set(x, 25, 69, AIR); }          // pas de garde-corps devant les arcades
         // piliers et lumieres
         for (int x : new int[]{171, 177, 183, 189}) box(x, 25, 61, x, 33, 61, CHISEL);
         for (int x : new int[]{174, 180, 186}) set(x, 33, 61, HLANT);

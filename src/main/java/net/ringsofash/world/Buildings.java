@@ -1419,7 +1419,6 @@ public final class Buildings {
                 for (int y = -HelmsDeepPlan.OFF; y <= top; y++) {
                     byte id = p.get(x, y, z);
                     if (id != HelmsDeepPlan.AIR) b.s(x, y, z, pal[id & 255]);
-                    else if (y <= t) b.s(x, y, z, stone);
                 }
             }
         }
