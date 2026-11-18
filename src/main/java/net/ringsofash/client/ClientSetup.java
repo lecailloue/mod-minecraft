@@ -202,6 +202,14 @@ public final class ClientSetup {
         e.registerItem(armorExt("elfking_rusted", "chest"), Reg.ELFKING_RUSTED_CHESTPLATE.get());
         e.registerItem(armorExt("elfking_rusted", "legs"), Reg.ELFKING_RUSTED_LEGGINGS.get());
         e.registerItem(armorExt("elfking_rusted", "boots"), Reg.ELFKING_RUSTED_BOOTS.get());
+        e.registerItem(armorExt("dwarfking", "head"), Reg.DWARFKING_HELMET.get());
+        e.registerItem(armorExt("dwarfking", "chest"), Reg.DWARFKING_CHESTPLATE.get());
+        e.registerItem(armorExt("dwarfking", "legs"), Reg.DWARFKING_LEGGINGS.get());
+        e.registerItem(armorExt("dwarfking", "boots"), Reg.DWARFKING_BOOTS.get());
+        e.registerItem(armorExt("dwarfking_rusted", "head"), Reg.DWARFKING_RUSTED_HELMET.get());
+        e.registerItem(armorExt("dwarfking_rusted", "chest"), Reg.DWARFKING_RUSTED_CHESTPLATE.get());
+        e.registerItem(armorExt("dwarfking_rusted", "legs"), Reg.DWARFKING_RUSTED_LEGGINGS.get());
+        e.registerItem(armorExt("dwarfking_rusted", "boots"), Reg.DWARFKING_RUSTED_BOOTS.get());
         e.registerItem(armorExt("rohan", "head"), Reg.ROHAN_HELMET.get());
         e.registerItem(armorExt("rohan", "chest"), Reg.ROHAN_CHESTPLATE.get());
         e.registerItem(armorExt("rohan", "legs"), Reg.ROHAN_LEGGINGS.get());
@@ -308,7 +316,7 @@ public final class ClientSetup {
     }
 
     // ---- armures 3D (orc, nain, elfe) : un modele par piece, pose copiee depuis le modele d'origine
-    private static final String[] ARMOR_SETS = {"orc", "dwarven", "elven", "rohan", "gondor", "elfking", "orc_rusted", "dwarven_rusted", "elven_rusted", "rohan_rusted", "gondor_rusted", "elfking_rusted"};
+    private static final String[] ARMOR_SETS = {"orc", "dwarven", "elven", "rohan", "gondor", "elfking", "orc_rusted", "dwarven_rusted", "elven_rusted", "rohan_rusted", "gondor_rusted", "elfking_rusted", "dwarfking", "dwarfking_rusted"};
     private static final String[] ARMOR_PIECES = {"head", "chest", "legs", "boots"};
     private static final java.util.Map<String, HumanoidModel<LivingEntity>> ARMOR_MODELS = new java.util.HashMap<>();
 

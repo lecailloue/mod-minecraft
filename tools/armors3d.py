@@ -926,6 +926,109 @@ SETS['elfking'] = elfking
 
 
 
+# ================================================================== ROI NAIN (Erebor, regalien)
+mat('dfur', (214, 212, 204), 5, 6, (1, 1, 1))
+mat('dcp', (26, 40, 112), 4, 5, (.95, .95, 1.05))
+mat('cl_blue', (30, 44, 118), 4, 5, (.95, .95, 1.05))
+ANVIL = ['#######', '.#####.', '..###..', '.#####.']
+
+
+def d_dk_gold(emb=False, rows=()):
+    def f(face, F, rng):
+        scratches(F, rng, 3, (255, 236, 176), .3)
+        if face not in ('top', 'bottom') and F.h >= 3:
+            F.hline(F.h - 1, 0, F.w, DGD, .6)
+            for y in rows:
+                if y + 1 < F.h: ridge(F, y, DGD, (255, 236, 176))
+        if emb and face == 'front' and F.w >= 4 and F.h >= 3:
+            F.art(max(0, (F.w - 4) // 2), max(0, (F.h - 3) // 2), ['####', '.##.', '####'][: F.h], {'#': (64, 40, 14)})
+        rivets(F, (255, 240, 190), 0)
+    return f
+
+
+def d_dk_gem(col):
+    def f(face, F, rng):
+        F.rect(0, 0, F.w, F.h, col, .95)
+        if F.w >= 1: F.px(0, 0, (255, 255, 255), .55)
+    return f
+
+
+def d_dk_fur(face, F, rng):
+    for y in range(F.h):
+        for x in range(F.w):
+            r = rng.random()
+            if r < .28: F.px(x, y, (130, 128, 122), .55)
+            elif r < .42: F.px(x, y, (255, 255, 250), .5)
+    if face not in ('top', 'bottom') and F.h >= 2: F.hline(F.h - 1, 0, F.w, (120, 118, 112), .5)
+
+
+def d_dk_beard(face, F, rng):
+    for y in range(F.h):
+        F.hline(y, 0, F.w, (170, 120, 58) if y % 2 == 0 else (206, 156, 80), .45)
+    for x in range(1, F.w, 2): F.vline(x, 0, F.h, (110, 74, 30), .35)
+    if face not in ('top', 'bottom'): F.hline(F.h - 1, 0, F.w, DG, .8)
+
+
+def d_dk_cape(face, F, rng):
+    for y in range(F.h):
+        F.hline(y, 0, F.w, (18, 28, 88) if y % 3 == 0 else (46, 66, 150), .35)
+    if face == 'back':
+        F.hline(F.h - 1, 0, F.w, DG, .9); F.hline(F.h - 2, 0, F.w, DGD, .5)
+        F.vline(0, 0, F.h, DG, .9); F.vline(F.w - 1, 0, F.h, DG, .9)
+        F.hline(0, 0, F.w, (236, 236, 226), .8)
+        for x in range(0, F.w, 2): F.px(x, 1, (130, 128, 122), .7)                           # bande de fourrure en haut
+        F.art(F.w // 2 - 3, 6, ANVIL, {'#': DG})                                              # emblème : enclume
+        F.art(F.w // 2 - 2, 11, ['..#..', '.###.', '#####', '.###.', '..#..'], {'#': DG})     # soleil
+    elif face in ('left', 'right'):
+        F.vline(0, 0, F.h, DG, .8)
+    elif face == 'bottom':
+        F.rect(0, 0, F.w, F.h, DGD, .6)
+
+
+def dwarfking():
+    d = dwarf()
+    head = d['head'][0]
+    head.cubes = [c for c in head.cubes if c.key not in ('d_ridge', 'd_dome', 'd_cheek')]
+    head.children = []                                                                      # (pas de camail : place de texture pour la couronne)
+    G = d_dk_gold
+    # couronne d'or sertie
+    head.box((-4, -10, -4), (8, 2, 8), 'dgo', .65, 'dk_crown', G(rows=(0,)))
+    for i, (x, z, tall) in enumerate(((-4.5, -4.5, 0), (-0.5, -4.5, 1), (3.5, -4.5, 0), (3.5, -0.5, 1), (3.5, 3.5, 0), (-0.5, 3.5, 1), (-4.5, 3.5, 0), (-4.5, -0.5, 1))):
+        head.box((x, -13 - tall, z), (1, 3 + tall, 1), 'dgo', 0, 'dk_spk2' if tall else 'dk_spk', G())
+    head.box((-0.5, -9.6, -5), (1, 1, 1), 'dgo', 0, 'dk_gem_r', d_dk_gem((210, 40, 50)))
+    head.box((-5, -9.6, -0.5), (1, 1, 1), 'dgo', 0, 'dk_gem_b', d_dk_gem((60, 110, 230)))
+    head.box((4, -9.6, -0.5), (1, 1, 1), 'dgo', 0, 'dk_gem_b', d_dk_gem((60, 110, 230)))
+    # barbe royale tressee, bagues d'or
+    head.box((-3, -1, -4.8), (6, 3, 2), 'dbr', .1, 'dk_beard1', d_dk_beard)
+    head.box((-2, 2, -4.6), (4, 3, 2), 'dbr', .1, 'dk_beard2', d_dk_beard)
+    head.box((-1.5, 5, -4.4), (3, 2, 2), 'dgo', .1, 'dk_bead', G())
+
+    body = d['chest'][0]
+    body.cubes = [c for c in body.cubes if c.key not in ('d_pec', 'd_buckle')]
+    for ap in d['chest'][1:]: ap.cubes = [c for c in ap.cubes if c.key != 'd_brac']
+    body.box((-3.6, 1, -3.4), (3, 5, 1), 'dgo', .1, 'dk_pec', G(rows=(2,)))
+    body.cubes.append(Cube((0.6, 1, -3.4), (3, 5, 1), 'dgo', .1, 'dk_pec', G(rows=(2,)), True))
+    body.box((-2, 8.4, -3.6), (4, 3, 1), 'dgo', .1, 'dk_buckle', G(emb=True))
+    body.box((-4, -1.6, -1.5), (8, 2, 3), 'dfur', 1.0, 'dk_fur', d_dk_fur)                   # col de fourrure
+    cape = Part('cape', (0, -0.6, 2.4), (R(4), 0, 0)); body.children.append(cape)
+    cape.box((-5, 0, 0), (10, 19, 1), 'dcp', 0.3, 'dk_cape', d_dk_cape)
+    for ap in d['chest'][1:]:
+        left = ap.name.startswith('left')
+        for pa in ap.children:                                                                # pointes d'or sur les epaulieres
+            pa.cubes.append(Cube((-2.5 if not left else 1.5, -3, -0.5), (1, 2, 1), 'dgo', 0, 'dk_pspk', G()))
+        ap.cubes.append(Cube((-1 if left else -3, 8, -2), (4, 3, 4), 'dgo', .5, 'dk_brac2', G(rows=(1,)), left))
+    for lp in d['legs'][1:]:
+        left = lp.name.startswith('left')
+        lp.cubes.append(Cube((-0.5, 5, -4.2), (1, 1, 1), 'dgo', 0, 'dk_kspk', G()))
+    for bp in d['boots']:
+        bp.cubes = [c for c in bp.cubes if c.key != 'd_toe']
+        bp.box((-2, 10.2, -3.6), (4, 2, 2), 'dgo', 0, 'dk_toe', G())
+    return d
+
+
+SETS['dwarfking'] = dwarfking
+
+
 def _with_drape(fn, matn, dark, light, trim, tag, drop=()):
     """enveloppe un set : ajoute le drap sur chest (bras), legs (pans + jambes)"""
     def g():
@@ -948,11 +1051,12 @@ def _with_drape(fn, matn, dark, light, trim, tag, drop=()):
 SETS['dwarven'] = _with_drape(dwarf, 'cl_dgrey', (30, 30, 38), (90, 92, 104), (214, 172, 80), 'dd')
 SETS['rohan'] = _with_drape(rohan, 'cl_red', (60, 10, 14), (160, 50, 52), (226, 186, 96), 'rd')
 SETS['gondor'] = _with_drape(gondor, 'cl_lgrey', (110, 112, 122), (226, 228, 236), (214, 178, 84), 'gd')
+SETS['dwarfking'] = _with_drape(dwarfking, 'cl_blue', (14, 20, 70), (54, 72, 150), (226, 186, 96), 'kd')
 SETS['elven'] = _with_drape(elf, 'cl_green', (34, 66, 44), (104, 150, 112), (232, 200, 108), 'ed')
 
 
 # variantes rouillees (meme modele, texture rouillee ; Gondor : aile gauche abimee)
-for _b in ('orc', 'dwarven', 'elven', 'rohan', 'elfking'):
+for _b in ('orc', 'dwarven', 'elven', 'rohan', 'elfking', 'dwarfking'):
     SETS[_b + '_rusted'] = SETS[_b]
 SETS['gondor_rusted'] = _with_drape(lambda: gondor(rusted=True), 'cl_lgrey', (110, 112, 122), (226, 228, 236), (214, 178, 84), 'gd')
 

@@ -15,7 +15,7 @@ BOOTS = ['................', '................', '................', '..........
          '.ooaao...ooaao..', '.obaao...obaao..', '.oaaado..oaaado.', '.oddddo..oddddo.', '.oooooo..oooooo.', '................']
 
 def armor_layer(name, base, trim, gem, crown=None, seed=0):
-    if name in ('orc', 'dwarven', 'elven', 'rohan', 'gondor', 'elfking') or name.endswith('_rusted'):
+    if name in ('orc', 'dwarven', 'elven', 'rohan', 'gondor', 'elfking', 'dwarfking') or name.endswith('_rusted'):
         return                                           # armures 3D : tools/armors3d.py
     from skins import Skin
     b = rgb(base); t = rgb(trim)
@@ -261,6 +261,7 @@ def build():
     armor_set('gondor', 'de la Garde de Gondor', 'GONDOR', 34, '#b8bec8', '#d6b254', '#e8e8f0', props='props().rarity(Rarity.RARE)')
     armor_set('rohan', 'de Rohan', 'ROHAN', 28, '#6a3022', '#d6a84c', '#a02020', props='props().rarity(Rarity.RARE)')
     armor_set('ashlord', 'du Seigneur de Cendre', 'ASHLORD', 40, '#1c1a20', '#c02a10', '#ff5a18', crown='#2a2830', props='props().fireResistant().rarity(Rarity.EPIC)')
+    armor_set('dwarfking', 'du roi nain', 'DWARFKING', 36, '#6a6f7a', '#d6b040', '#d03040', crown='#e0c060', props='props().fireResistant().rarity(Rarity.EPIC)')
     armor_set('elfking', 'du roi elfe', 'ELFKING', 40, '#e6e2d0', '#d8b040', '#3090e0', crown='#e0c060', props='props().fireResistant().rarity(Rarity.EPIC)')
     # ---- versions rouillees (meme modele 3D, texture rouillee ; Gondor : aile gauche abimee)
     def _rust(h):
@@ -271,6 +272,7 @@ def build():
                                                ('dwarven', 'naine', 'DWARVEN', 30, '#6a6f7a', '#c9a23a', '#d04030', 'props()'),
                                                ('gondor', 'de la Garde de Gondor', 'GONDOR', 34, '#b8bec8', '#d6b254', '#e8e8f0', 'props().rarity(Rarity.RARE)'),
                                                ('rohan', 'de Rohan', 'ROHAN', 28, '#6a3022', '#d6a84c', '#a02020', 'props().rarity(Rarity.RARE)'),
+                                               ('dwarfking', 'du roi nain', 'DWARFKING', 36, '#6a6f7a', '#d6b040', '#d03040', 'props().fireResistant().rarity(Rarity.EPIC)'),
                                                ('elfking', 'du roi elfe', 'ELFKING', 40, '#e6e2d0', '#d8b040', '#3090e0', 'props().fireResistant().rarity(Rarity.EPIC)')):
         armor_set(f'{pre}_rusted', fr_, f'{M}_RUSTED', dur_, _rust(b_), _rust(t_), _rust(g_), props=pr_, adj=('rouillé', 'rouillée'))
     LANG[f'entity.{MOD}.invisible_armor_stand'] = "Support d'armure invisible"
