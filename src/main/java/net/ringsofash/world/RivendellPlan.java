@@ -162,6 +162,31 @@ public final class RivendellPlan {
         return lower + (upper - lower) * sv + 5 * vn(x / 5.0, z / 5.0, 33) * 4 * sv * (1 - sv);
     }
 
+    /** distance en x a la ligne de la cascade la plus proche (les lits des trois cascades suivent ces lignes) */
+    private static double streamDist(double x, double z) {
+        double d = Math.abs(x - (262 + 3.0 * vn(z / 16.0, 91 * 0.37, 91)));
+        d = Math.min(d, Math.abs(x - (150 + 2.0 * vn(z / 16.0, 92 * 0.37, 92))) + 7);
+        d = Math.min(d, Math.abs(x - (46 + 2.0 * vn(z / 16.0, 93 * 0.37, 93))) + 7);
+        return d;
+    }
+
+    /** la montagne au nord du gradin : une longue pente continue (croupes, ravines verticales, nervures) qui monte jusqu'a la crete, au lieu de plateaux et de falaises en gradins */
+    private static double mountain(double xw, double zw, double zC, double base, double crest) {
+        double t = (zC - zw) / 64.0;
+        double tt = Math.min(1.0, Math.max(0, t + 0.12 * vn(xw / 23.0, zw / 23.0, 70)));
+        double prof = 0.6 * tt + 0.4 * sm(tt);
+        double h = base + (crest - base) * prof;
+        if (t > 1) h = crest + (t - 1) * 0.0;
+        double gr = 1 - sm(Math.abs(vn(xw / 6.0, zw / 19.0, 41)) / 0.14);
+        double rib = 1 - sm(Math.abs(vn(xw / 11.0, zw / 34.0, 42)) / 0.22);
+        double sp = 7 * Math.max(0, vn(xw / 30.0, zw / 18.0, 71));                                    // contreforts
+        double fl = (10 * gr + 14 * rib) * sm(t * 4) * (1 - sm((t - 0.8) / 0.4));
+        h += sp * sm(t * 3) - fl;
+        double sd = streamDist(xw, zw);
+        h -= 18 * (1 - sm(sd / 18.0)) * sm(t * 2.5);                                                    // les ravines qui guident les cascades
+        return h;
+    }
+
     private void terrain() {
         for (int z = 0; z < D; z++) for (int x = 0; x < W; x++) {
             int i = z * W + x;
@@ -180,11 +205,9 @@ public final class RivendellPlan {
                 if (zw < zA + 11) h += 3.2 * (1 - (zw - zA) / 11.0) * (0.55 + 0.45 * vn(xw / 4.0, zw / 4.0, 34));       // eboulis au pied de la falaise
             } else {
                 double lowerS = S + side * sideK, lowerT2 = T2 + side * sideK;
-                double mount = T3 + Math.min(12, (zC - zw) * 0.1) + 12 * vn(xw / 45.0, zw / 45.0, 24) + 5 * vn(xw / 12.0, zw / 12.0, 25)
-                        + 16 * rid(xw / 30.0, zw / 30.0, 35) * sm((zC - zw) / 20.0) + side * 0.4;
-                double h2 = face(zC, zw, lowerT2, mount, 1.0 + 7.0 * sm(nearFall - 0.4), xw);
-                h = face(zB, zw, lowerS, h2 > lowerT2 ? Math.max(lowerT2, h2) : lowerT2, w, xw);
-                if (zw < zB) { double hh = face(zC, zw, lowerT2, mount, 1.0 + 7.0 * sm(nearFall - 0.4), xw); h = zw >= zC ? face(zB, zw, lowerS, lowerT2, w, xw) : hh; }
+                double crest = T3 + 4 + 12 * vn(xw / 45.0, zw / 45.0, 24) + 6 * vn(xw / 12.0, zw / 12.0, 25) + 14 * rid(xw / 30.0, zw / 30.0, 35) + side * 0.4;
+                h = face(zB, zw, lowerS, lowerT2, w, xw);
+                if (zw < zC) h = mountain(xw, zw, zC, lowerT2, crest);
             }
             if (h > 138) h = 138 + (h - 138) * 0.2;
             if (zw >= zC && zw < zA) {                                                     // gorge : parois en pente, bosselees, au lieu d'un mur
@@ -214,6 +237,10 @@ public final class RivendellPlan {
             int e = Math.min(Math.min(x, z), Math.min(W - 1 - x, D - 1 - z));
             edge[i] = (byte) Math.round(255 * sm(e / (double) BAND));
         }
+        // plates-formes : les batiments poses sur une pente (epaule est, salle du Feu, aiguille) ont un sol de plain-pied avec le terrain qui les entoure
+        pad(292, 94, 330, 162, S, 9, false);
+        pad(86, 76, 126, 100, T2, 6, true);
+        pad(76, 100, 92, 114, S, 4, false);
         // etangs au pied des cascades de la terrasse
         pond(150, (int) Math.round(zA(150)) + 9, 9);
         pond(46, (int) Math.round(zA(46)) + 9, 9);
@@ -227,6 +254,19 @@ public final class RivendellPlan {
             int h = S + (102 - z);
             if (h > T2 - 1) break;
             for (int x = 128; x <= 130; x++) { th[z * W + x] = h; ramp[z * W + x] = (byte) (1 + N); }
+        }
+    }
+
+    private void pad(int x0, int z0, int x1, int z1, int level, int blend, boolean onlyRaise) {
+        for (int z = z0 - blend; z <= z1 + blend; z++) for (int x = x0 - blend; x <= x1 + blend; x++) {
+            if (!area(x, z)) continue;
+            double dx = Math.max(Math.max(x0 - x, x - x1), 0), dz = Math.max(Math.max(z0 - z, z - z1), 0);
+            double d = Math.hypot(dx, dz);
+            if (d > blend) continue;
+            double w = d == 0 ? 1 : 1 - sm(d / blend);
+            int i = z * W + x;
+            int v = (int) Math.round(th[i] + (level - th[i]) * w);
+            th[i] = onlyRaise ? Math.max(th[i], v) : v;
         }
     }
 
@@ -263,6 +303,17 @@ public final class RivendellPlan {
                 wl[i] = (short) lv[z];
             }
         }
+        for (int z = z0; z <= z1 && z < D; z++) {                                      // berges : le lit n'est jamais retenu par du vide, l'eau ne pend pas
+            for (int dx = -hw - 3; dx <= hw + 3; dx++) {
+                if (Math.abs(dx) <= hw) continue;
+                int x = cc[z] + dx;
+                if (!area(x, z)) continue;
+                int i = z * W + x;
+                if (wl[i] > -999) continue;
+                int want = lv[z];
+                if (th[i] < want) th[i] = want;
+            }
+        }
         for (int z = z0; z < z1 && z < D; z++) {
             int d = lv[z] - lv[z + 1];
             if (d < 2) continue;
@@ -276,25 +327,29 @@ public final class RivendellPlan {
     private static final int[] STRATA = {STONE, ANDESITE, TUFF, STONE, ANDESITE, STONE, CALCITE, COBBLE};
 
     private int rock(int x, int y, int z, boolean surface) {
-        double layer = Math.floor((y + 5 * vn(x / 23.0, z / 23.0, 11) + 2 * vn(x / 7.0, z / 7.0, 12)) / 4.0);
-        int k = (int) (rnd((int) layer, 17, 3) * 8) & 7;
         double q = rnd(x, y, z);
         if (surface && y < 40 && q < 0.2) return MOSSC;
         if (surface && vn(x / 3.0 + y / 5.0, z / 3.0, 57) > 0.74) return COBBLE;
         if (y > 4 && vn(x / 2.2, z / 2.2, 58) > 0.62 && vn(x / 11.0, z / 11.0, 59) > -0.1) return q < 0.5 ? MOSSC : MOSS;   // coulees de mousse le long des parois
-        if (q < 0.18) return STRATA[(k + 3) & 7];
-        return STRATA[k];
+        double v = vn(x / 7.0, z / 7.0 + y / 16.0, 12), w = vn(x / 4.5 + y / 22.0, z / 4.5, 13);                     // veines verticales, pas de strates horizontales
+        if (w > 0.7) return CALCITE;
+        if (v > 0.45) return ANDESITE;
+        if (v < -0.5) return TUFF;
+        if (q < 0.1) return COBBLE;
+        if (q < 0.25) return ANDESITE;
+        return STONE;
     }
 
     private void materialize() {
         for (int z = 0; z < D; z++) for (int x = 0; x < W; x++) {
             int i = z * W + x, t = th[i];
             int s = 0;
-            for (int[] o : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+            for (int[] o : new int[][]{{2, 0}, {-2, 0}, {0, 2}, {0, -2}, {2, 2}, {-2, -2}, {2, -2}, {-2, 2}}) {
                 int xx = x + o[0], zz = z + o[1];
                 if (area(xx, zz)) s = Math.max(s, Math.abs(th[zz * W + xx] - t));
             }
-            boolean gentle = s <= 2 && t < 130;
+            double pg = Math.max(0, Math.min(1, 1 - (s - 1) / 3.0));                // part d'herbe selon la pente : plein sur le plat, en plaques sur les pentes, rien sur la roche nue
+            boolean gentle = t < 128 && (s <= 1 || (vn(x / 6.0, z / 6.0, 72) * 0.5 + 0.5) < pg);
             boolean wet = wl[i] > -999;
             for (int y = -OFF + 2; y <= t; y++) {
                 int id;
@@ -343,8 +398,7 @@ public final class RivendellPlan {
                     if (carve ? nid == AIR : (rockId(nid) && rockId(gi(x + o[0], y + 1, z + o[1])))) c++;
                 }
                 if (c == 0 || (carve && c > 2)) continue;
-                double lay = Math.floor((y + 4 * vn(x / 19.0, z / 19.0, 61)) / 3.0);
-                boolean soft = rnd((int) lay, 29, 5) < 0.4;
+                boolean soft = vn(x / 7.0, z / 7.0 + y / 24.0, 61) > 0.15;
                 boolean hit;
                 if (carve) {
                     double nz = vn(x / 4.5 + y * 0.13, z / 4.5 - y * 0.11, 62 + ps);
@@ -575,6 +629,7 @@ public final class RivendellPlan {
         house(76, 114, 90, 134, b, 3, 7, 7, 1, 2, -1, true);
         house(98, 112, 116, 134, b, 5, 7, 6, 1, 2, -1, true);
         house(124, 110, 138, 134, b, 4, 7, 7, 1, 2, -1, true);
+        for (int cx : new int[]{83, 107, 131}) doorAt(true, cx, 134, b);                           // chaque pignon s'ouvre sur la longue salle
         spawns.add(new int[]{107, b, 140});
         spawns.add(new int[]{85, b, 140});
     }
@@ -613,8 +668,11 @@ public final class RivendellPlan {
         }
         for (int a = 0; a < 20; a++) { double an = a * Math.PI / 10; set(cx + (int) Math.round(Math.cos(an) * (r + 1.2)), yb + h + 1, cz + (int) Math.round(Math.sin(an) * (r + 1.2)), TWALL); }
         cone(cx, cz, r + 1, yb + h + 1, 28, true);
-        for (int d = -1; d <= 1; d++) for (int y = yb; y < yb + 4; y++) { set(cx + d, y, cz + r, AIR); set(cx + d, y, cz + r - 1, AIR); }
-        set(cx, yb + 4, cz + r, AIR);
+        for (int dz = 0; dz < r - 1; dz++) for (int y = yb - 1; y <= yb - 1; y++) for (int dx = -r; dx <= r; dx++) if (Math.hypot(dx, dz) <= r - 0.8) set(cx + dx, y, cz + dz, GP);
+        for (int dz = -r; dz < 0; dz++) for (int dx = -r; dx <= r; dx++) if (Math.hypot(dx, dz) <= r - 0.8) set(cx + dx, yb - 1, cz + dz, GP);       // le sol de la tour est de pierre, plus d'herbe
+        for (int d = -1; d <= 1; d++) for (int z = cz + r - 1; z <= cz + r + 2; z++) for (int y = yb; y < yb + 4; y++) set(cx + d, y, z, AIR);                 // la porte traverse tout le mur
+        for (int z = cz + r - 1; z <= cz + r + 2; z++) set(cx, yb + 4, z, AIR);
+        doors.add(new int[]{cx, cz + r, yb});
         for (int y = yb; y < yb + 5; y++) { set(cx - 2, y, cz + r, WPIL); set(cx + 2, y, cz + r, WPIL); }
         spawns.add(new int[]{cx, yb, cz + 2});
     }
@@ -624,6 +682,7 @@ public final class RivendellPlan {
         int cx = 84, cz = 106, y = S + 1;
         reserve(cx - 6, cz - 6, cx + 6, cz + 6, 3);
         found(cx - 5, cz - 5, cx + 5, cz + 5, y - 1, WB);
+        box(cx - 4, S, cz - 4, cx + 4, S, cz + 4, GP);                                   // sol dallage, plus d'herbe a l'interieur
         int[] half = {4, 3, 2, 1}, len = {22, 18, 18, 16};
         for (int s = 0; s < 4; s++) {
             int hw = half[s];
@@ -740,6 +799,15 @@ public final class RivendellPlan {
     }
 
     // ------------------------------------------------------------------ terrasse du Conseil
+    private static boolean councilGap(double an, double w) {
+        for (double g : new double[]{Math.PI, 0, -Math.PI / 2}) {
+            double d = Math.abs(an - g);
+            if (d > Math.PI) d = 2 * Math.PI - d;
+            if (d < w) return true;
+        }
+        return false;
+    }
+
     private void council() {
         int cx = 195, cz = 150, r = 22;
         reserve(cx - r, cz - r, cx + r, cz + r, 3);
@@ -757,7 +825,7 @@ public final class RivendellPlan {
                 set(x, S, z, id);
                 for (int y = S + 1; y <= S + 14; y++) if (get(x, y, z) != AIR) set(x, y, z, AIR);
             }
-            if (d > r - 0.5 && d <= r + 0.6) { set(x, S + 1, z, QB); set(x, S + 2, z, WWALL); }
+            if (d > r - 0.5 && d <= r + 0.6 && !councilGap(Math.atan2(dz, dx), 3.5 / r)) { set(x, S + 1, z, QB); set(x, S + 2, z, WWALL); }       // le mur du cercle s'ouvre a l'ouest, a l'est et au nord
         }
         // chaises du Conseil, tournees vers la table
         for (int k = 0; k < 14; k++) {
@@ -771,6 +839,7 @@ public final class RivendellPlan {
         bigTree(cx, S + 1, cz - 17);
         for (int k = 0; k < 8; k++) {
             double an = Math.PI * 0.15 + k * Math.PI * 1.7 / 8;
+            if (councilGap(an, 6.0 / r)) continue;
             int x = cx + (int) Math.round(Math.cos(an) * (r - 1.5)), z = cz + (int) Math.round(Math.sin(an) * (r - 1.5));
             for (int h = 1; h <= 4; h++) set(x, S + h, z, WWALL);
             set(x, S + 5, z, LANTERN);
@@ -877,7 +946,7 @@ public final class RivendellPlan {
         // passerelle sur le ruisseau de la terrasse
         for (int x = 146; x <= 154; x++) for (int z = 136; z <= 138; z++) set(x, S + 1, z, (x == 146 || x == 154) ? stair(WBS, x == 146 ? E : W_, false) : WS);
         for (int x = 147; x <= 153; x++) { set(x, S + 2, 135, WWALL); set(x, S + 2, 139, WWALL); }
-        for (int x = 147; x <= 153; x++) for (int z = 136; z <= 138; z++) set(x, S, z, WB);
+        for (int x = 147; x <= 153; x++) for (int z = 136; z <= 138; z++) if (get(x, S, z) != WATER) set(x, S, z, WB);                // l'eau passe sous le tablier
     }
 
     private int pierMix(int x, int y, int z) {                                       // pont tout blanc : briques blanches, quelques pierres lisses
@@ -954,15 +1023,15 @@ public final class RivendellPlan {
 
     // ------------------------------------------------------------------ la vallee : maison du gue, pont sur la riviere
     private void valley() {
-        house(118, 214, 130, 226, 1, 3, 7, 6, 1, 2, 0, true);
-        house(138, 196, 152, 210, 1, 4, 7, 7, 0, 2, 2, true);                                  // haute maison au pied de l'escalier
-        house(310, 140, 324, 156, S + 1, 3, 7, 7, 1, 2, 3, true);                               // maison de l'epaule est, face a l'arche
+        house(118, 214, 130, 226, 1, 3, 7, 6, 1, 2, 2, true);
+        house(138, 196, 152, 210, 1, 4, 7, 7, 0, 2, 1, true);                                  // haute maison au pied de l'escalier
+        house(310, 140, 324, 156, S + 1, 3, 7, 7, 1, 2, 0, true);                               // maison de l'epaule est, face a l'arche
         house(300, 100, 312, 112, S + 1, 4, 7, 6, 0, 2, 2, true);
         for (int x = 296; x <= 312; x++) for (int z = 136; z <= 138; z++) pave(x, z, S, WS);
         int xb = 190, ya = 5;
         bridgeZ(xb, 244, 268, ya, 3);
         for (int k = 0; k < 6; k++) for (int dx = -3; dx <= 3; dx++) {
-            int yy = ya - 1 - k;
+            int yy = ya - k;
             if (yy < 1) continue;
             for (int[] zz : new int[][]{{243 - k, S_}, {269 + k, N}}) {
                 int z = zz[0];
@@ -1008,6 +1077,9 @@ public final class RivendellPlan {
         band(150, 180, 200, 215, 1, 0, false);
         band(130, 226, 190, 242, 1, 0, false);
         band(190, 270, 215, 300, 1, 0, false);
+        band(124, 228, 136, 229, 1, 0, false);                                              // de la porte de la maison du gue a la route
+        band(153, 203, 171, 203, 1, 0, false);                                              // de la haute maison au pied de l'escalier
+        band(306, 113, 306, 128, 1, S, false);                                              // de la maison nord-est a l'esplanade
         for (int x = 294; x <= 330; x++) for (int z = 128; z <= 136; z++) pave(x, z, S, WS);
     }
 
