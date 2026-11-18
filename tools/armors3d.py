@@ -594,20 +594,23 @@ def d_g_helm(face, F, rng):
     rivets(F, (250, 250, 255), 0)
 
 
+def d_g_spine(face, F, rng):
+    F.rect(0, 0, F.w, F.h, GG, .9)
+    scratches(F, rng, 2, (255, 240, 190), .4)
+    if face not in ('top', 'bottom'): F.hline(F.h - 1, 0, F.w, GGD, .5)
+
+
 def d_g_wing(face, F, rng):
-    """plume : rangees de barbes qui se chevauchent, bord dore sur le cote exterieur"""
+    """plume arrondie : fond blanc, nervure centrale, barbes en chevrons, bout clair"""
     for y in range(F.h):
-        tone = (252, 252, 250) if (y // 2) % 2 == 0 else (214, 216, 222)
-        F.hline(y, 0, F.w, tone, .6)
         for x in range(F.w):
-            if (x + y) % 2 == 0: F.px(x, y, (178, 182, 192), .25)                       # barbules
-    if face in ('front', 'back'):
-        F.vline(F.w // 2, 0, F.h, (150, 154, 166), .55)                                   # rachis
-        for y in range(1, F.h, 2):
-            F.px(max(0, F.w // 2 - 1), y, (255, 255, 255), .6); F.px(min(F.w - 1, F.w // 2 + 1), y, (255, 255, 255), .6)
-        F.hline(0, 0, F.w, GG, .8)
-    elif face == 'top':
-        F.rect(0, 0, F.w, F.h, GG, .8)
+            F.px(x, y, (250, 250, 248) if (x + y) % 3 else (222, 224, 230), .65)
+    if face in ('front', 'back') and F.w >= 5:
+        F.hline(F.h // 2, 0, F.w, (160, 164, 176), .55)                               # rachis
+        for x in range(1, F.w - 1, 2):
+            F.px(x, max(0, F.h // 2 - 1), (255, 255, 255), .7); F.px(x + 1 if x + 1 < F.w else x, min(F.h - 1, F.h // 2 + 1), (200, 204, 214), .6)
+        F.px(0, 0, (0, 0, 0), 0); F.al[0, 0] = 0; F.al[F.h - 1, 0] = 0                 # bout arrondi (cote libre)
+    if face == 'top': F.rect(0, 0, F.w, F.h, GG, .5)
 
 
 def d_g_body(face, F, rng):
@@ -682,12 +685,24 @@ def gondor():
     head.box((-4.3, -5, -3), (1, 5, 4), 'gdk', .3, 'g_cheek', G(rows=(2,), gold=True))
     head.cubes.append(Cube((3.3, -5, -3), (1, 5, 4), 'gdk', .3, 'g_cheek', G(rows=(2,), gold=True), True))
     head.box((-0.5, -5, -4.6), (1, 5, 1), 'gst', .2, 'g_nose', G(gold=True))
-    # ailes : plumes larges dans le plan frontal, ouvertes en V comme sur le casque de la Garde
-    base = Part('wing_base', (-3.4, -7.0, 0.2)); head.children.append(base)
-    for i, (rz, dz) in enumerate(((-3, 0.0), (-10, 0.9), (-17, 1.8))):
-        fe = Part(f'plume{i}', (-0.4 * i, 0.0, dz), (R(-8), 0, R(rz))); base.children.append(fe)
-        fe.box((-3, -9, -0.5), (3, 9, 1), 'gfe', 0, 'g_plume', d_g_wing)
-    head.children.append(mirrored(base, 'wing_base_l'))
+    # aile (schema de l'utilisateur) : nervure doree courbe (croissant) fixee sur le casque, 3 plumes arrondies vers le haut + 3 vers le bas
+    J = (-4.7, -8.4, 0.0)                                                            # point de jonction sur le flanc du casque
+    wing = Part('wing', J); head.children.append(wing)
+    prev = wing
+    for k, (rz, fz) in enumerate(((-5, 36), (-9, 40), (-12, 44))):                    # moitie haute : monte en s'ecartant du casque
+        seg = Part(f'sp_u{k}', (0, 0 if k == 0 else -2, 0), (0, 0, R(rz))); prev.children.append(seg)
+        seg.box((-0.5, -2, -1), (1, 2, 2), 'gst', 0.1, 'g_spine', d_g_spine)
+        fe = Part(f'fe_u{k}', (0, -1.0, 0.0), (0, 0, R(fz))); seg.children.append(fe)
+        fe.box((-5, -1, -0.5), (5, 2, 1), 'gfe', 0, 'g_plume', d_g_wing)
+        prev = seg
+    prev = wing
+    for k, (rz, fz) in enumerate(((5, -34), (9, -38), (12, -42))):                    # moitie basse : descend le long de la joue en s'ecartant
+        seg = Part(f'sp_d{k}', (0, 0 if k == 0 else 2, 0), (0, 0, R(rz))); prev.children.append(seg)
+        seg.box((-0.5, 0, -1), (1, 2, 2), 'gst', 0.1, 'g_spine', d_g_spine)
+        fe = Part(f'fe_d{k}', (0, 1.0, 0.0), (0, 0, R(fz))); seg.children.append(fe)
+        fe.box((-5, -1, -0.5), (5, 2, 1), 'gfe', 0, 'g_plume', d_g_wing)
+        prev = seg
+    head.children.append(mirrored(wing, 'wing_l'))
     neck = Part('neck', (0, -2.6, 3.4), (R(12), 0, 0)); head.children.append(neck)
     neck.box((-4, 0, 0), (8, 2, 1), 'gmail', 0, 'g_neck', d_g_mail)
 
