@@ -178,6 +178,30 @@ public final class ClientSetup {
         e.registerItem(armorExt("elfking", "chest"), Reg.ELFKING_CHESTPLATE.get());
         e.registerItem(armorExt("elfking", "legs"), Reg.ELFKING_LEGGINGS.get());
         e.registerItem(armorExt("elfking", "boots"), Reg.ELFKING_BOOTS.get());
+        e.registerItem(armorExt("orc_rusted", "head"), Reg.ORC_RUSTED_HELMET.get());
+        e.registerItem(armorExt("orc_rusted", "chest"), Reg.ORC_RUSTED_CHESTPLATE.get());
+        e.registerItem(armorExt("orc_rusted", "legs"), Reg.ORC_RUSTED_LEGGINGS.get());
+        e.registerItem(armorExt("orc_rusted", "boots"), Reg.ORC_RUSTED_BOOTS.get());
+        e.registerItem(armorExt("dwarven_rusted", "head"), Reg.DWARVEN_RUSTED_HELMET.get());
+        e.registerItem(armorExt("dwarven_rusted", "chest"), Reg.DWARVEN_RUSTED_CHESTPLATE.get());
+        e.registerItem(armorExt("dwarven_rusted", "legs"), Reg.DWARVEN_RUSTED_LEGGINGS.get());
+        e.registerItem(armorExt("dwarven_rusted", "boots"), Reg.DWARVEN_RUSTED_BOOTS.get());
+        e.registerItem(armorExt("elven_rusted", "head"), Reg.ELVEN_RUSTED_HELMET.get());
+        e.registerItem(armorExt("elven_rusted", "chest"), Reg.ELVEN_RUSTED_CHESTPLATE.get());
+        e.registerItem(armorExt("elven_rusted", "legs"), Reg.ELVEN_RUSTED_LEGGINGS.get());
+        e.registerItem(armorExt("elven_rusted", "boots"), Reg.ELVEN_RUSTED_BOOTS.get());
+        e.registerItem(armorExt("rohan_rusted", "head"), Reg.ROHAN_RUSTED_HELMET.get());
+        e.registerItem(armorExt("rohan_rusted", "chest"), Reg.ROHAN_RUSTED_CHESTPLATE.get());
+        e.registerItem(armorExt("rohan_rusted", "legs"), Reg.ROHAN_RUSTED_LEGGINGS.get());
+        e.registerItem(armorExt("rohan_rusted", "boots"), Reg.ROHAN_RUSTED_BOOTS.get());
+        e.registerItem(armorExt("gondor_rusted", "head"), Reg.GONDOR_RUSTED_HELMET.get());
+        e.registerItem(armorExt("gondor_rusted", "chest"), Reg.GONDOR_RUSTED_CHESTPLATE.get());
+        e.registerItem(armorExt("gondor_rusted", "legs"), Reg.GONDOR_RUSTED_LEGGINGS.get());
+        e.registerItem(armorExt("gondor_rusted", "boots"), Reg.GONDOR_RUSTED_BOOTS.get());
+        e.registerItem(armorExt("elfking_rusted", "head"), Reg.ELFKING_RUSTED_HELMET.get());
+        e.registerItem(armorExt("elfking_rusted", "chest"), Reg.ELFKING_RUSTED_CHESTPLATE.get());
+        e.registerItem(armorExt("elfking_rusted", "legs"), Reg.ELFKING_RUSTED_LEGGINGS.get());
+        e.registerItem(armorExt("elfking_rusted", "boots"), Reg.ELFKING_RUSTED_BOOTS.get());
         e.registerItem(armorExt("rohan", "head"), Reg.ROHAN_HELMET.get());
         e.registerItem(armorExt("rohan", "chest"), Reg.ROHAN_CHESTPLATE.get());
         e.registerItem(armorExt("rohan", "legs"), Reg.ROHAN_LEGGINGS.get());
@@ -284,7 +308,7 @@ public final class ClientSetup {
     }
 
     // ---- armures 3D (orc, nain, elfe) : un modele par piece, pose copiee depuis le modele d'origine
-    private static final String[] ARMOR_SETS = {"orc", "dwarven", "elven", "rohan", "gondor", "elfking"};
+    private static final String[] ARMOR_SETS = {"orc", "dwarven", "elven", "rohan", "gondor", "elfking", "orc_rusted", "dwarven_rusted", "elven_rusted", "rohan_rusted", "gondor_rusted", "elfking_rusted"};
     private static final String[] ARMOR_PIECES = {"head", "chest", "legs", "boots"};
     private static final java.util.Map<String, HumanoidModel<LivingEntity>> ARMOR_MODELS = new java.util.HashMap<>();
 

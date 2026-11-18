@@ -15,7 +15,7 @@ BOOTS = ['................', '................', '................', '..........
          '.ooaao...ooaao..', '.obaao...obaao..', '.oaaado..oaaado.', '.oddddo..oddddo.', '.oooooo..oooooo.', '................']
 
 def armor_layer(name, base, trim, gem, crown=None, seed=0):
-    if name in ('orc', 'dwarven', 'elven', 'rohan', 'gondor', 'elfking'):
+    if name in ('orc', 'dwarven', 'elven', 'rohan', 'gondor', 'elfking') or name.endswith('_rusted'):
         return                                           # armures 3D : tools/armors3d.py
     from skins import Skin
     b = rgb(base); t = rgb(trim)
@@ -55,12 +55,12 @@ def armor_layer(name, base, trim, gem, crown=None, seed=0):
                 for y in range(29, 32): s.px(x, y, (0, 0, 0), 0)
         save(s.im, f'{A}/textures/models/armor/{name}_layer_{layer}.png')
 
-def armor_set(prefix, fr, mat, dur, base, trim, gem, crown=None, fem=False, tags=True, props='props()'):
+def armor_set(prefix, fr, mat, dur, base, trim, gem, crown=None, fem=False, tags=True, props='props()', adj=None):
     names = {'helmet': ('Casque', 'HELMET', HELMET, 'head_armor'), 'chestplate': ('Plastron', 'CHESTPLATE', CHEST, 'chest_armor'),
              'leggings': ('Jambières', 'LEGGINGS', LEGS, 'leg_armor'), 'boots': ('Bottes', 'BOOTS', BOOTS, 'foot_armor')}
     pal = matpal(base, trim=trim, gem=gem)
     for k, (frn, typ, art, tg) in names.items():
-        item(f'{prefix}_{k}', f'{frn} {fr}', java=f'ModGear.armor(ModGear.{mat}, ArmorItem.Type.{typ}, {dur}, {props})', tex=sprite(art, pal), tags=[tg])
+        item(f'{prefix}_{k}', f'{frn} {fr}' + (f' {adj[0 if k in ("helmet", "chestplate") else 1]}' if adj else ''), java=f'ModGear.armor(ModGear.{mat}, ArmorItem.Type.{typ}, {dur}, {props})', tex=sprite(art, pal), tags=[tg])
     armor_layer(prefix if prefix != 'elven_cloak' else 'cloak', base, trim, gem, crown)
 
 def axe_icon(blade, shaft='#6b4a2a', double=False):
@@ -262,6 +262,21 @@ def build():
     armor_set('rohan', 'de Rohan', 'ROHAN', 28, '#6a3022', '#d6a84c', '#a02020', props='props().rarity(Rarity.RARE)')
     armor_set('ashlord', 'du Seigneur de Cendre', 'ASHLORD', 40, '#1c1a20', '#c02a10', '#ff5a18', crown='#2a2830', props='props().fireResistant().rarity(Rarity.EPIC)')
     armor_set('elfking', 'du roi elfe', 'ELFKING', 40, '#e6e2d0', '#d8b040', '#3090e0', crown='#e0c060', props='props().fireResistant().rarity(Rarity.EPIC)')
+    # ---- versions rouillees (meme modele 3D, texture rouillee ; Gondor : aile gauche abimee)
+    def _rust(h):
+        c = rgb(h); r = (138, 70, 30)
+        return '#%02x%02x%02x' % tuple(int(c[i] * .45 + r[i] * .55) for i in range(3))
+    for pre, fr_, M, dur_, b_, t_, g_, pr_ in (('orc', 'orque', 'ORC', 14, '#3d3a42', '#6a2018', '#c03020', 'props()'),
+                                               ('elven', 'elfique', 'ELVEN', 22, '#c8d0b0', '#d8c070', '#40c080', 'props()'),
+                                               ('dwarven', 'naine', 'DWARVEN', 30, '#6a6f7a', '#c9a23a', '#d04030', 'props()'),
+                                               ('gondor', 'de la Garde de Gondor', 'GONDOR', 34, '#b8bec8', '#d6b254', '#e8e8f0', 'props().rarity(Rarity.RARE)'),
+                                               ('rohan', 'de Rohan', 'ROHAN', 28, '#6a3022', '#d6a84c', '#a02020', 'props().rarity(Rarity.RARE)'),
+                                               ('elfking', 'du roi elfe', 'ELFKING', 40, '#e6e2d0', '#d8b040', '#3090e0', 'props().fireResistant().rarity(Rarity.EPIC)')):
+        armor_set(f'{pre}_rusted', fr_, f'{M}_RUSTED', dur_, _rust(b_), _rust(t_), _rust(g_), props=pr_, adj=('rouillé', 'rouillée'))
+        for piece in ('helmet', 'chestplate', 'leggings', 'boots'):
+            recipe(f'{pre}_rusted_{piece}', {'type': 'minecraft:crafting_shapeless', 'category': 'equipment',
+                                             'ingredients': [{'item': f'ringsofash:{pre}_{piece}'}, {'item': 'minecraft:iron_nugget'}],
+                                             'result': {'id': f'ringsofash:{pre}_rusted_{piece}', 'count': 1}})
     item('elven_cloak', 'Cape elfique', java='ModGear.armor(ModGear.CLOAK, ArmorItem.Type.CHESTPLATE, 12, props())', tex=sprite(FOODS['cloak'], mat('#4a6a4a', trim='#c9c070')), tags=['chest_armor'])
     # la cape est dessinee par un calque 3D cote client : le calque d'armure du plastron reste invisible
     for lay in (1, 2): save(Image.new('RGBA', (64, 32), (0, 0, 0, 0)), f'{A}/textures/models/armor/cloak_layer_{lay}.png')

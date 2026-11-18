@@ -334,9 +334,16 @@ public final class ClientTest {
                 {Reg.ELVEN_HELMET.get(), Reg.ELVEN_CHESTPLATE.get(), Reg.ELVEN_LEGGINGS.get(), Reg.ELVEN_BOOTS.get(), Reg.ELVEN_BLADE.get()},
                 {Reg.ROHAN_HELMET.get(), Reg.ROHAN_CHESTPLATE.get(), Reg.ROHAN_LEGGINGS.get(), Reg.ROHAN_BOOTS.get(), Reg.RIDER_SPEAR.get()},
                 {Reg.GONDOR_HELMET.get(), Reg.GONDOR_CHESTPLATE.get(), Reg.GONDOR_LEGGINGS.get(), Reg.GONDOR_BOOTS.get(), Reg.RANGER_SWORD.get()},
-                {Reg.ELFKING_HELMET.get(), Reg.ELFKING_CHESTPLATE.get(), Reg.ELFKING_LEGGINGS.get(), Reg.ELFKING_BOOTS.get(), Reg.KINGS_BLADE.get()}};
-        String[] closeNames = {"07b_orc_3d", "07c_nain_3d", "07d_elfe_3d", "07e_rohan_3d", "07f_gondor_3d", "07g_roi_elfe_3d"};
-        for (int ci = 0; ci < 6; ci++) {
+                {Reg.ELFKING_HELMET.get(), Reg.ELFKING_CHESTPLATE.get(), Reg.ELFKING_LEGGINGS.get(), Reg.ELFKING_BOOTS.get(), Reg.KINGS_BLADE.get()},
+                {Reg.ORC_RUSTED_HELMET.get(), Reg.ORC_RUSTED_CHESTPLATE.get(), Reg.ORC_RUSTED_LEGGINGS.get(), Reg.ORC_RUSTED_BOOTS.get(), Reg.ORC_SCIMITAR.get()},
+                {Reg.DWARVEN_RUSTED_HELMET.get(), Reg.DWARVEN_RUSTED_CHESTPLATE.get(), Reg.DWARVEN_RUSTED_LEGGINGS.get(), Reg.DWARVEN_RUSTED_BOOTS.get(), Reg.DWARVEN_AXE.get()},
+                {Reg.ELVEN_RUSTED_HELMET.get(), Reg.ELVEN_RUSTED_CHESTPLATE.get(), Reg.ELVEN_RUSTED_LEGGINGS.get(), Reg.ELVEN_RUSTED_BOOTS.get(), Reg.ELVEN_BLADE.get()},
+                {Reg.ROHAN_RUSTED_HELMET.get(), Reg.ROHAN_RUSTED_CHESTPLATE.get(), Reg.ROHAN_RUSTED_LEGGINGS.get(), Reg.ROHAN_RUSTED_BOOTS.get(), Reg.RIDER_SPEAR.get()},
+                {Reg.GONDOR_RUSTED_HELMET.get(), Reg.GONDOR_RUSTED_CHESTPLATE.get(), Reg.GONDOR_RUSTED_LEGGINGS.get(), Reg.GONDOR_RUSTED_BOOTS.get(), Reg.RANGER_SWORD.get()},
+                {Reg.ELFKING_RUSTED_HELMET.get(), Reg.ELFKING_RUSTED_CHESTPLATE.get(), Reg.ELFKING_RUSTED_LEGGINGS.get(), Reg.ELFKING_RUSTED_BOOTS.get(), Reg.KINGS_BLADE.get()}};
+        String[] closeNames = {"07b_orc_3d", "07c_nain_3d", "07d_elfe_3d", "07e_rohan_3d", "07f_gondor_3d", "07g_roi_elfe_3d",
+                "08b_orc_rouille", "08c_nain_rouille", "08d_elfe_rouille", "08e_rohan_rouille", "08f_gondor_rouille", "08g_roi_elfe_rouille"};
+        for (int ci = 0; ci < 12; ci++) {
             Item[] set = close[ci];
             SCENES.add(new Scene(closeNames[ci], 70, p -> {
                 ServerLevel ow = p.server.overworld();

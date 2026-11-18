@@ -1,7 +1,7 @@
 """Armures 3D du film : orc (Uruk-hai d'Isengard), nain (Erebor), elfe (Foret Noire / Lorien).
 python3 tools/armors3d.py preview   -> /tmp/armors_<set>.png (face / profil / dos sur mannequin) + /tmp/armors_tiles.png
 python3 tools/armors3d.py gen       -> ecrit geo/armor_<set>_<piece>.json et textures/models/armor/<set>_layer_{1,2}.png"""
-import math, os, sys, json
+import math, os, sys, json, zlib
 import numpy as np
 from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -714,7 +714,7 @@ def d_g_ring2(face, F, rng):
     rivets(F, (250, 250, 255), 0)
 
 
-def gondor():
+def gondor(rusted=False):
     G = d_g_steel
     head = Part('head')
     head.box((-4, -8, -4), (8, 3, 8), 'gdk', .55, 'g_ring', d_g_ring2)
@@ -740,7 +740,13 @@ def gondor():
         fe = Part(f'fe_d{k}', (0, 1.0, 0.0), (0, 0, R(fz))); seg.children.append(fe)
         fe.box((-4, -1, -0.5), (4, 2, 1), 'gfe', 0, 'g_plume', d_g_wing)
         prev = seg
-    head.children.append(mirrored(wing, 'wing_l'))
+    wl = mirrored(wing, 'wing_l')
+    if rusted:                                                   # variante rouillee : l'aile gauche a perdu une partie de ses plumes
+        def drop(p, names):
+            p.children = [c for c in p.children if c.name not in names]
+            for c in p.children: drop(c, names)
+        drop(wl, {'fe_u1', 'fe_u2', 'fe_d0', 'fe_d2'})
+    head.children.append(wl)
     neck = Part('neck', (0, -2.6, 3.4), (R(12), 0, 0)); head.children.append(neck)
     neck.box((-4, 0, 0), (8, 2, 1), 'gmail', 0, 'g_neck', d_g_mail)
 
@@ -945,10 +951,38 @@ SETS['gondor'] = _with_drape(gondor, 'cl_lgrey', (110, 112, 122), (226, 228, 236
 SETS['elven'] = _with_drape(elf, 'cl_green', (34, 66, 44), (104, 150, 112), (232, 200, 108), 'ed')
 
 
+# variantes rouillees (meme modele, texture rouillee ; Gondor : aile gauche abimee)
+for _b in ('orc', 'dwarven', 'elven', 'rohan', 'elfking'):
+    SETS[_b + '_rusted'] = SETS[_b]
+SETS['gondor_rusted'] = _with_drape(lambda: gondor(rusted=True), 'cl_lgrey', (110, 112, 122), (226, 228, 236), (214, 178, 84), 'gd')
+
+
 # ------------------------------------------------------------------ sortie / apercu
 PIECES = ('head', 'chest', 'boots', 'legs')
 TILE_OF = {'head': (0, 0, 1), 'chest': (32, 0, 1), 'boots': (0, 32, 1), 'legs': (0, 0, 2)}
 TILE_SIZE = {'head': (32, 32), 'chest': (32, 64), 'boots': (32, 32), 'legs': (64, 64)}   # taille de case disponible dans la feuille 64x64
+
+
+def rustify(tex, seed):
+    """version rouillee : taches de rouille, ternissure, points d'oxydation (meme geometrie, seule la texture change)"""
+    rng = np.random.default_rng(seed)
+    h, w = tex.shape[:2]
+    a = tex[..., :3].astype(float); al = tex[..., 3]
+    yy, xx = np.ogrid[:h, :w]
+    noise = np.zeros((h, w))
+    for _ in range(max(12, h * w // 90)):
+        cx, cy, r = int(rng.integers(0, w)), int(rng.integers(0, h)), int(rng.integers(1, 4))
+        noise += (((xx - cx) ** 2 + (yy - cy) ** 2) <= r * r) * rng.uniform(.4, 1)
+    noise = np.clip(noise, 0, 1)
+    pick = rng.random((h, w))
+    rust = np.where((pick < .45)[..., None], np.array((88., 42., 22.)), np.where((pick < .85)[..., None], np.array((148., 74., 34.)), np.array((196., 112., 54.))))
+    k = (noise * .85)[..., None]
+    out = a * (1 - k) + rust * k
+    g = out.mean(axis=2, keepdims=True)
+    out = (out * .8 + g * .2) * .88                                   # ternit et assombrit
+    spots = rng.random((h, w)) < .05
+    out[spots] = rust[spots]
+    return np.dstack([np.clip(out, 0, 255), al]).astype(np.uint8)
 
 
 def build_set(name):
@@ -957,6 +991,7 @@ def build_set(name):
     for pc in PIECES:
         parts = pieces[pc]
         tex = paint(parts, TILE_SIZE[pc])
+        if name.endswith('_rusted'): tex = rustify(tex, zlib.crc32((name + pc).encode()))
         out[pc] = (parts, tex)
     return out
 
