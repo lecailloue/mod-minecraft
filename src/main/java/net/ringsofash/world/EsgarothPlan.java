@@ -310,45 +310,65 @@ public final class EsgarothPlan {
     // ------------------------------------------------------------------ toits
     /** toit a deux pans raide ; murs exterieurs de pmin a pmax (perpendiculaire a la crete) et de l0 a l1 (le long de la crete) ; yb : premiere rangee de toit */
     private int gable(int axis, int pmin, int pmax, int l0, int l1, int yb, int fam, int blk, int endMat, int endAcc) {
-        int a = pmin - 1, b = pmax + 1, h = yb, rows = 0;
-        while (a + rows <= b - rows) rows++;
-        int dA = axis == 0 ? S_ : E, dB = axis == 0 ? N : W_;
-        for (int i = 0; i < rows; i++, a++, b--, h += 2) {
+        int a0 = pmin - 1, b0 = pmax + 1, rows = 0;
+        while (a0 + rows <= b0 - rows) rows++;
+        int[] yy = new int[rows + 2];                                                       // hauteur de la marche de chaque rangee : avant-toit releve (1), puis pente raide (2 par rang)
+        yy[0] = yb;
+        for (int i = 0; i < rows; i++) yy[i + 1] = yy[i] + (i == 0 ? 1 : 2);
+        int dA = axis == 0 ? S_ : E, dB = axis == 0 ? N : W_, top = yb, ra = 0, rb = 0;
+        for (int i = 0; i < rows; i++) {
+            int a = a0 + i, b = b0 - i, y = yy[i];
             for (int l = l0 - 1; l <= l1 + 1; l++) {
-                if (a == b) { put2(axis, a, l, h, blk); put2(axis, a, l, h + 1, slab(fam, false)); }
-                else if (a + 1 == b) { put2(axis, a, l, h, stair(fam, dA, false)); put2(axis, b, l, h, stair(fam, dB, false)); put2(axis, a, l, h + 1, slab(fam, false)); put2(axis, b, l, h + 1, slab(fam, false)); }
-                else { put2(axis, a, l, h, stair(fam, dA, false)); put2(axis, b, l, h, stair(fam, dB, false)); put2(axis, a, l, h + 1, blk); put2(axis, b, l, h + 1, blk); }
+                if (a == b) { if (i > 0) put2(axis, a, l, y - 1, blk); put2(axis, a, l, y, blk); put2(axis, a, l, y + 1, slab(fam, false)); }
+                else if (a + 1 == b) {
+                    if (i > 0) { put2(axis, a, l, y - 1, blk); put2(axis, b, l, y - 1, blk); }
+                    put2(axis, a, l, y, stair(fam, dA, false)); put2(axis, b, l, y, stair(fam, dB, false));
+                    put2(axis, a, l, y + 1, slab(fam, false)); put2(axis, b, l, y + 1, slab(fam, false));
+                } else {                                                                     // marche = escalier au sommet de la colonne, contremarche pleine dessous : pas de dessus plat
+                    if (i > 0) { put2(axis, a, l, y - 1, blk); put2(axis, b, l, y - 1, blk); }
+                    put2(axis, a, l, y, stair(fam, dA, false)); put2(axis, b, l, y, stair(fam, dB, false));
+                }
             }
+            if (a >= b - 1) { top = y + 1; ra = a; rb = b; break; }
+            top = y;
         }
-        // pignons
+        // pignons : bardage jusqu'a la marche, fente vitree au centre
         int pc = (pmin + pmax) / 2;
         for (int e : new int[]{l0, l1}) for (int p = pmin; p <= pmax; p++) {
             int r = Math.min(p - (pmin - 1), (pmax + 1) - p);
-            for (int y = yb; y < yb + 2 * r; y++) put2(axis, p, e, y, endMat);
+            r = Math.min(r, rows - 1);
+            for (int y = yb; y < yy[r]; y++) put2(axis, p, e, y, endMat);
             put2(axis, p, e, yb - 1, endAcc);
-            if (p == pc || (p == pc + 1 && (pmax - pmin) % 2 == 1)) for (int y = yb + 1; y < yb + 2 * r - 2 && y <= yb + 4; y++) put2(axis, p, e, y, GLASS);
+            if (p == pc || (p == pc + 1 && (pmax - pmin) % 2 == 1)) for (int y = yb + 1; y < yy[r] - 2 && y <= yb + 4; y++) put2(axis, p, e, y, GLASS);
         }
         // poutres de rive : une file de bois sombre le long de l'avant-toit
         for (int e : new int[]{l0 - 1, l1 + 1}) {
-            int aa = pmin - 1, bb = pmax + 1, hh = yb;
-            for (int i = 0; i < rows; i++, aa++, bb--, hh += 2) { if (aa >= bb) break; put2(axis, aa, e, hh, stair(DKS, axis == 0 ? S_ : E, false)); put2(axis, bb, e, hh, stair(DKS, axis == 0 ? N : W_, false)); }
+            for (int i = 0; i < rows; i++) { int aa = a0 + i, bb = b0 - i; if (aa >= bb) break; put2(axis, aa, e, yy[i], stair(DKS, axis == 0 ? S_ : E, false)); put2(axis, bb, e, yy[i], stair(DKS, axis == 0 ? N : W_, false)); }
         }
-        return h;
+        // faitage prolonge aux deux bouts : poutre sombre et epi dresse (pointes des pignons comme sur les dessins du lac)
+        int hy = top - 1, lg = axis == 0 ? DKLOG_X : DKLOG_Z;
+        for (int pcol = ra; pcol <= rb; pcol++) for (int sg = -1; sg <= 1; sg += 2) {
+            int e = sg < 0 ? l0 - 1 : l1 + 1;
+            put2(axis, pcol, e + sg, hy, lg); put2(axis, pcol, e + 2 * sg, hy, lg);
+            put2(axis, pcol, e + 2 * sg, hy + 1, DKFENCE); put2(axis, pcol, e + 2 * sg, hy + 2, DKFENCE);
+        }
+        return top + 1;
     }
 
     /** toit pyramidal raide jusqu'a la pointe ; murs de x0..x1, z0..z1 ; renvoie la hauteur de la pointe */
     private int pyramid(int x0, int z0, int x1, int z1, int yb, int fam, int blk, int spire) {
         int xa = x0 - 1, xb = x1 + 1, za = z0 - 1, zb = z1 + 1, h = yb;
+        boolean first = true;
         while (xa <= xb && za <= zb) {
             for (int x = xa; x <= xb; x++) for (int z = za; z <= zb; z++) {
                 boolean ring = x == xa || x == xb || z == za || z == zb;
                 if (!ring) continue;
-                if (xa == xb || za == zb || (xa + 1 == xb && za + 1 == zb)) { set(x, h, z, blk); set(x, h + 1, z, blk); continue; }
+                if (xa == xb || za == zb || (xa + 1 == xb && za + 1 == zb)) { if (!first) set(x, h - 1, z, blk); set(x, h, z, blk); set(x, h + 1, z, blk); continue; }
                 int dir = z == za ? S_ : z == zb ? N : x == xa ? E : W_;
                 set(x, h, z, stair(fam, dir, false));
-                set(x, h + 1, z, blk);
+                if (!first) set(x, h - 1, z, blk);
             }
-            xa++; xb--; za++; zb--; h += 2;
+            xa++; xb--; za++; zb--; h += first ? 1 : 2; first = false;
         }
         int cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
         for (int y = h; y < h + spire; y++) set(cx, y, cz, y == h + spire - 1 ? LANTERN : WFENCE);
