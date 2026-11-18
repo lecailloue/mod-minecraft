@@ -62,6 +62,8 @@ public final class ClientTest {
     private static final List<Scene> SCENES = new ArrayList<>();
     private static int state = 0, wait = 0, index = 0;
     private static final int SX = 0, SY = 200, SZ = 0;
+    /** true : seulement les scenes d armures (iteration rapide) */
+    private static final boolean ARMOR_ONLY = true;
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -309,7 +311,50 @@ public final class ClientTest {
         return null;
     }
 
+    /** Armures 3D en premier : la serie de captures peut etre coupee par le delai du CI. */
+    private static void armourScenes() {
+        SCENES.add(new Scene("05_armures_decor", 60, p -> {
+            MinecraftServer sv = p.server;
+            ServerLevel ow = sv.overworld();
+            sv.getGameRules().getRule(GameRules.RULE_DOMOBSPAWNING).set(false, sv);
+            sv.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, sv);
+            sv.getGameRules().getRule(GameRules.RULE_WEATHER_CYCLE).set(false, sv);
+            ow.setDayTime(6000);
+            ow.setWeatherParameters(100000, 0, false, false);
+            for (int x = -8; x <= 8; x++) for (int z = -4; z <= 12; z++) {
+                ow.setBlock(new BlockPos(SX + x, SY - 1, SZ + z), ((x + z) & 1) == 0 ? Blocks.SMOOTH_STONE.defaultBlockState() : Blocks.STONE.defaultBlockState(), 2);
+                for (int y = 0; y < 8; y++) ow.setBlock(new BlockPos(SX + x, SY + y, SZ + z), z == 8 ? Blocks.LIGHT_GRAY_CONCRETE.defaultBlockState() : Blocks.AIR.defaultBlockState(), 2);
+            }
+            clear(ow);
+            view(p, ow, SX + 0.5, SY + 1.2, SZ, 0F, 0F);
+        }));
+        Item[][] close = {
+                {Reg.ORC_HELMET.get(), Reg.ORC_CHESTPLATE.get(), Reg.ORC_LEGGINGS.get(), Reg.ORC_BOOTS.get(), Reg.ORC_SCIMITAR.get()},
+                {Reg.DWARVEN_HELMET.get(), Reg.DWARVEN_CHESTPLATE.get(), Reg.DWARVEN_LEGGINGS.get(), Reg.DWARVEN_BOOTS.get(), Reg.DWARVEN_AXE.get()},
+                {Reg.ELVEN_HELMET.get(), Reg.ELVEN_CHESTPLATE.get(), Reg.ELVEN_LEGGINGS.get(), Reg.ELVEN_BOOTS.get(), Reg.ELVEN_BLADE.get()}};
+        String[] closeNames = {"07b_orc_3d", "07c_nain_3d", "07d_elfe_3d"};
+        for (int ci = 0; ci < 3; ci++) {
+            Item[] set = close[ci];
+            SCENES.add(new Scene(closeNames[ci], 70, p -> {
+                ServerLevel ow = p.server.overworld();
+                clear(ow);
+                float[] yaws = {180F, 90F, 0F};
+                for (int k = 0; k < 3; k++) {
+                    float yw = yaws[k];
+                    actor(ow, ModEntities.HUMAN.get(), SX + 1.5 - k * 1.5, SZ + 4.2, m -> {
+                        EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET, EquipmentSlot.MAINHAND};
+                        for (int i = 0; i < 5; i++) m.setItemSlot(slots[i], new ItemStack(set[i]));
+                        m.setYRot(yw); m.setYHeadRot(yw); m.setYBodyRot(yw);
+                    });
+                }
+                view(p, ow, SX + 0.5, SY + 1.15, SZ, 0F, 0F);
+            }));
+        }
+    }
+
     private static void scenes() {
+        armourScenes();
+        if (ARMOR_ONLY) return;
         // l'Oeil de Sauron en premier : la serie de captures est longue et peut etre coupee par le delai du CI
         eyeT("95_oeil_sud", 1712, 1742, 0, 0, 40, 180F, 0F, 6000);
         eyeT("99_oeil_haut", 1712, 1742, 20, 25, 30, 150F, 35F, 6000);
@@ -910,28 +955,6 @@ public final class ClientTest {
             }
             view(p, ow, SX + 0.5, SY + 1.2, SZ, 0F, 2F);
         }));
-        Item[][] close = {
-                {Reg.ORC_HELMET.get(), Reg.ORC_CHESTPLATE.get(), Reg.ORC_LEGGINGS.get(), Reg.ORC_BOOTS.get(), Reg.ORC_SCIMITAR.get()},
-                {Reg.DWARVEN_HELMET.get(), Reg.DWARVEN_CHESTPLATE.get(), Reg.DWARVEN_LEGGINGS.get(), Reg.DWARVEN_BOOTS.get(), Reg.DWARVEN_AXE.get()},
-                {Reg.ELVEN_HELMET.get(), Reg.ELVEN_CHESTPLATE.get(), Reg.ELVEN_LEGGINGS.get(), Reg.ELVEN_BOOTS.get(), Reg.ELVEN_BLADE.get()}};
-        String[] closeNames = {"07b_orc_3d", "07c_nain_3d", "07d_elfe_3d"};
-        for (int ci = 0; ci < 3; ci++) {
-            Item[] set = close[ci];
-            SCENES.add(new Scene(closeNames[ci], 70, p -> {
-                ServerLevel ow = p.server.overworld();
-                clear(ow);
-                float[] yaws = {180F, 90F, 0F};
-                for (int k = 0; k < 3; k++) {
-                    float yw = yaws[k];
-                    actor(ow, ModEntities.HUMAN.get(), SX + 1.5 - k * 1.5, SZ + 3.8, m -> {
-                        EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET, EquipmentSlot.MAINHAND};
-                        for (int i = 0; i < 5; i++) m.setItemSlot(slots[i], new ItemStack(set[i]));
-                        m.setYRot(yw); m.setYHeadRot(yw); m.setYBodyRot(yw);
-                    });
-                }
-                view(p, ow, SX + 0.5, SY + 1.15, SZ, 0F, 0F);
-            }));
-        }
         SCENES.add(new Scene("08_objets", 90, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
