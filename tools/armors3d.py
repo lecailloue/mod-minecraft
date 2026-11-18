@@ -1062,7 +1062,7 @@ def d_ft(kind):
                     if rng.random() < .45: vx = max(0, min(F.w - 1, vx + int(rng.integers(-1, 2))))
                 F.px(0, F.h // 2, SK_V, .45); F.px(F.w - 1, F.h // 2 + 1, SK_V, .45)
             elif kind in ('toe', 'toe5', 'big'):                                      # ongle en bout d'orteil
-                nh = 2 if kind == 'big' else 1
+                nh = 2 if kind in ('big', 'toe') else 1
                 F.rect(0, 0, F.w, nh, SK_N, .95)
                 if kind == 'big': F.hline(nh - 1, 0, F.w, (206, 150, 140), .6); F.px(0, 0, SK_D, .4); F.px(F.w - 1, 0, SK_D, .4)
                 else: F.px(0, 0, (230, 178, 168), .6)
@@ -1070,6 +1070,9 @@ def d_ft(kind):
             elif kind == 'ankle':
                 F.rect(0, 0, F.w, F.h, SK_L, .15)
         elif kind == 'ankle' and face in ('front', 'back', 'left', 'right'):
+            for y in range(F.h):                                                      # poils fins sur la jambe
+                for x in range(F.w):
+                    if rng.random() < .22: F.px(x, y, (84, 54, 28), .6)
             F.vline(F.w // 2, 0, F.h, SK_D, .3)                                       # tendon
             if face in ('left', 'right') and F.h >= 3: F.px(F.w // 2, F.h - 2, SK_L, .8); F.px(F.w // 2 + 1, F.h - 2, SK_D, .5)   # malleole
             if face == 'front': F.px(1, 1, SK_V, .5); F.px(2, 2, SK_V, .5)
@@ -1083,17 +1086,40 @@ def d_ft(kind):
     return f
 
 
+mat('hair', (112, 76, 42), 4, 5, (1.05, .98, .9))
+
+
+def d_hair(face, F, rng):
+    for y in range(F.h):
+        for x in range(F.w):
+            r = rng.random()
+            if r < .3: F.px(x, y, (74, 46, 22), .55)
+            elif r < .5: F.px(x, y, (168, 118, 66), .5)
+    if face == 'top' and F.w >= 1: F.px(0, 0, (190, 140, 84), .6)
+
+
 def feet():
+    """pieds de hobbit : larges, gros orteils separes aux ongles marques, touffes de poils sur le cou-de-pied, les chevilles et les orteils"""
     rl = Part('right_leg')
     rl.box((-2, 6, -2), (4, 4, 4), 'skin', .3, 'ft_ankle', d_ft('ankle'))
-    rl.box((-2, 10, -3), (4, 2, 5), 'skin', .12, 'ft_mid', d_ft('mid'))
-    rl.box((-1.5, 10, 0.5), (3, 2, 2), 'skin', .22, 'ft_heel', d_ft('heel'))
-    rl.box((-2, 10, -4), (4, 2, 1), 'skin', .2, 'ft_ball', d_ft('ball'))
-    # orteils : cubes a inflation negative (largeur visible = taille + 2 x inflation)
-    rl.box((0.35, 10.35, -6.35), (2, 2, 3), 'skin', -.35, 'ft_big', d_ft('big'))
-    for nm, x, z in (('t2', -0.15, -5.85), ('t3', -0.85, -5.65), ('t4', -1.55, -5.35)):
-        rl.box((x, 11.15, z), (1, 1, 2), 'skin', -.15, 'ft_toe', d_ft('toe'), nm)
-    rl.box((-2.1, 11.2, -5.1), (1, 1, 1), 'skin', -.2, 'ft_toe5', d_ft('toe5'))
+    rl.box((-3, 10, -3), (5, 2, 5), 'skin', .12, 'ft_mid', d_ft('mid'))
+    rl.box((-2, 10, 0.5), (3, 2, 2), 'skin', .22, 'ft_heel', d_ft('heel'))
+    rl.box((-3, 10, -4), (5, 2, 1), 'skin', .2, 'ft_ball', d_ft('ball'))
+    # orteils : cubes (2,2,3) a inflation negative -> larges de ~0.9, ongle sur 2x2 pixels ; le gros orteil est plus gros
+    rl.box((0.3, 10.3, -6.7), (2, 2, 3), 'skin', -.3, 'ft_big', d_ft('big'))
+    for nm, x, y, z in (('t2', -0.85, 10.5, -6.55), ('t3', -1.75, 10.6, -6.35), ('t4', -2.65, 10.7, -6.05)):
+        rl.box((x, y, z), (2, 2, 3), 'skin', -.55, 'ft_toe', d_ft('toe'), nm)
+    rl.box((-3.55, 10.65, -5.65), (2, 2, 2), 'skin', -.65, 'ft_toe5', d_ft('toe5'))
+    # poils : touffes inclinees (pivot a la base)
+    rnd = np.random.default_rng(11)
+    tufts = [(-2.2, -2.4), (-1.2, -2.8), (-0.2, -2.5), (0.8, -2.9), (-1.7, -1.6), (-0.6, -1.4), (0.5, -1.7), (-2.3, -0.6), (-1.1, -0.3), (0.1, -0.5), (1.1, -1.0), (-0.4, 0.4)]
+    for i, (x, z) in enumerate(tufts):
+        h = Part(f'h{i}', (x, 9.9, z), (R(float(rnd.integers(-25, 26))), R(float(rnd.integers(-40, 41))), R(float(rnd.integers(-25, 26)))))
+        h.box((-0.5, -2, -0.5), (1, 2, 1), 'hair', -.2, 'ft_hair', d_hair); rl.children.append(h)
+    for i, (x, y, z, rx, rz) in enumerate(((-2.4, 8.6, 0.0, 0, -60), (-2.3, 7.2, -1.0, 10, -70), (2.1, 8.4, -0.8, 0, 60), (-2.5, 9.4, -2.6, -20, -50),   # chevilles et flancs
+                                            (-0.5, 11.0, -4.6, -35, 0), (-1.5, 11.0, -4.6, -35, 0), (-2.5, 11.0, -4.6, -35, 5), (0.7, 11.0, -4.6, -35, 0))):    # base des orteils
+        h = Part(f'hh{i}', (x, y, z), (R(rx), 0, R(rz)))
+        h.box((-0.5, -2, -0.5), (1, 2, 1), 'hair', -.2, 'ft_hair', d_hair); rl.children.append(h)
     ll = mirrored(rl, 'left_leg')
     return {'head': [], 'chest': [], 'legs': [], 'boots': [rl, ll]}
 
