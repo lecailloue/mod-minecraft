@@ -6,7 +6,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.ringsofash.Reg;
+import net.ringsofash.gen.Reg;
 
 /** Support d'armure invisible et incassable : sert a exposer des armures sans voir le support. */
 public class InvisibleStand extends ArmorStand {
