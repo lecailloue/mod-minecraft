@@ -207,6 +207,25 @@ def orc():
 SETS['orc'] = orc
 
 
+# ------------------------------------------------------------------ drap (tissu sous l'armure)
+mat('cl_red', (112, 26, 30), 4, 5, (1.05, .9, .9))
+mat('cl_dgrey', (56, 57, 66), 4, 5, (1, 1, 1.05))
+mat('cl_lgrey', (176, 178, 186), 3, 4, (1, 1, 1.02))
+mat('cl_green', (64, 106, 74), 4, 5, (.95, 1, .95))
+
+
+def cloth(dark, light, trim):
+    """tissu : fines rayures de trame + ourlet galonne en bas"""
+    def f(face, F, rng):
+        for y in range(F.h):
+            F.hline(y, 0, F.w, dark if y % 3 == 0 else light, .22)
+        for x in range(0, F.w, 4): F.vline(x, 0, F.h, dark, .25)
+        if face not in ('top', 'bottom') and F.h >= 3:
+            F.hline(F.h - 1, 0, F.w, trim, .9); F.hline(F.h - 2, 0, F.w, dark, .5)
+            if face in ('front', 'back') and F.w >= 5: F.vline(0, 0, F.h, trim, .35); F.vline(F.w - 1, 0, F.h, trim, .35)
+    return f
+
+
 # ================================================================== NAIN (Erebor)
 mat('dst', (66, 68, 78), 4, 5, (1, 1, 1.07))
 mat('dbr', (158, 108, 52), 5, 6, (1.05, 1, .85))
@@ -423,11 +442,11 @@ def elf():
 
     body = Part('body')
     body.box((-4, 11, -2), (8, 2, 4), 'ele', .85, 'e_belt2', d_e_sash)
-    body.box((-4, 12.5, -2), (8, 3, 4), 'ere', .85, 'e_skirt', d_e_cloth)
+    body.box((-4, 12.5, -2), (8, 3, 4), 'cl_green', .85, 'e_skirt', d_e_cloth)
     rl = Part('right_leg')
     rl.box((-2, 0, -2), (4, 4, 4), 'egd', .55, 'e_thigh', G(leaf=False))
-    rl.box((-2, 0.5, -2.9), (4, 11, 1), 'ecl', .1, 'e_drape', d_e_cloth)
-    rl.box((-2, 0.5, 1.9), (4, 11, 1), 'ecl', .1, 'e_drape', d_e_cloth)
+    rl.box((-2, 0.5, -2.9), (4, 11, 1), 'cl_green', .1, 'e_drape', d_e_cloth)
+    rl.box((-2, 0.5, 1.9), (4, 11, 1), 'cl_green', .1, 'e_drape', d_e_cloth)
     ll = mirrored(rl, 'left_leg')
     legs = [body, rl, ll]
 
@@ -879,8 +898,8 @@ def elfking():
     body = Part('body')
     body.box((-4, 11, -2), (8, 2, 4), 'kle', .85, 'k_belt2', d_k_cloth)
     body.box((-4, 12.5, -2), (8, 4, 4), 'kgr', .8, 'k_skirt', d_k_drap)
-    body.box((-3.5, 12, -2.9), (7, 11.5, 1), 'kgr', .3, 'k_drapf', d_k_drap)      # drap vert devant, sous la cuirasse doree
-    body.box((-3.5, 12, 1.9), (7, 11.5, 1), 'kgr', .3, 'k_drapf', d_k_drap)       # et derriere
+    body.box((-3.5, 12, -2.9), (7, 12, 1), 'kgr', .3, 'k_drapf', d_k_drap)      # drap vert devant, sous la cuirasse doree
+    body.box((-3.5, 12, 1.9), (7, 12, 1), 'kgr', .3, 'k_drapf', d_k_drap)       # et derriere
     rl = Part('right_leg')
     rl.box((-2, 0, -2), (4, 5, 4), 'kgr', .55, 'k_thigh', d_k_drap)
     rl.box((-2.3, 4.4, -3.2), (4, 3, 2), 'kgo', 0, 'k_knee', G(leaf=True))
@@ -897,6 +916,33 @@ def elfking():
 
 
 SETS['elfking'] = elfking
+
+
+
+
+def _with_drape(fn, matn, dark, light, trim, tag, drop=()):
+    """enveloppe un set : ajoute le drap sur chest (bras), legs (pans + jambes)"""
+    def g():
+        d = fn()
+        dec = cloth(dark, light, trim)
+        ch = d['chest']; lg = d['legs']
+        arms = [p for p in ch if p.name.endswith('_arm')]
+        for ap in arms:
+            left = ap.name.startswith('left')
+            ap.cubes.insert(0, Cube((-1 if left else -3, -2, -2), (4, 12, 4), matn, .3, f'{tag}_sleeve', dec, left))
+        bd = [p for p in lg if p.name == 'body'][0]
+        bd.cubes.insert(0, Cube((-3.5, 12, -2.6), (7, 12, 1), matn, .3, f'{tag}_drape', dec))
+        bd.cubes.insert(0, Cube((-3.5, 12, 1.6), (7, 12, 1), matn, .3, f'{tag}_drape', dec))
+        for lp in [p for p in lg if p.name.endswith('_leg')]:
+            lp.cubes.insert(0, Cube((-2, 0, -2), (4, 12, 4), matn, .2, f'{tag}_legcl', dec))
+        return d
+    return g
+
+
+SETS['dwarven'] = _with_drape(dwarf, 'cl_dgrey', (30, 30, 38), (90, 92, 104), (214, 172, 80), 'dd')
+SETS['rohan'] = _with_drape(rohan, 'cl_red', (60, 10, 14), (160, 50, 52), (226, 186, 96), 'rd')
+SETS['gondor'] = _with_drape(gondor, 'cl_lgrey', (110, 112, 122), (226, 228, 236), (214, 178, 84), 'gd')
+SETS['elven'] = _with_drape(elf, 'cl_green', (34, 66, 44), (104, 150, 112), (232, 200, 108), 'ed')
 
 
 # ------------------------------------------------------------------ sortie / apercu
