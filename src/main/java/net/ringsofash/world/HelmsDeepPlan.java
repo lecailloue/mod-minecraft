@@ -106,8 +106,16 @@ public final class HelmsDeepPlan {
         return x >= 52 + 34 * k && x <= 150 - 34 * k;
     }
     private static boolean circle(int x, int z, double r) { double dx = x - GX, dz = z - GZ; return dx * dx + dz * dz <= r * r; }
+    /** contrefort rocheux derriere la salle : il monte en pente irreguliere vers le sommet, et s'amincit sur les cotes */
     private static double mound(int x, int z) {
-        return 56 * sm((67.5 - z) / 2.5) * (1 - sm((Math.abs(x - GX) - 27) / 9.0));
+        double f = sm((67.5 - z) / 2.5);
+        if (f <= 0) return 0;
+        double dx = Math.abs(x - GX);
+        double h = 46 + 0.8 * Math.max(0, 66 - z) - 1.25 * Math.max(0, dx - 22);
+        double k = sm((66 - z) / 12.0);
+        h += k * (6 * vn(x / 11.0, z / 11.0, 21) + 3 * vn(x / 5.0, z / 5.0, 22) + 1.2 * vn(x / 2.5, z / 2.5, 23));
+        h += 5 * k * (1 - Math.abs(vn(x / 16.0, z / 20.0, 24))) * sm((66 - z) / 25.0);
+        return Math.max(0, h) * f;
     }
 
     private void terrain() {
@@ -136,7 +144,7 @@ public final class HelmsDeepPlan {
                 hr *= sm(Math.min(Math.min(x, W - 1 - x), z) / 30.0);
             }
             double m = mound(x, z);
-            if (m > 0.5) hr = Math.max(hr, m + 2 * vn(x / 5.0, z / 5.0, 21) * sm(m / 8.0));
+            if (m > 0.5) hr = Math.max(hr, m);
             hr = Math.min(hr, 88);
             th[i] = hr >= 1 ? (int) Math.round(hr) - 1 : -1;
             nat[i] = d > 0 || m > 0.5;
