@@ -595,11 +595,19 @@ def d_g_helm(face, F, rng):
 
 
 def d_g_wing(face, F, rng):
+    """plume : rangees de barbes qui se chevauchent, bord dore sur le cote exterieur"""
     for y in range(F.h):
-        F.hline(y, 0, F.w, (205, 208, 214) if y % 2 else (250, 250, 250), .55)
-    if face in ('front', 'back', 'left', 'right'):
-        F.hline(0, 0, F.w, GG, .7)
-        F.vline(0, 0, F.h, GG, .6) if face in ('left', 'right') else None
+        tone = (252, 252, 250) if (y // 2) % 2 == 0 else (214, 216, 222)
+        F.hline(y, 0, F.w, tone, .6)
+        for x in range(F.w):
+            if (x + y) % 2 == 0: F.px(x, y, (178, 182, 192), .25)                       # barbules
+    if face in ('front', 'back'):
+        F.vline(F.w // 2, 0, F.h, (150, 154, 166), .55)                                   # rachis
+        for y in range(1, F.h, 2):
+            F.px(max(0, F.w // 2 - 1), y, (255, 255, 255), .6); F.px(min(F.w - 1, F.w // 2 + 1), y, (255, 255, 255), .6)
+        F.hline(0, 0, F.w, GG, .8)
+    elif face == 'top':
+        F.rect(0, 0, F.w, F.h, GG, .8)
 
 
 def d_g_body(face, F, rng):
@@ -647,20 +655,38 @@ def d_g_boot(face, F, rng):
     if face in ('front', 'back', 'left', 'right'): F.hline(F.h - 1, 0, F.w, (16, 14, 14), .8)
 
 
+def d_g_dome(face, F, rng):
+    scratches(F, rng, 3, (255, 255, 255), .3)
+    if face in ('front', 'back', 'left', 'right'):
+        for x in range(1, F.w, 2): F.vline(x, 0, F.h, (206, 210, 222), .55)             # cannelures rayonnantes
+        F.hline(F.h - 1, 0, F.w, (60, 62, 74), .6)
+    if face == 'top':
+        for k in range(F.w): F.px(k, F.h // 2, (206, 210, 222), .4)
+
+
+def d_g_ring2(face, F, rng):
+    scratches(F, rng, 4, (255, 255, 255), .25)
+    if face in ('front', 'back', 'left', 'right'):
+        F.hline(0, 0, F.w, GG, .95); F.hline(F.h - 1, 0, F.w, (60, 62, 74), .7)
+        if face == 'front': F.px(3, 1, GG, .95); F.px(4, 1, GG, .95)                  # joyau dore au front
+        for x in range(0, F.w, 3): F.px(x, 1, (206, 210, 222), .5)
+    rivets(F, (250, 250, 255), 0)
+
+
 def gondor():
     G = d_g_steel
     head = Part('head')
-    head.box((-4, -8, -4), (8, 3, 8), 'gst', .55, 'g_ring', d_g_helm)
-    head.box((-3, -9, -2.5), (6, 1, 5), 'gst', .45, 'g_dome', G(gold=True))
-    head.box((-0.5, -10.2, -2), (1, 1, 4), 'gdk', 0, 'g_fin', G())
-    head.box((-4.3, -4, -3), (1, 4, 4), 'gst', .3, 'g_cheek', G(rows=(2,), gold=True))
-    head.cubes.append(Cube((3.3, -4, -3), (1, 4, 4), 'gst', .3, 'g_cheek', G(rows=(2,), gold=True), True))
-    head.box((-0.5, -4, -4.6), (1, 4, 1), 'gst', .2, 'g_nose', G())
-    # ailes : 5 plumes en eventail de chaque cote, courbees vers l'arriere comme sur le casque de la Garde
-    base = Part('wing_base', (-4.4, -6.2, 0.4), (0, 0, 0)); head.children.append(base)
-    for i, (rz, rx, ln) in enumerate(((-6, -4, 7), (-18, -9, 7), (-30, -15, 7), (-42, -20, 7), (-54, -26, 7))):
-        fe = Part(f'plume{i}', (-0.2, -2.0, 0.4), (R(rx), 0, R(rz))); base.children.append(fe)
-        fe.box((-0.5, -ln, -1.5), (1, ln, 3), 'gfe', 0, 'g_plume', d_g_wing)
+    head.box((-4, -8, -4), (8, 3, 8), 'gdk', .55, 'g_ring', d_g_ring2)
+    head.box((-3, -10, -3), (6, 2, 6), 'gdk', .45, 'g_dome', d_g_dome)                 # calotte
+    head.box((-2, -12, -2), (4, 2, 4), 'gdk', .35, 'g_dome2', d_g_dome)               # sommet pointu : dome en gradins
+    head.box((-4.3, -5, -3), (1, 5, 4), 'gdk', .3, 'g_cheek', G(rows=(2,), gold=True))
+    head.cubes.append(Cube((3.3, -5, -3), (1, 5, 4), 'gdk', .3, 'g_cheek', G(rows=(2,), gold=True), True))
+    head.box((-0.5, -5, -4.6), (1, 5, 1), 'gst', .2, 'g_nose', G(gold=True))
+    # ailes : plumes larges dans le plan frontal, ouvertes en V comme sur le casque de la Garde
+    base = Part('wing_base', (-3.4, -7.0, 0.2)); head.children.append(base)
+    for i, (rz, dz) in enumerate(((-3, 0.0), (-10, 0.9), (-17, 1.8))):
+        fe = Part(f'plume{i}', (-0.4 * i, 0.0, dz), (R(-8), 0, R(rz))); base.children.append(fe)
+        fe.box((-3, -9, -0.5), (3, 9, 1), 'gfe', 0, 'g_plume', d_g_wing)
     head.children.append(mirrored(base, 'wing_base_l'))
     neck = Part('neck', (0, -2.6, 3.4), (R(12), 0, 0)); head.children.append(neck)
     neck.box((-4, 0, 0), (8, 2, 1), 'gmail', 0, 'g_neck', d_g_mail)
