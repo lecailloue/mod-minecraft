@@ -63,7 +63,7 @@ public final class ClientTest {
     private static int state = 0, wait = 0, index = 0;
     private static final int SX = 0, SY = 200, SZ = 0;
     /** true : seulement les scenes d armures (iteration rapide) */
-    private static final boolean ARMOR_ONLY = false;
+    private static final boolean ARMOR_ONLY = true;
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;

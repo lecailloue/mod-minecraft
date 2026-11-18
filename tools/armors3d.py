@@ -475,6 +475,29 @@ def d_r_helm(face, F, rng):
     rivets(F, RGL, 0)
 
 
+def d_r_band(face, F, rng):
+    if face in ('top', 'bottom'):
+        F.al[:, :] = 0                                  # couronne ouverte : on garde les cheveux
+        return
+    F.hline(0, 0, F.w, RGL, .95); F.hline(F.h - 1, 0, F.w, RGD, .8)
+    for x in range(1, F.w, 2): F.px(x, 1, RGD, .55)       # filigrane
+    if face == 'front' and F.w >= 8:
+        F.px(3, 1, (200, 40, 40), .95); F.px(4, 1, (200, 40, 40), .95)
+    scratches(F, rng, 2, RGL, .3)
+
+
+def d_r_spike(face, F, rng):
+    F.rect(0, 0, F.w, F.h, RG, .9)
+    scratches(F, rng, 1, RGL, .4)
+    if face not in ('top', 'bottom') and F.h > 1: F.hline(F.h - 1, 0, F.w, RGD, .6)
+
+
+def d_r_gem(face, F, rng):
+    F.rect(0, 0, F.w, F.h, (176, 30, 36), .95)
+    if face in ('front', 'back') and F.w >= 3: F.px(0, 0, (255, 150, 150), .9)
+    F.hline(F.h - 1, 0, F.w, RGD, .6)
+
+
 def d_r_body(face, F, rng):
     scratches(F, rng, 8, RGL, .25)
     if face == 'front':
@@ -519,16 +542,12 @@ def d_r_boot(face, F, rng):
 
 def rohan():
     G = d_r_gold
-    head = Part('head')
-    head.box((-4, -8, -4), (8, 4, 8), 'rgo', .55, 'r_ring', d_r_helm)
-    head.box((-3, -9.5, -3), (6, 2, 6), 'rgo', .45, 'r_dome', G())
-    cr = Part('crest', (0, -10, -1.5), (R(10), 0, 0)); head.children.append(cr)                # cimier : cheval qui part vers l'arriere
-    cr.box((-0.5, -2, 0), (1, 2, 5), 'rgo', 0, 'r_crest', G())
-    head.box((-4.3, -4, -3), (1, 4, 4), 'rgo', .3, 'r_cheek', G(rows=(1,)))
-    head.cubes.append(Cube((3.3, -4, -3), (1, 4, 4), 'rgo', .3, 'r_cheek', G(rows=(1,)), True))
-    head.box((-0.5, -4, -4.6), (1, 4, 1), 'rgo', .2, 'r_nose', G())
-    neck = Part('neck', (0, -2.6, 3.4), (R(12), 0, 0)); head.children.append(neck)
-    neck.box((-4, 0, 0), (8, 3, 1), 'rld', 0, 'r_neck', d_o_neck)
+    head = Part('head')                                                                  # couronne du roi de Rohan (plus de casque)
+    head.box((-4, -8, -4), (8, 2, 8), 'rgo', .5, 'r_crown', d_r_band)
+    for i, (px, pz) in enumerate(((-2.5, -4.5), (2.5, -4.5), (-4.5, -2.5), (4.5, -2.5), (-4.5, 0.5), (4.5, 0.5), (-4.5, 3.0), (4.5, 3.0), (-2.5, 4.5), (0.0, 4.5), (2.5, 4.5))):
+        head.box((px - 0.5, -10.2, pz - 0.5), (1, 2, 1), 'rgo', 0.1, 'r_spike', d_r_spike)
+    head.box((-0.5, -11.4, -4.7), (1, 3, 1), 'rgo', 0.1, 'r_spike_c', d_r_spike)        # grande pointe centrale
+    head.box((-1.5, -9.4, -4.6), (3, 2, 1), 'rgo', 0.1, 'r_gem', d_r_gem)               # joyau au front
 
     body = Part('body')
     body.box((-4, 0, -2), (8, 12, 4), 'rlb', .6, 'r_body', d_r_body)
