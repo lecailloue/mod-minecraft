@@ -42,7 +42,10 @@ def build():
         LANG[f'entity.{MOD}.{id}'] = fr
         item(f'{id}_spawn_egg', f"Œuf d'apparition : {fr}", java=f'new DeferredSpawnEggItem(ModEntities.{id.upper()}, 0x{c1:06x}, 0x{c2:06x}, props())', model='egg')
     loot('orc', entry('minecraft:rotten_flesh', 0, 2), entry('black_steel_ingot', 1, 1, 0.5), entry('silver_coin', 1, 2, 0.3), entry('orc_tooth', 0, 1, 0.4))
-    loot('war_orc', entry('black_steel_ingot', 1, 2), entry('silver_coin', 0, 3), entry('orc_tooth', 0, 2, 0.5))
+    # armure d'orc (15 %) : 1 chance sur 5 qu'elle soit rouillee
+    orc_gear = {'rolls': 1, 'conditions': [{'condition': 'minecraft:random_chance', 'chance': 0.15}], 'entries': [
+        {'type': 'minecraft:item', 'name': mid(f'orc{r}_{k}'), 'weight': w} for k in ('helmet', 'chestplate', 'leggings', 'boots') for r, w in (('', 4), ('_rusted', 1))]}
+    loot('war_orc', entry('black_steel_ingot', 1, 2), entry('silver_coin', 0, 3), entry('orc_tooth', 0, 2, 0.5), orc_gear)
     loot('orc_chief', entry('black_steel_ingot', 3, 5), entry('silver_coin', 6, 12), entry('rune_key'), entry('ring_kings', 1, 1, 0.25), entry('orc_tooth', 1, 3), entry('orc_banner', 1, 1, 0.3))
     loot('goblin', entry('silver_coin', 1, 1, 0.4), entry('minecraft:bone', 0, 1), entry('minecraft:raw_iron', 1, 2, 0.1), entry('goblin_ear', 0, 1, 0.5), entry('goblin_trinket', 1, 1, 0.1))
     loot('goblin_king', entry('silver_coin', 6, 12), entry('minecraft:raw_iron', 3, 6), entry('minecraft:bone', 2, 5), entry('ring_kings', 1, 1, 0.12), entry('goblin_ear', 1, 3), entry('goblin_trinket', 1, 1, 0.5))
