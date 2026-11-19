@@ -37,11 +37,11 @@ def quads(geo, pose=None):
                 out.append((pts, [(u1, v0), (u0, v0), (u0, v1), (u1, v1)]))
     return out
 
-def render(name, yaw, pitch=12, scale=5, pose=None, bg=(24, 22, 28), glow=True, size=None, center=None):
-    geo = json.load(open(f'{A}/geo/{name}.json'))
-    tex = np.asarray(Image.open(f'{A}/textures/entity/{name}.png').convert('RGBA')).astype(float)
+def render(name, yaw, pitch=12, scale=5, pose=None, bg=(24, 22, 28), glow=True, size=None, center=None, geo=None, texim=None):
+    if geo is None: geo = json.load(open(f'{A}/geo/{name}.json'))
+    tex = np.asarray(texim if texim is not None else Image.open(f'{A}/textures/entity/{name}.png').convert('RGBA')).astype(float)
     gp = f'{A}/textures/entity/{name}_glow.png'
-    gl = np.asarray(Image.open(gp).convert('RGBA')).astype(float) if glow and os.path.exists(gp) else None
+    gl = np.asarray(Image.open(gp).convert('RGBA')).astype(float) if glow and name and os.path.exists(gp) else None
     qs = quads(geo, pose)
     a, b = math.radians(yaw), math.radians(pitch)
     f = np.array([math.sin(a) * math.cos(b), -math.sin(b), math.cos(a) * math.cos(b)])      # yaw 0 = vu de face

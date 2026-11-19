@@ -7,11 +7,11 @@ from genlib import A, save
 def _c(c): return rgb(c) if isinstance(c, str) else c
 
 class Skin:
-    def __init__(self, seed=0):
-        self.im = Image.new('RGBA', (128, 64), (0, 0, 0, 0))
+    def __init__(self, seed=0, h=64):
+        self.im = Image.new('RGBA', (128, h), (0, 0, 0, 0))
         self.rnd = random.Random(seed)
     def px(self, x, y, c, a=255):
-        if 0 <= x < 128 and 0 <= y < 64: self.im.putpixel((x, y), _c(c)[:3] + (a,))
+        if 0 <= x < 128 and 0 <= y < self.im.height: self.im.putpixel((x, y), _c(c)[:3] + (a,))
     def rect(self, x, y, w, h, c, noise=0.08, grad=0.0, a=255):
         c = _c(c)
         for yy in range(h):
@@ -43,8 +43,9 @@ FACES = {
 
 def skin(name, race='human', skin='#c69a7a', hair='#4a3020', hair_style='short', eyes='#3a2a1a', top='#7a5a3a', trim=None, legs='#4a3a2a',
          boots='#2a2018', belt='#3a2a1a', beard=None, beard_len=0, sleeves=True, armor=None, hood=None, seed=0, face=None, ears=None,
-         tusks=False, gloves=None, alpha=255, emblem=None, crown=None, pauldrons=None, skirt=False):
-    s = Skin(seed)
+         tusks=False, gloves=None, alpha=255, emblem=None, crown=None, pauldrons=None, skirt=False, xg=None):
+    big = race in ('elf', 'dwarf')
+    s = Skin(seed, 128 if big else 64)
     sk = _c(skin); hr = _c(hair); tp = _c(top); tr = _c(trim) if trim else shade(tp, 0.7); lg = _c(legs); bt = _c(boots)
     a = alpha
     # --- tete
@@ -129,6 +130,11 @@ def skin(name, race='human', skin='#c69a7a', hair='#4a3020', hair_style='short',
                 if xx % 2 == 0: s.px(x0 + xx, 8, cc)
         s.px(43, 9, (220, 40, 40)); s.px(44, 9, (220, 40, 40))
     # --- extras (moitie droite)
+    if big:
+        import people3d
+        people3d.paint(s, race, name, dict(skin=skin, hair=hair, hair_style=hair_style, top=top, trim=trim, beard=beard, beard_len=beard_len, belt=belt, armor=armor, pauldrons=pauldrons, crown=crown, skirt=skirt, xg=xg))
+        save(s.im, f'{A}/textures/entity/people/{name}.png')
+        return s
     s.box(64, 0, 1, 5, 2, sk, a=a)        # oreille d'elfe      (boite 1x5x2 -> 6x7)
     s.box(64, 8, 4, 3, 1, sk, a=a)        # oreille de gobelin  (boite 4x3x1 -> 10x4)
     s.box(64, 16, 1, 3, 2, sk, a=a)       # oreille d'orque     (boite 1x3x2 -> 6x5)

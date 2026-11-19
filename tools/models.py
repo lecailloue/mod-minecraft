@@ -578,14 +578,8 @@ def skins():
     skin('mage', 'human', skin='#d8b8a0', hair='#d8d8d8', hair_style='long', top='#7a7a80', trim='#5a5a60', legs='#6a6a70', boots='#3a3a3a', beard='#e0e0e0', beard_len=6, hood='#7a7a80', skirt=True, seed=16)
     skin('wild_man', 'human', skin='#a87a58', hair='#2a1c12', hair_style='long', top='#6a5038', trim='#3a2a1c', legs='#5a4430', boots='#a87a58', beard='#2a1c12', sleeves=False, seed=17)
     # --- elfes
-    skin('elf_1', 'elf', skin='#ecd8c4', hair='#e8d890', hair_style='long', eyes='#4a8ac0', top='#3a6a4a', trim='#d8c070', legs='#5a5a4a', boots='#4a3a28', skirt=True, seed=20)
-    skin('elf_2', 'elf', skin='#e8d0bc', hair='#2a2420', hair_style='long', eyes='#6a9a6a', top='#5a6a8a', trim='#c8d0e0', legs='#4a4a5a', boots='#3a3028', skirt=True, seed=21)
-    skin('elf_3', 'elf', skin='#f0dcc8', hair='#c8c8d0', hair_style='long', eyes='#5a7ab0', top='#8a8a6a', trim='#e0d090', legs='#5a5a4a', boots='#4a3a28', skirt=True, seed=22)
     skin('elf_guard', 'elf', skin='#ecd8c4', hair='#e8d890', hair_style='long', eyes='#4a8ac0', top='#2f5a40', trim='#e0c060', legs='#4a4a3a', boots='#3a3028', armor='plate', pauldrons='#d8c070', crown='#e0c060', seed=23)
     # --- nains
-    skin('dwarf_1', 'dwarf', skin='#c89070', hair='#8a3a1a', hair_style='mid', top='#4a3a2a', trim='#c9a23a', legs='#3a3430', boots='#2a2420', beard='#8a3a1a', beard_len=7, armor='chain', seed=30)
-    skin('dwarf_2', 'dwarf', skin='#c08868', hair='#3a2a20', hair_style='helmet', top='#3a4a5a', trim='#8a8f98', legs='#34302c', boots='#2a2420', beard='#3a2a20', beard_len=8, pauldrons='#8a8f98', seed=31)
-    skin('dwarf_3', 'dwarf', skin='#cc9878', hair='#b8b0a8', hair_style='mid', top='#5a2a22', trim='#c9a23a', legs='#3a3430', boots='#2a2420', beard='#c8c0b8', beard_len=9, seed=32)
     skin('dwarf_guard', 'dwarf', skin='#c89070', hair='#7a7f88', hair_style='helmet', top='#3a3a44', trim='#c9a23a', legs='#2e2e34', boots='#22201e', beard='#6a3a1a', beard_len=7, armor='plate', pauldrons='#7a7f88', seed=33)
     # --- semi-hommes
     skin('halfling_1', 'half', skin='#d8a888', hair='#6a4424', hair_style='mid', top='#5a7a3a', trim='#c9b070', legs='#6a5034', boots='#d8a888', seed=40)
@@ -597,6 +591,9 @@ def skins():
     skin('ash_lord', 'lord', skin='#141216', hair='#1c1a20', hair_style='helmet', eyes='#ff5010', top='#1a181c', trim='#c02a10', legs='#141216', boots='#0c0a0e', armor='plate', pauldrons='#24222a', crown='#2a2830', gloves='#1c1a20',
          emblem=(['r.rr.r', '.r..r.', 'r.rr.r', '.r..r.', 'r.rr.r'], {'r': '#ff5a18'}), seed=54)
     skin('cave_thief', 'goblin', skin='#b8b8a8', hair='#b8b8a8', hair_style='bald', eyes='#d8f0ff', top='#b0b0a0', legs='#6a6050', boots='#b8b8a8', sleeves=False, seed=55)
+    import people3d
+    for n, race, kw in people3d.all_skins(): skin(n, race, **kw)
+    people3d.gen_java()
 
 def beasts_gen():
     import beasts

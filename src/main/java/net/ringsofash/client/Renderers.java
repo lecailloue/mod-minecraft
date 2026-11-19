@@ -250,6 +250,13 @@ public final class Renderers {
                     new HumanoidModel<>(ctx.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR)), ctx.getModelManager()));
         }
 
+        /** les cheveux (extras 3D des nains et des elfes) disparaissent sous un casque */
+        @Override
+        public void render(T e, float yaw, float pt, PoseStack ps, MultiBufferSource buf, int light) {
+            PeopleParts.hideHair(getModel(), !e.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).isEmpty());
+            super.render(e, yaw, pt, ps, buf, light);
+        }
+
         @Override public ResourceLocation getTextureLocation(T e) { return tex("people/" + texture.apply(e)); }
         @Override protected void scale(T e, PoseStack ps, float pt) { ps.scale(sx, sy, sx); }
 
