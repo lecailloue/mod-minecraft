@@ -38,7 +38,7 @@ def troll():
     save(stone, f'{A}/textures/entity/troll_stone.png')
     save(statue, f'{A}/textures/entity/troll_statue.png')
 
-def warg_paint(m, name='warg', scars=0.3, gore=0.3, seed=1313, stripe=0.74):
+def warg_paint(m, name='warg', scars=0.3, gore=0.3, seed=1313, stripe=0.74, extra=0):
     """texture detaillee du Warg : poils en meches (racines sombres, pointes pales), rayures de hyene, cotes saillantes, cicatrices,
     gueule baveuse sanglante avec crocs, yeux ambre a pupille fendue (calque lumineux warg_glow)"""
     import random
@@ -91,7 +91,7 @@ def warg_paint(m, name='warg', scars=0.3, gore=0.3, seed=1313, stripe=0.74):
                     for xx in range(2, fw - 1):
                         mulc(x0 + xx, y0 + fh - 7, 1.18); mulc(x0 + xx, y0 + fh - 5, 1.15)
                 if p.name in ('body', 'head', 'neck') and face in ('left', 'right', 'front') and rnd.random() < scars and fw >= 5 and fh >= 5:   # cicatrices
-                    sx, sy = x0 + rnd.randint(0, fw - 4), y0 + rnd.randint(0, fh - 4); n = rnd.randint(3, 4)
+                    sx, sy = x0 + rnd.randint(0, fw - 4), y0 + rnd.randint(0, fh - 4); n = rnd.randint(3, 4) + (2 if scars > 0.4 else 0)
                     for k in range(n): put(sx + k, sy + k, (170, 96, 88)); mulc(sx + k + 1, sy + k, 0.55); mulc(sx + k, sy + k + 1, 0.6)
                 if face == 'bottom' or (p.name == 'body' and face == 'top' and not spike): mulc(x0 + fw // 2, y0 + fh // 2, 0.85)
     # crete : pointes givrees, bases sombres
@@ -105,18 +105,23 @@ def warg_paint(m, name='warg', scars=0.3, gore=0.3, seed=1313, stripe=0.74):
                     mulc(x0 + xx, y0, 1.55, pale)
                     if fh > 3: mulc(x0 + xx, y0 + fh - 1, 0.55)
     # --- visage
-    def eye(cx, cy):                                                               # oeil ambre 3x3, pupille fendue, paupiere lourde
-        for dx in range(3):
-            for dy in range(2): put(cx + dx, cy + dy, (255, 196, 48) if dy < 1 else (240, 130, 24)); gp[cx + dx, cy + dy] = (255, 96, 8, 255)
-        for dy in range(2): put(cx + 1, cy + dy, (10, 6, 4)); gp[cx + 1, cy + dy] = (0, 0, 0, 0)
-        for dx in range(-1, 4): mulc(cx + dx, cy - 1, 0.45); mulc(cx + dx, cy + 2, 0.7)
+    def eye(x0, y0, left):                                                         # petit oeil jaune oblique et mechant, sous une arcade sombre
+        cx = x0 + (1 if left else 6)
+        shape = [(0, 0, 'a'), (1, 0, 'a'), (1, 1, 'b'), (2, 1, 'b')] if left else [(1, 0, 'a'), (2, 0, 'a'), (0, 1, 'b'), (1, 1, 'b')]
+        for dx in range(-1, 4): mulc(cx + dx, y0 + 1, 0.35); mulc(cx + dx, y0 + 4, 0.7)       # orbites creusees
+        for dx, dy, k in shape:
+            put(cx + dx, y0 + 2 + dy, (255, 222, 60) if k == 'a' else (236, 168, 24)); gp[cx + dx, y0 + 2 + dy] = (255, 190, 20, 255)
     if skull is not None:
         x0, y0, fw, fh = m.face_rects(skull)['front']
-        eye(x0 + 1, y0 + 2); eye(x0 + 6, y0 + 2)
-        for dx in range(0, 4): mulc(x0 + 1 + dx, y0 + 1 - (dx // 3), 0.5); mulc(x0 + 8 - dx, y0 + 1 - (dx // 3), 0.5)   # sourcils en colere
+        eye(x0, y0, True); eye(x0, y0, False)
+        for dx in range(0, 5): mulc(x0 + dx, y0 + 1, 0.4); mulc(x0 + 9 - dx, y0 + 1, 0.4)   # sourcils en colere
         for dx in (4, 5): 
             for dy in range(1, 6): mulc(x0 + dx, y0 + dy, 0.62)                        # sillon du front
         for k in range(3): put(x0 + 1 + k, y0 + 8 - (k % 2), (110, 20, 18)); put(x0 + 8 - k, y0 + 8 - (k % 2), (110, 20, 18))   # plis de rictus
+        if extra >= 3:                                                              # balafre en travers du museau
+            for k in range(5): put(x0 + 1 + k, y0 + 5 + (k + 1) // 2, (176, 100, 92)); mulc(x0 + 1 + k, y0 + 6 + (k + 1) // 2, 0.5)
+        if extra >= 4:
+            for k in range(4): put(x0 + 8 - k, y0 + 6 + k // 2, (176, 100, 92)); mulc(x0 + 8 - k, y0 + 7 + k // 2, 0.5)
         for face in ('left', 'right'):
             fx, fy, fw2, fh2 = m.face_rects(skull)[face]
             for k in range(4): mulc(fx + 1 + k, fy + 5 + k // 2, 0.4)
@@ -197,16 +202,14 @@ def warg():
     t = m.part('tail', (0, 17, 12)); t.box((-1.5, 14, 12), (3, 3, 6), mid, noise=0.25)
     t2 = m.part('tail2', (0, 16, 18), parent='tail'); t2.box((-2, 11, 18), (4, 5, 6), dark, noise=0.3)
     m.export()
-    warg_paint(m, 'warg', 0.45, 0.3, 1313)
+    warg_paint(m, 'warg', 0.3, 0.3, 1313)
     def lum(c): return sum(c[:3]) / 3
     def keep(c): return lum(c) > 190
     def silver(c): return c if keep(c) else tuple(min(255, int(lum(c) * 1.55 + k)) for k in (22, 24, 26))
     def black(c): return c if keep(c) else (int(lum(c) * 0.5), int(lum(c) * 0.5), int(lum(c) * 0.58))
     def tawny(c): return c if keep(c) else (min(255, int(c[0] * 1.2 + 16)), int(c[1] * 1.02 + 4), int(c[2] * 0.78))
-    m.retexture('warg_1', lambda c: c, seed=7); warg_paint(m, 'warg_1', 0.5, 0.35, 1313)            # brun sombre, tres marque
-    m.retexture('warg_2', silver, seed=11); warg_paint(m, 'warg_2', 0.0, 0.08, 2024)                 # gris argent, sans cicatrice
-    m.retexture('warg_3', black, seed=13); warg_paint(m, 'warg_3', 0.14, 0.2, 77, 0.8)               # noir de suie, quelques cicatrices
-    m.retexture('warg_4', tawny, seed=17); warg_paint(m, 'warg_4', 0.0, 0.05, 909, 0.62)             # fauve rayure, sans cicatrice
+    for n, (sc, go, sd) in enumerate(((0.0, 0.05, 7), (0.22, 0.15, 11), (0.5, 0.3, 13), (0.8, 0.45, 17)), 1):     # meme pelage, de plus en plus balafre
+        m.retexture(f'warg_{n}', lambda c: c, seed=sd); warg_paint(m, f'warg_{n}', sc, go, 1313 + n, 0.74, extra=n)
     m.preview(f'{PREVIEW}/warg.png')
 
 def stag():
