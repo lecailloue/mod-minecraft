@@ -25,27 +25,31 @@ tc.MATS.update({
 })
 
 
-def d_scales(light, dark, size=4, var=.12):
+def d_voro(area=14, light=(230, 140, 90), dark=(30, 10, 8), var=.16, hl=.30):
+    """ecailles irregulieres (cellules de Voronoi) : tailles et teintes qui varient, aucun motif en grille"""
     def f(arr, face, rng):
         h, w, _ = arr.shape
-        k, y0 = 0, 0
-        while y0 < h:
-            off = (k % 2) * (size // 2); k += 1
-            for x0 in range(-off, w, size):
-                tone = 1 + (rng.random() - .5) * 2 * var
-                for j in range(size - 1):
-                    for i in range(size):
-                        x, y = x0 + i, y0 + j
-                        if 0 <= x < w and 0 <= y < h: arr[y, x] *= tone
-                for i in range(size):
-                    put(arr, x0 + i, y0 + size - 2, dark, .5)
-                    if 0 < i < size - 1: put(arr, x0 + i, y0, light, .30)
-                put(arr, x0, y0 + 1, dark, .3)
-            y0 += size - 1
-        for _ in range(h * w // 40):
-            put(arr, int(rng.integers(0, w)), int(rng.integers(0, h)), (36, 14, 10), .45)
-        for _ in range(h * w // 90):
-            put(arr, int(rng.integers(0, w)), int(rng.integers(0, h)), (205, 120, 70), .35)       # reflets cuivres
+        n = max(3, int(h * w / area * (.7 + rng.random() * .6)))
+        pts = np.column_stack([rng.random(n) * w, rng.random(n) * h]).astype(np.float32)
+        ys, xs = np.mgrid[0:h, 0:w]
+        gx = (xs + .5).astype(np.float32); gy = (ys + .5).astype(np.float32)
+        d = (gx[..., None] - pts[:, 0]) ** 2 + (gy[..., None] - pts[:, 1]) ** 2
+        two = np.argpartition(d, 1, axis=2)[:, :, :2]
+        da = np.take_along_axis(d, two[:, :, :1], 2)[:, :, 0]; db = np.take_along_axis(d, two[:, :, 1:2], 2)[:, :, 0]
+        swap = db < da
+        cell = np.where(swap, two[:, :, 1], two[:, :, 0]); d1 = np.sqrt(np.minimum(da, db)); d2 = np.sqrt(np.maximum(da, db))
+        tone = 1 + (rng.random(n) - .5) * 2 * var + (rng.random(n) < .12) * (rng.random(n) - .5) * .5     # quelques ecailles tres differentes
+        arr *= tone[cell][:, :, None]
+        blot = tc.noise(h, w, 7, rng); arr *= (.92 + .18 * blot)[:, :, None]                          # grandes taches claires / sombres
+        border = (d2 - d1) < .85
+        arr[border] *= .70
+        dx = gx - pts[cell, 0]; dy = gy - pts[cell, 1]
+        hlm = ((dx + dy) < -.5) & ~border
+        arr[hlm] = arr[hlm] * (1 - hl) + np.array(light) * hl
+        arr[((dx + dy) > 1.4) & ~border] *= .88
+        for _ in range(max(1, h * w // 220)):                                                          # fissures / cicatrices
+            x = int(rng.integers(0, w)); y = int(rng.integers(0, h)); dxx = int(rng.integers(-1, 2))
+            for i in range(int(rng.integers(3, 8))): put(arr, x + dxx * i // 2, y + i, (22, 8, 6), .7)
     return f
 
 
@@ -107,8 +111,7 @@ def d_tooth(arr, face, rng):
 
 
 tc.DECOR.update({
-    'dscale': d_scales((220, 130, 80), (40, 12, 10), 4, .12), 'dscale2': d_scales((150, 70, 50), (20, 6, 6), 5, .10),
-    'dscale3': d_scales((236, 150, 90), (60, 20, 12), 4, .13),
+    'dscale': d_voro(22, var=.11), 'dscale2': d_voro(36, (170, 90, 60), (14, 4, 4), .09), 'dscale3': d_voro(28, (240, 160, 100), (50, 16, 10), .13),
     'dbelly': d_belly, 'dmemb': d_memb, 'dhorn': d_horn, 'dmouth': d_mouth, 'dtooth': d_tooth, 'dclaw': d_horn,
 })
 
@@ -163,169 +166,221 @@ def ang(v):
     return math.radians(v)
 
 
+def tube_z(B, nm, cx, cy, cz, w, h, d, mat, key, fx=None):
+    """section arrondie extrudee le long de z : croix (2 boites) + 4 petits losanges aux coins = prisme octogonal"""
+    if min(w, h) < 9:
+        return [B(nm, cx - w / 2, cy - h / 2, cz - d / 2, w, h, d, mat, key=f'{key}_{round(w)}_{round(h)}_{round(d)}', fx=fx)]
+    c = max(2, round(min(w, h) * .26)); sz = max(2, round(c * .72))
+    out = [B(nm + 'a', cx - w / 2, cy - (h - 2 * c) / 2, cz - d / 2, w, h - 2 * c, d, mat, key=f'{key}a', fx=fx),
+           B(nm + 'b', cx - (w - 2 * c) / 2, cy - h / 2, cz - d / 2, w - 2 * c, h, d, mat, key=f'{key}b')]
+    for sx in (1, -1):
+        for sy in (1, -1):
+            out.append(B(f'{nm}c{sx}{sy}', cx + sx * (w / 2 - c / 2) - sz / 2, cy + sy * (h / 2 - c / 2) - sz / 2, cz - d / 2, sz, sz, d, mat, key=f'{key}c{sz}_{round(d)}', rot=(0, 0, 45)))
+    return out
+
+
+def tube_y(B, nm, cx, cy, cz, w, l, dp, mat, key, tilt=0.0, fx=None):
+    """section arrondie extrudee le long de y (cou, pattes) ; tilt = inclinaison autour de x (negatif = penche vers l'avant)"""
+    ca, sa = math.cos(ang(tilt)), math.sin(ang(tilt))
+    if min(w, dp) < 9:
+        return [B(nm, cx - w / 2, cy - l / 2, cz - dp / 2, w, l, dp, mat, key=f'{key}_{round(w)}_{round(l)}', rot=(tilt, 0, 0), fx=fx)]
+    c = max(2, round(min(w, dp) * .26)); sz = max(2, round(c * .72))
+    out = [B(nm + 'a', cx - w / 2, cy - l / 2, cz - (dp - 2 * c) / 2, w, l, dp - 2 * c, mat, key=f'{key}a', rot=(tilt, 0, 0), fx=fx),
+           B(nm + 'b', cx - (w - 2 * c) / 2, cy - l / 2, cz - dp / 2, w - 2 * c, l, dp, mat, key=f'{key}b', rot=(tilt, 0, 0))]
+    for sx in (1, -1):
+        for sz_ in (1, -1):
+            lx, lz = sx * (w / 2 - c / 2), sz_ * (dp / 2 - c / 2)
+            wx, wy, wz = cx + lx, cy - lz * sa, cz + lz * ca
+            out.append(B(f'{nm}c{sx}{sz_}', wx - sz / 2, wy - l / 2, wz - sz / 2, sz, l, sz, mat, key=f'{key}c{sz}_{round(l)}', rot=(tilt, 45, 0)))
+    return out
+
+
+def lerp(a, b, t):
+    return a + (b - a) * t
+
+
 def dragon_groups():
     B, G = mkT(1.0)
     s_ = lambda s: 'r' if s > 0 else 'l'
-    # ---------------------------------------------------------------- corps
-    body_kids = [
-        B('chest', -15, 32, -34, 30, 28, 26, 'dscale', key='d_chest'),
-        B('mid', -14, 31, -10, 28, 26, 22, 'dscale', key='d_mid'),
-        B('hips', -15, 30, 10, 30, 26, 22, 'dscale', key='d_hips'),
-        B('belly', -11, 29, -33, 22, 3, 62, 'dbelly', key='d_belly', fx=fx_embers(8, ('down',))),
-        B('breast', -10, 32, -36, 20, 22, 3, 'dbelly', key='d_breast', fx=fx_embers(26, ('north',))),
-        B('shoulder_r', 11, 50, -32, 10, 10, 16, 'dscale2', key='d_shoulder'),
-        B('shoulder_l', -21, 50, -32, 10, 10, 16, 'dscale2', key='d_shoulder'),
-        B('flank_r', 14, 36, -8, 3, 16, 36, 'dscale3', key='d_flank'),
-        B('flank_l', -17, 36, -8, 3, 16, 36, 'dscale3', key='d_flank'),
-    ]
-    for i in range(9):                                            # plaques du dos
-        yb = 60 - i * 0.45
-        body_kids.append(B(f'plate{i}', -9, yb, -32 + i * 8.4, 18, 3, 8, 'dscale2', key='d_plate'))
-    for i in range(12):                                           # crete de pointes : plus hautes aux epaules
-        z = -32 + i * 6.4; h = max(5, 13 - i * .75); y = 60 - i * .45 + 1
-        b1 = max(2, round(h * .6)); b2 = max(2, round(h * .5))
+    # ---------------------------------------------------------------- corps : 14 tranches arrondies, profil d'epaules puissantes -> taille -> hanches
+    W_ = [14, 22, 27, 30, 30, 29, 27, 25, 24, 25, 27, 28, 26, 22]
+    H_ = [18, 24, 28, 30, 30, 29, 27, 25, 25, 26, 27, 27, 25, 21]
+    CY = [44, 45, 46, 46, 46, 45.5, 44.5, 43.5, 43, 43, 43, 42.5, 42, 41]
+    ZC = [-33 + i * 5 for i in range(14)]
+    body_kids = []
+    for i in range(14):
+        body_kids += tube_z(B, f'sl{i}', 0, CY[i], ZC[i], W_[i], H_[i], 6, 'dscale', f'd_sl{i}')
+        body_kids.append(B(f'bs{i}', -W_[i] * .26, CY[i] - H_[i] / 2 - .6, ZC[i] - 3, round(W_[i] * .52), 2, 6, 'dbelly', key=f'd_bs{i}', fx=fx_embers(8, ('down',))))
+        if 3 <= i <= 11:                                                  # flancs : plaques plus claires
+            for sx in (1, -1):
+                body_kids.append(B(f'fl{i}{s_(sx)}', sx * (W_[i] / 2 - .2) - 1, CY[i] - 4, ZC[i] - 3, 2, 9, 6, 'dscale3', key=f'd_fl{i}', rot=(0, 0, sx * 14)))
+    body_kids.append(B('breast', -8, CY[0] - 6, -37.5, 16, 14, 2, 'dbelly', key='d_breast', fx=fx_embers(26, ('north',))))
+    for sx in (1, -1):                                                    # bosses d'epaules
+        body_kids += tube_z(B, f'shd{s_(sx)}', sx * 15, 52, -22, 10, 11, 16, 'dscale2', f'd_shd{s_(sx)}')
+    for i in range(2, 13):                                                # tuiles de plaques sur le dos (3 rangees) et les cotes
+        ytop = CY[i] + H_[i] / 2
+        for k, (xo, rz) in enumerate(((-1, -26), (0, 0), (1, 26))):
+            body_kids.append(B(f'sh{i}_{k}', xo * W_[i] * .33 - 3.5, ytop - 1.2, ZC[i] - 3.4, 7, 2, 7, 'dscale2', key=f'd_sh{k}', rot=(10, 0, rz)))
+    for i in range(12):                                                   # crete de pointes (3 etages effiles), plus hautes aux epaules
+        k = min(13, i + 2); z = ZC[k]; y = CY[k] + H_[k] / 2 + 1
+        h = max(6, 15 - i * .8)
+        b1, b2, b3 = round(h * .42), round(h * .34), round(h * .26)
         body_kids.append(G(f'dsp{i}', (0, y, z), rot=(16, 0, 0), children=[
-            B(f'dsp_a{i}', -3, y, z - 2, 6, b1, 4, 'dhorn', key=f'd_spa{b1}'),
-            B(f'dsp_b{i}', -1.5, y + b1, z - 1, 3, b2, 2, 'dhorn', key=f'd_spb{b2}')]))
-    # ---------------------------------------------------------------- cou (S) : segments inclines + ventre dore + pointes dorsales
-    pos = np.array([0.0, 56.0, -32.0])
-    angles = [8, 20, 32, 44, 54, 60]; widths = [20, 18, 17, 15, 14, 13]; length = 14
+            B(f'dsp_a{i}', -3.5, y, z - 2.5, 7, b1, 5, 'dhorn', key=f'd_spa{b1}'),
+            B(f'dsp_b{i}', -2.5, y + b1, z - 1.5, 5, b2, 3, 'dhorn', key=f'd_spb{b2}'),
+            B(f'dsp_c{i}', -1.2, y + b1 + b2, z - .8, 2, b3, 2, 'dhorn', key=f'd_spc{b3}')]))
+    # ---------------------------------------------------------------- cou en S : 8 segments arrondis, ventre dore, crete, pointes
+    pos = np.array([0.0, 56.0, -33.0])
+    angles = [5, 13, 22, 31, 40, 48, 55, 60]; widths = [22, 20.5, 19, 18, 17, 16, 15, 14]; length = 11
     neck_kids = []
     for i, (th, wd) in enumerate(zip(angles, widths)):
         dvec = np.array([0, math.cos(ang(th)), -math.sin(ang(th))]); nvec = np.array([0, -math.sin(ang(th)), -math.cos(ang(th))])
         dep = wd - 2
         c = pos + dvec * length / 2
-        neck_kids.append(B(f'neck{i}', c[0] - wd / 2, c[1] - length / 2, c[2] - dep / 2, wd, length, dep, 'dscale', key=f'd_neck{i}', rot=(-th, 0, 0)))
-        cb = c + nvec * (dep / 2 + .8)
-        neck_kids.append(B(f'nbelly{i}', cb[0] - wd * .3, cb[1] - length / 2, cb[2] - 1, round(wd * .6), length, 2, 'dbelly', key=f'd_nb{i}', rot=(-th, 0, 0), fx=fx_embers(10, ('north',))))
-        cs = c - nvec * (dep / 2 + 3)
-        neck_kids.append(B(f'nspike{i}', cs[0] - 1.5, cs[1] - 4, cs[2] - 1.5, 3, 8, 3, 'dhorn', key='d_nsp', rot=(90 - th + 8, 0, 0)))
-        cs2 = c - nvec * (dep / 2 + .8)
-        neck_kids.append(B(f'ncrest{i}', cs2[0] - 4, cs2[1] - length / 2, cs2[2] - 1, 8, length, 2, 'dscale2', key=f'd_ncr{i}', rot=(-th, 0, 0)))
-        pos = pos + dvec * length * .92
-    hx, hy, hz = pos
-    # ---------------------------------------------------------------- tete (repere local : la tete regarde vers -z ; pivot au joint du cou)
-    hz0 = hz
-    head_kids = [
-        B('skull', -10, hy - 8, hz0 - 22, 20, 16, 24, 'dscale', key='d_skull', fx=fx_deye(1, 3)),
-        B('brow', -11, hy + 7, hz0 - 22, 22, 3, 12, 'dscale2', key='d_brow'),
+        neck_kids += tube_y(B, f'nk{i}', c[0], c[1], c[2], wd, length + 1, dep, 'dscale', f'd_nk{i}', tilt=-th)
+        cb = c + nvec * (dep / 2 + .6)
+        neck_kids.append(B(f'nbelly{i}', cb[0] - wd * .27, cb[1] - length / 2, cb[2] - 1, round(wd * .54), length, 2, 'dbelly', key=f'd_nb{i}', rot=(-th, 0, 0), fx=fx_embers(10, ('north',))))
+        cs = c - nvec * (dep / 2 + 3.2)
+        neck_kids.append(B(f'nspike{i}', cs[0] - 2, cs[1] - 5, cs[2] - 2, 4, 10, 4, 'dhorn', key='d_nsp', rot=(90 - th + 6, 0, 0)))
+        for sx in (1, -1):                                                # petites pointes laterales
+            cl = c + np.array([sx * (wd / 2 - 1), 0, 0]) - nvec * (dep * .3)
+            neck_kids.append(B(f'nside{i}{s_(sx)}', cl[0] - 1, cl[1] - 3, cl[2] - 1, 2, 6, 2, 'dhorn', key='d_nsd', rot=(90 - th + 6, 0, sx * 30)))
+        pos = pos + dvec * length * .93
+    hx, hy, hz0 = pos
+    # ---------------------------------------------------------------- tete : crane + 3 sections de museau effilees, machoire en 3 sections
+    head_kids = []
+    head_kids += tube_z(B, 'sk', 0, hy, hz0 - 10, 20, 16, 24, 'dscale', 'd_skull', fx=fx_deye(1, 3))
+    for sx in (1, -1):
+        head_kids += tube_z(B, f'ck{s_(sx)}', sx * 9, hy - 2, hz0 - 4, 7, 11, 12, 'dscale3', f'd_ckb{s_(sx)}')
+    head_kids += tube_z(B, 'sn1', 0, hy - 1.5, hz0 - 28, 15, 11, 12, 'dscale', 'd_sn1')
+    head_kids += tube_z(B, 'sn2', 0, hy - 2.5, hz0 - 39, 13, 10, 12, 'dscale', 'd_sn2')
+    head_kids += tube_z(B, 'sn3', 0, hy - 3, hz0 - 49, 11, 9, 10, 'dscale3', 'd_sn3', fx=None)
+    head_kids += [
+        B('nose', -5.5, hy - 6.5, hz0 - 56, 11, 8, 6, 'dscale3', key='d_nose', fx=fx_nostril),
+        B('brow', -11, hy + 6.5, hz0 - 22, 22, 3, 12, 'dscale2', key='d_brow'),
         B('crown', -7, hy + 8, hz0 - 8, 14, 3, 14, 'dscale2', key='d_crown'),
-        B('snout', -7, hy - 6, hz0 - 48, 14, 10, 28, 'dscale', key='d_snout'),
-        B('snout_top', -6, hy + 3, hz0 - 46, 12, 2, 22, 'dscale2', key='d_stop'),
-        B('nose', -6.5, hy - 5, hz0 - 54, 13, 9, 6, 'dscale3', key='d_nose', fx=fx_nostril),
-        B('nose_horn', -1.5, hy + 4, hz0 - 50, 3, 4, 7, 'dhorn', key='d_nhorn'),
-        B('roof', -6, hy - 7, hz0 - 46, 12, 1, 38, 'dmouth', key='d_roof', fx=fx_mouth),
-        B('lip_r', 6.5, hy - 7, hz0 - 50, 2, 3, 36, 'dscale3', key='d_lip'),
-        B('lip_l', -8.5, hy - 7, hz0 - 50, 2, 3, 36, 'dscale3', key='d_lip'),
+        B('snout_top', -4, hy + 3.5, hz0 - 50, 8, 3, 26, 'dscale2', key='d_stop'),
+        B('nose_horn', -1.5, hy + 4, hz0 - 54, 3, 4, 7, 'dhorn', key='d_nhorn'),
+        B('roof', -5.5, hy - 7.2, hz0 - 50, 11, 1, 42, 'dmouth', key='d_roof', fx=fx_mouth),
     ]
-    for s in (1, -1):                                             # dents du haut
+    for sx in (1, -1):
         for k in range(8):
             th_ = 4 + (k % 2) * 2
-            head_kids.append(B(f'tooth_u{s_(s)}{k}', s * 7.2 - 1, hy - 7 - th_, hz0 - 50 + k * 4.6, 2, th_, 2, 'dtooth', key=f'd_tu{th_}'))
-        head_kids.append(B(f'canine_u{s_(s)}', s * 7.4 - 1.5, hy - 14, hz0 - 49, 3, 9, 3, 'dtooth', key='d_canu'))
-        head_kids.append(B(f'tusk_{s_(s)}', s * 9 - 1.5, hy - 2, hz0 - 40, 3, 3, 10, 'dhorn', key='d_tuskb'))
-    for k in range(4): head_kids.append(B(f'tooth_f{k}', -4.5 + k * 3, hy - 11, hz0 - 54.5, 2, 5, 2, 'dtooth', key='d_tf'))
-    for s in (1, -1):                                             # cornes balayees vers l'arriere (escalier), cornes de joue, nageoires
-        x0 = s * 8
-        for i, (dx, dy, dz, w, h, d) in enumerate(((0, 0, -2, 5, 6, 9), (1, 2, 7, 4, 5, 9), (2, 5, 15, 3, 4, 9), (3, 9, 22, 2, 3, 8))):
-            head_kids.append(B(f'horn{i}_{s_(s)}', x0 + s * dx - w / 2, hy + 7 + dy, hz0 - 4 + dz, w, h, d, 'dhorn', key=f'd_horn{i}'))
-        for i, (dx, dy, dz, w, h, d) in enumerate(((0, 0, 0, 3, 3, 8), (1, 1, 7, 2, 2, 6))):
-            head_kids.append(B(f'horns{i}_{s_(s)}', s * 9.5 + s * dx - w / 2, hy + 8 + dy, hz0 - 18 + dz, w, h, d, 'dhorn', key=f'd_hornb{i}'))
-        for i in range(3):
-            head_kids.append(B(f'cheek{i}_{s_(s)}', s * 11 - 1.5, hy - 3 + i * 0, hz0 - 4 - i * 0, 3, 3, 12, 'dhorn', key='d_cheek', rot=(0, s * (38 + i * 12), 0), pivot=(s * 11, hy - 1.5 - i * 3, hz0 - 4)))
-        head_kids.append(B(f'fin_{s_(s)}', s * 11 - .5, hy - 6, hz0 - 4, 1, 14, 16, 'dmemb', key='d_fin'))
-        head_kids.append(B(f'browh_{s_(s)}', s * 10 - 1.5, hy + 8, hz0 - 20, 3, 4, 5, 'dhorn', key='d_browh'))
-    jaw = G('jaw', (0, hy - 8, hz0 - 2), children=[
-        B('jaw_main', -8, hy - 14, hz0 - 50, 16, 6, 48, 'dscale', key='d_jaw'),
-        B('chin', -5, hy - 19, hz0 - 46, 10, 5, 32, 'dbelly', key='d_chin'),
-        B('tongue', -4, hy - 8.5, hz0 - 44, 8, 2, 36, 'dmouth', key='d_tongue', fx=fx_mouth),
-        B('chin_spike', -1.5, hy - 17, hz0 - 52, 3, 8, 3, 'dhorn', key='d_chinsp'),
-        B('jaw_spike_r', 7, hy - 16, hz0 - 24, 2, 6, 3, 'dhorn', key='d_jsp'),
-        B('jaw_spike_l', -9, hy - 16, hz0 - 24, 2, 6, 3, 'dhorn', key='d_jsp'),
-    ] + [B(f'tooth_l{s_(s)}{k}', s * 6.2 - 1, hy - 8.5, hz0 - 48 + k * 5.2, 2, 4 + (k % 2), 2, 'dtooth', key=f'd_tl{k % 2}') for s in (1, -1) for k in range(7)]
-      + [B(f'canine_l{s_(s)}', s * 5.2 - 1.5, hy - 12, hz0 - 49, 3, 7, 3, 'dtooth', key='d_canl') for s in (1, -1)])
+            head_kids.append(B(f'tooth_u{s_(sx)}{k}', sx * 6.4 - 1, hy - 7 - th_, hz0 - 52 + k * 4.8, 2, th_, 2, 'dtooth', key=f'd_tu{th_}'))
+        head_kids.append(B(f'canine_u{s_(sx)}', sx * 6.6 - 1.5, hy - 15, hz0 - 51, 3, 9, 3, 'dtooth', key='d_canu'))
+        head_kids.append(B(f'tusk_{s_(sx)}', sx * 8 - 1.5, hy - 3, hz0 - 38, 3, 3, 10, 'dhorn', key='d_tuskb', rot=(0, sx * 10, 0)))
+        # cornes : 6 segments qui s'incurvent vers l'arriere et le haut
+        P = np.array([sx * 7.5, hy + 8.0, hz0 - 5.0])
+        for i in range(6):
+            sw = max(2, round(6.2 - i)); ln = 7
+            pitch = -(14 + 13 * i); yaw = sx * (10 + 4 * i)
+            c = P + np.array([sx * ln * .28, math.sin(ang(-pitch)) * ln * .5, math.cos(ang(-pitch)) * ln * .5])
+            head_kids.append(B(f'horn{i}_{s_(sx)}', c[0] - sw / 2, c[1] - sw / 2, c[2] - ln / 2, sw, sw, ln, 'dhorn', key=f'd_horn{i}', rot=(pitch, yaw, 0)))
+            P = P + np.array([sx * ln * .45, math.sin(ang(-pitch)) * ln * .8, math.cos(ang(-pitch)) * ln * .9])
+        for i in range(3):                                                # nageoire de joue : 3 epines balayees
+            head_kids.append(B(f'cheek{i}_{s_(sx)}', sx * 12 - 1.5, hy - 2 - i * 3, hz0 - 4 + i, 3, 3, 12, 'dhorn', key='d_cheek', rot=(0, sx * (36 + i * 12), 0)))
+        head_kids.append(B(f'fin_{s_(sx)}', sx * 12 - .5, hy - 6, hz0 - 3, 1, 14, 16, 'dmemb', key='d_fin'))
+        head_kids.append(B(f'browh_{s_(sx)}', sx * 10 - 1.5, hy + 8, hz0 - 20, 3, 5, 6, 'dhorn', key='d_browh', rot=(-20, 0, sx * -10)))
+    for k in range(4): head_kids.append(B(f'tooth_f{k}', -4.5 + k * 3, hy - 11.5, hz0 - 56, 2, 5, 2, 'dtooth', key='d_tf'))
+    jk = []
+    jk += tube_z(B, 'j1', 0, hy - 12, hz0 - 22, 15, 7, 14, 'dscale', 'd_j1')
+    jk += tube_z(B, 'j2', 0, hy - 12.5, hz0 - 35, 13, 6, 14, 'dscale', 'd_j2')
+    jk += tube_z(B, 'j3', 0, hy - 12.5, hz0 - 46, 10, 6, 12, 'dscale3', 'd_j3')
+    jk += [B('chin', -5, hy - 17, hz0 - 50, 10, 4, 36, 'dbelly', key='d_chin'),
+           B('tongue', -3.5, hy - 8.8, hz0 - 46, 7, 2, 38, 'dmouth', key='d_tongue', fx=fx_mouth),
+           B('chin_spike', -1.5, hy - 19, hz0 - 52, 3, 8, 3, 'dhorn', key='d_chinsp', rot=(14, 0, 0))]
+    for sx in (1, -1):
+        jk.append(B(f'jspike_{s_(sx)}', sx * 8 - 1, hy - 17, hz0 - 24, 2, 7, 3, 'dhorn', key='d_jsp'))
+        jk.append(B(f'canine_l{s_(sx)}', sx * 5.2 - 1.5, hy - 12, hz0 - 52, 3, 7, 3, 'dtooth', key='d_canl'))
+        for k in range(7):
+            jk.append(B(f'tooth_l{s_(sx)}{k}', sx * 5.6 - 1, hy - 9.2, hz0 - 50 + k * 5.2, 2, 4 + (k % 2), 2, 'dtooth', key=f'd_tl{k % 2}'))
+    jaw = G('jaw', (0, hy - 8, hz0 - 2), children=jk)
     head = G('head', (0, hy - 8, hz0), rot=(-18, 0, 0), children=head_kids + [jaw])
-    neck = G('neck', (0, 56, -32), children=neck_kids + [head])
+    neck = G('neck', (0, 56, -33), children=neck_kids + [head])
     body = G('body', (0, 40, 0), children=body_kids + [neck])
-    # ---------------------------------------------------------------- ailes : bras, avant-bras, 4 doigts en eventail, membranes en panneaux
-    wings = []
+    # ---------------------------------------------------------------- ailes : bras, avant-bras, 4 doigts, membranes en bandes fines a bord festonne
     for s in (1, -1):
         n = s_(s)
         sx = 14 * s
         kids = []
 
         def seg(name, p0, direction_deg, L, th, mat, key, y):
-            """cube long de L dans le plan horizontal, de p0 vers la direction (angle depuis +x vers +z) ; retourne (cube, bout)"""
             dx, dz = math.cos(ang(direction_deg)), math.sin(ang(direction_deg))
             c = (p0[0] + s * dx * L / 2, p0[1] + dz * L / 2)
-            cube = B(name, c[0] - L / 2, y - th / 2, c[1] - th / 2, L, th, th, mat, key=key, rot=(0, -(direction_deg if s > 0 else -direction_deg) , 0))
+            cube = B(name, c[0] - L / 2, y - th / 2, c[1] - th / 2, L, th, th, mat, key=key, rot=(0, -(direction_deg if s > 0 else -direction_deg), 0))
             return cube, (p0[0] + s * dx * L, p0[1] + dz * L)
         yw = 60
-        shoulder = (sx, -18)
+        shoulder = (sx, -20)
         arm, elbow = seg(f'arm_{n}', shoulder, 8, 26, 9, 'dscale', 'd_warm', yw)
+        arm2, _ = seg(f'arm2_{n}', (shoulder[0], shoulder[1]), 8, 24, 6, 'dscale2', 'd_warm2', yw + 4)
         fore, wrist = seg(f'fore_{n}', elbow, -38, 36, 7, 'dscale2', 'd_wfore', yw + 2)
-        kids += [arm, fore]
-        kids.append(B(f'wclaw_{n}', wrist[0] - 1.5, yw + 2, wrist[1] - 1.5, 3, 10, 3, 'dclaw', key='d_wclaw'))
-        kids.append(B(f'wspike_{n}', elbow[0] - 2, yw + 3, elbow[1] - 2, 4, 8, 4, 'dhorn', key='d_wspike'))
+        fore2, _ = seg(f'fore2_{n}', elbow, -38, 34, 4, 'dscale', 'd_wfore2', yw + 5.5)
+        kids += [arm, arm2, fore, fore2]
+        kids.append(B(f'wclaw_{n}', wrist[0] - 1.5, yw + 2, wrist[1] - 1.5, 3, 10, 3, 'dclaw', key='d_wclaw', rot=(-25, 0, s * 12)))
+        kids.append(B(f'wclaw2_{n}', wrist[0] - 1, yw + 1, wrist[1] - 6, 2, 3, 8, 'dclaw', key='d_wclaw2'))
+        kids.append(B(f'wspike_{n}', elbow[0] - 2, yw + 3, elbow[1] - 2, 4, 9, 4, 'dhorn', key='d_wspike', rot=(0, 0, s * 18)))
         fingers = [(4, 96), (28, 90), (52, 78), (76, 64)]
         tips = []
         for k, (psi, Lf) in enumerate(fingers):
             fb, tip = seg(f'finger{k}_{n}', wrist, psi, Lf, 4, 'dscale2', f'd_fing{k}', yw + 2)
             kids.append(fb); tips.append((psi, Lf, tip))
-        # membranes : entre chaque paire de doigts (deux rectangles : interieur etroit, exterieur large)
+            kids.append(B(f'fclaw{k}_{n}', tip[0] - 1, yw + 1, tip[1] - 1, 2, 2, 5, 'dclaw', key='d_fclaw', rot=(0, -(psi + 12 if s > 0 else -psi - 12), 0)))
         edges = [(psi, Lf) for psi, Lf, _ in tips] + [(100, 60)]
         for k in range(len(edges) - 1):
             (p1, L1), (p2, L2) = edges[k], edges[k + 1]
-            pm = (p1 + p2) / 2; Lm = (L1 + L2) / 2; dpsi = abs(math.radians(p2 - p1))
-            for part, (f0, f1, wf) in enumerate(((.08, .5, .5), (.5, .97, .95))):
+            pm = (p1 + p2) / 2; dpsi = abs(math.radians(p2 - p1))
+            dx, dz = math.cos(ang(pm)), math.sin(ang(pm))
+            nb = 4                                                        # 4 bandes radiales de plus en plus larges, bord exterieur festonne
+            for part in range(nb):
+                f0 = .08 + part * .22; f1 = f0 + .23
+                Lm = lerp(L1, L2, .5) * (1 - .06 * (part == nb - 1) * (1 if k % 2 else .4))
                 ln = (f1 - f0) * Lm
                 dd = (f0 + f1) / 2 * Lm
-                dx, dz = math.cos(ang(pm)), math.sin(ang(pm))
                 c = (wrist[0] + s * dx * dd, wrist[1] + dz * dd)
-                wd = max(3, 2 * Lm * math.sin(dpsi / 2) * wf * (.5 + .5 * f1))
+                wd = max(3, 2 * Lm * math.sin(dpsi / 2) * (f0 + f1) / 2 * .98)
                 kids.append(B(f'memb{k}{part}_{n}', c[0] - ln / 2, yw + 1.2, c[1] - wd / 2, ln, 1, wd, 'dmemb', key=f'd_memb{k}{part}',
                               rot=(0, -(pm if s > 0 else -pm), 0)))
-        # panneau entre le bras et le flanc (membrane arriere) : trois bandes
-        for j, (zz, L) in enumerate(((-12, 44), (2, 48), (16, 42))):
-            kids.append(B(f'rear{j}_{n}', sx + (s * 3 if s > 0 else -3 - L) + (0 if s > 0 else 0), yw + .6, zz, L, 1, 14, 'dmemb', key=f'd_rear{j}'))
-        wings.append(G(f'wing_{n}', (sx, yw, -18), rot=(0, 0, s * 26), children=kids))
-    for w in wings: body.children.append(w)
-    # ---------------------------------------------------------------- pattes
+        for j, (zz, L) in enumerate(((-14, 40), (-2, 46), (10, 46), (22, 38))):         # membrane arriere jusqu'au flanc
+            kids.append(B(f'rear{j}_{n}', sx + (s * 3 if s > 0 else -3 - L), yw + .6, zz, L, 1, 12, 'dmemb', key=f'd_rear{j}'))
+        body.children.append(G(f'wing_{n}', (sx, yw, -20), rot=(0, 0, s * 26), children=kids))
+    # ---------------------------------------------------------------- pattes : sections arrondies, genoux et coudes epineux, griffes
     legs = []
 
     def leg(nm, s, z, hind):
         x = 17 * s
         if hind:
-            kids = [B(f'{nm}_thigh', x - 10, 22, z - 10, 20, 20, 20, 'dscale3', key='d_thigh'),
-                    B(f'{nm}_knee', x - 3, 30, z - 13, 6, 6, 5, 'dhorn', key='d_knee'),
-                    B(f'{nm}_shin', x - 6.5, 9, z + 1, 13, 18, 13, 'dscale3', key='d_shin'),
-                    B(f'{nm}_heel', x - 2, 8, z + 11, 4, 4, 8, 'dhorn', key='d_heel'),
-                    B(f'{nm}_foot', x - 8.5, 0, z - 12, 17, 6, 24, 'dscale2', key='d_foot')]
+            kids = tube_y(B, f'{nm}_th', x, 32, z, 20, 20, 20, 'dscale3', f'd_th{s_(s)}') + tube_y(B, f'{nm}_sh', x, 18, z + 3, 13, 16, 13, 'dscale3', f'd_sh{s_(s)}', tilt=14) + \
+                [B(f'{nm}_knee', x - 3, 30, z - 13, 6, 6, 5, 'dhorn', key='d_knee', rot=(20, 0, 0)),
+                 B(f'{nm}_heel', x - 2, 8, z + 11, 4, 4, 9, 'dhorn', key='d_heel', rot=(-18, 0, 0))] + \
+                tube_z(B, f'{nm}_ft', x, 3, z - 4, 17, 6, 22, 'dscale2', f'd_ft{s_(s)}')
             for k in (-1, 0, 1):
-                kids.append(B(f'{nm}_claw{k}', x + k * 4.5 - 1.5, 0, z - 20, 3, 4, 9, 'dclaw', key='d_claw'))
+                kids.append(B(f'{nm}_claw{k}', x + k * 4.8 - 1.5, 0, z - 20, 3, 4, 9, 'dclaw', key='d_claw', rot=(0, k * 10, 0)))
         else:
-            kids = [B(f'{nm}_arm', x - 8, 20, z - 8, 16, 20, 16, 'dscale3', key='d_uarm'),
-                    B(f'{nm}_elbow', x + (4 if s > 0 else -8), 24, z + 4, 4, 5, 6, 'dhorn', key='d_elb'),
-                    B(f'{nm}_fore', x - 6.5, 6, z - 5, 13, 16, 13, 'dscale3', key='d_farm'),
-                    B(f'{nm}_hand', x - 8.5, 0, z - 13, 17, 6, 20, 'dscale2', key='d_hand')]
+            kids = tube_y(B, f'{nm}_ar', x, 30, z, 16, 20, 16, 'dscale3', f'd_ar{s_(s)}') + tube_y(B, f'{nm}_fo', x, 14, z - 1, 13, 16, 13, 'dscale3', f'd_fo{s_(s)}') + \
+                [B(f'{nm}_elbow', x + (5 if s > 0 else -9), 24, z + 4, 4, 6, 7, 'dhorn', key='d_elb', rot=(-20, 0, s * 16))] + \
+                tube_z(B, f'{nm}_hd', x, 3, z - 3, 17, 6, 20, 'dscale2', f'd_hd{s_(s)}')
             for k in (-1, 0, 1):
-                kids.append(B(f'{nm}_claw{k}', x + k * 4.5 - 1.5, 0, z - 19, 3, 4, 8, 'dclaw', key='d_fclaw'))
-        return G(nm, (x, 38, z), children=kids)
+                kids.append(B(f'{nm}_claw{k}', x + k * 4.8 - 1.5, 0, z - 19, 3, 4, 8, 'dclaw', key='d_fclaw', rot=(0, k * 10, 0)))
+        return G(nm, (x, 40, z), children=kids)
     legs += [leg('leg_fr', 1, -18, False), leg('leg_fl', -1, -18, False), leg('leg_br', 1, 24, True), leg('leg_bl', -1, 24, True)]
-    # ---------------------------------------------------------------- queue : trois sections articulees + dard
-    t3k = [B('t3a', -6, 28, 82, 12, 13, 28, 'dscale', key='d_t3a'), B('t3b', -4.5, 27, 110, 9, 10, 22, 'dscale', key='d_t3b'),
-           B('t3c', -3, 26, 132, 6, 8, 20, 'dscale', key='d_t3c'), B('t3d', -2, 25.5, 152, 4, 6, 14, 'dscale2', key='d_t3d'),
-           B('t3_belly', -3, 27, 82, 6, 2, 50, 'dbelly', key='d_t3belly')]
-    for i in range(5): t3k.append(B(f't3sp{i}', -1.5, 41 - i * 1.2, 86 + i * 14, 3, 6 - (i > 2), 3, 'dhorn', key=f'd_tsp{i > 2}'))
-    t3k += [B('barb_a', -1, 22, 160, 2, 6, 10, 'dclaw', key='d_barb'),
-            G('barb_l', (0, 28, 160), rot=(0, 28, 0), children=[B('barb_lb', 0, 27, 160, 2, 3, 12, 'dclaw', key='d_barbf')]),
-            G('barb_r', (0, 28, 160), rot=(0, -28, 0), children=[B('barb_rb', -2, 27, 160, 2, 3, 12, 'dclaw', key='d_barbf')])]
-    t2k = [B('t2a', -8, 31, 56, 16, 17, 26, 'dscale', key='d_t2a'), B('t2_belly', -5, 30, 56, 10, 2, 26, 'dbelly', key='d_t2belly')]
-    for i in range(2): t2k.append(B(f't2sp{i}', -2, 49 - i * 1.5, 60 + i * 12, 4, 7, 4, 'dhorn', key='d_t2sp'))
-    t2 = G('tail2', (0, 38, 56), children=t2k + [G('tail3', (0, 36, 82), children=t3k)])
-    t1k = [B('t1a', -10, 30, 32, 20, 22, 24, 'dscale', key='d_t1a'), B('t1_belly', -7, 29, 32, 14, 2, 24, 'dbelly', key='d_t1belly')]
-    for i in range(2): t1k.append(B(f't1sp{i}', -2.5, 53 - i * 1, 36 + i * 11, 5, 8, 5, 'dhorn', key='d_t1sp'))
-    tail = G('tail', (0, 42, 32), children=t1k + [t2])
+    # ---------------------------------------------------------------- queue : 3 sections articulees faites de tranches qui s'effilent + pointes + dard
+    def tail_slices(prefix, z0, n_, w0, w1, h0, h1, y0, y1, step, key):
+        out = []
+        for i in range(n_):
+            t = i / max(1, n_ - 1)
+            out += tube_z(B, f'{prefix}{i}', 0, lerp(y0, y1, t), z0 + i * step, round(lerp(w0, w1, t)), round(lerp(h0, h1, t)), step + 1, 'dscale', f'{key}{i}')
+            out.append(B(f'{prefix}b{i}', -lerp(w0, w1, t) * .22, lerp(y0, y1, t) - lerp(h0, h1, t) / 2 - .5, z0 + i * step - step / 2, round(lerp(w0, w1, t) * .44), 2, step + 1, 'dbelly', key=f'{key}b{i}'))
+            if i % 2 == 0:
+                hh = round(lerp(8, 4, t))
+                out.append(G(f'{prefix}sp{i}', (0, lerp(y0, y1, t) + lerp(h0, h1, t) / 2, z0 + i * step), rot=(14, 0, 0), children=[
+                    B(f'{prefix}spk{i}', -lerp(2.5, 1.2, t), lerp(y0, y1, t) + lerp(h0, h1, t) / 2, z0 + i * step - 2, round(lerp(5, 2, t)), hh, 4, 'dhorn', key=f'{key}sp{i}')]))
+        return out
+    t3 = tail_slices('t3_', 84, 12, 13, 3, 12, 3, 36, 28, 6, 'd_t3')
+    t3 += [B('barb_a', -1, 20, 158, 2, 7, 12, 'dclaw', key='d_barb', rot=(-12, 0, 0)),
+           G('barb_l', (0, 28, 158), rot=(0, 28, 0), children=[B('barb_lb', 0, 27, 158, 2, 3, 13, 'dclaw', key='d_barbf')]),
+           G('barb_r', (0, 28, 158), rot=(0, -28, 0), children=[B('barb_rb', -2, 27, 158, 2, 3, 13, 'dclaw', key='d_barbf')])]
+    t2 = G('tail2', (0, 38, 58), children=tail_slices('t2_', 59, 5, 17, 13, 16, 12, 38, 36.5, 5, 'd_t2') + [G('tail3', (0, 36, 84), children=t3)])
+    tail = G('tail', (0, 42, 36), children=tail_slices('t1_', 36, 4, 22, 18, 21, 17, 41.5, 40, 5.5, 'd_t1') + [t2])
     return legs + [body, tail]
 
 
@@ -335,6 +390,11 @@ def build(outdir='/tmp/dragon'):
     groups = dragon_groups()
     tc.normalize(groups)
     cubes = [c for c, _ in tc.walk(groups)]
+    seen = {}
+    for c in cubes:                                              # une cle = une taille + un materiau (sinon on la desambiguise)
+        r = (c.size, c.mat)
+        if c.key in seen and seen[c.key] != r: c.key = f'{c.key}_{c.size[0]}x{c.size[1]}x{c.size[2]}_{c.mat}'
+        seen.setdefault(c.key, r)
     W, H = tc.pack(cubes)
     tex, glow = tc.paint_all(cubes, W, H)
     os.makedirs(outdir, exist_ok=True)
