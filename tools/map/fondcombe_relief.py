@@ -8,9 +8,9 @@ from scipy.ndimage import gaussian_filter
 HERE = os.path.dirname(os.path.abspath(__file__))
 BIN = os.path.join(HERE, '..', '..', 'src', 'main', 'resources', 'data', 'ringsofash', 'map', 'hautemarche.bin')
 W = D = 352; OFF = 30; HH = OFF + 150 + 1
-PX, PZ = -519, -118                      # centre du site
+PX, PZ = -1298, -295                    # centre du site (places.json)
 OX, OZ = PX - 176, PZ - 176              # origine du plan
-Y0S = 132                                # hauteur stockee du niveau 0 du plan (carte : hauteur reelle + 64)
+Y0S = 150                                # hauteur stockee du niveau 0 du plan (carte : hauteur reelle + 64) au centre du site
 
 
 def sm(t):
@@ -75,8 +75,8 @@ def main(plan):
         rp = np.hypot(X - px_, Z - pz_)
         t = t + a_ * (1 + (rp / rho) ** 2) ** -1.3 * (0.8 + 0.2 * ridge)
     # on ne touche pas l'interieur du plan ni la plaine au sud ; on estompe vers l'est (Argonath)
-    fe = 1 - sm((X - (OX + W)) / 200.0)
-    fa = sm((np.hypot(X + 310, Z + 480) - 70) / 60.0)
+    fe = 1.0
+    fa = sm((np.hypot(X + 1112, Z + 525) - 40) / 100.0)                    # on ne touche pas au Comte, juste au nord-est du site
     t = t * fe * fa
     # a l'interieur, seule la bande de raccord du plan (30 blocs) est relevee : le sol de la carte y continue le relief exterieur (sinon mur droit au bord du plan)
     inside = (X > OX) & (X < OX + W) & (Z > OZ) & (Z < OZ + D)
