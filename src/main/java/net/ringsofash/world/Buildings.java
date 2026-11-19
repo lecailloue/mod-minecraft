@@ -1147,6 +1147,7 @@ public final class Buildings {
                     byte id = p.raw(x, y, z);
                     if (id != RivendellPlan.AIR) b.s(lx, y, lz, pal[id & 255]);
                     else if (y <= t) b.s(lx, y, lz, stone);
+                    else if (!b.get(lx, y, lz).isAir()) b.s(lx, y, lz, Build.AIR);      // sous les arbres : le relief de la carte plus haut que le plan est deblaye (plus de piliers)
                 }
             }
         }
