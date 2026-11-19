@@ -389,14 +389,23 @@ public final class RivendellPlan {
             double pg = Math.max(0, Math.min(1, 1 - (s - 1) / 3.0));                // part d'herbe selon la pente : plein sur le plat, en plaques sur les pentes, rien sur la roche nue
             boolean gentle = t < 128 && (s <= 1 || (vn(x / 6.0, z / 6.0, 72) * 0.5 + 0.5) < pg);
             boolean wet = wl[i] > -999;
+            int drop = 0;                                                            // petites marches du relief : leurs flancs restent en terre (plus de piliers de pierre sous les arbres)
+            for (int[] o : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                int xx = x + o[0], zz = z + o[1];
+                if (area(xx, zz)) drop = Math.max(drop, t - th[zz * W + xx]);
+            }
+            boolean soilFace = t < 100 && !wet && ramp[i] == 0 && drop >= 2 && drop <= 8;
             for (int y = -OFF + 2; y <= t; y++) {
                 int id;
                 int depth = t - y;
-                if (depth == 0) {
+                if (soilFace && depth > 0 && depth <= drop) {
+                    double q = rnd(x, y, z);
+                    id = q < 0.35 ? GRASS : q < 0.75 ? DIRT : q < 0.88 ? COARSE : q < 0.95 ? PODZOL : MOSS;
+                } else if (depth == 0) {
                     double q = rnd(x, 3, z);
                     if (wet && t < wl[i]) id = q < 0.4 ? GRAVEL : q < 0.7 ? SAND : COBBLE;
                     else if (ramp[i] != 0) id = STB;
-                    else if (gentle) id = q < 0.05 ? PODZOL : q < 0.09 ? COARSE : q < 0.10 ? MOSS : GRASS;
+                    else if (gentle || soilFace) id = q < 0.05 ? PODZOL : q < 0.09 ? COARSE : q < 0.10 ? MOSS : GRASS;
                     else id = rock(x, y, z, true);
                 } else if (depth <= 3 && gentle) id = rnd(x, y, z) < 0.2 ? COARSE : DIRT;
                 else id = rock(x, y, z, false);
