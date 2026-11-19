@@ -184,7 +184,7 @@ public class MountEntity extends PathfinderMob {
                 default -> new Vec3(0.32, 3.34, -0.4);
             };
             case WAR_BOAR -> new Vec3(0.0, 1.52, -0.02);
-            case STAG -> new Vec3(0.0, 1.58, -0.05);
+            case STAG -> new Vec3(0.0, 1.46, -0.05);
         };
         return v.yRot(-getYRot() * Mth.DEG_TO_RAD);
     }
