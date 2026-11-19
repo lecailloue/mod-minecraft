@@ -1017,31 +1017,27 @@ def stag():
 # ================================================================== modele : FLECHE GEANTE (projectile de l'archer)
 @register('giant_arrow')
 def giant_arrow():
-    """fleche d'archer de guerre : longue hampe fine, pointe en feuille de saule a ailerons, trois grandes plumes ; axe a y=6, pointe vers -z"""
+    """fleche geante en pique : longue pointe carree effilee en aiguille, hampe fine, trois empennages rouges tailles en biais ; axe a y=6, pointe vers -z"""
     B, G = mkT(1.0)
     Y = 6.0
     kids = [
         B('shaft', -1.1, Y - 1.1, -15, 2.2, 2.2, 33, 'wood', key='a_shaft'),
         B('nock', -1.6, Y - 1.6, 18, 3.2, 3.2, 1.6, 'bone', key='a_nock'),
-        B('socket', -1.7, Y - 1.7, -17.5, 3.4, 3.4, 3.2, 'dwsteel', key='a_socket'),
-        B('wrap_a', -1.5, Y - 1.5, -13.4, 3.0, 3.0, 1.0, 'clothr2', key='a_wrapa'),
-        B('wrap_b', -1.5, Y - 1.5, 2.2, 3.0, 3.0, 1.0, 'clothr2', key='a_wrapb'),
-        B('wrap_c', -1.5, Y - 1.5, 15.6, 3.0, 3.0, 1.0, 'clothr2', key='a_wrapc'),
+        B('collar', -2.3, Y - 2.3, -17.5, 4.6, 4.6, 2.5, 'goldm', key='a_collar'),
+        B('wrap_a', -1.5, Y - 1.5, 0.5, 3.0, 3.0, 1.0, 'goldm', key='a_wrapa'),
+        B('wrap_b', -1.5, Y - 1.5, 15.6, 3.0, 3.0, 1.0, 'goldm', key='a_wrapb'),
     ]
-    # pointe plate en feuille de saule (large au milieu, ailerons a la base) + nervure centrale
-    prof = [(-20.6, 3.1, 7.0), (-23.4, 2.8, 6.6), (-26.0, 2.6, 5.0), (-28.4, 2.4, 3.2), (-30.4, 2.0, 1.6)]
-    for i, (z, ln, wd) in enumerate(prof):
-        kids.append(B(f'leaf{i}', -wd / 2, Y - .5, z, wd, 1.0, ln, 'dwsteel', key=f'a_leaf{i}'))
-    kids.append(B('rib', -.5, Y - 1.5, -29, 1.0, 3.0, 11.5, 'dwsteel', key='a_rib'))
-    for s_ in (1, -1):
-        kids.append(B(f'barb_{sd(s_)}', 3.4 * s_ - .6, Y - .5, -19.6, 1.2, 1.0, 3.0, 'dwsteel', key='a_barb'))
-    # trois grandes plumes (120 degres), profil effile : courte a l'avant, haute au milieu, effilee a l'arriere
-    hts = [1.4, 2.6, 3.6, 4.0, 3.6, 2.6]
+    # pique : section carree qui s'effile en aiguille
+    z = -17.5
+    for i, (ln, w) in enumerate([(5, 3.6), (5, 3.0), (5, 2.4), (4, 1.8), (3, 1.2), (2.5, 0.6)]):
+        z -= ln
+        kids.append(B(f'spike{i}', -w / 2, Y - w / 2, z, w, w, ln, 'dwsteel', key=f'a_sp{i}'))
+    # trois empennages (120 deg) : bas a l'avant, hauts a l'arriere, coupe droite
+    hts = [1.0, 1.8, 2.6, 3.4, 4.0, 4.0]
     for i, rz in enumerate((0, 120, 240)):
         vs = []
         for j, h in enumerate(hts):
-            mt = 'wcoat' if j % 2 == 0 else 'wcoat2'
-            vs.append(B(f'f{i}_{j}', -.3, Y + 1.0, 3.0 + j * 2.4, .6, h, 2.4, mt, key=f'a_f{j}{mt[-1]}'))
+            vs.append(B(f'f{i}_{j}', -.3, Y + 1.0, 5.5 + j * 2.2, .6, h, 2.2, 'clothr2', key=f'a_f{j}'))
         kids.append(G(f'vane{i}', (0, Y, 10), rot=(0, 0, rz), children=vs))
     return [G('arrow', (0, Y, 0), children=kids)]
 

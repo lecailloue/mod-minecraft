@@ -14,7 +14,7 @@ import net.ringsofash.entity.GiantArrowEntity;
 
 /** Fleche geante : modele geo "giant_arrow" (pointe vers -z, axe a la hauteur 18 du modele), tourne dans le sens du vol. */
 public class GiantArrowRenderer extends EntityRenderer<GiantArrowEntity> {
-    private static final float SCALE = 0.7F;
+    private static final float SCALE = 0.6F;
     private final GeoModel<GiantArrowEntity> model;
 
     public GiantArrowRenderer(EntityRendererProvider.Context ctx) {
@@ -33,7 +33,7 @@ public class GiantArrowRenderer extends EntityRenderer<GiantArrowEntity> {
         float shake = e.shakeTime - pt;
         if (shake > 0.0F) ps.mulPose(Axis.ZP.rotationDegrees(-Mth.sin(shake * 3.0F) * shake));
         ps.scale(SCALE, SCALE, SCALE);
-        ps.translate(0.0F, -0.375F, 1.375F);            // l'axe de la fleche passe par l'entite, ~22 px derriere la pointe
+        ps.translate(0.0F, -0.375F, 1.75F);            // l'axe de la fleche passe par l'entite, ~28 px derriere la pointe
         ps.scale(-1.0F, -1.0F, 1.0F);
         ps.translate(0.0F, -1.501F, 0.0F);
         VertexConsumer vc = buf.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(e)));
