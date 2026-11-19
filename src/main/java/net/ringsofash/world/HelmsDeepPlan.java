@@ -73,7 +73,11 @@ public final class HelmsDeepPlan {
     /** briques : surtout neuves, quelques-unes moussues ou fendues */
     private int brickAt(int x, int y, int z) {
         double r = rnd(x, y * 7 + 3, z);
-        return r < 0.07 ? MBRICK : r < 0.14 ? CRACK : BRICK;
+        double n = vn(x / 5.0 + y / 9.0, z / 5.0 + y / 7.0, 51);
+        if (n > 0.42) return r < 0.5 ? MBRICK : r < 0.78 ? CRACK : BRICK;          // plaques moussues et fissurees
+        if (n < -0.5) return r < 0.3 ? ANDESITE : r < 0.4 ? COBBLE : BRICK;         // pierre de reparation
+        if (y < 3 && r < 0.3) return MBRICK;                                        // pied humide
+        return r < 0.05 ? MBRICK : r < 0.11 ? CRACK : BRICK;
     }
     private void bricks(int x0, int y0, int z0, int x1, int y1, int z1) {
         for (int x = Math.min(x0, x1); x <= Math.max(x0, x1); x++) for (int y = Math.min(y0, y1); y <= Math.max(y0, y1); y++) for (int z = Math.min(z0, z1); z <= Math.max(z0, z1); z++) set(x, y, z, brickAt(x, y, z));
@@ -89,6 +93,7 @@ public final class HelmsDeepPlan {
         ramp();
         gate();
         hall();
+        detail();
         keepers();
         for (int x = 0; x < W; x++) for (int z = 0; z < D; z++) {
             int t = -OFF - 1;
@@ -321,13 +326,31 @@ public final class HelmsDeepPlan {
             set(142, fy, z0 + 2, AIR);
         }
         for (int y = 0; y <= 57; y++) set(142, y, z0 + 2, LADS);
-        // toit-terrasse
-        for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++) {
+        // toit-terrasse en encorbellement : la plate-forme deborde d'un bloc sur des corbeaux, parapet creneles sur le bord exterieur
+        for (int x = x0 - 1; x <= x1 + 1; x++) for (int z = z0 - 1; z <= z1 + 1; z++) {
+            boolean inner = x >= x0 && x <= x1 && z >= z0 && z <= z1;
             set(x, 56, z, (x == 142 && z == z0 + 2) ? AIR : POLAND);
-            boolean rim = x == x0 || x == x1 || z == z0 || z == z1;
-            if (rim) { set(x, 57, z, BRICK); if (((x + z) & 1) == 0) set(x, 58, z, BRICK); }
+            if (inner) continue;
+            boolean cw = x == x0 - 1, ce = x == x1 + 1, cn = z == z0 - 1, cs = z == z1 + 1;
+            int corb = (cw && cn) || (ce && cn) || (cw && cs) || (ce && cs) ? BRICK : cw ? stair(0, E, true) : ce ? stair(0, W_, true) : cn ? stair(0, S_, true) : stair(0, N, true);
+            set(x, 55, z, corb);
+            set(x, 54, z, ((x + z) & 1) == 0 ? BRICK : AIR);
+            set(x, 57, z, BRICK);
+            if (((x + z) & 1) == 0) set(x, 58, z, BRICK);
         }
-        for (int[] c : new int[][]{{x0, z0}, {x1, z0}, {x0, z1}, {x1, z1}}) { box(c[0], 57, c[1], c[0], 61, c[1], CHISEL); set(c[0], 62, c[1], LANTERN); }
+        for (int[] c : new int[][]{{x0 - 1, z0 - 1}, {x1 + 1, z0 - 1}, {x0 - 1, z1 + 1}, {x1 + 1, z1 + 1}}) { box(c[0], 57, c[1], c[0], 61, c[1], CHISEL); set(c[0], 62, c[1], LANTERN); }
+        // pilastres d'angle et base evasee
+        for (int[] c : new int[][]{{x0 - 1, z0 - 1}, {x1 + 1, z0 - 1}, {x0 - 1, z1 + 1}, {x1 + 1, z1 + 1}}) {
+            bricks(c[0], -1, c[1], c[0], 40, c[1]);
+            for (int y = 41; y <= 50; y++) if (y % 3 != 0) set(c[0], y, c[1], CHISEL);
+        }
+        for (int x = x0 - 2; x <= x1 + 2; x++) for (int z = z0 - 2; z <= z1 + 2; z++) {
+            boolean rim = x == x0 - 2 || x == x1 + 2 || z == z0 - 2 || z == z1 + 2;
+            if (!rim) continue;
+            bricks(x, -1, z, x, 2, z);
+            boolean cx = x == x0 - 2 || x == x1 + 2, cz = z == z0 - 2 || z == z1 + 2;
+            if (!(cx && cz)) set(x, 3, z, stair(0, x == x0 - 2 ? E : x == x1 + 2 ? W_ : z == z0 - 2 ? S_ : N, false));
+        }
         // portes : au pied (face sud) et sur le chemin de ronde de la muraille (face ouest)
         box(142, 0, z1 - 1, 142, 2, z1, AIR);
         box(141, 0, z1 - 1, 141, 2, z1 - 1, AIR); box(143, 0, z1 - 1, 143, 2, z1 - 1, AIR);
@@ -338,6 +361,10 @@ public final class HelmsDeepPlan {
         for (int l : new int[]{7, 21, 35, 49}) {
             box(142, l, z0, 142, l + 1, z0 + 1, AIR); box(142, l, z1 - 1, 142, l + 1, z1, AIR);
             box(x0, l, 82, x0 + 1, l + 1, 82, AIR); box(x1 - 1, l, 82, x1, l + 1, 82, AIR);
+        }
+        for (int l : new int[]{7, 21, 35, 49}) {                                              // encadrements saillants des meurtrieres
+            for (int x = 141; x <= 143; x++) { set(x, l - 1, z1 + 1, CHISEL); set(x, l + 2, z1 + 1, CHISEL); set(x, l - 1, z0 - 1, CHISEL); set(x, l + 2, z0 - 1, CHISEL); }
+            for (int z = 81; z <= 83; z++) { set(x1 + 1, l - 1, z, CHISEL); set(x1 + 1, l + 2, z, CHISEL); set(x0 - 1, l - 1, z, CHISEL); set(x0 - 1, l + 2, z, CHISEL); }
         }
         // bandeaux de pierre taillee et eclairage
         for (int y : new int[]{13, 27, 41, 55}) for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++) if (x == x0 || x == x1 || z == z0 || z == z1) set(x, y, z, CHISEL);
@@ -426,7 +453,101 @@ public final class HelmsDeepPlan {
         // tapis et estrade
         for (int z = 59; z <= 66; z++) { set(179, 25, z, REDC); set(180, 25, z, REDC); set(181, 25, z, REDC); }
         for (int x = 177; x <= 183; x++) for (int z = 56; z <= 58; z++) set(x, 25, z, slab(0, false));
+        // pilastres saillants entre les arcades et corniche a modillons
+        for (int p = 165; p <= 195; p += 6) { box(p, 25, 68, p, 36, 68, CHISEL); set(p, 37, 69, slab(0, false)); }
+        for (int x = 166; x < 195; x++) if ((x - 165) % 6 != 0 && (x & 1) == 0) set(x, 36, 68, stair(0, N, true));
         spawns.add(new int[]{176, 25, 62}); spawns.add(new int[]{184, 25, 62});
+    }
+
+    // ------------------------------------------------------------------ relief et textures : contreforts, corbeaux, cordons, donjon
+    private void detail() {
+        // Muraille : contreforts sur la face sud, corbeaux de machicoulis, cordons de pierre taillee, meurtrieres
+        for (int bx = 54; bx <= 133; bx += 8) {
+            if (Math.abs(bx - 72) <= 5 || Math.abs(bx - 108) <= 5 || (bx + 1 >= 86 && bx - 1 <= 94)) continue;
+            for (int x = bx - 1; x <= bx + 1; x++) {
+                bricks(x, -1, WZ1 + 1, x, 3, WZ1 + 3);
+                bricks(x, 4, WZ1 + 1, x, 8, WZ1 + 2);
+                bricks(x, 9, WZ1 + 1, x, 13, WZ1 + 1);
+                set(x, 4, WZ1 + 3, stair(0, N, false)); set(x, 9, WZ1 + 2, stair(0, N, false)); set(x, 14, WZ1 + 1, stair(0, N, false));
+            }
+            set(bx, 10, WZ1 + 1, CHISEL); set(bx, 5, WZ1 + 2, CHISEL);
+        }
+        for (int x = WX0 + 2; x <= WX1 - 2; x++) {
+            if (x >= 86 && x <= 94) continue;
+            for (int y : new int[]{6, 12}) if (get(x, y, WZ1 + 1) == AIR || ((get(x, y, WZ1 + 1) & 255) == BRICK)) { }
+            if (get(x, 13, WZ1 + 1) == AIR && (x & 1) == 0) set(x, 13, WZ1 + 1, stair(0, N, true));
+            int b = get(x, 12, WZ1) & 255;
+            if (b == BRICK || b == MBRICK || b == CRACK) set(x, 12, WZ1, POLAND);
+            b = get(x, 6, WZ1) & 255;
+            if (b == BRICK || b == MBRICK || b == CRACK) set(x, 6, WZ1, POLAND);
+        }
+        for (int x = WX0 + 12; x <= WX1 - 10; x += 8) {
+            if (x >= 84 && x <= 96) continue;
+            if (get(x, 8, WZ1 + 1) != AIR && (get(x, 8, WZ1 + 1) & 255) != BARS && get(x, 8, WZ1) != AIR && get(x, 8, WZ1 + 2) == AIR) {
+                box(x, 8, WZ1 - 2, x, 10, WZ1, AIR); set(x, 7, WZ1, CHISEL); set(x, 11, WZ1, CHISEL);
+            }
+        }
+        // Burg : cordons de pierre taillee sur toutes les faces exposees des terrasses
+        int[][] nb = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        for (int z = 0; z < D; z++) for (int x = 0; x < W; x++) {
+            int i = z * W + x;
+            if (!built[i] || mound(x, z) >= 0.5) continue;
+            for (int[] n : nb) {
+                int xx = x + n[0], zz = z + n[1];
+                int tn = area(xx, zz) ? th[zz * W + xx] : -1;
+                if (tn >= th[i]) continue;
+                for (int y = Math.max(tn, -1); y < th[i]; y++) {
+                    int b = get(x, y, z) & 255;
+                    if (b != BRICK && b != MBRICK && b != CRACK) continue;
+                    if (y % 8 == 7) set(x, y, z, POLAND);
+                    else if (y % 8 == 3 && ((x + z) & 3) == 0) set(x, y, z, CHISEL);
+                }
+            }
+        }
+        // contreforts exterieurs sur l'enceinte du Burg
+        double[] ang = {30, 60, 125, 150, 180, 212};
+        for (int a = 0; a < 360; a += 10) {
+            boolean skip = Math.abs(a - 90) <= 18;
+            for (double t : ang) if (Math.abs(a - t) <= 8) skip = true;
+            if (skip) continue;
+            double cx = GX + 34.4 * Math.cos(Math.toRadians(a)), cz = GZ + 34.4 * Math.sin(Math.toRadians(a));
+            boolean ok = true;
+            for (int z = (int) cz - 2; z <= (int) cz + 2 && ok; z++) for (int x = (int) cx - 2; x <= (int) cx + 2 && ok; x++) {
+                if (!area(x, z)) { ok = false; break; }
+                if (Math.hypot(x + 0.5 - cx, z + 0.5 - cz) <= 1.6 && (th[z * W + x] > 1 || get(x, 0, z) != AIR || mound(x, z) >= 0.5)) ok = false;
+            }
+            if (!ok) continue;
+            for (int z = (int) cz - 2; z <= (int) cz + 2; z++) for (int x = (int) cx - 2; x <= (int) cx + 2; x++) {
+                double dd = Math.hypot(x + 0.5 - cx, z + 0.5 - cz);
+                if (dd > 1.6) continue;
+                int h = RING - 2 - (int) (dd * 2.4);
+                bricks(x, -1, z, x, h, z);
+                set(x, h + 1, z, slab(0, false));
+            }
+        }
+        // donjon rond sur la terrasse haute, a l'est de la facade
+        int kx = 192, kz = 75, ky = T3;
+        for (int z = kz - 6; z <= kz + 6; z++) for (int x = kx - 6; x <= kx + 6; x++) {
+            double r = Math.hypot(x - kx, z - kz);
+            if (r > 5.7) continue;
+            for (int y = ky + 1; y <= ky + 21; y++) {
+                if (r <= 4.6 && r > 3.3) set(x, y, z, brickAt(x, y, z));
+                else if (r <= 3.3) set(x, y, z, AIR);
+            }
+            if (r <= 4.6) set(x, ky + 11, z, POLAND);
+            if (r <= 5.6 && r > 4.6) { set(x, ky + 21, z, stair(0, ((x < kx ? E : W_)), true)); }
+            set(x, ky + 22, z, r <= 5.6 ? POLAND : AIR);
+            if (r <= 5.6 && r > 4.6) { set(x, ky + 23, z, BRICK); if (((x + z) & 1) == 0) set(x, ky + 24, z, BRICK); }
+        }
+        for (int[] d : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+            for (int l : new int[]{ky + 6, ky + 16}) { set(kx + 4 * d[0], l, kz + 4 * d[1], AIR); set(kx + 4 * d[0], l + 1, kz + 4 * d[1], AIR); set(kx + 3 * d[0], l, kz + 3 * d[1], AIR); set(kx + 3 * d[0], l + 1, kz + 3 * d[1], AIR); set(kx + 5 * d[0], l - 1, kz + 5 * d[1], CHISEL); }
+        }
+        box(kx, ky + 1, kz + 4, kx, ky + 2, kz + 4, AIR); box(kx, ky + 1, kz + 3, kx, ky + 2, kz + 3, AIR);
+        for (int x = kx - 1; x <= kx + 1; x++) set(x, ky + 3, kz + 4, CHISEL);
+        set(kx - 1, ky + 1, kz + 4, CHISEL); set(kx - 1, ky + 2, kz + 4, CHISEL); set(kx + 1, ky + 1, kz + 4, CHISEL); set(kx + 1, ky + 2, kz + 4, CHISEL);
+        set(kx, ky + 8, kz, HLANT); set(kx, ky + 18, kz, HLANT);
+        for (int[] c : new int[][]{{kx + 5, kz}, {kx - 5, kz}, {kx, kz + 5}, {kx, kz - 5}}) { set(c[0], ky + 25, c[1], LANTERN); }
+        spawns.add(new int[]{kx, ky + 23, kz}); spawns.add(new int[]{kx, ky + 1, kz + 1});
     }
 
     private void keepers() {
