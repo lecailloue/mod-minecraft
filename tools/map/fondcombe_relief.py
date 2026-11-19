@@ -54,26 +54,14 @@ def main(plan):
     rim = top[(zc - OZ).astype(int), (xc - OX).astype(int)].astype(np.float32)
     rim = gaussian_filter(rim, 6)                                           # lisser le rebord le long de chaque cote (le plan est bosselé)
     rimv = np.maximum(0, rim - 3)
-    rimv = np.minimum(95, rimv * sm((rimv - 14) / 24.0))                    # un rebord bas (arbres, toits) ne fait pas de montagne ; plafond de hauteur
-    mod = np.clip(0.95 + 0.22 * field(26), 0.65, 1.2)                          # hauteurs variables : cols et sommets
-    L = np.minimum(600, 220 + 4.2 * rimv) * np.clip(1 + 0.25 * field(30), 0.7, 1.35)   # pente tres longue : environ 1 bloc de haut pour 3 a 4 de large
+    rimv = np.minimum(80, rimv * sm((rimv - 14) / 24.0))                    # un rebord bas (arbres, toits) ne fait pas de montagne ; plafond de hauteur
+    mod = np.clip(1.0 + 0.10 * field(26), 0.85, 1.12)                          # hauteurs variables : cols et sommets
+    L = np.minimum(560, 240 + 4.0 * rimv) * np.clip(1 + 0.12 * field(30), 0.85, 1.15)   # pente tres longue : environ 1 bloc de haut pour 3 a 4 de large
     s_ = np.clip(d / L, 0, 1)
-    f = (1 - s_) ** 2.2                                                     # profil concave : raide pres de la crete, longue queue douce vers la plaine
+    f = (1 - s_) ** 1.7                                                     # profil concave : raide pres de la crete, longue queue douce vers la plaine
     noise = field(9)
     ridge = np.clip(1 - np.abs(gaussian_filter(rng.standard_normal(X.shape), 7) * 3.0), 0, 1)
-    t = rimv * mod * f * (1 + 0.12 * noise * (1 - s_))
-    for k in range(14):                                                     # sommets isoles derriere le rebord, a longues pentes concaves
-        ang = rng.uniform(0, 2 * np.pi)
-        rr = rng.uniform(210, 330)
-        px_, pz_ = OX + W / 2 + np.cos(ang) * rr * 1.05, OZ + D / 2 + np.sin(ang) * rr * 1.05
-        a_ = rng.uniform(0.2, 0.45)
-        rho = rng.uniform(110, 190)
-        if pz_ > OZ + D - 40:
-            continue                                                        # pas de sommet au sud (la plaine)
-        cx_ = int(np.clip(px_, OX + 1, OX + W - 2) - OX); cz_ = int(np.clip(pz_, OZ + 1, OZ + D - 2) - OZ)
-        a_ *= max(30.0, float(top[cz_, cx_]) - 3)
-        rp = np.hypot(X - px_, Z - pz_)
-        t = t + a_ * (1 + (rp / rho) ** 2) ** -1.3 * (0.8 + 0.2 * ridge)
+    t = rimv * mod * f * (1 + 0.05 * noise * (1 - s_))
     # on ne touche pas l'interieur du plan ni la plaine au sud ; on estompe vers l'est (Argonath)
     fe = 1.0
     fa = sm((np.hypot(X + 1112, Z + 525) - 40) / 100.0)                    # on ne touche pas au Comte, juste au nord-est du site
@@ -82,16 +70,11 @@ def main(plan):
     inside = (X > OX) & (X < OX + W) & (Z > OZ) & (Z < OZ + D)
     din = np.minimum(np.minimum(X - OX, OX + W - X), np.minimum(Z - OZ, OZ + D - Z))
     t = t * np.where(inside, 1 - sm((din - 26) / 12.0), 1.0)                # dans le plan, seule la bande de raccord garde le relief (continuite avec l'exterieur)
-    target = Y0S + 3 + t
     sub = h[gz0:gz1, gx0:gx1]
+    gs = gaussian_filter(sub.astype(np.float32), 14)                         # sol local lisse : la pente part du terrain reel, pas d'un plateau absolu
+    target = gs + t
     raise_ = np.where((t > 1.5) & (target > sub), np.rint(target), sub).astype(np.int32)
     h[gz0:gz1, gx0:gx1] = raise_
-    sb = bio[gz0:gz1, gx0:gx1]
-    rocky = t > 75
-    sb[rocky & (sb != 6) & (sb != 7)] = 4
-    cimes = rocky & (t > 135)
-    sb[cimes] = 5
-    bio[gz0:gz1, gx0:gx1] = sb
     raw2 = h.astype('>i2').tobytes() + wat.astype('>i2').tobytes() + bio.tobytes()
     open(BIN, 'wb').write(b[:8] + zlib.compress(raw2, 9))
     print('hauteur max ajoutee', int((raise_ - sub).max()), 'cases changees', int((raise_ != sub).sum()))

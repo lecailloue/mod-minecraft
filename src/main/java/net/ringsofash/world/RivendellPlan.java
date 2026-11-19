@@ -322,8 +322,32 @@ public final class RivendellPlan {
     // ------------------------------------------------------------------ cascades : lits creuses, nappes d'eau tombante devant chaque marche de roche
     private void carve() {
         channel(262, 3.0, 9, LAKE_Z + LAKE_R - 2, (int) Math.round(zC(262)) + 2, 3, 91);
+        grandeChute(262, 3.0, 91, (int) Math.round(zC(262)) + 2);
         channel(150, 2.0, 2, 34, (int) Math.round(zA(150)) + 2, 2, 92);
         channel(46, 2.0, 2, 32, (int) Math.round(zA(46)) + 2, 2, 93);
+    }
+
+    // la haute falaise : le torrent sort du lac, court jusqu'au bord puis tombe d'un seul jet dans le bassin
+    private void grandeChute(int cx, double wob, int seed, int z1) {
+        int hw = 6, lip = -1;
+        for (int z = z1; z < z1 + 16 && z < D - 4; z++) if (th[z * W + cx] < LAKE_LV - 30) { lip = z; break; }
+        if (lip < 0) return;
+        int L = LAKE_LV - 1;
+        int[] cc = new int[D];
+        for (int z = z1 - 8; z < lip + 4 && z < D; z++) cc[z] = cx + (int) Math.round(wob * vn(z / 16.0, seed * 0.37, seed));
+        for (int z = z1 - 8; z < lip; z++) {
+            for (int dx = -hw - 3; dx <= hw + 3; dx++) {
+                int x = cc[z] + dx;
+                if (!area(x, z)) continue;
+                int i = z * W + x;
+                if (Math.abs(dx) <= hw) { th[i] = L - 1; wl[i] = (short) L; }
+                else th[i] = Math.max(th[i], L + 1 + (Math.abs(dx) - hw - 1));
+            }
+        }
+        for (int dx = -hw; dx <= hw; dx++) for (int k = 0; k < 3; k++) {
+            int x = cc[lip - 1] + dx, z = lip + k;
+            for (int y = -1; y <= L; y++) curtains.add(new int[]{x, y, z});
+        }
     }
 
     private void channel(int cx, double wob, int hw, int z0, int z1, int thick, int seed) {
