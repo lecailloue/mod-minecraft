@@ -10,6 +10,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnPlacementTypes;
+import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
@@ -48,7 +49,8 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> TROLL_CHIEF = foe("troll_chief", 1.7F, 3.4F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> WARG = foe("warg", 1.1F, 1.25F);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> WILD_MAN = foe("wild_man", 0.6F, 1.95F);
-    public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> MAMMOTH = reg("mammoth", FoeEntity::new, MobCategory.CREATURE, 2.4F, 3.2F, false);
+    public static final DeferredHolder<EntityType<?>, EntityType<MountEntity>> MAMMOTH = reg("mammoth", MountEntity::new, MobCategory.CREATURE, 3.0F, 3.8F, false);
+    public static final DeferredHolder<EntityType<?>, EntityType<MountEntity>> WAR_BOAR = reg("war_boar", MountEntity::new, MobCategory.CREATURE, 1.6F, 1.9F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<FoeEntity>> DEAD_SOLDIER = reg("dead_soldier", FoeEntity::new, MobCategory.MISC, 0.6F, 1.95F, true);
     public static final DeferredHolder<EntityType<?>, EntityType<ShadowRiderEntity>> SHADOW_RIDER = reg("shadow_rider", ShadowRiderEntity::new, MobCategory.MONSTER, 1.3F, 2.7F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<ShadowChiefEntity>> SHADOW_CHIEF = reg("shadow_chief", ShadowChiefEntity::new, MobCategory.MONSTER, 0.7F, 2.1F, false);
@@ -70,7 +72,7 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<PeopleEntity>> MAGE = people("mage", 0.6F, 1.9F);
     public static final DeferredHolder<EntityType<?>, EntityType<TreemanEntity>> TREEMAN = reg("treeman", TreemanEntity::new, MobCategory.CREATURE, 1.6F, 5.0F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<EagleEntity>> EAGLE = reg("eagle", EagleEntity::new, MobCategory.CREATURE, 1.6F, 1.6F, false);
-    public static final DeferredHolder<EntityType<?>, EntityType<BeastEntity>> STAG = reg("stag", BeastEntity::new, MobCategory.CREATURE, 0.9F, 1.5F, false);
+    public static final DeferredHolder<EntityType<?>, EntityType<MountEntity>> STAG = reg("stag", MountEntity::new, MobCategory.CREATURE, 1.1F, 2.1F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<BeastEntity>> CROW = reg("crow", BeastEntity::new, MobCategory.AMBIENT, 0.4F, 0.5F, false);
 
     /** l'Oeil : boite de 12 blocs (il mesure environ 15 blocs de large une fois dessine), visible de tres loin */
@@ -87,7 +89,6 @@ public final class ModEntities {
         if (t == TROLL_CHIEF.get()) return FoeEntity.Kind.TROLL_CHIEF;
         if (t == WARG.get()) return FoeEntity.Kind.WARG;
         if (t == WILD_MAN.get()) return FoeEntity.Kind.WILD_MAN;
-        if (t == MAMMOTH.get()) return FoeEntity.Kind.MAMMOTH;
         if (t == DEAD_SOLDIER.get()) return FoeEntity.Kind.DEAD_SOLDIER;
         return FoeEntity.Kind.ORC;
     }
@@ -108,6 +109,11 @@ public final class ModEntities {
                 .add(Attributes.KNOCKBACK_RESISTANCE, kb).add(Attributes.FOLLOW_RANGE, 24).add(Attributes.FLYING_SPEED, 1.4).build();
     }
 
+    private static AttributeSupplier mount(double hp, double dmg, double speed, double kb, double step) {
+        return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, hp).add(Attributes.ATTACK_DAMAGE, dmg).add(Attributes.MOVEMENT_SPEED, speed)
+                .add(Attributes.KNOCKBACK_RESISTANCE, kb).add(Attributes.FOLLOW_RANGE, 20).add(Attributes.STEP_HEIGHT, step).build();
+    }
+
     private static void attributes(EntityAttributeCreationEvent e) {
         e.put(INVISIBLE_STAND.get(), net.minecraft.world.entity.LivingEntity.createLivingAttributes().build());
         e.put(ORC.get(), mon(24, 5, 0.27, 2, 32, 0));
@@ -120,7 +126,8 @@ public final class ModEntities {
         e.put(TROLL_CHIEF.get(), mon(140, 24, 0.25, 6, 36, 1.0));
         e.put(WARG.get(), mon(22, 6, 0.36, 0, 36, 0));
         e.put(WILD_MAN.get(), mon(22, 4, 0.29, 0, 24, 0));
-        e.put(MAMMOTH.get(), mon(120, 14, 0.22, 4, 20, 1.0));
+        e.put(MAMMOTH.get(), mount(140, 14, 0.2, 1.0, 1.6));
+        e.put(WAR_BOAR.get(), mount(60, 9, 0.26, 0.5, 1.25));
         e.put(DEAD_SOLDIER.get(), mon(20, 7, 0.3, 4, 32, 0));
         e.put(SHADOW_RIDER.get(), mon(60, 9, 0.38, 6, 96, 0.6));
         e.put(SHADOW_DRAGON.get(), ShadowDragonEntity.attributes().build());
@@ -136,7 +143,7 @@ public final class ModEntities {
         e.put(TREEMAN.get(), Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 120).add(Attributes.ATTACK_DAMAGE, 14).add(Attributes.MOVEMENT_SPEED, 0.2)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0).add(Attributes.FOLLOW_RANGE, 24).add(Attributes.STEP_HEIGHT, 1.5).build());
         e.put(EAGLE.get(), mob(40, 6, 0.25, 0.3));
-        e.put(STAG.get(), mob(12, 1, 0.3, 0));
+        e.put(STAG.get(), mount(36, 2, 0.3, 0, 1.25));
         e.put(CROW.get(), mob(4, 1, 0.25, 0));
         e.put(EYE_OF_SAURON.get(), Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 20).build());
     }
@@ -179,10 +186,13 @@ public final class ModEntities {
         e.register(GIANT_SPIDER.get(), G, H, (t, l, r, p, rnd) -> rnd.nextInt(2) == 0 && Monster.checkAnyLightMonsterSpawnRules(t, l, r, p, rnd), OP);
         e.register(LURKER.get(), SpawnPlacementTypes.IN_WATER, H, (t, l, r, p, rnd) -> l.getDifficulty() != Difficulty.PEACEFUL && rnd.nextInt(10) == 0
                 && l.getFluidState(p).is(FluidTags.WATER) && l.getFluidState(p.below(2)).is(FluidTags.WATER) && l.getFluidState(p.above()).isEmpty(), OP);
-        e.register(MAMMOTH.get(), G, H, (t, l, r, p, rnd) -> Mob.checkMobSpawnRules(t, l, r, p, rnd), OP);
+        // montures : aucune apparition naturelle (oeuf, commande ou structure seulement)
+        var NO_NATURAL = (SpawnPlacements.SpawnPredicate<MountEntity>) (t, l, r, p, rnd) -> r != MobSpawnType.NATURAL && r != MobSpawnType.CHUNK_GENERATION;
+        e.register(MAMMOTH.get(), G, H, NO_NATURAL, OP);
+        e.register(WAR_BOAR.get(), G, H, NO_NATURAL, OP);
+        e.register(STAG.get(), G, H, NO_NATURAL, OP);
         e.register(TREEMAN.get(), G, H, (t, l, r, p, rnd) -> Mob.checkMobSpawnRules(t, l, r, p, rnd), OP);
         e.register(EAGLE.get(), G, H, (t, l, r, p, rnd) -> Mob.checkMobSpawnRules(t, l, r, p, rnd), OP);
-        e.register(STAG.get(), G, H, (t, l, r, p, rnd) -> Mob.checkMobSpawnRules(t, l, r, p, rnd), OP);
         e.register(CROW.get(), G, H, (t, l, r, p, rnd) -> Mob.checkMobSpawnRules(t, l, r, p, rnd), OP);
     }
 

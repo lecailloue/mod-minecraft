@@ -125,10 +125,17 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
         ModelPart wr = p("wing_r"), wl = p("wing_l");
         if (wr != null && wl != null) {
             boolean flying = !e.onGround() || (e instanceof EagleEntity ea && ea.isFlying());
-            float flap = flying ? Mth.sin(age * 0.45F) * 0.6F : Mth.sin(age * 0.08F) * 0.06F - 0.05F;
-            wr.zRot += flap; wl.zRot -= flap;
             ModelPart wr2 = p("wing_r2"), wl2 = p("wing_l2");
-            if (wr2 != null && wl2 != null) { wr2.zRot += flap * 0.5F; wl2.zRot -= flap * 0.5F; }
+            if (!flying && wr2 != null && wl2 != null) {          // perche : ailes repliees le long du corps, legere respiration
+                float br = Mth.sin(age * 0.08F) * 0.02F;
+                wr.zRot += -0.52F + br; wl.zRot += 0.52F - br;
+                wr2.yRot += -1.40F; wl2.yRot += 1.40F;
+                wr2.zRot += 0.44F; wl2.zRot -= 0.44F;
+            } else {
+                float flap = flying ? Mth.sin(age * 0.45F) * 0.6F : Mth.sin(age * 0.08F) * 0.06F - 0.05F;
+                wr.zRot += flap; wl.zRot -= flap;
+                if (wr2 != null && wl2 != null) { wr2.zRot += flap * 0.5F; wl2.zRot -= flap * 0.5F; }
+            }
         }
         for (int i = 1; i <= 3; i++) {
             ModelPart t = p(i == 1 ? "tail" : "tail" + i);
@@ -161,6 +168,19 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
             if (w == null) break;
             w.xRot += Mth.sin(age * 0.2F - i * 0.75F) * 0.15F - atk * 0.12F;
             w.yRot += Mth.cos(age * 0.14F - i * 0.6F) * 0.12F + Mth.cos(swing * 0.33F - i * 0.5F) * 0.08F * amount;
+        }
+        // trompe du Mumak : balancement en vague ; oreilles : battement lent
+        for (int i = 1; i <= 4; i++) {
+            ModelPart t = p(i == 1 ? "trunk" : "trunk" + i);
+            if (t == null) break;
+            t.xRot += Mth.sin(age * 0.07F - i * 0.7F) * 0.07F + Mth.sin(swing * 0.6662F - i * 0.8F) * 0.1F * amount;
+            t.yRot += Mth.cos(age * 0.05F - i * 0.5F) * 0.06F;
+        }
+        ModelPart er = p("ear_r"), el = p("ear_l");
+        if (er != null && el != null) {
+            float fl = Mth.sin(age * 0.11F + e.getId()) * 0.06F + Math.max(0F, Mth.sin(age * 0.023F + e.getId() * 1.7F) - 0.92F) * 3F;
+            er.yRot += fl; el.yRot -= fl;
+            er.zRot += fl * 0.5F; el.zRot -= fl * 0.5F;
         }
         ModelPart jaw = p("jaw");
         if (jaw != null) jaw.xRot += 0.08F + Math.abs(Mth.sin(age * 0.05F)) * 0.08F + atk * 0.6F;

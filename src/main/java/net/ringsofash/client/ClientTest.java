@@ -1005,6 +1005,7 @@ public final class ClientTest {
             }));
         }
         lineup("05_geants", 15.0, -8F, 7.0, List.of(ModEntities.MAMMOTH.get(), ModEntities.TREEMAN.get(), ModEntities.FIRE_DEMON.get(), ModEntities.ASH_LORD.get()));
+        lineup("05b_montures", 10.0, -4F, 3.2, List.of(ModEntities.WAR_BOAR.get(), ModEntities.STAG.get(), ModEntities.EAGLE.get(), ModEntities.CROW.get()));
         for (float[] v : new float[][]{{0, 155F}, {1, -25F}, {2, 90F}}) {
             SCENES.add(new Scene("05" + "bcd".charAt((int) v[0]) + "_fleau", 70, p -> {
                 ServerLevel ow = p.server.overworld();

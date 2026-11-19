@@ -221,14 +221,14 @@ def biomes():
           spawns={'creature': FARM + [('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS, 'monster': [('warg', 8, 1, 2), ('shadow_rider', 2, 1, 1), ('goblin', 30, 3, 5), ('cave_thief', 3, 1, 1)]})
     biome('plaines_jaunes', 'Plaines Pâles', 0.6, 0.35, '#86b8f5', '#d2e2f2', grass='#FFEB9E', foliage='#d9c85a',
           veg=('trees_birch_sparse', 'trees_oak_sparse', 'bushes_birch_few', 'bushes_oak_few', 'fallen_birch_logs_few', 'minecraft:flower_default', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
-          spawns={'creature': [('minecraft:horse', 10, 2, 6), ('minecraft:cow', 8, 4, 4), ('minecraft:sheep', 6, 4, 4), ('stag', 2, 1, 2)], 'ambient': BATS, 'monster': ORCS + [('warg', 20, 2, 4)]})
+          spawns={'creature': [('minecraft:horse', 10, 2, 6), ('minecraft:cow', 8, 4, 4), ('minecraft:sheep', 6, 4, 4)], 'ambient': BATS, 'monster': ORCS + [('warg', 20, 2, 4)]})
     biome('plaines_cendre', 'Plaines de Cendre', 0.9, 0.1, '#55200e', '#30140c', water='#4a4a44', wfog='#1c1c18', grass='#96938E', foliage='#7d7a6a',
           veg=('ash_rocks_big', 'ash_rocks', 'ash_rocks_small', 'ashroot_patch', 'smoke_vents'), precip=False, particle=('minecraft:ash', 0.06), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
           spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 60, 3, 5), ('war_orc', 35, 2, 3), ('warg', 25, 2, 4), ('cave_troll', 10, 1, 1), ('troll_chief', 3, 1, 1), ('shadow_rider', 5, 1, 2), ('shadow_chief', 1, 1, 1), ('goblin', 20, 3, 5)]})
     biome('grande_foret', 'Grande Forêt', 0.6, 0.9, '#6f9ed8', '#7f9a78', water='#3d6a55', wfog='#0c1f16', grass='#3f7a2e', foliage='#2f6a25',
           veg=('trees_oak_big', 'trees_birch_big', 'trees_spruce_big', 'fallen_oak_logs', 'fallen_spruce_logs', 'fallen_birch_logs_few', 'bushes_oak', 'bushes_spruce', 'moonbell_patch', 'minecraft:patch_grass_forest', 'minecraft:patch_large_fern',
                'minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal', 'web_patch_low', 'web_patch_high'),
-          spawns={'creature': [('minecraft:fox', 4, 1, 2), ('minecraft:rabbit', 4, 2, 3), ('treeman', 5, 1, 1), ('stag', 6, 1, 3)], 'ambient': BATS,
+          spawns={'creature': [('minecraft:fox', 4, 1, 2), ('minecraft:rabbit', 4, 2, 3), ('treeman', 5, 1, 1)], 'ambient': BATS,
                   'monster': ORCS + [('giant_spider', 10, 1, 1)]})
     biome('monts_rocheux', 'Monts Rocheux', 0.3, 0.4, '#7fa6e0', '#c0d0e0', grass='#7a9a64', foliage='#6a8a54', lunar='ore_lunargent',
           veg=('trees_spruce_sparse', 'fallen_spruce_logs_few', 'bushes_spruce_few', 'minecraft:patch_grass_plain', 'minecraft:patch_berry_common'),
@@ -236,7 +236,7 @@ def biomes():
           extra_steps={6: ORES + [R('ore_lunargent'), R('ore_lunargent_rich')] + ORES_TAIL})
     biome('foret_clairsemee', 'Forêt Clairsemée', 0.65, 0.7, '#74a6e0', '#a8c4a0', water='#3d6a55', wfog='#0c1f16', grass='#8fc56f', foliage='#5f9a3f',
           veg=('trees_oak_sparse', 'trees_birch_sparse', 'trees_spruce_sparse', 'fallen_oak_logs', 'fallen_birch_logs_few', 'bushes_oak', 'bushes_birch_few', 'minecraft:patch_grass_forest', 'minecraft:flower_default'),
-          spawns={'creature': [('minecraft:fox', 3, 1, 2), ('minecraft:rabbit', 5, 2, 3), ('stag', 5, 1, 3), ('treeman', 2, 1, 1)], 'ambient': BATS, 'monster': ORCS})
+          spawns={'creature': [('minecraft:fox', 3, 1, 2), ('minecraft:rabbit', 5, 2, 3), ('treeman', 2, 1, 1)], 'ambient': BATS, 'monster': ORCS})
     biome('bosquets', 'Bosquets', 0.65, 0.5, '#79b4ff', '#c4dcff', grass='#AEE08A', foliage='#82bf55',
           veg=('trees_oak_sparse', 'trees_birch_sparse', 'fallen_oak_logs_few', 'bushes_oak', 'bushes_birch', 'minecraft:flower_plains', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
           spawns={'creature': FARM + [('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS, 'monster': ORCS})

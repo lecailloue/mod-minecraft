@@ -598,5 +598,9 @@ def skins():
          emblem=(['r.rr.r', '.r..r.', 'r.rr.r', '.r..r.', 'r.rr.r'], {'r': '#ff5a18'}), seed=54)
     skin('cave_thief', 'goblin', skin='#b8b8a8', hair='#b8b8a8', hair_style='bald', eyes='#d8f0ff', top='#b0b0a0', legs='#6a6050', boots='#b8b8a8', sleeves=False, seed=55)
 
+def beasts_gen():
+    import beasts
+    beasts.gen()
+
 def build():
-    troll(); warg(); stag(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); orc_weapons(); lurker(); treeman_bb(); sylvestres(); shadow_dragon(); shadow_chief(); weapons_3d(); eagle(); dragon(); mammoth(); skins()
+    troll(); warg(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); orc_weapons(); lurker(); treeman_bb(); sylvestres(); shadow_dragon(); shadow_chief(); weapons_3d(); dragon(); beasts_gen(); skins()

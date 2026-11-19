@@ -460,6 +460,7 @@ public final class Reg {
     public static final DeferredItem<Item> WARG_SPAWN_EGG = ITEMS.register("warg_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.WARG, 0x423c38, 0xc02010, props()));
     public static final DeferredItem<Item> WILD_MAN_SPAWN_EGG = ITEMS.register("wild_man_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.WILD_MAN, 0xa87a58, 0x2a1c12, props()));
     public static final DeferredItem<Item> MAMMOTH_SPAWN_EGG = ITEMS.register("mammoth_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.MAMMOTH, 0x6a5544, 0xe8dfc4, props()));
+    public static final DeferredItem<Item> WAR_BOAR_SPAWN_EGG = ITEMS.register("war_boar_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.WAR_BOAR, 0x2c2420, 0x8a8e98, props()));
     public static final DeferredItem<Item> DEAD_SOLDIER_SPAWN_EGG = ITEMS.register("dead_soldier_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.DEAD_SOLDIER, 0x7ad8a0, 0xe0fff0, props()));
     public static final DeferredItem<Item> SHADOW_RIDER_SPAWN_EGG = ITEMS.register("shadow_rider_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.SHADOW_RIDER, 0x0c0a0e, 0x4a4a54, props()));
     public static final DeferredItem<Item> SHADOW_CHIEF_SPAWN_EGG = ITEMS.register("shadow_chief_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.SHADOW_CHIEF, 0x08060a, 0xa8a8b8, props()));
