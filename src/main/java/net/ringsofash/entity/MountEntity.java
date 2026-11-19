@@ -178,10 +178,10 @@ public class MountEntity extends PathfinderMob {
         int i = Math.max(0, getPassengers().indexOf(passenger));
         Vec3 v = switch (kind()) {
             case MAMMOTH -> switch (i) {
-                case 0 -> new Vec3(0.0, 3.3, 0.5);
-                case 1 -> new Vec3(0.6, 3.3, -0.25);
-                case 2 -> new Vec3(-0.6, 3.3, -0.25);
-                default -> new Vec3(0.0, 3.3, -0.95);
+                case 0 -> new Vec3(-0.32, 3.34, 0.3);
+                case 1 -> new Vec3(0.32, 3.34, 0.3);
+                case 2 -> new Vec3(-0.32, 3.34, -0.4);
+                default -> new Vec3(0.32, 3.34, -0.4);
             };
             case WAR_BOAR -> new Vec3(0.0, 1.52, -0.02);
             case STAG -> new Vec3(0.0, 1.58, -0.05);
