@@ -1,6 +1,27 @@
 package net.ringsofash.data;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.npc.AbstractVillager;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -55,19 +76,19 @@ public final class Jobs {
             new Skill("Épée et bouclier", "Dégâts de mêlée +10 %. Vous gardez le bouclier.", true),
             new Skill("Archer", "Dégâts des lames -40 %. Les arcs se bandent deux fois plus vite.", true)};
     private static final Skill[][] W10 = {
-            {new Skill("Coup écrasant", "Toutes les 5 s, un coup énorme qui blesse tous les ennemis autour de la cible.", false),
+            {new Skill("Coup écrasant", "Touche V : toutes les 5 s, un coup énorme (dégâts x3) qui blesse tous les ennemis autour de la cible.", true),
              new Skill("Frappe rapide", "Vous attaquez bien plus vite : le malus de vitesse des deux mains presque disparaît.", true),
              new Skill("Frappe lourde", "Encore plus lent, mais dégâts de mêlée +60 % au total.", true)},
-            {new Skill("Tourbillon", "Une attaque tournoyante qui blesse tous les ennemis autour de vous.", false),
+            {new Skill("Tourbillon", "Touche V : une attaque tournoyante qui blesse tous les ennemis autour de vous (recharge 4 s).", true),
              new Skill("Vitesse", "Vitesse d'attaque +15 %.", true),
              new Skill("Frappe renforcée", "Dégâts de mêlée +20 % au total.", true)},
             {new Skill("Tir rapide", "Les arcs se bandent trois fois plus vite qu'à l'ordinaire.", true),
-             new Skill("Double flèche", "Vous tirez deux flèches à la fois.", false),
-             new Skill("Flèche géante", "Tir à vitesse normale, mais une énorme flèche qui traverse plusieurs ennemis.", false)}};
+             new Skill("Double flèche", "Vous tirez deux flèches à la fois.", true),
+             new Skill("Flèche géante", "Tir à vitesse normale, mais une flèche puissante (dégâts x2, critique) qui traverse jusqu'à 5 ennemis.", true)}};
     private static final Skill[] W15_ARCHER = {
-            new Skill("Flèches de feu", "Tous vos projectiles enflamment la cible.", false),
-            new Skill("Flèche téléportée", "La flèche file droit et touche instantanément l'ennemi visé, sans chute.", false),
-            new Skill("Flèche de soin", "Chaque flèche qui touche vous vole un peu de vie.", false)};
+            new Skill("Flèches de feu", "Tous vos projectiles enflamment la cible.", true),
+            new Skill("Flèche téléportée", "La flèche file droit, sans chute, et touche instantanément l'ennemi que vous visez (portée 64 blocs).", true),
+            new Skill("Flèche de soin", "Chaque flèche qui touche vous rend 1 PV (4 PV par seconde au maximum).", true)};
 
     /** Competences proposees au palier t (0 = niveau 5, 1 = niveau 10, 2 = niveau 15) ; path = voie choisie au niveau 5 (1 a 3, 0 = aucune). */
     public static Skill[] skills(Job j, int t, int path) {
@@ -101,7 +122,7 @@ public final class Jobs {
     }
 
     /** Ticks de charge d'arc retires en plus a chaque tick (1 = 2x plus vite, 2 = 3x). */
-    static int bowExtra(int path, int opt10) { return path == 3 ? (opt10 == 1 ? 2 : 1) : 0; }
+    static int bowExtra(int path, int opt10) { return path == 3 ? (opt10 == 1 ? 2 : opt10 == 3 ? 0 : 1) : 0; }
 
     private static final ResourceLocation SPEED_ID = RingsOfAsh.id("job_attack_speed");
 
@@ -146,6 +167,8 @@ public final class Jobs {
         bus.addListener(Jobs::onTick);
         bus.addListener(Jobs::onShield);
         bus.addListener(Jobs::onUse);
+        bus.addListener(Jobs::onArrowJoin);
+        bus.addListener(Jobs::onImpact);
     }
 
     private static void onDeath(LivingDeathEvent e) {
@@ -192,5 +215,117 @@ public final class Jobs {
         if (!(e.getEntity() instanceof Player p) || !(e.getItem().getItem() instanceof BowItem)) return;
         int extra = bowExtra(choice(p, Job.WARRIOR, 0), choice(p, Job.WARRIOR, 1));
         if (extra > 0) e.setDuration(Math.max(0, e.getDuration() - extra));
+    }
+
+    // ------------------------------------------------------------------ attaque speciale (touche V)
+    private static final Map<UUID, Long> SPECIAL_CD = new HashMap<>();
+    private static final Map<UUID, long[]> HEAL = new HashMap<>();
+    private static final String CLONE = "ringsofash_clone";
+
+    public static void special(ServerPlayer p) {
+        int path = choice(p, Job.WARRIOR, 0), opt = choice(p, Job.WARRIOR, 1);
+        boolean slam = path == 1 && opt == 1, whirl = path == 2 && opt == 1;
+        if (!slam && !whirl) return;
+        long now = p.level().getGameTime();
+        Long until = SPECIAL_CD.get(p.getUUID());
+        if (until != null && now < until) {
+            p.displayClientMessage(Component.literal("Recharge : " + ((until - now + 19) / 20) + " s").withStyle(ChatFormatting.GRAY), true);
+            return;
+        }
+        SPECIAL_CD.put(p.getUUID(), now + (slam ? 100 : 80));
+        ServerLevel sl = p.serverLevel();
+        p.swing(InteractionHand.MAIN_HAND, true);
+        float dmg = (float) p.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        Vec3 c;
+        double r;
+        float mult;
+        if (slam) {
+            Vec3 look = p.getLookAngle(), eye = p.getEyePosition(), end = eye.add(look.scale(4.5));
+            EntityHitResult hit = ProjectileUtil.getEntityHitResult(sl, p, eye, end, new AABB(eye, end).inflate(1.0),
+                    en -> en instanceof LivingEntity && en != p && !en.isSpectator());
+            c = hit != null ? hit.getLocation() : new Vec3(p.getX() + look.x * 3.0, p.getY(), p.getZ() + look.z * 3.0);
+            r = 3.5;
+            mult = 3.0F;
+        } else {
+            c = p.position();
+            r = 3.2;
+            mult = 1.0F;
+        }
+        DamageSource ds = p.damageSources().playerAttack(p);
+        final Vec3 centre = c;
+        final double rad = r;
+        for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, new AABB(c, c).inflate(r, 1.5, r), x -> x != p && x.isAlive() && x != p.getVehicle()
+                && !x.isPassengerOfSameVehicle(p) && !(x instanceof AbstractVillager) && !x.isAlliedTo(p)
+                && !(x instanceof Player pl && !p.canHarmPlayer(pl)) && !(x instanceof TamableAnimal ta && ta.isOwnedBy(p)))) {
+            if (t.distanceToSqr(centre) > rad * rad) continue;
+            t.hurt(ds, dmg * mult);
+            t.knockback(slam ? 1.0 : 0.7, centre.x - t.getX(), centre.z - t.getZ());
+        }
+        if (slam) {
+            sl.sendParticles(ParticleTypes.EXPLOSION, c.x, c.y + 0.3, c.z, 1, 0, 0, 0, 0);
+            for (int i = 0; i < 16; i++) {
+                double a = i * Math.PI / 8;
+                sl.sendParticles(ParticleTypes.CRIT, c.x + Math.cos(a) * 2.5, c.y + 0.2, c.z + Math.sin(a) * 2.5, 2, 0.1, 0.1, 0.1, 0.1);
+            }
+            sl.playSound(null, c.x, c.y, c.z, SoundEvents.ANVIL_LAND, SoundSource.PLAYERS, 1.0F, 0.6F);
+        } else {
+            for (int i = 0; i < 10; i++) {
+                double a = i * Math.PI / 5;
+                sl.sendParticles(ParticleTypes.SWEEP_ATTACK, c.x + Math.cos(a) * 2.2, c.y + 1.0, c.z + Math.sin(a) * 2.2, 1, 0, 0, 0, 0);
+            }
+            sl.playSound(null, c.x, c.y, c.z, SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.2F, 0.8F);
+        }
+    }
+
+    // ------------------------------------------------------------------ fleches de l'archer
+    private static void onArrowJoin(EntityJoinLevelEvent e) {
+        if (e.getLevel().isClientSide() || e.loadedFromDisk() || !(e.getEntity() instanceof AbstractArrow arrow) || arrow.getTags().contains(CLONE)) return;
+        if (!(arrow.getOwner() instanceof ServerPlayer p) || choice(p, Job.WARRIOR, 0) != 3) return;
+        int o10 = choice(p, Job.WARRIOR, 1), o15 = choice(p, Job.WARRIOR, 2);
+        if (o15 == 1) arrow.setRemainingFireTicks(200);
+        if (o10 == 3) {
+            arrow.setPierceLevel((byte) 5);
+            arrow.setBaseDamage(arrow.getBaseDamage() * 2.0);
+            arrow.setCritArrow(true);
+        }
+        if (o15 == 2) {
+            Vec3 eye = p.getEyePosition(), look = p.getLookAngle(), end = eye.add(look.scale(64.0));
+            BlockHitResult bh = p.level().clip(new ClipContext(eye, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, p));
+            Vec3 stop = bh.getType() == HitResult.Type.MISS ? end : bh.getLocation();
+            EntityHitResult eh = ProjectileUtil.getEntityHitResult(p.level(), p, eye, stop, new AABB(eye, stop).inflate(1.0),
+                    t -> t instanceof LivingEntity && t != p && !t.isSpectator() && t != p.getVehicle() && !t.isAlliedTo(p));
+            arrow.setNoGravity(true);
+            if (eh != null) {
+                arrow.setPos(eh.getLocation().subtract(look.scale(0.8)));
+                arrow.setDeltaMovement(look.scale(3.0));
+            }
+        }
+        if (o10 == 2) {
+            Entity c = arrow.getType().create(arrow.level());
+            if (c instanceof AbstractArrow a2) {
+                CompoundTag tag = new CompoundTag();
+                arrow.saveWithoutId(tag);
+                a2.load(tag);
+                a2.setUUID(UUID.randomUUID());
+                a2.addTag(CLONE);
+                a2.setOwner(p);
+                a2.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
+                a2.setDeltaMovement(arrow.getDeltaMovement().yRot(0.12F));
+                arrow.level().addFreshEntity(a2);
+            }
+        }
+    }
+
+    /** fleche de soin : chaque cible touchee rend 1 PV a l'archer, 4 PV par seconde au plus */
+    private static void onImpact(ProjectileImpactEvent e) {
+        if (!(e.getProjectile() instanceof AbstractArrow a) || a.level().isClientSide || !(a.getOwner() instanceof ServerPlayer p)) return;
+        if (!(e.getRayTraceResult() instanceof EntityHitResult eh) || !(eh.getEntity() instanceof LivingEntity t) || t == p) return;
+        if (choice(p, Job.WARRIOR, 0) != 3 || choice(p, Job.WARRIOR, 2) != 3) return;
+        long now = p.level().getGameTime();
+        long[] w = HEAL.computeIfAbsent(p.getUUID(), k -> new long[]{now, 0});
+        if (now - w[0] >= 20) { w[0] = now; w[1] = 0; }
+        if (w[1] >= 4) return;
+        w[1]++;
+        p.heal(1.0F);
     }
 }

@@ -500,5 +500,6 @@ def build():
     LANG['key.ringsofash.descend'] = 'Descendre en vol (dragon)'
     LANG['key.ringsofash.rings'] = "Onglet d'anneaux"
     LANG['key.ringsofash.skills'] = "Compétences (métiers)"
+    LANG['key.ringsofash.special'] = "Attaque spéciale (guerrier)"
     LANG['biome.ringsofash.rivieres_de_lave'] = 'Rivières de Lave'
     LANG['key.categories.ringsofash'] = 'Les Anneaux de Cendre'

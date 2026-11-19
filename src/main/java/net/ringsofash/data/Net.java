@@ -108,6 +108,13 @@ public final class Net {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    /** Touche d'attaque speciale (guerrier). */
+    public record SpecialAttack() implements CustomPacketPayload {
+        public static final CustomPacketPayload.Type<SpecialAttack> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("special_attack"));
+        public static final StreamCodec<FriendlyByteBuf, SpecialAttack> CODEC = StreamCodec.of((buf, v) -> { }, buf -> new SpecialAttack());
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
     /** Copie cote client des metiers. */
     public static final class ClientJobs {
         public static int[] xp = new int[3];
@@ -155,6 +162,9 @@ public final class Net {
         }));
         e.registrar("1").playToServer(ChooseSkill.TYPE, ChooseSkill.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
             if (ctx.player() instanceof ServerPlayer sp) Jobs.choose(sp, payload.job(), payload.tier(), payload.opt());
+        }));
+        e.registrar("1").playToServer(SpecialAttack.TYPE, SpecialAttack.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer sp) Jobs.special(sp);
         }));
         e.registrar("1").playToClient(LoreSync.TYPE, LoreSync.CODEC, (payload, ctx) -> {
             ClientLore.rep = payload.rep(); ClientLore.corruption = payload.corruption(); ClientLore.eye = payload.eye(); ClientLore.quest = payload.quest();
