@@ -87,9 +87,9 @@ def main(plan):
     raise_ = np.where((t > 1.5) & (target > sub), np.rint(target), sub).astype(np.int32)
     h[gz0:gz1, gx0:gx1] = raise_
     sb = bio[gz0:gz1, gx0:gx1]
-    rocky = (t > 28) & (target > 150)
+    rocky = t > 75
     sb[rocky & (sb != 6) & (sb != 7)] = 4
-    cimes = rocky & (target >= 262)
+    cimes = rocky & (t > 135)
     sb[cimes] = 5
     bio[gz0:gz1, gx0:gx1] = sb
     raw2 = h.astype('>i2').tobytes() + wat.astype('>i2').tobytes() + bio.tobytes()
