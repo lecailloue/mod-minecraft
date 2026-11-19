@@ -188,7 +188,7 @@ public class FoeEntity extends Monster {
         int gob = r.nextInt(100);
         entityData.set(VARIANT, k == Kind.DEAD_SOLDIER ? (r.nextInt(100) < 5 ? 4 : r.nextInt(4))
                 : k == Kind.GOBLIN ? (gob < 45 ? 0 : gob < 80 ? 3 : 6) + r.nextInt(3)
-                : r.nextInt(k == Kind.ORC ? 16 : k == Kind.WAR_ORC ? 4 : 2));
+                : r.nextInt(k == Kind.ORC ? 16 : k == Kind.WAR_ORC || k == Kind.WARG ? 4 : 2));
         setupGoblin();
         if (isDeadKing()) makeDeadKing();
         if (k == Kind.GOBLIN_KING && reason != MobSpawnType.SPAWN_EGG && reason != MobSpawnType.COMMAND) {

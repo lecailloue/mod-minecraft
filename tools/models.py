@@ -38,13 +38,13 @@ def troll():
     save(stone, f'{A}/textures/entity/troll_stone.png')
     save(statue, f'{A}/textures/entity/troll_statue.png')
 
-def warg_paint(m):
+def warg_paint(m, name='warg', scars=0.3, gore=0.3, seed=1313, stripe=0.74):
     """texture detaillee du Warg : poils en meches (racines sombres, pointes pales), rayures de hyene, cotes saillantes, cicatrices,
     gueule baveuse sanglante avec crocs, yeux ambre a pupille fendue (calque lumineux warg_glow)"""
     import random
     from PIL import Image
-    rnd = random.Random(1313)
-    path = f'{A}/textures/entity/warg.png'
+    rnd = random.Random(seed)
+    path = f'{A}/textures/entity/{name}.png'
     im = Image.open(path).convert('RGBA'); px = im.load()
     gl = Image.new('RGBA', im.size, (0, 0, 0, 0)); gp = gl.load()
     def put(x, y, c):
@@ -83,14 +83,14 @@ def warg_paint(m):
                         if (xx + off) % 4 == 0:
                             a, z = rnd.randint(0, fh // 3), rnd.randint(fh // 2, fh - 1)
                             for yy in range(a, z + 1):
-                                if rnd.random() < 0.6: mulc(x0 + xx, y0 + yy, 0.74)
+                                if rnd.random() < 0.6: mulc(x0 + xx, y0 + yy, stripe)
                 if p.name == 'body' and face in ('left', 'right') and h >= 10 and fw >= 10:  # cotes saillantes (maigre, affame)
                     for yy in (fh - 8, fh - 6, fh - 4, fh - 2):
                         for xx in range(2, fw - 1):
                             if rnd.random() < 0.8: mulc(x0 + xx, y0 + yy, 0.62)
                     for xx in range(2, fw - 1):
                         mulc(x0 + xx, y0 + fh - 7, 1.18); mulc(x0 + xx, y0 + fh - 5, 1.15)
-                if p.name in ('body', 'head', 'neck') and face in ('left', 'right', 'front') and rnd.random() < 0.3 and fw >= 5 and fh >= 5:   # cicatrices
+                if p.name in ('body', 'head', 'neck') and face in ('left', 'right', 'front') and rnd.random() < scars and fw >= 5 and fh >= 5:   # cicatrices
                     sx, sy = x0 + rnd.randint(0, fw - 4), y0 + rnd.randint(0, fh - 4); n = rnd.randint(3, 4)
                     for k in range(n): put(sx + k, sy + k, (170, 96, 88)); mulc(sx + k + 1, sy + k, 0.55); mulc(sx + k, sy + k + 1, 0.6)
                 if face == 'bottom' or (p.name == 'body' and face == 'top' and not spike): mulc(x0 + fw // 2, y0 + fh // 2, 0.85)
@@ -148,7 +148,7 @@ def warg_paint(m):
                 for face in ('front', 'left', 'right'):
                     x0, y0, fw, fh = m.face_rects(b)[face]
                     for xx in range(fw):
-                        if rnd.random() < 0.3:
+                        if rnd.random() < gore:
                             for k in range(rnd.randint(1, 3)): mulc(x0 + xx, y0 + fh - 1 - k, 0.5, blood)
     im.save(path)
     gl.save(f'{A}/textures/entity/warg_glow.png')
@@ -196,7 +196,18 @@ def warg():
     m.part('leg_bl', (4, 12, 9)).box((2.5, 6, 7), (4, 7, 6), mid, noise=0.22, mirror=True).box((3, 0, 9.5), (3, 7, 3), dark, noise=0.2, mirror=True).box((2.5, 0, 8), (4, 2, 5), dark, noise=0.2, mirror=True)
     t = m.part('tail', (0, 17, 12)); t.box((-1.5, 14, 12), (3, 3, 6), mid, noise=0.25)
     t2 = m.part('tail2', (0, 16, 18), parent='tail'); t2.box((-2, 11, 18), (4, 5, 6), dark, noise=0.3)
-    m.export(); warg_paint(m); m.preview(f'{PREVIEW}/warg.png')
+    m.export()
+    warg_paint(m, 'warg', 0.45, 0.3, 1313)
+    def lum(c): return sum(c[:3]) / 3
+    def keep(c): return lum(c) > 190
+    def silver(c): return c if keep(c) else tuple(min(255, int(lum(c) * 1.55 + k)) for k in (22, 24, 26))
+    def black(c): return c if keep(c) else (int(lum(c) * 0.5), int(lum(c) * 0.5), int(lum(c) * 0.58))
+    def tawny(c): return c if keep(c) else (min(255, int(c[0] * 1.2 + 16)), int(c[1] * 1.02 + 4), int(c[2] * 0.78))
+    m.retexture('warg_1', lambda c: c, seed=7); warg_paint(m, 'warg_1', 0.5, 0.35, 1313)            # brun sombre, tres marque
+    m.retexture('warg_2', silver, seed=11); warg_paint(m, 'warg_2', 0.0, 0.08, 2024)                 # gris argent, sans cicatrice
+    m.retexture('warg_3', black, seed=13); warg_paint(m, 'warg_3', 0.14, 0.2, 77, 0.8)               # noir de suie, quelques cicatrices
+    m.retexture('warg_4', tawny, seed=17); warg_paint(m, 'warg_4', 0.0, 0.05, 909, 0.62)             # fauve rayure, sans cicatrice
+    m.preview(f'{PREVIEW}/warg.png')
 
 def stag():
     m = Model('stag', 64, 64, 9)

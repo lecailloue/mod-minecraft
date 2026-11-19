@@ -1,0 +1,4 @@
+-d
+/tmp/jc
+src/main/java/net/ringsofash/entity/FoeEntity.java
+src/main/java/net/ringsofash/client/ClientSetup.java

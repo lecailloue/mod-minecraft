@@ -402,7 +402,7 @@ public final class ClientSetup {
         e.registerEntityRenderer(ModEntities.CAVE_TROLL.get(), c -> new Renderers.Geo<FoeEntity>(c, layer("geo_troll"), "troll", 1.5F, 1.3F, f -> "troll", null));
         e.registerEntityRenderer(ModEntities.STONE_TROLL.get(), c -> new Renderers.Geo<FoeEntity>(c, layer("geo_troll"), "troll", 1.5F, 1.3F, f -> f.isStone() ? "troll_statue" : "troll_stone", null));
         e.registerEntityRenderer(ModEntities.TROLL_CHIEF.get(), c -> new Renderers.Geo<FoeEntity>(c, layer("geo_troll_chief"), "troll_chief", 1.8F, 1.3F, f -> "troll_chief", "troll_chief_glow"));
-        e.registerEntityRenderer(ModEntities.WARG.get(), c -> new Renderers.Geo<FoeEntity>(c, layer("geo_warg"), "warg", 0.8F, 1.15F, f -> "warg", "warg_glow"));
+        e.registerEntityRenderer(ModEntities.WARG.get(), c -> new Renderers.Geo<FoeEntity>(c, layer("geo_warg"), "warg", 0.8F, 1.15F, f -> "warg_" + (1 + Math.floorMod(f.variant(), 4)), "warg_glow"));
         e.registerEntityRenderer(ModEntities.MAMMOTH.get(), c -> new Renderers.Geo<net.ringsofash.entity.MountEntity>(c, layer("geo_mammoth"), "mammoth", 2.2F, 0.62F, f -> "mammoth", null));
         e.registerEntityRenderer(ModEntities.WAR_BOAR.get(), c -> new Renderers.Geo<net.ringsofash.entity.MountEntity>(c, layer("geo_war_boar"), "war_boar", 1.1F, 0.65F, f -> "war_boar", null));
         e.registerEntityRenderer(ModEntities.SHADOW_RIDER.get(), Renderers.Shadow::new);
