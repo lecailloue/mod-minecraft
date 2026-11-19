@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"405", "420", "422_f"};
+    private static final String[] ONLY = {"211", "223", "202", "420", "422_f"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -520,7 +520,7 @@ public final class ClientTest {
         final int TX = 480, TZ = 1855;
         final String[] tn = {"200_tirith_loin_sud", "201_tirith_sud_ouest", "202_tirith_porte", "203_tirith_route", "204_tirith_cour", "205_tirith_tour", "206_tirith_arbre", "207_tirith_nuit",
                 "208_tirith_est", "209_tirith_crete", "210_tirith_falaise", "211_tirith_escalier", "212_tirith_tunnel", "213_tirith_maison", "214_tirith_rue", "215_tirith_arbre_large",
-                "216_tirith_porte_haut", "217_tirith_route_cote", "218_tirith_montagne_ouest", "219_tirith_proue", "220_tirith_crete_dessus", "221_tirith_tour_porte", "222_tirith_tour_traversee"};
+                "216_tirith_porte_haut", "217_tirith_route_cote", "218_tirith_montagne_ouest", "219_tirith_proue", "220_tirith_crete_dessus", "221_tirith_tour_porte", "222_tirith_tour_traversee", "223_tirith_rampe_haut"};
         SCENES.add(new Scene("199_tirith_chargement", 100, p -> {
             ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
             for (int dx = -11; dx <= 11; dx++) for (int dz = -9; dz <= 15; dz++) lands.getChunk((TX >> 4) + dx, (TZ >> 4) + dz);
@@ -570,6 +570,7 @@ public final class ClientTest {
                     case 19 -> look(p, lands, ox + CX - 34.5, py + 104, oz + CZ + 136.5, ox + CX, py + 108, oz + CZ + 100);                      // le bout de l'eperon : face droite, terrasses blanches
                     case 20 -> look(p, lands, ox + CX + 0.5, top + 16, oz + CZ + 36.5, ox + CX + 0.5, top - 8, oz + CZ + 96);                    // le dessus de l'eperon : sol blanc, barrieres, marches
                     case 21 -> look(p, lands, ox + CX - 27.5, py + 20.6, oz + CZ + 123.5, ox + CX - 18, py + 20.4, oz + CZ + 116.5);               // la porte d'une tour de la grande porte, vue de la rue
+                    case 23 -> look(p, lands, ox + 206 + 0.5, py + 44, oz + 262.5, ox + 206, py + 34, oz + 244);                                 // le haut d'une rampe, sans dalle sur les marches
                     default -> look(p, lands, ox + CX - 30.5, py + 19.8, oz + CZ + 116.5, ox + CX - 8, py + 19.8, oz + CZ + 116.5);               // a travers la tour, la galerie et l'autre tour
                 }
             }));

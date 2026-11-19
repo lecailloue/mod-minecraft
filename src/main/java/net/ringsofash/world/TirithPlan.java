@@ -309,7 +309,7 @@ public final class TirithPlan {
             boolean slope = below != f || f < PROW_TOP - 1;
             boolean step = false;
             for (int[] r2 : ramps) if (x >= r2[0] - r2[1] && x <= r2[0] + r2[1] && z >= r2[2] - (r2[4] - r2[3]) && z <= r2[2]) step = true;
-            if (flank[i]) { set(x, f, z, f < PROW_TOP - 1 ? stair(WB_STAIR, S, false) : WB); continue; }
+            if (flank[i]) { set(x, f, z, (f < PROW_TOP - 1 || (z == CZ + 24 && x > CX + 22)) ? stair(WB_STAIR, S, false) : WB); continue; }   // la derniere marche est une vraie marche : plus de saut d'un bloc vers le palier
             if (step && f < PROW_TOP - 1 && f > -1) set(x, f, z, stair(WB_STAIR, N, false));
             else set(x, f, z, WB);
         }
@@ -347,6 +347,12 @@ public final class TirithPlan {
         return false;
     }
 
+    /** vrai si une marche d'escalier se trouve juste sous la case (jusqu'a 3 blocs) : on ne pose jamais de dalle de rue au-dessus d'une marche */
+    private boolean stairBelow(int x, int y, int z) {
+        for (int k = 1; k <= 3; k++) { int b = get(x, y - k, z) & 255; if (b >= WB_STAIR && b < WB_STAIR + 8) return true; }
+        return false;
+    }
+
     /** la rue de chaque niveau traverse la tranchee de la rampe qui monte au niveau suivant : un pont de pierre a hauteur de rue l'enjambe, sans parapet ni obstacle */
     private void bridgeRamps() {
         for (int n = 0; n < ramps.size(); n++) {
@@ -361,7 +367,7 @@ public final class TirithPlan {
                 for (int y = b; y <= b + 3; y++) set(x, y, z, AIR);
                 int below = get(x, b - 1, z);
                 boolean floating = get(x, b - 2, z) == AIR && get(x, b - 3, z) == AIR;      // pas de tablier suspendu au-dessus de la rampe : la rampe reste la seule voie
-                if ((below == AIR || below == WB_WALL || below == FENCE_B) && !floating) set(x, b - 1, z, PAVE);
+                if ((below == AIR || below == WB_WALL || below == FENCE_B) && !floating && !stairBelow(x, b - 1, z)) set(x, b - 1, z, PAVE);
             }
         }
     }
@@ -381,7 +387,7 @@ public final class TirithPlan {
                 for (int y = b; y <= b + 3; y++) set(x, y, z, AIR);
                 int below = get(x, b - 1, z);
                 boolean floating = get(x, b - 2, z) == AIR && get(x, b - 3, z) == AIR;
-                if ((below == AIR || below == WB_WALL || below == FENCE_B) && !floating) set(x, b - 1, z, PAVE);
+                if ((below == AIR || below == WB_WALL || below == FENCE_B) && !floating && !stairBelow(x, b - 1, z)) set(x, b - 1, z, PAVE);
             }
         }
     }
@@ -407,7 +413,8 @@ public final class TirithPlan {
             for (int y = PROW_TOP; y <= PROW_TOP + 3; y++) set(x, y, z, AIR);
             if (x >= CX + 20 && z >= CZ + 23) {
                 int b = get(x, PROW_TOP - 1, z);
-                if (b == AIR || b == 111 || b == 20 || b == WB_STAIR) set(x, PROW_TOP - 1, z, WB);
+                int bb = get(x, PROW_TOP - 2, z) & 255;
+                if ((b == AIR || b == 111 || b == 20 || b == WB_STAIR) && !(bb >= WB_STAIR && bb < WB_STAIR + 8)) set(x, PROW_TOP - 1, z, WB);   // jamais de bloc au-dessus d'une marche
             }
         }
     }
@@ -460,7 +467,7 @@ public final class TirithPlan {
             if (okL && built == 2) {                                   // galerie : on traverse les deux tours et le porche d'un bout a l'autre de la rue, sur un plancher au niveau de la rue
                 for (int x = xr - hw - 2; x <= xr + hw + 2; x++) for (int z = zc - 1; z <= zc + 1; z++) {
                     for (int y = base; y <= base + 3; y++) set(x, y, z, AIR);
-                    if (get(x, base - 1, z) == AIR && !(get(x, base - 2, z) == AIR && get(x, base - 3, z) == AIR)) set(x, base - 1, z, PAVE);   // pas de tablier au-dessus de la rampe : l'escalier monte librement jusqu'a la porte
+                    if (get(x, base - 1, z) == AIR && !(get(x, base - 2, z) == AIR && get(x, base - 3, z) == AIR) && !stairBelow(x, base - 1, z)) set(x, base - 1, z, PAVE);   // pas de tablier au-dessus de la rampe : l'escalier monte librement jusqu'a la porte
                 }
             }
             int zTop = z0 - (hi - lo) - 2;

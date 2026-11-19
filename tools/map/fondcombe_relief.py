@@ -41,27 +41,25 @@ def main(plan):
     def field(sig, amp=1.0):
         f_ = gaussian_filter(rng.standard_normal(X.shape), sig)
         return f_ / f_.std() * amp
-    # distance au plan mesuree dans un espace deforme : la crete ne suit plus le rectangle du plan, elle serpente
-    Xw, Zw = X + field(20, 55), Z + field(20, 55)
-    xcw = np.clip(Xw, OX + 1, OX + W - 2); zcw = np.clip(Zw, OZ + 1, OZ + D - 2)
-    d = np.hypot(Xw - xcw, Zw - zcw)
-    xc = np.clip(X, OX + 1, OX + W - 2); zc = np.clip(Z, OZ + 1, OZ + D - 2)
-    dl, dr_, du, dd = X - OX, OX + W - X, Z - OZ, OZ + D - Z                 # a l'interieur du plan : on projette sur le bord le plus proche
-    mn = np.minimum(np.minimum(dl, dr_), np.minimum(du, dd))
+    # relief source : le rebord du plan (bande de 40 blocs du bord), lisse et plafonne ; le relief exterieur est la dilatation de ce rebord par un cone (pente douce, sans couture ni cuvette)
     ins = (X > OX) & (X < OX + W) & (Z > OZ) & (Z < OZ + D)
-    xc = np.where(ins & (mn == dl), OX + 1, np.where(ins & (mn == dr_), OX + W - 2, xc))
-    zc = np.where(ins & (mn == du), OZ + 1, np.where(ins & (mn == dd), OZ + D - 2, zc))
-    rim = top[(zc - OZ).astype(int), (xc - OX).astype(int)].astype(np.float32)
-    rim = gaussian_filter(rim, 6)                                           # lisser le rebord le long de chaque cote (le plan est bosselé)
-    rimv = np.maximum(0, rim - 3)
-    rimv = np.minimum(80, rimv * sm((rimv - 14) / 24.0))                    # un rebord bas (arbres, toits) ne fait pas de montagne ; plafond de hauteur
-    mod = np.clip(1.0 + 0.10 * field(26), 0.85, 1.12)                          # hauteurs variables : cols et sommets
-    L = np.minimum(560, 240 + 4.0 * rimv) * np.clip(1 + 0.12 * field(30), 0.85, 1.15)   # pente tres longue : environ 1 bloc de haut pour 3 a 4 de large
-    s_ = np.clip(d / L, 0, 1)
-    f = (1 - s_) ** 1.7                                                     # profil concave : raide pres de la crete, longue queue douce vers la plaine
-    noise = field(9)
-    ridge = np.clip(1 - np.abs(gaussian_filter(rng.standard_normal(X.shape), 7) * 3.0), 0, 1)
-    t = rimv * mod * f * (1 + 0.05 * noise * (1 - s_))
+    pi = np.clip((X - OX).astype(int), 0, W - 1); pj = np.clip((Z - OZ).astype(int), 0, D - 1)
+    din0 = np.minimum(np.minimum(X - OX, OX + W - X), np.minimum(Z - OZ, OZ + D - Z))
+    E = np.where(ins & (din0 < 40), gaussian_filter(top.astype(np.float32), 5)[pj, pi], 0).astype(np.float32)
+    E = np.maximum(0, E - 3)
+    E = np.minimum(80, E * sm((E - 14) / 24.0))
+    E = gaussian_filter(E, 2)
+    SL = 0.30                                                               # 1 bloc de haut pour ~3,3 de large
+    t = np.zeros_like(E)
+    for lv in range(2, 82, 2):
+        m = E >= lv
+        if not m.any():
+            break
+        dist = distance_transform_edt(~m) * cs
+        t = np.maximum(t, lv - SL * dist)
+    t = np.maximum(t, 0)
+    t = gaussian_filter(t, 5)                                               # arrondit le pied et la crete de la pente
+    t = np.maximum(0, t * (1 + 0.10 * field(14)))
     # on ne touche pas l'interieur du plan ni la plaine au sud ; on estompe vers l'est (Argonath)
     fe = 1.0
     fa = sm((np.hypot(X + 1112, Z + 525) - 40) / 100.0)                    # on ne touche pas au Comte, juste au nord-est du site
@@ -72,13 +70,14 @@ def main(plan):
     t = t * np.where(inside, 1 - sm((din - 26) / 12.0), 1.0)                # dans le plan, seule la bande de raccord garde le relief (continuite avec l'exterieur)
     sub = h[gz0:gz1, gx0:gx1]
     gs = gaussian_filter(sub.astype(np.float32), 14)                         # sol local lisse : la pente part du terrain reel, pas d'un plateau absolu
-    target = gs + t
+    target = sub + t
     riv = bio[gz0:gz1, gx0:gx1] == 8                                         # les rivieres restent en place : le relief s'estompe a leur approche (berges en pente douce)
     if riv.any():
-        wgt = sm(distance_transform_edt(~riv) / 9.0)
-        target = sub + (target - sub) * wgt
-        t = t * wgt
-    raise_ = np.where((t > 1.5) & (target > sub), np.rint(target), sub).astype(np.int32)
+        wgt = sm(distance_transform_edt(~riv) / 8.0)
+        t = gaussian_filter(t * wgt, 2.5)
+        t[riv] = 0
+        target = sub + t
+    raise_ = np.where((t > 0.5) & (target > sub), np.rint(target), sub).astype(np.int32)
     h[gz0:gz1, gx0:gx1] = raise_
     raw2 = h.astype('>i2').tobytes() + wat.astype('>i2').tobytes() + bio.tobytes()
     open(BIN, 'wb').write(b[:8] + zlib.compress(raw2, 9))
