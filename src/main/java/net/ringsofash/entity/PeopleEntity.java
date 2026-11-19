@@ -86,6 +86,19 @@ public class PeopleEntity extends AbstractVillager {
 
     public void setProfession(int p) { this.profession = p; this.offers = null; }
 
+    /** les variantes « en armure » (nains 21-40, elfes 11-20) portent la vraie armure naine / elfique du mod */
+    private void equipArmored() {
+        int v = variant();
+        net.minecraft.world.item.Item[] set = switch (people()) {
+            case DWARF -> Math.floorMod(v, 40) >= 20 ? new net.minecraft.world.item.Item[]{Reg.DWARVEN_HELMET.get(), Reg.DWARVEN_CHESTPLATE.get(), Reg.DWARVEN_LEGGINGS.get(), Reg.DWARVEN_BOOTS.get()} : null;
+            case ELF -> Math.floorMod(v, 20) >= 10 ? new net.minecraft.world.item.Item[]{Reg.ELVEN_HELMET.get(), Reg.ELVEN_CHESTPLATE.get(), Reg.ELVEN_LEGGINGS.get(), Reg.ELVEN_BOOTS.get()} : null;
+            default -> null;
+        };
+        if (set == null) return;
+        EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
+        for (int i = 0; i < 4; i++) { setItemSlot(slots[i], new ItemStack(set[i])); setDropChance(slots[i], 0.0F); }
+    }
+
     private void equipGuard() {
         ItemStack w = switch (people()) {
             case ELF -> new ItemStack(Reg.ELVEN_BLADE.get());
@@ -140,6 +153,7 @@ public class PeopleEntity extends AbstractVillager {
         if (isRanger()) { setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.RANGER_SWORD.get())); setDropChance(EquipmentSlot.MAINHAND, 0.0F); }
         if (isMage()) { setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.STAFF_LIGHT.get())); setDropChance(EquipmentSlot.MAINHAND, 0.0F); }
         if (role() == GUARD) equipGuard();
+        else equipArmored();
         return data;
     }
 

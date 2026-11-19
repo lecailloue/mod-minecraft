@@ -539,12 +539,11 @@ def armored_rows():
     dw, el = [], []
     for i, (lbl, sk, hr, hs, bd, bl, top, trim, legs, boots, armor, paul, xg) in enumerate(DWARVES):
         keep = [g for g in xg.split() if g in DW_ARMOR_KEEP]
-        g = keep + ['dmod', 'dcuir', 'dfauld', 'dgreave', 'gloves', 'knee', 'harness', 'pspike' if i % 2 else 'pauldron']
-        if i % 3 == 0: g.append('fcloak')
-        dw.append((lbl + '_arm', sk, hr, 'short', bd, bl, '#2a2a34', '#d6ac50', '#26262e', '#1c1c22', 'plate', '#5a5c68', ' '.join(dict.fromkeys(g))))
+        g = keep + ['gloves']          # l'armure elle-meme : la vraie armure naine du mod, equipee par PeopleEntity
+        dw.append((lbl + '_arm', sk, hr, 'short', bd, bl, '#2a2a34', '#d6ac50', '#26262e', '#1c1c22', None, None, ' '.join(dict.fromkeys(g))))
     for i, (lbl, sk, hr, hs, eyes, top, trim, legs, boots, skirt, xg) in enumerate(ELVES):
         keep = [g for g in xg.split() if g in EL_ARMOR_KEEP]
-        g = keep + (['ehelm'] if i % 2 == 0 else ['circlet', 'hcap', 'hfringe', 'hback_s'] if i % 4 == 1 else ['headband', 'hcap', 'hfringe', 'hback']) + ['plate', 'efauld', 'greaves', 'pauldron']
+        g = keep + ['hcap', 'hfringe', 'hback_s']          # l'armure elle-meme : la vraie armure elfique du mod, equipee par PeopleEntity
         el.append((lbl + '_arm', sk, hr, 'short', eyes, '#22422c', '#e8c86c', '#2a4a34', '#2a2a20', False, ' '.join(dict.fromkeys(g))))
     return dw, el
 
@@ -558,7 +557,7 @@ def all_skins():
                                                          armor=armor, pauldrons=paul, gloves='#3a2a1c' if 'gloves' in xg.split() else None, sleeves=not lbl.startswith('barbare'), seed=200 + i, xg=xg)))
     for i, (lbl, sk, hr, hs, eyes, top, trim, legs, boots, skirt, xg) in enumerate(ELVES + ael):
         out.append(('elf_%d' % (i + 1), 'elf', dict(skin=sk, hair=hr, hair_style=hs, eyes=eyes, top=top, trim=trim, legs=legs, boots=boots, skirt=skirt, seed=300 + i, xg=xg,
-                                                   pauldrons='#a6b8a2' if lbl.endswith('_arm') else None)))
+                                                   pauldrons=None)))
     return out
 
 
