@@ -1005,8 +1005,9 @@ def stag():
         B('cheek_strap', -3.6, 45.1, -22, 7.2, .8, 3, 'elfleath', key='s_cstrap'),
         B('nose_strap', -2.6, 46.1, -23, 5.2, .8, 3, 'elfleath', key='s_nstrap'),
         antler(B, G, 1, 's_antr'), antler(B, G, -1, 's_antl'),
-        G('ear_r', (3, 51.5, -11), rot=(0, 0, -35), children=[B('ear_r_o', 2.8, 51.5, -13, 1.6, 7, 3.4, 'wcoat', key='s_ear'), B('ear_r_i', 2.4, 52.1, -12.6, .6, 5.5, 2.2, 'earin', key='s_earin')]),
-        G('ear_l', (-3, 51.5, -11), rot=(0, 0, 35), children=[B('ear_l_o', -4.4, 51.5, -13, 1.6, 7, 3.4, 'wcoat', key='s_ear'), B('ear_l_i', -3, 52.1, -12.6, .6, 5.5, 2.2, 'earin', key='s_earin')]),
+        # oreilles : feuille large ouverte vers l'avant (face interieure rose devant), ecartee de cote et penchee en avant
+        G('ear_r', (3.2, 49.5, -12), rot=(-10, 0, -62), children=[B('ear_r_o', 3.0, 49.5, -12.7, 3.8, 9, 1.4, 'wcoat', key='s_ear'), B('ear_r_i', 3.7, 50.3, -13.3, 2.4, 7.2, .6, 'earin', key='s_earin')]),
+        G('ear_l', (-3.2, 49.5, -12), rot=(-10, 0, 62), children=[B('ear_l_o', -6.8, 49.5, -12.7, 3.8, 9, 1.4, 'wcoat', key='s_ear'), B('ear_l_i', -6.1, 50.3, -13.3, 2.4, 7.2, .6, 'earin', key='s_earin')]),
     ])
     neck.children.append(head)
     body = G('body', (0, 28, 0), children=body_kids + [neck])
