@@ -516,14 +516,12 @@ public final class Reg {
     public static final DeferredItem<Item> DWARVEN_HOE = ITEMS.register("dwarven_hoe", () -> new HoeItem(ModGear.T_DWARVEN, props().attributes(HoeItem.createAttributes(ModGear.T_DWARVEN, -2.0F, -1.0F))));
     public static final DeferredItem<Item> DWARVEN_DAGGER = ITEMS.register("dwarven_dagger", () -> ModGear.special(SpecialSword.Kind.DAGGER, ModGear.T_DWARVEN, 1, -1.6F, 0, props()));
     public static final DeferredItem<Item> DWARVEN_SPEAR = ITEMS.register("dwarven_spear", () -> ModGear.special(SpecialSword.Kind.SPEAR, ModGear.T_DWARVEN, 4, -2.7F, 1.5, props()));
-    public static final DeferredItem<Item> ORC_AXE = ITEMS.register("orc_axe", () -> ModGear.axe(ModGear.T_ORC, 6.0F, -3.0F, props()));
     public static final DeferredItem<Item> ORC_SHOVEL = ITEMS.register("orc_shovel", () -> new ShovelItem(ModGear.T_ORC, props().attributes(ShovelItem.createAttributes(ModGear.T_ORC, 1.5F, -3.0F))));
     public static final DeferredItem<Item> ORC_DAGGER = ITEMS.register("orc_dagger", () -> ModGear.special(SpecialSword.Kind.DAGGER, ModGear.T_ORC, 1, -1.6F, 0, props()));
     public static final DeferredItem<Item> GONDOR_SWORD = ITEMS.register("gondor_sword", () -> ModGear.special(SpecialSword.Kind.NONE, ModGear.T_STEEL, 3, -2.4F, 0, props().rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<Item> GONDOR_DAGGER = ITEMS.register("gondor_dagger", () -> ModGear.special(SpecialSword.Kind.DAGGER, ModGear.T_STEEL, 1, -1.6F, 0, props().rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<Item> GONDOR_SPEAR = ITEMS.register("gondor_spear", () -> ModGear.special(SpecialSword.Kind.SPEAR, ModGear.T_STEEL, 4, -2.7F, 1.5, props().rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<Item> ROHAN_SWORD = ITEMS.register("rohan_sword", () -> ModGear.special(SpecialSword.Kind.NONE, ModGear.T_STEEL, 3, -2.4F, 0, props()));
-    public static final DeferredItem<Item> ROHAN_AXE = ITEMS.register("rohan_axe", () -> ModGear.axe(ModGear.T_STEEL, 6.0F, -3.0F, props()));
     public static final DeferredItem<Item> MITHRIL_SWORD = ITEMS.register("mithril_sword", () -> ModGear.special(SpecialSword.Kind.NONE, ModGear.T_LEGEND, 4, -2.4F, 0, props().rarity(Rarity.EPIC)));
     public static final DeferredItem<Item> MITHRIL_DAGGER = ITEMS.register("mithril_dagger", () -> ModGear.special(SpecialSword.Kind.DAGGER, ModGear.T_LEGEND, 1, -1.6F, 0, props().rarity(Rarity.EPIC)));
     public static final DeferredItem<Item> ELVEN_DAGGER = ITEMS.register("elven_dagger", () -> ModGear.special(SpecialSword.Kind.DAGGER, ModGear.T_ELVEN, 1, -1.6F, 0, props()));

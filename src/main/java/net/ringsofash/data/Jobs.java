@@ -334,8 +334,7 @@ public final class Jobs {
         }
         if (o15 == 1) arrow.setRemainingFireTicks(200);
         if (o10 == 3) {
-            arrow.setPierceLevel((byte) 5);
-            arrow.setBaseDamage(arrow.getBaseDamage() * 2.0);
+            arrow.setBaseDamage(arrow.getBaseDamage() * 2.5);
             arrow.setCritArrow(true);
         }
         if (o15 == 2) {

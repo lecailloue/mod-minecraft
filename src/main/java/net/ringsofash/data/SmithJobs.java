@@ -145,7 +145,7 @@ public final class SmithJobs {
             if (refund > 0) p.giveExperienceLevels(refund);
         }
         out.remove(DataComponents.REPAIR_COST);
-        if (opt(p) == 1 && out.isDamaged() && left.isValidRepairItem(right)) out.setDamageValue(0);
+        if (opt(p) == 1 && out.isDamaged() && left.getItem().isValidRepairItem(left, right)) out.setDamageValue(0);
         if (opt(p) == 3 && weapon(out)) {
             final int dmg = out.getDamageValue();
             CustomData.update(DataComponents.CUSTOM_DATA, out, t -> t.putInt(SHARP, dmg));

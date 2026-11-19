@@ -141,9 +141,9 @@ def build():
     # kits complets
     kit('lunargent', 'de lunargent', 'T_LUNARGENT', 'lunargent_ingot', '#cfe6f2', sword=False, pick=False, hammer=True)    # epee et pioche existent deja
     kit('dwarven', 'naine', 'T_DWARVEN', 'minecraft:iron_ingot', '#8a8f98', axe=False, hammer=False)
-    kit('orc', 'orque', 'T_ORC', 'black_steel_ingot', '#4a474e', sword=False, pick=False, shovel=True, hoe=False, spear=False)
+    kit('orc', 'orque', 'T_ORC', 'black_steel_ingot', '#4a474e', sword=False, axe=False, pick=False, shovel=True, hoe=False, spear=False)
     kit('gondor', 'de Gondor', 'T_STEEL', 'minecraft:iron_ingot', '#b8bec8', rar='.rarity(Rarity.UNCOMMON)', axe=False, pick=False, shovel=False, hoe=False)
-    kit('rohan', 'de Rohan', 'T_STEEL', 'minecraft:iron_ingot', '#a8a89c', sword=True, pick=False, shovel=False, hoe=False, dagger=False, spear=False)
+    kit('rohan', 'de Rohan', 'T_STEEL', 'minecraft:iron_ingot', '#a8a89c', sword=True, axe=False, pick=False, shovel=False, hoe=False, dagger=False, spear=False)
     kit('mithril', 'de mithril', 'T_LEGEND', 'lunargent_ingot', '#d8e8f4', rar='.rarity(Rarity.EPIC)', sw_dmg=4, axe=False, pick=False, shovel=False, hoe=False, spear=False)
     kit('elven', 'elfique', 'T_ELVEN', 'minecraft:gold_ingot', '#dfe8ee', sword=False, axe=False, pick=False, shovel=False, hoe=False, spear=True)
     # armes nommees a lueur (brillent pres des orques, comme les lames elfiques)
