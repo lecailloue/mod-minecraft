@@ -38,6 +38,122 @@ def troll():
     save(stone, f'{A}/textures/entity/troll_stone.png')
     save(statue, f'{A}/textures/entity/troll_statue.png')
 
+def warg_paint(m):
+    """texture detaillee du Warg : poils en meches (racines sombres, pointes pales), rayures de hyene, cotes saillantes, cicatrices,
+    gueule baveuse sanglante avec crocs, yeux ambre a pupille fendue (calque lumineux warg_glow)"""
+    import random
+    from PIL import Image
+    rnd = random.Random(1313)
+    path = f'{A}/textures/entity/warg.png'
+    im = Image.open(path).convert('RGBA'); px = im.load()
+    gl = Image.new('RGBA', im.size, (0, 0, 0, 0)); gp = gl.load()
+    def put(x, y, c):
+        if 0 <= x < im.width and 0 <= y < im.height: px[x, y] = tuple(max(0, min(255, int(v))) for v in c) + (255,)
+    def mulc(x, y, f, tint=None):
+        if not (0 <= x < im.width and 0 <= y < im.height): return
+        r, g, b, a = px[x, y]
+        if a == 0: return
+        c = [r * f, g * f, b * f]
+        if tint: c = [c[i] * 0.7 + tint[i] * 0.3 for i in range(3)]
+        px[x, y] = tuple(max(0, min(255, int(v))) for v in c) + (255,)
+    blood, gum, bone, pale = (96, 14, 12), (120, 24, 22), (232, 224, 196), (178, 164, 138)
+    spikes, skull, muzzle, jaws = [], None, None, None
+    for p in m.parts:
+        for b in p.boxes:
+            w, h, d = b.s
+            if min(b.s) <= 1 and w * h * d <= 4: continue                        # crocs, griffes, truffe : laisses nets
+            if p.name == 'head' and b.s == (10, 10, 9): skull = b
+            if p.name == 'head' and b.s == (7, 6, 7): muzzle = b
+            if p.name == 'jaw': jaws = b
+            spike = p.name == 'body' and b.o[1] >= 21.5 and w == 2
+            if spike: spikes.append(b)
+            for face, (x0, y0, fw, fh) in m.face_rects(b).items():
+                for xx in range(fw):
+                    y = 0
+                    while y < fh:
+                        L = rnd.randint(2, 5); t = rnd.uniform(-0.17, 0.1)
+                        for k in range(L):
+                            if y + k >= fh: break
+                            f = 1 + t - 0.06 * (k == 0) + (0.2 if k == L - 1 and rnd.random() < 0.6 else 0)
+                            mulc(x0 + xx, y0 + y + k, f, pale if (k == L - 1 and rnd.random() < 0.5) else None)
+                        y += L
+                if face in ('left', 'right', 'front', 'back') and p.name in ('body', 'leg_fr', 'leg_fl', 'leg_br', 'leg_bl', 'neck') and fw >= 3 and fh >= 4:
+                    off = rnd.randint(0, 3)                                         # rayures de hyene irregulieres
+                    for xx in range(fw):
+                        if (xx + off) % 4 == 0:
+                            a, z = rnd.randint(0, fh // 3), rnd.randint(fh // 2, fh - 1)
+                            for yy in range(a, z + 1):
+                                if rnd.random() < 0.6: mulc(x0 + xx, y0 + yy, 0.74)
+                if p.name == 'body' and face in ('left', 'right') and h >= 10 and fw >= 10:  # cotes saillantes (maigre, affame)
+                    for yy in (fh - 8, fh - 6, fh - 4, fh - 2):
+                        for xx in range(2, fw - 1):
+                            if rnd.random() < 0.8: mulc(x0 + xx, y0 + yy, 0.62)
+                    for xx in range(2, fw - 1):
+                        mulc(x0 + xx, y0 + fh - 7, 1.18); mulc(x0 + xx, y0 + fh - 5, 1.15)
+                if p.name in ('body', 'head', 'neck') and face in ('left', 'right', 'front') and rnd.random() < 0.3 and fw >= 5 and fh >= 5:   # cicatrices
+                    sx, sy = x0 + rnd.randint(0, fw - 4), y0 + rnd.randint(0, fh - 4); n = rnd.randint(3, 4)
+                    for k in range(n): put(sx + k, sy + k, (170, 96, 88)); mulc(sx + k + 1, sy + k, 0.55); mulc(sx + k, sy + k + 1, 0.6)
+                if face == 'bottom' or (p.name == 'body' and face == 'top' and not spike): mulc(x0 + fw // 2, y0 + fh // 2, 0.85)
+    # crete : pointes givrees, bases sombres
+    for b in spikes:
+        for face, (x0, y0, fw, fh) in m.face_rects(b).items():
+            if face == 'top':
+                for xx in range(fw):
+                    for yy in range(fh): put(x0 + xx, y0 + yy, (196, 184, 160))
+            elif fh >= 2:
+                for xx in range(fw):
+                    mulc(x0 + xx, y0, 1.55, pale)
+                    if fh > 3: mulc(x0 + xx, y0 + fh - 1, 0.55)
+    # --- visage
+    def eye(cx, cy):                                                               # oeil ambre 3x3, pupille fendue, paupiere lourde
+        for dx in range(3):
+            for dy in range(2): put(cx + dx, cy + dy, (255, 196, 48) if dy < 1 else (240, 130, 24)); gp[cx + dx, cy + dy] = (255, 96, 8, 255)
+        for dy in range(2): put(cx + 1, cy + dy, (10, 6, 4)); gp[cx + 1, cy + dy] = (0, 0, 0, 0)
+        for dx in range(-1, 4): mulc(cx + dx, cy - 1, 0.45); mulc(cx + dx, cy + 2, 0.7)
+    if skull is not None:
+        x0, y0, fw, fh = m.face_rects(skull)['front']
+        eye(x0 + 1, y0 + 2); eye(x0 + 6, y0 + 2)
+        for dx in range(0, 4): mulc(x0 + 1 + dx, y0 + 1 - (dx // 3), 0.5); mulc(x0 + 8 - dx, y0 + 1 - (dx // 3), 0.5)   # sourcils en colere
+        for dx in (4, 5): 
+            for dy in range(1, 6): mulc(x0 + dx, y0 + dy, 0.62)                        # sillon du front
+        for k in range(3): put(x0 + 1 + k, y0 + 8 - (k % 2), (110, 20, 18)); put(x0 + 8 - k, y0 + 8 - (k % 2), (110, 20, 18))   # plis de rictus
+        for face in ('left', 'right'):
+            fx, fy, fw2, fh2 = m.face_rects(skull)[face]
+            for k in range(4): mulc(fx + 1 + k, fy + 5 + k // 2, 0.4)
+    if muzzle is not None:
+        x0, y0, fw, fh = m.face_rects(muzzle)['front']
+        for xx in range(fw):
+            put(x0 + xx, y0 + fh - 1, gum); put(x0 + xx, y0 + fh - 2, gum)
+            if xx % 2 == 0: put(x0 + xx, y0 + fh - 2, bone); put(x0 + xx, y0 + fh - 3, bone)           # rangee de crocs devoiles
+        put(x0 + 1, y0 + 1, (14, 10, 8)); put(x0 + fw - 2, y0 + 1, (14, 10, 8))                           # narines
+        for face in ('left', 'right'):
+            fx, fy, fw2, fh2 = m.face_rects(muzzle)[face]
+            for xx in range(fw2):
+                put(fx + xx, fy + fh2 - 1, gum)
+                if xx % 2 == 1: put(fx + xx, fy + fh2 - 2, bone)
+                if rnd.random() < 0.5: mulc(fx + xx, fy + fh2 - 3, 0.5, blood)
+    if jaws is not None:
+        for face, (x0, y0, fw, fh) in m.face_rects(jaws).items():
+            for xx in range(fw):
+                for yy in range(fh):
+                    if face == 'top': put(x0 + xx, y0 + yy, gum if (xx + yy) % 3 else (60, 8, 8))
+                    elif rnd.random() < 0.55: mulc(x0 + xx, y0 + yy, 0.55, blood)             # menton ensanglante
+            if face == 'front':
+                for xx in range(0, fw, 2): put(x0 + xx, y0, bone)
+    # sang seche sur le poitrail et les pattes, griffes pales
+    for p in m.parts:
+        if p.name in ('neck', 'leg_fr', 'leg_fl'):
+            for b in p.boxes:
+                if min(b.s) <= 1: continue
+                for face in ('front', 'left', 'right'):
+                    x0, y0, fw, fh = m.face_rects(b)[face]
+                    for xx in range(fw):
+                        if rnd.random() < 0.3:
+                            for k in range(rnd.randint(1, 3)): mulc(x0 + xx, y0 + fh - 1 - k, 0.5, blood)
+    im.save(path)
+    gl.save(f'{A}/textures/entity/warg_glow.png')
+
+
 def warg():
     """Warg : enorme loup-hyene de la Terre du Milieu, dos vouté et crinière hérissée, tete lourde, pas de selle"""
     m = Model('warg', 64, 64, 7)
@@ -61,7 +177,7 @@ def warg():
     n.box((-5.5, 14, -15), (11, 3, 5), lt, noise=0.3)                    # collerette de poils
     n.box((-4.5, 21, -15), (9, 3, 6), lt, noise=0.3)
     h = m.part('head', (0, 17, -16), parent='neck')
-    h.box((-5, 12, -24), (10, 10, 9), c, art={'front': ['.........', '.........', '.yy..yy..', '.yk..ky..', '.........']}, pal={**EYE, 'y': '#e8b020', 'k': '#201008'})
+    h.box((-5, 12, -24), (10, 10, 9), c)
     h.box((-3.5, 12, -31), (7, 6, 7), mid, noise=0.18)                     # museau
     h.box((-2.5, 15.5, -32), (5, 2, 1), dark)                            # truffe
     h.box((-5, 20.5, -24.6), (10, 2, 1), dark, noise=0.3)                 # arcade sourciliere
@@ -80,7 +196,7 @@ def warg():
     m.part('leg_bl', (4, 12, 9)).box((2.5, 6, 7), (4, 7, 6), mid, noise=0.22, mirror=True).box((3, 0, 9.5), (3, 7, 3), dark, noise=0.2, mirror=True).box((2.5, 0, 8), (4, 2, 5), dark, noise=0.2, mirror=True)
     t = m.part('tail', (0, 17, 12)); t.box((-1.5, 14, 12), (3, 3, 6), mid, noise=0.25)
     t2 = m.part('tail2', (0, 16, 18), parent='tail'); t2.box((-2, 11, 18), (4, 5, 6), dark, noise=0.3)
-    m.export(); m.preview(f'{PREVIEW}/warg.png')
+    m.export(); warg_paint(m); m.preview(f'{PREVIEW}/warg.png')
 
 def stag():
     m = Model('stag', 64, 64, 9)
