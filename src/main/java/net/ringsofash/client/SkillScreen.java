@@ -25,7 +25,11 @@ public class SkillScreen extends Screen {
             Map.entry("Frappe renforcée", new ItemStack(Items.IRON_SWORD)), Map.entry("Tir rapide", new ItemStack(Items.CROSSBOW)),
             Map.entry("Double flèche", new ItemStack(Items.ARROW)), Map.entry("Flèche géante", new ItemStack(Items.SPECTRAL_ARROW)),
             Map.entry("Flèches de feu", new ItemStack(Items.BLAZE_POWDER)), Map.entry("Flèche téléportée", new ItemStack(Items.ENDER_PEARL)),
-            Map.entry("Flèche de soin", new ItemStack(Items.GLISTERING_MELON_SLICE)));
+            Map.entry("Flèche de soin", new ItemStack(Items.GLISTERING_MELON_SLICE)),
+            Map.entry("Maître main", new ItemStack(Items.GOLDEN_PICKAXE)), Map.entry("Grosse main", new ItemStack(Items.IRON_PICKAXE)),
+            Map.entry("Fondeur", new ItemStack(Items.BLAST_FURNACE)), Map.entry("Effet de fortune", new ItemStack(Items.DIAMOND)),
+            Map.entry("Veine entière", new ItemStack(Items.RAW_IRON)), Map.entry("Pioche incassable", new ItemStack(Items.NETHERITE_PICKAXE)),
+            Map.entry("Casse en 3×3", new ItemStack(Items.TNT)), Map.entry("Four portable", new ItemStack(Items.FURNACE)));
 
     private int job = 0;
     /** voie affichee au palier 10 et 15 (celle choisie, ou celle qu'on regarde) */
@@ -43,6 +47,7 @@ public class SkillScreen extends Screen {
     public boolean isPauseScreen() { return false; }
 
     // ------------------------------------------------------------------ donnees
+    private boolean hasTree() { return job <= 1; }
     private Job job() { return Job.values()[job]; }
     private int xp() { return Net.ClientJobs.xp[job]; }
     private int level() { return Jobs.level(xp()); }
@@ -112,7 +117,7 @@ public class SkillScreen extends Screen {
         g.drawString(this.font, xs, x0 + w - 10 - this.font.width(xs), y0 + 28, 0xFFB8A880, false);
 
         Component tip = null;
-        if (job == 0) tip = renderTree(g, mx, my);
+        if (hasTree()) tip = renderTree(g, mx, my);
         else g.drawCenteredString(this.font, "Cet arbre de compétences arrive bientôt.", x0 + w / 2, (treeTop() + treeBottom()) / 2, 0xFF9A8A6A);
         renderDetail(g, mx, my);
         if (tip != null) g.renderTooltip(this.font, tip, mx, my);
@@ -134,7 +139,7 @@ public class SkillScreen extends Screen {
             for (int r = 0; r < s2.length; r++) link(g, colX(2), rowY(chosen(1) == 0 ? 1 : chosen(1) - 1), colX(3), rowY(r), view == chosen(0) && chosen(2) == r + 1);
         }
         // noeuds
-        node(g, colX(0), rowY(1), new ItemStack(Items.IRON_CHESTPLATE), 2, false);
+        node(g, colX(0), rowY(1), new ItemStack(job == 1 ? Items.IRON_PICKAXE : Items.IRON_CHESTPLATE), 2, false);
         if (Ui.in(mx, my, colX(0) - NODE / 2, rowY(1) - NODE / 2, NODE, NODE)) tip = Component.literal(job().fr);
         Skill[] s0 = skillsAt(0);
         for (int r = 0; r < s0.length; r++) {
@@ -190,7 +195,7 @@ public class SkillScreen extends Screen {
     private void renderDetail(GuiGraphics g, int mx, int my) {
         int dy = y0 + h - 56, dx = x0 + 8, dw = w - 16;
         Ui.inset(g, dx, dy, dw, 48, 0xFF241A10);
-        if (job != 0) return;
+        if (!hasTree()) return;
         if (selT < 0) {
             g.drawString(this.font, "Cliquez sur une compétence pour la voir.", dx + 6, dy + 6, 0xFF9A8A6A, false);
             g.drawString(this.font, "Les choix se font aux niveaux 5, 10 et 15 — et sont définitifs.", dx + 6, dy + 18, 0xFF9A8A6A, false);
@@ -223,7 +228,7 @@ public class SkillScreen extends Screen {
             if (RingTabs.clickAt(x0, y0, mx, my, 3, false)) return true;
             if (Ui.in(mx, my, x0 + w - 24, y0 + 7, 16, 14)) { onClose(); return true; }
             for (int i = 0; i < 3; i++) if (Ui.in(mx, my, x0 + 10 + i * 82, y0 + 7, 78, 16)) { job = i; selT = selO = -1; view = Net.ClientJobs.choice[i * 3]; return true; }
-            if (job == 0) {
+            if (hasTree()) {
                 Skill[] s0 = skillsAt(0);
                 for (int r = 0; r < s0.length; r++) {
                     if (Ui.in(mx, my, colX(1) - NODE / 2, rowY(r) - NODE / 2, NODE, NODE)) { view = r + 1; selT = 0; selO = r + 1; return true; }

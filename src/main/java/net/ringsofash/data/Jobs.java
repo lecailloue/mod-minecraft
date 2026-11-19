@@ -44,7 +44,7 @@ import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.ringsofash.RingsOfAsh;
 
-/** Metiers : XP, niveaux, choix de competences (paliers 5, 10 et 15) et leurs effets. Seul le guerrier est code pour l'instant. */
+/** Metiers : XP, niveaux, choix de competences (paliers 5, 10 et 15) et leurs effets. Guerrier (paliers 5/10/15) et mineur (paliers 5/10) sont codes ; le magicien arrive. */
 public final class Jobs {
     private Jobs() {}
 
@@ -90,8 +90,23 @@ public final class Jobs {
             new Skill("Flèche téléportée", "La flèche file droit, sans chute, et touche instantanément l'ennemi que vous visez (portée 64 blocs).", true),
             new Skill("Flèche de soin", "Chaque flèche qui touche vous rend 1 PV (4 PV par seconde au maximum).", true)};
 
+    private static final Skill[] M5 = {
+            new Skill("Maître main", "Vous minez 40 % plus vite à la pioche.", true),
+            new Skill("Grosse main", "Votre pioche creuse en 2×2 : les blocs voisins de la face visée tombent avec le premier.", true),
+            new Skill("Fondeur", "Les minerais que vous cassez fondent aussitôt : vous récoltez directement des lingots.", true)};
+    private static final Skill FORT = new Skill("Effet de fortune", "Les minerais donnent davantage de butin (comme Fortune III).", true);
+    private static final Skill VEIN = new Skill("Veine entière", "Casser un minerai casse tout le filon connecté (jusqu'à 48 blocs).", true);
+    private static final Skill[][] M10 = {
+            {FORT, VEIN, new Skill("Pioche incassable", "Votre pioche ne s'use plus.", true)},
+            {new Skill("Casse en 3×3", "La pioche creuse en 3×3 au lieu de 2×2.", true), VEIN, FORT},
+            {new Skill("Four portable", "Les minerais et métaux bruts de votre inventaire fondent tout seuls, sans combustible.", true), FORT, VEIN}};
+
     /** Competences proposees au palier t (0 = niveau 5, 1 = niveau 10, 2 = niveau 15) ; path = voie choisie au niveau 5 (1 a 3, 0 = aucune). */
     public static Skill[] skills(Job j, int t, int path) {
+        if (j == Job.MINER) {
+            if (t == 0) return M5;
+            return t == 1 && path >= 1 && path <= 3 ? M10[path - 1] : new Skill[0];
+        }
         if (j != Job.WARRIOR) return new Skill[0];
         if (t == 0) return W5;
         if (path < 1 || path > 3) return new Skill[0];
@@ -169,6 +184,7 @@ public final class Jobs {
         bus.addListener(Jobs::onUse);
         bus.addListener(Jobs::onArrowJoin);
         bus.addListener(Jobs::onImpact);
+        MinerJobs.init(bus);
     }
 
     private static void onDeath(LivingDeathEvent e) {
