@@ -675,27 +675,8 @@ def eagle():
     m.retexture('crow', lambda col: (26, 24, 30) if sum(col) < 600 or col[2] > 180 else (60, 56, 50), 18)
 
 def dragon():
-    m = Model('dragon', 256, 128, 19)
-    c = '#7c211b'; belly = '#c08a3a'; dark = '#521410'; bone = '#d8cfb4'
-    b = m.part('body', (0, 20, 0))
-    b.box((-10, 10, -16), (20, 16, 36), c, noise=0.2, faces={'bottom': belly})
-    for k in range(5): b.box((-1, 26, -12 + k * 7), (2, 4, 4), dark)
-    n = m.part('neck', (0, 22, -16)); n.box((-5, 17, -30), (10, 10, 14), c, noise=0.2, faces={'bottom': belly})
-    h = m.part('head', (0, 25, -30), 'neck')
-    h.box((-6, 22, -44), (12, 8, 14), c, noise=0.2, art={'right': ['..............', '..y...........', '..y...........'], 'left': ['..............', '...........y..', '...........y..'], 'front': ['............', '............', '............', '............', '...kk..kk...']}, pal=EYE)
-    h.box((-5, 30, -34), (2, 6, 2), bone); h.box((3, 30, -34), (2, 6, 2), bone)
-    j = m.part('jaw', (0, 22, -31), 'head'); j.box((-5, 20, -43), (10, 2, 12), dark, art={'front': ['w.w.w.w.w.']}, pal=EYE)
-    wr = m.part('wing_r', (-10, 25, -6), 'body'); wr.box((-52, 24, -10), (42, 1, 28), dark, noise=0.25); wr.box((-52, 25, -10), (42, 2, 3), c)
-    wl = m.part('wing_l', (10, 25, -6), 'body'); wl.box((10, 24, -10), (42, 1, 28), dark, noise=0.25, mirror=True); wl.box((10, 25, -10), (42, 2, 3), c, mirror=True)
-    m.part('leg_fr', (-9, 12, -10)).box((-15, 0, -14), (8, 13, 8), c, noise=0.2)
-    m.part('leg_fl', (9, 12, -10)).box((7, 0, -14), (8, 13, 8), c, noise=0.2, mirror=True)
-    m.part('leg_br', (-9, 12, 14)).box((-15, 0, 10), (8, 13, 8), c, noise=0.2)
-    m.part('leg_bl', (9, 12, 14)).box((7, 0, 10), (8, 13, 8), c, noise=0.2, mirror=True)
-    t = m.part('tail', (0, 18, 20)); t.box((-6, 12, 20), (12, 10, 20), c, noise=0.2, faces={'bottom': belly})
-    t2 = m.part('tail2', (0, 17, 40), 'tail'); t2.box((-4, 13, 40), (8, 7, 20), c, noise=0.2)
-    m.part('tail3', (0, 16, 60), 'tail2').box((-2, 14, 60), (4, 4, 16), dark)
-    m.export(); m.preview(f'{PREVIEW}/dragon.png')
-    m.retexture('winged_beast', lambda col: shade((col[0] * 0.2 + 20, col[0] * 0.2 + 18, col[0] * 0.2 + 26), 1.0), 20)
+    import dragon3d
+    dragon3d.gen()
 
 def mammoth():
     m = Model('mammoth', 256, 128, 23)

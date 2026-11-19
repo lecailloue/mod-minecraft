@@ -60,7 +60,7 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<ThiefEntity>> CAVE_THIEF = reg("cave_thief", ThiefEntity::new, MobCategory.MONSTER, 0.5F, 1.3F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<BossEntity>> FIRE_DEMON = boss("fire_demon", 2.2F, 6.4F, true);
     public static final DeferredHolder<EntityType<?>, EntityType<BossEntity>> ASH_LORD = boss("ash_lord", 1.8F, 4.8F, true);
-    public static final DeferredHolder<EntityType<?>, EntityType<BossEntity>> DRAGON = boss("dragon", 3.4F, 2.6F, true);
+    public static final DeferredHolder<EntityType<?>, EntityType<BossEntity>> DRAGON = boss("dragon", 4.4F, 4.0F, true);
     public static final DeferredHolder<EntityType<?>, EntityType<BossEntity>> SORCERER = boss("sorcerer", 0.6F, 2.1F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<InvisibleStand>> INVISIBLE_STAND = ENTITIES.register("invisible_armor_stand",
             () -> EntityType.Builder.<InvisibleStand>of(InvisibleStand::new, MobCategory.MISC).sized(0.5F, 1.975F).clientTrackingRange(10).updateInterval(3).build("invisible_armor_stand"));
