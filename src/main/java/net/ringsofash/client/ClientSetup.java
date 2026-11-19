@@ -33,6 +33,7 @@ public final class ClientSetup {
     public static final KeyMapping REP_KEY = new KeyMapping("key.ringsofash.reputation", InputConstants.KEY_R, "key.categories.ringsofash");
     public static final KeyMapping RINGS_KEY = new KeyMapping("key.ringsofash.rings", InputConstants.KEY_G, "key.categories.ringsofash");
     public static final KeyMapping DESCEND_KEY = new KeyMapping("key.ringsofash.descend", InputConstants.KEY_C, "key.categories.ringsofash");
+    public static final KeyMapping SKILLS_KEY = new KeyMapping("key.ringsofash.skills", InputConstants.KEY_P, "key.categories.ringsofash");
     public static final KeyMapping MAP_KEY = new KeyMapping("key.ringsofash.map", InputConstants.KEY_M, "key.categories.ringsofash");
     private static final String[] GEO = {"troll", "troll_chief", "warg", "stag", "demon", "lurker", "treeman", "eagle", "crow", "war_boar", "dragon", "mammoth", "ash_lord", "orc_1_nu", "orc_2_fourrure", "orc_3_mailles", "orc_4_casque", "orc_noir_1_main", "orc_noir_2_fer", "orc_chef", "spectre_epee", "spectre_lance", "spectre_hache", "spectre_dague", "spectre_roi", "ombre_1", "ombre_2", "arme_orc_cleaver", "arme_orc_scimitar", "arme_orc_machete", "arme_orc_spear", "arme_orc_mace", "gobelin_1", "gobelin_2", "gobelin_3", "gobelin_roi", "arme_goblin_king_staff", "arme_goblin_pickaxe", "giant_spider", "sylvestre_ancien", "sylvestre_saule", "shadow_dragon", "shadow_chief", "arme_lunargent_sword", "arme_elven_blade", "arme_elven_glaive", "arme_frost_blade", "arme_blood_blade", "arme_viper_dagger", "arme_storm_blade", "arme_sentinel_blade", "arme_sun_blade", "arme_halfling_dagger", "arme_ranger_sword", "arme_wight_blade", "arme_kings_blade", "arme_valmoire_blade", "arme_dwarven_axe", "arme_dwarven_hammer", "arme_ash_mace", "arme_rider_spear", "arme_troll_club", "arme_lunargent_pickaxe", "arme_elven_bow", "arme_staff_fire", "arme_staff_light", "arme_staff_storm", "arme_staff_healing"};
     private static final String[] HUMAN = {"plain", "elf", "orc", "goblin", "dwarf"};
@@ -123,7 +124,7 @@ public final class ClientSetup {
         e.registerAboveAll(RingsOfAsh.id("quest_tracker"), (g, dt) -> QuestScreen.renderTracker(g));
     }
 
-    private static void keys(RegisterKeyMappingsEvent e) { e.register(REP_KEY); e.register(MAP_KEY); e.register(RINGS_KEY); e.register(DESCEND_KEY); }
+    private static void keys(RegisterKeyMappingsEvent e) { e.register(REP_KEY); e.register(MAP_KEY); e.register(RINGS_KEY); e.register(DESCEND_KEY); e.register(SKILLS_KEY); }
 
     private static boolean jumpSent;
 
@@ -131,6 +132,9 @@ public final class ClientSetup {
         Minecraft mc = Minecraft.getInstance();
         while (MAP_KEY.consumeClick()) {
             if (mc.player != null && mc.screen == null) mc.setScreen(new MapScreen());
+        }
+        while (SKILLS_KEY.consumeClick()) {
+            if (mc.player != null && mc.screen == null) mc.setScreen(new SkillScreen());
         }
         while (RINGS_KEY.consumeClick()) {
             if (mc.player != null && mc.screen == null) net.neoforged.neoforge.network.PacketDistributor.sendToServer(new net.ringsofash.data.Net.OpenRings());

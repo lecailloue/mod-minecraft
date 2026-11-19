@@ -499,5 +499,6 @@ def build():
     LANG['key.ringsofash.map'] = 'Carte de la Hautemarche'
     LANG['key.ringsofash.descend'] = 'Descendre en vol (dragon)'
     LANG['key.ringsofash.rings'] = "Onglet d'anneaux"
+    LANG['key.ringsofash.skills'] = "Compétences (métiers)"
     LANG['biome.ringsofash.rivieres_de_lave'] = 'Rivières de Lave'
     LANG['key.categories.ringsofash'] = 'Les Anneaux de Cendre'

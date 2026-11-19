@@ -28,6 +28,9 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
     public static final int RING_SLOTS = 10;
     public final SimpleContainer rings = new SimpleContainer(RING_SLOTS);
     public int activeRing = -1;
+    /** Metiers : XP par metier (guerrier, mineur, magicien) et choix de competences (3 paliers par metier, 0 = pas encore choisi). */
+    public final int[] jobXp = new int[3];
+    public final int[] jobChoice = new int[9];
     /** Onglet d'artefacts : case 0 = chaine, cases 1 a 4 = artefacts (selon le niveau de la chaine). */
     public final SimpleContainer artifacts = new SimpleContainer(net.ringsofash.item.Artifacts.SLOTS);
 
@@ -71,6 +74,8 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
         t.put("bestiary", l);
         t.put("rings", rings.createTag(provider));
         t.putInt("activeRing", activeRing);
+        t.putIntArray("jobXp", jobXp);
+        t.putIntArray("jobChoice", jobChoice);
         t.put("artifacts", artifacts.createTag(provider));
         return t;
     }
@@ -94,6 +99,10 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
         rings.clearContent();
         if (t.contains("rings", Tag.TAG_LIST)) rings.fromTag(t.getList("rings", Tag.TAG_COMPOUND), provider);
         activeRing = t.contains("activeRing") ? t.getInt("activeRing") : -1;
+        int[] jx = t.getIntArray("jobXp"), jc = t.getIntArray("jobChoice");
+        java.util.Arrays.fill(jobXp, 0); java.util.Arrays.fill(jobChoice, 0);
+        for (int i = 0; i < jobXp.length && i < jx.length; i++) jobXp[i] = jx[i];
+        for (int i = 0; i < jobChoice.length && i < jc.length; i++) jobChoice[i] = jc[i];
         artifacts.clearContent();
         if (t.contains("artifacts", Tag.TAG_LIST)) artifacts.fromTag(t.getList("artifacts", Tag.TAG_COMPOUND), provider);
     }

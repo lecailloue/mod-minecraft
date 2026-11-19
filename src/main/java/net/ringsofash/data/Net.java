@@ -90,6 +90,31 @@ public final class Net {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    /** Metiers : XP et choix du joueur, envoyes au client. */
+    public record JobSync(int[] xp, int[] choice) implements CustomPacketPayload {
+        public static final CustomPacketPayload.Type<JobSync> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("jobs"));
+        public static final StreamCodec<FriendlyByteBuf, JobSync> CODEC = StreamCodec.of(
+                (buf, v) -> { buf.writeVarIntArray(v.xp); buf.writeVarIntArray(v.choice); },
+                buf -> new JobSync(buf.readVarIntArray(), buf.readVarIntArray()));
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    /** Arbre de competences : le joueur choisit une competence (metier, palier 0 a 2, option 1 a 3). */
+    public record ChooseSkill(int job, int tier, int opt) implements CustomPacketPayload {
+        public static final CustomPacketPayload.Type<ChooseSkill> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("choose_skill"));
+        public static final StreamCodec<FriendlyByteBuf, ChooseSkill> CODEC = StreamCodec.of(
+                (buf, v) -> { buf.writeVarInt(v.job); buf.writeVarInt(v.tier); buf.writeVarInt(v.opt); },
+                buf -> new ChooseSkill(buf.readVarInt(), buf.readVarInt(), buf.readVarInt()));
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    /** Copie cote client des metiers. */
+    public static final class ClientJobs {
+        public static int[] xp = new int[3];
+        public static int[] choice = new int[9];
+        private ClientJobs() {}
+    }
+
     /** Copie cote client des anneaux ranges. */
     public static final class ClientRings {
         public static final ItemStack[] stacks = new ItemStack[PlayerLore.RING_SLOTS];
@@ -125,6 +150,12 @@ public final class Net {
         e.registrar("1").playToServer(ArtifactJump.TYPE, ArtifactJump.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
             if (ctx.player() instanceof ServerPlayer sp) net.ringsofash.item.Artifacts.setJump(sp, payload.on());
         }));
+        e.registrar("1").playToClient(JobSync.TYPE, JobSync.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
+            ClientJobs.xp = payload.xp(); ClientJobs.choice = payload.choice();
+        }));
+        e.registrar("1").playToServer(ChooseSkill.TYPE, ChooseSkill.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer sp) Jobs.choose(sp, payload.job(), payload.tier(), payload.opt());
+        }));
         e.registrar("1").playToClient(LoreSync.TYPE, LoreSync.CODEC, (payload, ctx) -> {
             ClientLore.rep = payload.rep(); ClientLore.corruption = payload.corruption(); ClientLore.eye = payload.eye(); ClientLore.quest = payload.quest();
         });
@@ -142,6 +173,7 @@ public final class Net {
 
     public static void sync(ServerPlayer p) {
         PlayerLore l = ModData.lore(p);
+        PacketDistributor.sendToPlayer(p, new JobSync(l.jobXp.clone(), l.jobChoice.clone()));
         PacketDistributor.sendToPlayer(p, new LoreSync(l.rep.clone(), l.corruption, l.eye, l.quest));
         l.fixActiveRing();
         int[] eye = p.level().dimension() == net.ringsofash.world.ModWorldgen.LANDS ? net.ringsofash.world.EyeOfSauron.pos(p.serverLevel()) : null;

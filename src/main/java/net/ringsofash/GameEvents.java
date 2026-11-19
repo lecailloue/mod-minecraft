@@ -79,6 +79,7 @@ public final class GameEvents {
 
     public static void init(IEventBus modBus) {
         modBus.addListener(Net::register);
+        net.ringsofash.data.Jobs.init(NeoForge.EVENT_BUS);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.StartTracking ev) -> {
             if (ev.getEntity() instanceof ServerPlayer viewer && ev.getTarget() instanceof ServerPlayer target) net.ringsofash.item.SylvanHeart.sendTo(viewer, target);
         });
