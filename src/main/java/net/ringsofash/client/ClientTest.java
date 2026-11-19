@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"399", "410", "414b", "415", "420", "421", "422"};
+    private static final String[] ONLY = {"399", "420", "422", "423"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -457,9 +457,9 @@ public final class ClientTest {
         rivT("417_fondcombe_pilier_sud", 140, 26, 345, 140, 14, 300, 6000);
         rivT("418_fondcombe_pilier_ouest", 20, 24, 300, 70, 14, 300, 6000);
         rivT("419_fondcombe_pilier_haut", 130, 36, 262, 130, 14, 300, 6000);
-        rivT("420_fondcombe_pente_ouest", -230, 105, 176, 60, 60, 176, 6000);
-        rivT("421_fondcombe_pente_est", 590, 105, 200, 351, 60, 150, 6000);
-        rivT("422_fondcombe_pente_nord", 262, 150, -140, 262, 70, 40, 6000);
+        rivO("420_fondcombe_pente_ouest", -300, 120, 120, 40, 90, 120, 26, 0, 0);
+        rivO("422_fondcombe_pente_nord", 200, 130, -330, 200, 90, 20, 8, 26, 8);
+        rivO("423_fondcombe_pente_nordouest", -280, 190, -280, 80, 80, 40, 22, 22, 0);
         helmT("430_helm_chargement", 120, 40, 215, 150, 15, 80, 6000);              // charge les chunks du site : sa capture ne compte pas
         helmT("431_helm_vue_sud", 130, 46, 214, 150, 18, 80, 6000);
         helmT("432_helm_muraille", 80, 12, 130, 92, 14, 86, 6000);
@@ -1270,6 +1270,21 @@ public final class ClientTest {
             double ddx = tx - fx, ddy = ty - fy, ddz = tz - fz;
             float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
             lands.setDayTime(time);
+            view(p, lands, pl[0] + fx - 176 + 0.5, py + fy, pl[1] + fz - 176 + 0.5, yaw, pitch);
+        }));
+    }
+
+    /** vue exterieure de Fondcombe : charge en plus une marge de chunks (west, north, east en chunks) autour du plan, pour voir le relief qui le prolonge */
+    private static void rivO(String name, double fx, double fy, double fz, double tx, double ty, double tz, int mw, int mn, int me) {
+        SCENES.add(new Scene(name, 3000, p -> {
+            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+            int[] pl = net.ringsofash.world.MapData.place("fondcombe");
+            if (pl == null) return;
+            for (int dx = -12 - mw; dx <= 12 + me; dx++) for (int dz = -12 - mn; dz <= 12; dz++) lands.getChunk((pl[0] >> 4) + dx, (pl[1] >> 4) + dz);
+            int py = net.ringsofash.world.SiteHeight.py(lands, pl[0], pl[1]);
+            double ddx = tx - fx, ddy = ty - fy, ddz = tz - fz;
+            float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
+            lands.setDayTime(6000);
             view(p, lands, pl[0] + fx - 176 + 0.5, py + fy, pl[1] + fz - 176 + 0.5, yaw, pitch);
         }));
     }
