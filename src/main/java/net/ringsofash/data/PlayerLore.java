@@ -34,6 +34,10 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
     /** Onglet d'artefacts : case 0 = chaine, cases 1 a 4 = artefacts (selon le niveau de la chaine). */
     public final SimpleContainer artifacts = new SimpleContainer(net.ringsofash.item.Artifacts.SLOTS);
 
+    /** Four portable du Fondeur : case 0 = objet a fondre, case 1 = combustible ; chaleur restante, chaleur totale, cuisson, cuisson totale. */
+    public final SimpleContainer furnace = new SimpleContainer(2);
+    public int furnaceBurn, furnaceBurnTotal, furnaceCook, furnaceCookTotal;
+
     /** L'anneau actif doit exister : sinon on prend le premier anneau range, ou aucun. */
     public void fixActiveRing() {
         if (activeRing >= 0 && activeRing < RING_SLOTS && rings.getItem(activeRing).getItem() instanceof net.ringsofash.item.RingItem) return;
@@ -77,6 +81,8 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
         t.putIntArray("jobXp", jobXp);
         t.putIntArray("jobChoice", jobChoice);
         t.put("artifacts", artifacts.createTag(provider));
+        t.put("furnace", furnace.createTag(provider));
+        t.putIntArray("furnaceData", new int[] {furnaceBurn, furnaceBurnTotal, furnaceCook, furnaceCookTotal});
         return t;
     }
 
@@ -105,5 +111,9 @@ public class PlayerLore implements INBTSerializable<CompoundTag> {
         for (int i = 0; i < jobChoice.length && i < jc.length; i++) jobChoice[i] = jc[i];
         artifacts.clearContent();
         if (t.contains("artifacts", Tag.TAG_LIST)) artifacts.fromTag(t.getList("artifacts", Tag.TAG_COMPOUND), provider);
+        furnace.clearContent();
+        if (t.contains("furnace", Tag.TAG_LIST)) furnace.fromTag(t.getList("furnace", Tag.TAG_COMPOUND), provider);
+        int[] fd = t.getIntArray("furnaceData");
+        furnaceBurn = fd.length > 3 ? fd[0] : 0; furnaceBurnTotal = fd.length > 3 ? fd[1] : 0; furnaceCook = fd.length > 3 ? fd[2] : 0; furnaceCookTotal = fd.length > 3 ? fd[3] : 0;
     }
 }

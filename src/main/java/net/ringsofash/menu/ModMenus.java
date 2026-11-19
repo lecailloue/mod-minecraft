@@ -14,5 +14,7 @@ public final class ModMenus {
 
     public static final DeferredHolder<MenuType<?>, MenuType<ArtifactMenu>> ARTIFACTS = MENUS.register("artifacts", () -> new MenuType<>(ArtifactMenu::new, FeatureFlags.DEFAULT_FLAGS));
 
+    public static final DeferredHolder<MenuType<?>, MenuType<PocketFurnaceMenu>> FURNACE = MENUS.register("pocket_furnace", () -> new MenuType<>(PocketFurnaceMenu::new, FeatureFlags.DEFAULT_FLAGS));
+
     private ModMenus() {}
 }

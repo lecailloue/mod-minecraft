@@ -226,15 +226,44 @@ public final class MinerJobs {
         if (!(e.getEntity() instanceof ServerPlayer p)) return;
         ItemStack unb = UNB.remove(p.getUUID());
         if (unb != null) unb.remove(DataComponents.UNBREAKABLE);
-        if (path(p) == 3 && opt(p) == 1 && p.tickCount % 30 == 0 && p.level() instanceof ServerLevel lv) {
-            for (ItemStack s : p.getInventory().items) {
-                if (s.isEmpty() || !(s.is(Tags.Items.ORES) || s.is(Tags.Items.RAW_MATERIALS))) continue;
-                ItemStack r = smelt(lv, s);
-                if (r.isEmpty()) continue;
-                s.shrink(1);
-                if (!p.getInventory().add(r)) p.drop(r, false);
-                break;
+        if (p.level() instanceof ServerLevel lv && net.ringsofash.menu.PocketFurnaceMenu.unlocked(p)) furnaceTick(p, lv);
+    }
+
+    // ------------------------------------------------------------------ four portable (Fondeur > Four portable)
+    /** un tick du four : meme logique qu'un four classique (combustible, cuisson), mais le resultat et l'XP vont directement au joueur */
+    private static void furnaceTick(ServerPlayer p, ServerLevel lv) {
+        PlayerLore l = ModData.lore(p);
+        ItemStack in = l.furnace.getItem(0);
+        Optional<RecipeHolder<SmeltingRecipe>> rec = in.isEmpty() ? Optional.empty() : lv.getRecipeManager().getRecipeFor(RecipeType.SMELTING, new SingleRecipeInput(in), lv);
+        boolean can = rec.isPresent();
+        if (l.furnaceBurn > 0) l.furnaceBurn--;
+        if (can && l.furnaceBurn == 0) {
+            ItemStack fuel = l.furnace.getItem(1);
+            int bt = fuel.isEmpty() ? 0 : fuel.getBurnTime(RecipeType.SMELTING);
+            if (bt > 0) {
+                l.furnaceBurn = bt;
+                l.furnaceBurnTotal = bt;
+                ItemStack rem = fuel.getCraftingRemainingItem();
+                fuel.shrink(1);
+                if (fuel.isEmpty()) l.furnace.setItem(1, rem);
             }
+        }
+        if (can && l.furnaceBurn > 0) {
+            SmeltingRecipe r = rec.get().value();
+            l.furnaceCookTotal = r.getCookingTime();
+            if (++l.furnaceCook >= l.furnaceCookTotal) {
+                l.furnaceCook = 0;
+                ItemStack out = r.assemble(new SingleRecipeInput(in), lv.registryAccess());
+                in.shrink(1);
+                if (in.isEmpty()) l.furnace.setItem(0, ItemStack.EMPTY);
+                if (!out.isEmpty() && !p.getInventory().add(out)) p.drop(out, false);
+                float xp = r.getExperience();
+                int n = (int) Math.floor(xp);
+                if (lv.random.nextFloat() < xp - n) n++;
+                if (n > 0) p.giveExperiencePoints(n);
+            }
+        } else if (l.furnaceCook > 0) {
+            l.furnaceCook = Math.max(0, l.furnaceCook - 2);
         }
     }
 }

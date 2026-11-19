@@ -76,6 +76,13 @@ public final class Net {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    /** Ouvre le four portable du Fondeur. */
+    public record OpenFurnace() implements CustomPacketPayload {
+        public static final CustomPacketPayload.Type<OpenFurnace> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("open_furnace"));
+        public static final StreamCodec<FriendlyByteBuf, OpenFurnace> CODEC = StreamCodec.of((buf, v) -> { }, buf -> new OpenFurnace());
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
     /** Ouvre l'onglet d'artefacts. */
     public record OpenArtifacts() implements CustomPacketPayload {
         public static final CustomPacketPayload.Type<OpenArtifacts> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("open_artifacts"));
@@ -153,6 +160,9 @@ public final class Net {
         }));
         e.registrar("1").playToServer(OpenArtifacts.TYPE, OpenArtifacts.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
             if (ctx.player() instanceof ServerPlayer sp) net.ringsofash.menu.ArtifactMenu.open(sp);
+        }));
+        e.registrar("1").playToServer(OpenFurnace.TYPE, OpenFurnace.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer sp) net.ringsofash.menu.PocketFurnaceMenu.open(sp);
         }));
         e.registrar("1").playToServer(ArtifactJump.TYPE, ArtifactJump.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
             if (ctx.player() instanceof ServerPlayer sp) net.ringsofash.item.Artifacts.setJump(sp, payload.on());

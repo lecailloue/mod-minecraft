@@ -99,7 +99,7 @@ public final class Jobs {
     private static final Skill[][] M10 = {
             {FORT, VEIN, new Skill("Pioche incassable", "Votre pioche ne s'use plus.", true)},
             {new Skill("Casse en 3×3", "La pioche creuse en 3×3 au lieu de 2×2.", true), VEIN, FORT},
-            {new Skill("Four portable", "Les minerais et métaux bruts de votre inventaire fondent tout seuls, sans combustible.", true), FORT, VEIN}};
+            {new Skill("Four portable", "Four dans l'inventaire (onglet dédié) : il fond tout avec du combustible, en tâche de fond. XP et résultat vous arrivent directement.", true), FORT, VEIN}};
 
     /** Competences proposees au palier t (0 = niveau 5, 1 = niveau 10, 2 = niveau 15) ; path = voie choisie au niveau 5 (1 a 3, 0 = aucune). */
     public static Skill[] skills(Job j, int t, int path) {
