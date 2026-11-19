@@ -45,7 +45,7 @@ def skin(name, race='human', skin='#c69a7a', hair='#4a3020', hair_style='short',
          boots='#2a2018', belt='#3a2a1a', beard=None, beard_len=0, sleeves=True, armor=None, hood=None, seed=0, face=None, ears=None,
          tusks=False, gloves=None, alpha=255, emblem=None, crown=None, pauldrons=None, skirt=False, xg=None):
     big = race in ('elf', 'dwarf')
-    s = Skin(seed, 128 if big else 64)
+    s = Skin(seed, 256 if big else 64)
     sk = _c(skin); hr = _c(hair); tp = _c(top); tr = _c(trim) if trim else shade(tp, 0.7); lg = _c(legs); bt = _c(boots)
     a = alpha
     # --- tete

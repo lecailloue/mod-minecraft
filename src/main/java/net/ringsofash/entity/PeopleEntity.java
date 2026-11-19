@@ -135,7 +135,7 @@ public class PeopleEntity extends AbstractVillager {
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData data) {
         data = super.finalizeSpawn(level, difficulty, reason, data);
-        entityData.set(VARIANT, level.getRandom().nextInt(60));
+        entityData.set(VARIANT, level.getRandom().nextInt(120));
         if (profession < 0) profession = level.getRandom().nextInt(Trades.professions(this));
         if (isRanger()) { setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.RANGER_SWORD.get())); setDropChance(EquipmentSlot.MAINHAND, 0.0F); }
         if (isMage()) { setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.STAFF_LIGHT.get())); setDropChance(EquipmentSlot.MAINHAND, 0.0F); }

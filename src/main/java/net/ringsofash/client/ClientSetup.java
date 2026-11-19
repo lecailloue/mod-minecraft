@@ -293,7 +293,7 @@ public final class ClientSetup {
         switch (kind) {
             case "elf", "dwarf" -> {
                 PeopleParts.add(kind, mesh.getRoot());
-                return LayerDefinition.create(mesh, 128, 128);
+                return LayerDefinition.create(mesh, 128, 256);
             }
             case "orc" -> {
                 head.addOrReplaceChild("roa_ear_r", CubeListBuilder.create().texOffs(64, 16).addBox(-1.0F, -2.0F, -1.0F, 1.0F, 3.0F, 2.0F), PartPose.offsetAndRotation(-4.0F, -4.0F, 0.5F, 0.3F, 0.0F, -0.5F));
@@ -417,8 +417,8 @@ public final class ClientSetup {
         e.registerEntityRenderer(ModEntities.DRAGON.get(), c -> new Renderers.Geo<>(c, layer("geo_dragon"), "dragon", 2.5F, 1.0F, f -> "dragon", null));
         e.registerEntityRenderer(ModEntities.SORCERER.get(), c -> new Renderers.Human<>(c, plain, 1.05F, 1.08F, f -> "sorcerer", false));
         e.registerEntityRenderer(ModEntities.HUMAN.get(), c -> new Renderers.Human<PeopleEntity>(c, plain, 0.9375F, 0.9375F, f -> peopleTex(f, "human", 4), false));
-        e.registerEntityRenderer(ModEntities.ELF.get(), c -> new Renderers.Human<PeopleEntity>(c, elf, 0.94F, 1.05F, f -> peopleTex(f, "elf", 10), false));
-        e.registerEntityRenderer(ModEntities.DWARF.get(), c -> new Renderers.Human<PeopleEntity>(c, dwarf, 1.1F, 0.74F, f -> peopleTex(f, "dwarf", 20), false));
+        e.registerEntityRenderer(ModEntities.ELF.get(), c -> new Renderers.Human<PeopleEntity>(c, elf, 0.94F, 1.05F, f -> peopleTex(f, "elf", 20), false));
+        e.registerEntityRenderer(ModEntities.DWARF.get(), c -> new Renderers.Human<PeopleEntity>(c, dwarf, 1.1F, 0.74F, f -> peopleTex(f, "dwarf", 40), false));
         e.registerEntityRenderer(ModEntities.HALFLING.get(), c -> new Renderers.Human<PeopleEntity>(c, plain, 0.66F, 0.6F, f -> peopleTex(f, "halfling", 3), false));
         e.registerEntityRenderer(ModEntities.RANGER.get(), c -> new Renderers.Human<PeopleEntity>(c, plain, 0.9375F, 0.9375F, f -> "ranger", false));
         e.registerEntityRenderer(ModEntities.MAGE.get(), c -> new Renderers.Human<PeopleEntity>(c, plain, 0.9375F, 0.97F, f -> "mage", false));
