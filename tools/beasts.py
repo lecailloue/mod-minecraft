@@ -792,7 +792,7 @@ def boar():
     def leg(nm, s, z, fore):
         x = 8.5 * s
         kids = [
-            B(f'{nm}_up', x - 4.5, 7, z - 4.5, 9, 10, 9, 'bhide', key='b_up'),
+            B(f'{nm}_up', x - 5.5, 6.5, z - 5.5, 11, 11, 11, 'bhide', key='b_up_f') if fore else B(f'{nm}_up', x - 5, 6, z - 5.5, 10, 12, 11, 'bhide', key='b_up_h'),
             B(f'{nm}_low', x - 3.5, 2.5, z - 3.5, 7, 6, 7, 'bhide', key='b_low'),
             B(f'{nm}_toe_a', x - 3.5, 0, z - 4.5, 3.4, 3, 7, 'hoof', key='b_toe'),
             B(f'{nm}_toe_b', x + .1, 0, z - 4.5, 3.4, 3, 7, 'hoof', key='b_toe'),
@@ -807,12 +807,25 @@ def boar():
     legs += [leg('leg_fr', 1, -14, True), leg('leg_fl', -1, -14, True), leg('leg_br', 1, 14, False), leg('leg_bl', -1, 14, False)]
 
     body_kids = [
-        B('chest', -13.5, 14, -21, 27, 22, 22, 'bhide', key='b_chest'),
-        B('hump', -11, 34, -19, 22, 4, 17, 'bfur', key='b_hump'),
-        B('rear', -11.5, 14, 0, 23, 19, 26, 'bhide', key='b_rear'),
-        B('belly', -10, 12.5, -14, 20, 3, 34, 'bfur', key='b_belly'),
-        B('rump', -10, 18, 25, 20, 13, 3, 'bhide', key='b_rump'),
+        # poitrail et flancs en couches : large au milieu, plus etroit en haut et en bas (silhouette de tonneau)
+        B('chest_a', -10.5, 14, -21, 21, 4.5, 22, 'bhide', key='b_chest_a'),
+        B('chest_b', -13, 18.5, -21, 26, 6, 22, 'bhide', key='b_chest_b'),
+        B('chest_c', -13.5, 24.5, -21, 27, 6, 22, 'bhide', key='b_chest'),
+        B('chest_d', -11.5, 30.5, -21, 23, 4, 22, 'bhide', key='b_chest_d'),
+        B('chest_front', -9, 16, -25, 18, 16, 4, 'bhide', key='b_chest_f'),
+        B('chest_front_up', -7, 30, -24.5, 14, 4, 3.5, 'bfur', key='b_chest_fu'),
+        B('hump', -10, 34, -19, 20, 4, 17, 'bfur', key='b_hump'),
+        B('shoulder_hump_r', -14.2, 24, -18, 1.6, 8, 11, 'bhide', key='b_shump'),
+        B('shoulder_hump_l', 12.6, 24, -18, 1.6, 8, 11, 'bhide', key='b_shump'),
+        B('belly', -8, 12.5, -14, 16, 3, 34, 'bfur', key='b_belly'),
+        B('rump', -7, 16, 25, 14, 11, 3, 'bhide', key='b_rump'),
+        B('rump_low', -5.5, 13.5, 26, 11, 4, 2, 'bhide', key='b_rump_l'),
     ]
+    # croupe : le dos descend vers l'arriere et se resserre (3 tranches), comme un vrai sanglier (epaules hautes, arriere-train plus bas)
+    for i, (z0, ln, top, wf) in enumerate(((0, 9, 33.5, 1.0), (9, 9, 31, .94), (18, 8, 28.5, .86))):
+        for nm, y0, y1, hw in (('a', 14, 18.5, 8.5), ('b', 18.5, 24.5, 11), ('c', 24.5, top, 11.5), ('d', 30.5, 33.5, 9.5)):
+            if y1 <= y0 or (nm == 'd' and i > 0): continue
+            body_kids.append(B(f'rear{nm}{i}', -hw * wf, y0, z0, 2 * hw * wf, y1 - y0, ln, 'bhide', key=f'b_rear{nm}{i}'))
     for i in range(7):                                     # crinière hérissée le long du dos
         hh = 8 - i * .5 if i < 3 else 6 - (i - 3) * .6
         body_kids.append(B(f'mane{i}', -2, 36 - (i > 1) * (i - 1) * .9, -19 + i * 6, 4, hh, 4, 'bfur', key=f'b_mane{i}'))
@@ -838,24 +851,29 @@ def boar():
         zs = ((-20, 9.4), (-10.2, 9.0), (-0.9, 8.4), (7.9, 8.4), (16.8, 8.6))
         hs = (11.2, 10.4, 9.6, 8.8, 8.0)
         for k, ((z0, ln), hh) in enumerate(zip(zs, hs)):
-            e = (13.5 if z0 + ln / 2 < 0 else 11.5) + (0.7 if k % 2 else 0)
-            body_kids.append(B(f'pan{k}_{sd(s)}', X(e, 2.2), 33.6 - hh, z0, 2.2, hh, ln, 'dwsteel', key=f'b_pan{k}'))
+            top = (33.6, 33.6, 33.6, 31.2, 28.8)[k]
+            wf = (1, 1, 1, .94, .86)[k]
+            e = (13.7 if z0 + ln / 2 < 0 else 11.7 * wf) + (0.5 if k % 2 else 0)
+            y0 = top - hh
+            xc = e + 1.1 if s > 0 else -(e + 1.1)
+            body_kids.append(G(f'pan{k}_{sd(s)}', (xc, y0, z0), rot=(0, 0, 9 * s), children=[
+                B(f'pan{k}_{sd(s)}_b', X(e, 2.2), y0, z0, 2.2, hh, ln, 'dwsteel', key=f'b_pan{k}')]))
         body_kids.append(B(f'skirt_c_{sd(s)}', X(13.4, 2.2), 17, -20, 2.2, 5.5, 20, 'dwmail', key='b_skirt_c'))
-        body_kids.append(B(f'skirt_r_{sd(s)}', X(11.4, 2.2), 17, 0.4, 2.2, 5.5, 25.6, 'dwmail', key='b_skirt_r'))
+        body_kids.append(B(f'skirt_r_{sd(s)}', X(10.4, 2.2), 17, 0.4, 2.2, 5.5, 25.6, 'dwmail', key='b_skirt_r'))
         body_kids.append(B(f'hem_c_{sd(s)}', X(13.3, 2.6), 16.2, -20.2, 2.6, 1, 20.4, 'dwgold', key='b_dhem_c'))
-        body_kids.append(B(f'hem_r_{sd(s)}', X(11.3, 2.6), 16.2, 0.2, 2.6, 1, 26, 'dwgold', key='b_dhem_r'))
+        body_kids.append(B(f'hem_r_{sd(s)}', X(10.3, 2.6), 16.2, 0.2, 2.6, 1, 26, 'dwgold', key='b_dhem_r'))
         # epaulieres : deux ailerons d'or evases vers l'exterieur, comme celles des armures naines
         for j, (rz, yy, ln) in enumerate(((13, 35.2, 12), (24, 33.6, 10))):
             x0 = 12.5 if s > 0 else -(12.5 + 7)
             body_kids.append(G(f'fin{j}_{sd(s)}', (12.5 * s, yy, -14), rot=(0, 0, rz * s), children=[
                 B(f'fin{j}_{sd(s)}_b', x0, yy, -14 - ln / 2, 7, 1, ln, 'dwgold', key=f'b_fin{j}')]))
     body_kids += [
-        B('rump_plate', -8, 16, 28, 16, 14, 2, 'dwsteel', key='b_rumpp'),
-        B('rump_trim', -8.8, 29.2, 27.6, 17.6, 1.8, 2.8, 'dwband', key='b_rtrim'),
-        B('rump_boss', -2, 21, 29.8, 4, 4, 1.2, 'dwgold', key='b_rboss'),
+        B('rump_plate', -6.5, 13.5, 28, 13, 13, 2, 'dwsteel', key='b_rumpp'),
+        B('rump_trim', -7.3, 25.5, 27.6, 14.6, 1.8, 2.8, 'dwband', key='b_rtrim'),
+        B('rump_boss', -2, 17.5, 29.8, 4, 4, 1.2, 'dwgold', key='b_rboss'),
     ]
     for i in range(3):                                       # plaques d'acier le long de la selle
-        body_kids.append(B(f'backplate{i}', -6, 32, 9 + i * 5.4, 12, 2, 4.4, 'dwsteel', key='b_bp'))
+        body_kids.append(B(f'backplate{i}', -5.5 + i * .5, (31, 29.3, 28.5)[i], 9.5 + i * 5.4, 11 - i, 2, 4.4, 'dwsteel', key=f'b_bp{i}'))
     body_kids += [
         B('collar', -10.5, 18, -23, 21, 5, 5, 'dwsteel', key='b_collar'),
         B('collar_band', -10.9, 21, -23.4, 21.8, 1.6, 5.8, 'dwband', key='b_cband'),
@@ -864,22 +882,24 @@ def boar():
 
     # tete : crane massif, groin, défenses, casque
     head_kids = [
-        B('skull', -9, 13, -39, 18, 19, 19, 'bhide', key='b_skull_h', fx=fx_eye(2, 11, col=(190, 54, 30), glint=(255, 200, 120))),
-        B('snout', -5.5, 13, -49, 11, 9, 11, 'bsnout', key='b_snout'),
-        B('nose', -6, 12.5, -51, 12, 9, 2, 'bsnout', key='b_nose', fx=fx_nostrils),
-        B('jowl_r', -10, 14, -35, 2, 10, 12, 'bfur', key='b_jowl'),
-        B('jowl_l', 8, 14, -35, 2, 10, 12, 'bfur', key='b_jowl'),
+        B('skull_a', -8.5, 14, -30, 17, 18, 10, 'bhide', key='b_skull_a'),
+        B('skull', -7, 13, -38, 14, 15, 8.2, 'bhide', key='b_skull_h', fx=fx_eye(1, 5, col=(190, 54, 30), glint=(255, 200, 120))),
+        B('snout', -4.8, 12, -47, 9.6, 9, 9.2, 'bsnout', key='b_snout'),
+        B('snout_up', -4, 20.5, -45, 8, 2.5, 7, 'bhide', key='b_snout_u'),
+        B('nose', -5.6, 11.5, -49, 11.2, 8.5, 2.2, 'bsnout', key='b_nose', fx=fx_nostrils),
+        B('jowl_r', -9.8, 14, -35, 2, 10, 12, 'bfur', key='b_jowl'),
+        B('jowl_l', 7.8, 14, -35, 2, 10, 12, 'bfur', key='b_jowl'),
         B('brow', -9.5, 25, -40, 19, 3, 4, 'bfur', key='b_brow'),
         # casque nain : calotte d'acier, crete de bronze, bandeau d'or a fenetres, joues et garde-nez de bronze
-        B('helm_plate', -8.5, 31.5, -40, 17, 2.4, 18, 'dwsteel', key='b_helm'),
-        B('helm_dome', -6.5, 33.8, -37, 13, 2, 13, 'dwsteel', key='b_hdome'),
-        B('helm_crest', -1, 35.6, -38, 2, 2, 16, 'dwbronze', key='b_crest'),
-        B('helm_brow', -9.5, 26.6, -41.6, 19, 3.2, 2.2, 'dwband', key='b_hbrow'),
-        B('helm_side_r', -9.8, 26.6, -41, 1.4, 3.2, 12, 'dwband', key='b_hside'),
-        B('helm_side_l', 8.4, 26.6, -41, 1.4, 3.2, 12, 'dwband', key='b_hside'),
-        B('cheek_r', -10.8, 15, -37, 1.8, 12, 13, 'dwsteel', key='b_cheekp'),
-        B('cheek_l', 9, 15, -37, 1.8, 12, 13, 'dwsteel', key='b_cheekp'),
-        B('nose_guard', -3, 22, -49.6, 6, 1.8, 12.4, 'dwsteel', key='b_nguard'),
+        B('helm_plate', -8, 31.5, -38, 16, 2.4, 16, 'dwsteel', key='b_helm'),
+        B('helm_dome', -6, 33.8, -36, 12, 2, 12, 'dwsteel', key='b_hdome'),
+        B('helm_crest', -1, 35.6, -37, 2, 2, 15, 'dwbronze', key='b_crest'),
+        B('helm_brow', -8, 26.6, -39.6, 16, 3.2, 2.2, 'dwband', key='b_hbrow'),
+        B('helm_side_r', -9.4, 26.6, -39, 1.4, 3.2, 12, 'dwband', key='b_hside'),
+        B('helm_side_l', 8, 26.6, -39, 1.4, 3.2, 12, 'dwband', key='b_hside'),
+        B('cheek_r', -10.3, 15, -36, 1.8, 11, 11, 'dwsteel', key='b_cheekp'),
+        B('cheek_l', 8.5, 15, -36, 1.8, 11, 11, 'dwsteel', key='b_cheekp'),
+        B('nose_guard', -3, 22.6, -48.6, 6, 1.8, 14, 'dwsteel', key='b_nguard'),
         B('nose_ring', -1.5, 14, -52, 3, 3, 1, 'dwgold', key='b_ring'),
     ]
     ears = []
@@ -888,16 +908,16 @@ def boar():
         ears.append(G(f'ear_{sd(s)}', (x, 30, -26), rot=(0, 0, -25 * s), children=[
             B(f'ear_{sd(s)}_o', x - (0 if s > 0 else 2.5), 30, -28, 2.5, 8, 6, 'bhide', key='b_ear'),
             B(f'ear_{sd(s)}_i', x + (0 if s < 0 else 2.2) - (0 if s > 0 else 0.5), 30.5, -27, .6, 6, 4, 'redleath', key='b_earin')]))
-    tuskU = [tusk_chain(B, G, f'tusk_u{sd(s)}', (5.5 * s, 16, -42), (-28, 24 * s, 0),
+    tuskU = [tusk_chain(B, G, f'tusk_u{sd(s)}', (4.8 * s, 15, -44), (-28, 24 * s, 0),
                         [(6, 4, None), (6, 3.6, (28, -3 * s, 0)), (6, 3.1, (26, -4 * s, 0)), (5, 2.5, (24, -3 * s, 0)), (4, 1.8, (22, 0, 0))],
                         key=f'b_tu{sd(s)}', rope_at=(1,), spike=False) for s in (1, -1)]
-    tuskL = [tusk_chain(B, G, f'tusk_d{sd(s)}', (4.2 * s, 14, -46), (-8, 10 * s, 0),
+    tuskL = [tusk_chain(B, G, f'tusk_d{sd(s)}', (3.8 * s, 13.5, -47), (-8, 10 * s, 0),
                         [(5, 2.6, None), (5, 2.2, (14, -2 * s, 0)), (4, 1.6, (14, 0, 0))],
                         key=f'b_td{sd(s)}', spike=False) for s in (1, -1)]
     jaw = G('jaw', (0, 14, -42), children=[B('jaw_b', -4, 11, -50, 8, 3, 10, 'bsnout', key='b_jaw')])
     head = G('head', (0, 24, -20), children=head_kids + ears + [jaw] + tuskU + tuskL)
     body.children.append(head)
-    tail = G('tail', (0, 29, 26), children=[B('tail_a', -1, 22, 25.5, 2, 9, 2, 'bhide', key='b_tail'), G('tail2', (0, 22, 26), rot=(25, 0, 0), children=[B('tail_b', -1.5, 16, 25, 3, 7, 3, 'bfur', key='b_tail2')])])
+    tail = G('tail', (0, 26, 27), children=[B('tail_a', -1, 19, 26.5, 2, 9, 2, 'bhide', key='b_tail'), G('tail2', (0, 19, 27), rot=(25, 0, 0), children=[B('tail_b', -1.5, 13, 26, 3, 7, 3, 'bfur', key='b_tail2')])])
     return legs + [body, tail]
 
 
@@ -914,20 +934,20 @@ def fx_nostrils(F, rng, glow):
 def antler(B, G, s, key):
     """un bois majestueux (s = cote) : la perche part vers l'exterieur puis se redresse en lyre, avec andouillers de
     base (vers l'avant), de glace, de milieu et une couronne de pointes au sommet. Dessine droit (vertical) puis courbe par rotations."""
-    px, py, pz = 2.2 * s, 52.0, -13
+    px, py, pz = 2.6 * s, 52.0, -13
     n = sd(s)
-    segs = [(9, 2.6, (10, 0, -56 * s)), (8, 2.3, (-3, 0, 18 * s)), (7.5, 2.0, (-2, 0, 17 * s)), (7, 1.8, (-2, 0, 15 * s)), (5, 1.5, (-2, 0, 10 * s))]
+    segs = [(9, 3.0, (12, 0, -72 * s)), (9, 2.6, (-4, 0, 17 * s)), (8.5, 2.3, (-3, 0, 17 * s)), (8, 2.0, (-3, 0, 17 * s)), (6, 1.7, (-3, 0, 12 * s))]
     # andouillers : (segment, hauteur sur le segment, rotation (x avant<0 / arriere>0, y, z), longueur, epaisseur)
     tines = {
-        0: [(2.5, (-70, 0, -8 * s), 7.5, 1.9), (6.0, (-52, 0, -14 * s), 8.5, 1.8)],
-        1: [(3.0, (-42, 0, 28 * s), 8.5, 1.7), (6.0, (-26, 0, 30 * s), 7.5, 1.6)],
-        2: [(3.0, (-30, 0, 32 * s), 7.5, 1.5), (6.0, (-14, 0, 34 * s), 6.0, 1.4)],
-        3: [(2.5, (-22, 0, 30 * s), 6.0, 1.4)],
-        4: [(5.0, (-18, 0, 24 * s), 5.0, 1.3), (5.0, (0, 0, 0), 4.5, 1.3), (5.0, (14, 0, -24 * s), 5.0, 1.3)],
+        0: [(2.5, (-72, 0, -10 * s), 8.5, 2.1), (6.5, (-50, 0, 22 * s), 9.5, 2.0)],
+        1: [(2.0, (-40, 0, 30 * s), 10, 1.9), (5.0, (-24, 0, 34 * s), 9.5, 1.8), (8.0, (-10, 0, 38 * s), 7.5, 1.6)],
+        2: [(2.0, (-32, 0, 34 * s), 9.5, 1.7), (5.0, (-16, 0, 36 * s), 8.5, 1.6), (7.5, (-4, 0, 38 * s), 6.5, 1.5)],
+        3: [(2.0, (-26, 0, 32 * s), 8.0, 1.5), (5.5, (-10, 0, 34 * s), 6.5, 1.4)],
+        4: [(5.0, (-20, 0, 26 * s), 6.0, 1.4), (6.0, (0, 0, 0), 5.5, 1.4), (5.0, (16, 0, -26 * s), 6.0, 1.4)],
     }
     nodes = []
     y = py
-    F = .8
+    F = .92
     for i, (L, t, rot) in enumerate(segs):
         L = L * F
         kids = [B(f'ant{n}_{i}', px - t / 2, y, pz - t / 2, t, L, t, 'antler', key=f'{key}{i}')]
