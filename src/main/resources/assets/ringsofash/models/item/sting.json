@@ -1,0 +1,1 @@
+{"parent":"minecraft:item/handheld","textures":{"layer0":"ringsofash:item/sting"},"overrides":[{"predicate":{"ringsofash:glow":1},"model":"ringsofash:item/sting_glow"}]}

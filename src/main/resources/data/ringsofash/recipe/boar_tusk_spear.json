@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","category":"misc","pattern":["  #"," s ","s  "],"key":{"#":{"item":"ringsofash:boar_tusk"},"s":{"item":"minecraft:stick"}},"result":{"id":"ringsofash:boar_tusk_spear","count":1}}

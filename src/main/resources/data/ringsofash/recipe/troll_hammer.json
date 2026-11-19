@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","category":"misc","pattern":["#t#","#s#"," s "],"key":{"#":{"item":"ringsofash:troll_hide"},"t":{"item":"ringsofash:troll_tooth"},"s":{"item":"minecraft:stick"}},"result":{"id":"ringsofash:troll_hammer","count":1}}
