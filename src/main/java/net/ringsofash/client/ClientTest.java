@@ -584,7 +584,7 @@ public final class ClientTest {
         morT("435_moria_pont", 75.5, 40, -556.5, 76, 10, -640.5, 6000);
         morT("436_moria_forges", 75.5, -8, -692.5, 90, 10, -790.5, 6000);
         morT("437_moria_cascade", 56.5, -12, -770.5, 56, 10, -832.5, 6000);
-        morT("438_moria_colosse", 26.5, -8, -690.5, 26.5, 22, -716.5, 6000);
+        morT("438_moria_colosse", 26.5, 0, -664.5, 26.5, 14, -716.5, 6000);
         morT("439_moria_tombe", 266.5, -16, -760.5, 280, -16, -760.5, 6000);
         morT("440_moria_galerie", -125.5, -16, -762.5, -190, -16, -725.5, 6000);
         // Edoras (centre 352, 1180, perron du palais au sud, route en lacets depuis le sud-ouest) ; py = niveau du sol sous la colline

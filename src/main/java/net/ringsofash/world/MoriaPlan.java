@@ -19,7 +19,7 @@ public final class MoriaPlan {
     public static final int F0 = 80;       // sol de la cour et de la Grande Salle
     public static final int F1 = 17;       // sol du gouffre (le pont) et de son palier
     public static final int F2 = -20;      // sol des Forges et des galeries
-    public static final int LW = 77;       // niveau du lac
+    public static final int LW = 72;       // niveau du lac
     public static final int GX = 168, GZ = -360;   // plan de la falaise (la porte est a l'ouest de x = GX), axe de la porte
 
     // ------------------------------------------------------------------ bruits
@@ -44,16 +44,19 @@ public final class MoriaPlan {
 
     // ------------------------------------------------------------------ le lac et la cour (relief exterieur)
     private static double lakeR(int x, int z) {
-        double a = (x - 262) / 48.0, b = (z + 358) / 72.0;
+        double a = (x - 252) / 42.0, b = (z + 358) / 72.0;
         return Math.sqrt(a * a + b * b);
     }
 
     public static boolean inLake(int x, int z) {
-        return x > 205 && x < 320 && z > -440 && z < -275 && lakeR(x, z) < 1.0;
+        return x > 205 && x < 300 && z > -440 && z < -275 && lakeR(x, z) < 1.0;
     }
 
     /** niveau de l'eau du lac a cet endroit, ou MIN_VALUE */
     public static int lakeTop(int x, int z, int h) { return inLake(x, z) && h < LW ? LW : Integer.MIN_VALUE; }
+
+    /** la cour taillee devant les Portes : sol de montagne sans neige */
+    public static boolean inCourt(int x, int z) { return x >= GX - 2 && x <= 232 && Math.abs(z - GZ) <= 62; }
 
     /** relief : la falaise taillee devant les Portes (cour plate a F0), le bassin du lac et sa digue */
     public static int surface(int x, int z, int g) {
@@ -63,13 +66,9 @@ public final class MoriaPlan {
         double w = (1 - sm((u - 46) / 18.0)) * (1 - sm((x - 222) / 14.0));
         if (w > 0) out = (int) Math.round(g + (Math.min(g, F0) - g) * w);
         double r = lakeR(x, z);
-        if (r < 1.0) {
-            int bed = LW - 2 - (int) Math.round(14 * sm((1 - r) / 0.8));
+        if (r < 1.3) {                                                   // cuvette du lac et berges en pente douce
+            int bed = r < 1.0 ? LW - 2 - (int) Math.round(14 * sm((1 - r) / 0.8)) : LW - 2 + (int) Math.round((r - 1) * 40);
             out = Math.min(out, bed);
-        } else if (r < 1.35) {
-            double wd = 1 - sm((r - 1.08) / 0.27);
-            int target = LW + 1;
-            if (out < target) out = (int) Math.round(out + (target - out) * wd);
         }
         return out;
     }
@@ -96,8 +95,6 @@ public final class MoriaPlan {
     }
 
     // ------------------------------------------------------------------ les Portes et le couloir d'entree
-    private static final int[][] STARS = {{0, 51}, {-10, 47}, {10, 47}, {-17, 41}, {17, 41}, {-21, 33}, {21, 33}, {-5, 49}, {5, 49}, {-14, 45}, {14, 45}};
-
     private static int gate(int x, int y, int z, int h) {
         if (x < 139 || x > GX + 1 || z < GZ - 30 || z > GZ + 30 || y < F0 || y > F0 + 58) return KEEP;
         int u = z - GZ, v = y - F0, au = Math.abs(u);
@@ -114,15 +111,13 @@ public final class MoriaPlan {
         if (v == 0 && au <= 9) return (x % 8 == 0 && au <= 1) ? DRUNES : floorPat(x, z);
         double dOut = v <= 42 ? au - wc(v) : Math.hypot(u, v - 42);
         if (face) {
-            if (au > 27 || v > 55) return KEEP;
+            if (dOut > 9.5 || v > 56) return KEEP;
             boolean front = x == GX - 1;
-            if (au >= 24) return v % 12 == 11 ? DCHISEL : DPILLAR;
-            if (v >= 54) return DCHISEL;
             if (dOut > 0 && dOut <= 1.5 && front) return WHITE;
             if (dOut > 1.5 && dOut <= 3.5) return DCHISEL;
             if (front) {
-                for (int[] s : STARS) if (Math.abs(au - Math.abs(s[0])) + Math.abs(v - s[1]) <= 1 && dOut > 6) return DRUNES;
-                if (v >= 44 && v <= 45 && dOut > 6) return (x + u) % 2 == 0 ? DRUNES : DCHISEL;
+                if (dOut > 4.5 && dOut < 9 && r01(u, v, 17) < 0.045) return DRUNES;              // les etoiles
+                if (dOut > 3.5 && dOut <= 4.5 && v >= 8 && (v + au) % 3 == 0) return DRUNES;       // la guirlande d'ithildin autour de l'arche
                 return DBRICKS;
             }
             return DSTONE;
@@ -275,7 +270,7 @@ public final class MoriaPlan {
         if (y < -51) return KEEP;
         if (y <= -46) return LAVA;
         double s = vn(x / 8.0, z / 8.0, 31);
-        if (s > 0.66 && y <= -45 + (int) ((s - 0.66) / 0.34 * 42)) return BLACKSTONE;
+        if (s > 0.71 && y <= -45 + (int) ((s - 0.71) / 0.29 * 38)) return BLACKSTONE;
         return AIR;
     }
 

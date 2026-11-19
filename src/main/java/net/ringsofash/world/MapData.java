@@ -135,6 +135,7 @@ public final class MapData {
     public static int biome(int x, int z) {
         if (!loaded) load();
         if (!inside(x, z)) return B_MER;
+        if (MoriaPlan.inCourt(x, z)) return B_MONTS;
         int gx = (int) Math.floor((x + HALF) / SCALE), gz = (int) Math.floor((z + HALF) / SCALE);
         int b0 = biome[cell(gx, gz)];
         if (b0 == B_MER || b0 == B_RIVIERE || b0 == B_RIVAGE || b0 == B_LAVE) return b0;
