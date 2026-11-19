@@ -451,6 +451,9 @@ public final class ClientTest {
         rivT("411_fondcombe_gradin", 112, 62, 112, 106, 68, 88, 6000);
         rivT("412_fondcombe_arcade", 110, 16, 200, 110, 20, 163, 6000);
         rivT("413_fondcombe_coucher", 236, 42, 170, 110, 55, 130, 12800);
+        rivT("414b_fondcombe_lac", 240, 104, 112, 262, 88, 48, 6000);
+        rivT("415_fondcombe_epaule_est", 335, 58, 205, 305, 48, 140, 6000);
+        rivT("416_fondcombe_galerie", 110, 34, 186, 110, 22, 146, 6000);
         helmT("430_helm_chargement", 120, 40, 215, 150, 15, 80, 6000);              // charge les chunks du site : sa capture ne compte pas
         helmT("431_helm_vue_sud", 130, 46, 214, 150, 18, 80, 6000);
         helmT("432_helm_muraille", 80, 12, 130, 92, 14, 86, 6000);
