@@ -3,7 +3,7 @@ Usage : python3 fondcombe_relief.py plan.bin  (plan.bin : grille du plan Rivende
 La grille du plan est lue en octets [y+30][z][x] (352 x 181 x 352)."""
 import sys, zlib, struct, json, os
 import numpy as np
-from scipy.ndimage import gaussian_filter
+from scipy.ndimage import gaussian_filter, distance_transform_edt
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BIN = os.path.join(HERE, '..', '..', 'src', 'main', 'resources', 'data', 'ringsofash', 'map', 'hautemarche.bin')
@@ -73,6 +73,11 @@ def main(plan):
     sub = h[gz0:gz1, gx0:gx1]
     gs = gaussian_filter(sub.astype(np.float32), 14)                         # sol local lisse : la pente part du terrain reel, pas d'un plateau absolu
     target = gs + t
+    riv = bio[gz0:gz1, gx0:gx1] == 8                                         # les rivieres restent en place : le relief s'estompe a leur approche (berges en pente douce)
+    if riv.any():
+        wgt = sm(distance_transform_edt(~riv) / 9.0)
+        target = sub + (target - sub) * wgt
+        t = t * wgt
     raise_ = np.where((t > 1.5) & (target > sub), np.rint(target), sub).astype(np.int32)
     h[gz0:gz1, gx0:gx1] = raise_
     raw2 = h.astype('>i2').tobytes() + wat.astype('>i2').tobytes() + bio.tobytes()
