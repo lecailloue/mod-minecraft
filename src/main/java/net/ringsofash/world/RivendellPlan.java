@@ -394,7 +394,7 @@ public final class RivendellPlan {
                 int xx = x + o[0], zz = z + o[1];
                 if (area(xx, zz)) drop = Math.max(drop, t - th[zz * W + xx]);
             }
-            boolean soilFace = t < 100 && !wet && ramp[i] == 0 && drop >= 2 && drop <= 8;
+            boolean soilFace = t < 100 && !wet && ramp[i] == 0 && drop >= 2 && drop <= 24 && Math.hypot(x - POOL_X, z - POOL_Z) > 60;
             for (int y = -OFF + 2; y <= t; y++) {
                 int id;
                 int depth = t - y;
