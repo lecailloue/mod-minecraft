@@ -149,6 +149,12 @@ public class PeopleEntity extends AbstractVillager {
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData data) {
         data = super.finalizeSpawn(level, difficulty, reason, data);
         entityData.set(VARIANT, level.getRandom().nextInt(120));
+        // taille individuelle : elfes 2,05 a 2,2 blocs, nains 1,3 a 1,5 (hitbox de base 2,05 / 1,4, mise a l'echelle par l'attribut SCALE : modele + hitbox)
+        var sc = getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.SCALE);
+        if (sc != null) {
+            if (people() == People.ELF) sc.setBaseValue(1.0 + level.getRandom().nextFloat() * (2.2 / 2.05 - 1.0));
+            else if (people() == People.DWARF) sc.setBaseValue((1.3 + level.getRandom().nextFloat() * 0.2) / 1.4);
+        }
         if (profession < 0) profession = level.getRandom().nextInt(Trades.professions(this));
         if (isRanger()) { setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.RANGER_SWORD.get())); setDropChance(EquipmentSlot.MAINHAND, 0.0F); }
         if (isMage()) { setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.STAFF_LIGHT.get())); setDropChance(EquipmentSlot.MAINHAND, 0.0F); }
