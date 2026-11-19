@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"405", "414b", "420", "422", "423"};
+    private static final String[] ONLY = {"405", "422_f"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -441,7 +441,8 @@ public final class ClientTest {
         rivT("402_fondcombe_maison_vallee", 112, 50, 188, 108, 52, 140, 6000);
         rivT("403_fondcombe_promenade", 107, 35, 158, 107, 52, 128, 6000);
         rivT("404_fondcombe_conseil", 195, 36, 176, 195, 42, 136, 6000);
-        rivT("405_fondcombe_grande_cascade", 262, 22, 178, 262, 62, 80, 6000);
+        rivT("405_fondcombe_grande_cascade", 262, 12, 140, 262, 45, 76, 6000);
+        rivT("405b_fondcombe_cascade_loin", 262, 70, 215, 262, 35, 72, 6000);
         rivT("406_fondcombe_pont", 262, 24, 200, 262, 30, 132, 6000);
         rivT("414_fondcombe_pont_dessus", 214, 48, 160, 262, 36, 132, 6000);
         rivT("407_fondcombe_tours", 104, 52, 168, 74, 62, 126, 6000);
