@@ -2,7 +2,7 @@
 Utilise uniquement des classes Java deja presentes (Item, Info, Potion, Rune, ModGear.*, SpecialSword.Kind)."""
 from genlib import *
 from tex import *
-from content import INGOT, RING, GEM, COIN, RAW
+from content import INGOT, RING, GEM, COIN, RAW, RUNE
 from gear import FOODS, axe_icon, hammer_icon, spear_icon, mace_icon
 
 SHOVEL = ['.oo.', 'obco', 'obao', 'oaao', '.odo']
@@ -96,7 +96,7 @@ def build():
              ('wind_rune', 'Rune du vent', 'Chute amortie pendant 5 minutes.', 'SLOW_FALLING', 6000, 0, '#e8f0f8', 'minecraft:feather'),
              ('luck_rune', 'Rune de fortune', 'Chance pendant 10 minutes.', 'LUCK', 12000, 0, '#40d060', 'minecraft:emerald'))
     for rid, fr, txt, eff, t, a, col, extra in runes:
-        item(rid, fr, java=f'new Elixirs.Rune("{txt}", props().stacksTo(16), {fx(eff, t, a)})', tex=sprite(COIN, mat('#7a7f88', trim=col)))
+        item(rid, fr, java=f'new Elixirs.Rune("{txt}", props().stacksTo(16), {fx(eff, t, a)})', tex=sprite(RUNE, mat('#7a7f88', trim=col)))
         shapeless(rid, ['raw_orrune', 'minecraft:redstone', extra], rid)
     # ---------------------------------------------------------------- objets de lore
     info = lambda txt, rar='COMMON', n=64: f'new MiscItems.Info("{txt}", props().stacksTo({n}).rarity(Rarity.{rar}))'

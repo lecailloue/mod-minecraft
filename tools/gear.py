@@ -1,7 +1,7 @@
 """Objets : armes, armures, anneaux, batons, nourriture, divers (textures + enregistrement)."""
 from genlib import *
 from tex import *
-from content import INGOT, RING, GEM, COIN
+from content import INGOT, RING, GEM, COIN, RUNE
 from PIL import Image
 import random
 
@@ -176,7 +176,7 @@ def build():
     item('recall_shard', 'Éclat de rappel', java='new Elixirs.Recall(props().stacksTo(8).rarity(Rarity.UNCOMMON))', tex=sprite(GEM, matpal('#9a6ae0')))
     item('smoke_powder', 'Poudre de fumée', java='new Elixirs.Smoke(props().stacksTo(16))', tex=sprite(FOODS['dust'], mat('#6a6a72')))
     item('haste_rune', 'Rune de hâte', java=f'new Elixirs.Rune("Hâte II pendant 4 minutes : creuse bien plus vite.", props().stacksTo(16), {fx("DIG_SPEED", 4800, 1)})',
-         tex=sprite(COIN, matpal('#7a7f88', trim='#ffd040')))
+         tex=sprite(RUNE, matpal('#7a7f88', trim='#ffd040')))
     for rid, parts, n in (('ember_phial', ['minecraft:glass_bottle', 'braisite', 'minecraft:blaze_powder'], 1),
                           ('stone_phial', ['minecraft:glass_bottle', 'minecraft:deepslate', 'raw_sombrefer'], 1),
                           ('night_phial', ['minecraft:glass_bottle', 'minecraft:golden_carrot', 'brumecristal'], 1),
