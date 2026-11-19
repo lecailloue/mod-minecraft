@@ -35,7 +35,7 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
     protected void containerTick() {
         super.containerTick();
         int lvl = level();
-        boolean ok = ForgeUpgrade.canForge(menu.tool()) && lvl < ForgeUpgrade.MAX && menu.ingots().getCount() >= ForgeUpgrade.COSTS[Math.min(lvl, ForgeUpgrade.MAX - 1)];
+        boolean ok = ForgeUpgrade.canForge(menu.tool()) && lvl < ForgeUpgrade.MAX && menu.ingots().getCount() >= net.ringsofash.data.SmithJobs.cost(net.minecraft.client.Minecraft.getInstance().player, ForgeUpgrade.COSTS[Math.min(lvl, ForgeUpgrade.MAX - 1)]);
         if (button != null) button.active = ok;
     }
 
@@ -57,8 +57,8 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
             g.drawString(font, (minecraft != null && minecraft.level != null && ForgeUpgrade.isMega(menu.tool(), minecraft.level.registryAccess())) ? "Trempe ancestrale !" : "Niveau maximal !", x + 88, y + 22, 0xFFFFD070, false);
         } else {
             g.drawString(font, "Trempe : " + lvl + " / " + ForgeUpgrade.MAX, x + 88, y + 16, 0xFFFFD070, false);
-            g.drawString(font, "Coût : " + ForgeUpgrade.COSTS[lvl] + " lingot" + (ForgeUpgrade.COSTS[lvl] > 1 ? "s" : ""), x + 88, y + 28, 0xFFE8E0D0, false);
-            g.drawString(font, "Réussite : " + Math.round((1 - ForgeUpgrade.FAIL_CHANCE) * 100) + " %", x + 88, y + 40, 0xFFE8E0D0, false);
+            g.drawString(font, "Coût : " + net.ringsofash.data.SmithJobs.cost(net.minecraft.client.Minecraft.getInstance().player, ForgeUpgrade.COSTS[lvl]) + " lingot" + (net.ringsofash.data.SmithJobs.cost(net.minecraft.client.Minecraft.getInstance().player, ForgeUpgrade.COSTS[lvl]) > 1 ? "s" : ""), x + 88, y + 28, 0xFFE8E0D0, false);
+            g.drawString(font, "Réussite : " + Math.round((1 - net.ringsofash.data.SmithJobs.failChance(net.minecraft.client.Minecraft.getInstance().player)) * 100) + " %", x + 88, y + 40, 0xFFE8E0D0, false);
         }
     }
 

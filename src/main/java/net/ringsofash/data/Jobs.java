@@ -44,12 +44,12 @@ import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.ringsofash.RingsOfAsh;
 
-/** Metiers : XP, niveaux, choix de competences (paliers 5, 10 et 15) et leurs effets. Guerrier (paliers 5/10/15) et mineur (paliers 5/10) sont codes ; le magicien arrive. */
+/** Metiers : XP, niveaux, choix de competences (paliers 5, 10 et 15) et leurs effets. Guerrier (paliers 5/10/15) et mineur (paliers 5/10) sont codes ; le forgeron (paliers 5/10) aussi. */
 public final class Jobs {
     private Jobs() {}
 
     public enum Job {
-        WARRIOR("Guerrier"), MINER("Mineur"), MAGE("Magicien");
+        WARRIOR("Guerrier"), MINER("Mineur"), SMITH("Forgeron");
         public final String fr;
         Job(String fr) { this.fr = fr; }
     }
@@ -101,11 +101,30 @@ public final class Jobs {
             {new Skill("Casse en 3×3", "La pioche creuse en 3×3 au lieu de 2×2.", true), VEIN, FORT},
             {new Skill("Four portable", "Four dans l'inventaire (onglet dédié) : il fond tout avec du combustible, en tâche de fond. XP et résultat vous arrivent directement.", true), FORT, VEIN}};
 
+    private static final Skill[] S5 = {
+            new Skill("Trempeur", "Maîtrise de la forge naine : l'échec de trempe passe de 20 % à 10 %.", true),
+            new Skill("Armurier", "Chaque pièce d'armure trempée que vous portez donne +1 d'armure.", true),
+            new Skill("Maître d'enclume", "Enclume : la moitié des niveaux d'XP vous est rendue, et les objets ne gagnent plus de pénalité de travail.", true)};
+    private static final Skill[][] S10 = {
+            {new Skill("Lingots économes", "Le coût de trempe en lingots de lunargent baisse de 25 %.", true),
+             new Skill("Trempe ancestrale", "La chance de Trempe ancestrale passe de 1 % à 5 %.", true),
+             new Skill("Double trempe", "Une trempe réussie a 20 % de chances de monter de 2 niveaux d'un coup.", true)},
+            {new Skill("Réparation à chaud", "L'armure que vous portez se répare toute seule, lentement (1 point toutes les 10 s).", true),
+             new Skill("Épines", "Vous renvoyez 15 % des dégâts de mêlée reçus à l'attaquant.", true),
+             new Skill("Cuirasse lourde", "Avec 4 pièces d'armure trempées, vous subissez 15 % de dégâts en moins.", true)},
+            {new Skill("Réparation complète", "L'enclume répare l'objet à 100 % dès qu'on lui donne un matériau de réparation.", true),
+             new Skill("Fusion gratuite", "Combiner des enchantements à l'enclume ne coûte plus d'XP.", true),
+             new Skill("Armes affûtées", "Une arme passée à l'enclume inflige +10 % de dégâts jusqu'à avoir perdu 20 % de sa durabilité.", true)}};
+
     /** Competences proposees au palier t (0 = niveau 5, 1 = niveau 10, 2 = niveau 15) ; path = voie choisie au niveau 5 (1 a 3, 0 = aucune). */
     public static Skill[] skills(Job j, int t, int path) {
         if (j == Job.MINER) {
             if (t == 0) return M5;
             return t == 1 && path >= 1 && path <= 3 ? M10[path - 1] : new Skill[0];
+        }
+        if (j == Job.SMITH) {
+            if (t == 0) return S5;
+            return t == 1 && path >= 1 && path <= 3 ? S10[path - 1] : new Skill[0];
         }
         if (j != Job.WARRIOR) return new Skill[0];
         if (t == 0) return W5;
@@ -185,6 +204,7 @@ public final class Jobs {
         bus.addListener(Jobs::onArrowJoin);
         bus.addListener(Jobs::onImpact);
         MinerJobs.init(bus);
+        SmithJobs.init(bus);
     }
 
     private static void onDeath(LivingDeathEvent e) {

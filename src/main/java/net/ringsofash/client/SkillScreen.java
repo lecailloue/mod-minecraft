@@ -29,7 +29,13 @@ public class SkillScreen extends Screen {
             Map.entry("Maître main", new ItemStack(Items.GOLDEN_PICKAXE)), Map.entry("Grosse main", new ItemStack(Items.IRON_PICKAXE)),
             Map.entry("Fondeur", new ItemStack(Items.BLAST_FURNACE)), Map.entry("Effet de fortune", new ItemStack(Items.DIAMOND)),
             Map.entry("Veine entière", new ItemStack(Items.RAW_IRON)), Map.entry("Pioche incassable", new ItemStack(Items.NETHERITE_PICKAXE)),
-            Map.entry("Casse en 3×3", new ItemStack(Items.TNT)), Map.entry("Four portable", new ItemStack(Items.FURNACE)));
+            Map.entry("Casse en 3×3", new ItemStack(Items.TNT)), Map.entry("Four portable", new ItemStack(Items.FURNACE)),
+            Map.entry("Trempeur", new ItemStack(Items.LAVA_BUCKET)), Map.entry("Armurier", new ItemStack(Items.IRON_CHESTPLATE)),
+            Map.entry("Maître d'enclume", new ItemStack(Items.ANVIL)), Map.entry("Lingots économes", new ItemStack(Items.IRON_INGOT)),
+            Map.entry("Trempe ancestrale", new ItemStack(Items.NETHER_STAR)), Map.entry("Double trempe", new ItemStack(Items.FLINT_AND_STEEL)),
+            Map.entry("Réparation à chaud", new ItemStack(Items.MAGMA_BLOCK)), Map.entry("Épines", new ItemStack(Items.CACTUS)),
+            Map.entry("Cuirasse lourde", new ItemStack(Items.NETHERITE_CHESTPLATE)), Map.entry("Réparation complète", new ItemStack(Items.IRON_BLOCK)),
+            Map.entry("Fusion gratuite", new ItemStack(Items.ENCHANTED_BOOK)), Map.entry("Armes affûtées", new ItemStack(Items.GRINDSTONE)));
 
     private int job = 0;
     /** voie affichee au palier 10 et 15 (celle choisie, ou celle qu'on regarde) */
@@ -47,7 +53,7 @@ public class SkillScreen extends Screen {
     public boolean isPauseScreen() { return false; }
 
     // ------------------------------------------------------------------ donnees
-    private boolean hasTree() { return job <= 1; }
+    private boolean hasTree() { return true; }
     private Job job() { return Job.values()[job]; }
     private int xp() { return Net.ClientJobs.xp[job]; }
     private int level() { return Jobs.level(xp()); }
@@ -139,7 +145,7 @@ public class SkillScreen extends Screen {
             for (int r = 0; r < s2.length; r++) link(g, colX(2), rowY(chosen(1) == 0 ? 1 : chosen(1) - 1), colX(3), rowY(r), view == chosen(0) && chosen(2) == r + 1);
         }
         // noeuds
-        node(g, colX(0), rowY(1), new ItemStack(job == 1 ? Items.IRON_PICKAXE : Items.IRON_CHESTPLATE), 2, false);
+        node(g, colX(0), rowY(1), new ItemStack(job == 1 ? Items.IRON_PICKAXE : job == 2 ? Items.ANVIL : Items.IRON_CHESTPLATE), 2, false);
         if (Ui.in(mx, my, colX(0) - NODE / 2, rowY(1) - NODE / 2, NODE, NODE)) tip = Component.literal(job().fr);
         Skill[] s0 = skillsAt(0);
         for (int r = 0; r < s0.length; r++) {

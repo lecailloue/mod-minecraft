@@ -53,12 +53,12 @@ public class ForgeMenu extends AbstractContainerMenu {
         if (!ForgeUpgrade.canForge(tool)) { msg(sp, "Placez une arme, un outil ou une armure dans la forge.", ChatFormatting.RED); return false; }
         int lvl = ForgeUpgrade.level(tool, sp.level().registryAccess());
         if (lvl >= ForgeUpgrade.MAX) { msg(sp, "Cet objet est déjà au sommet de l'art nain.", ChatFormatting.GRAY); return false; }
-        int need = ForgeUpgrade.COSTS[lvl];
+        int need = net.ringsofash.data.SmithJobs.cost(sp, ForgeUpgrade.COSTS[lvl]);
         if (!ing.is(Reg.LUNARGENT_INGOT.get()) || ing.getCount() < need) {
             msg(sp, "Il faut " + need + " lingot" + (need > 1 ? "s" : "") + " de lunargent.", ChatFormatting.RED); return false;
         }
         if (!sp.getAbilities().instabuild) ing.shrink(need);
-        boolean fail = sp.getRandom().nextFloat() < ForgeUpgrade.FAIL_CHANCE;
+        boolean fail = sp.getRandom().nextFloat() < net.ringsofash.data.SmithJobs.failChance(sp);
         access.execute((level, pos) -> {
             if (fail) level.playSound(null, pos, SoundEvents.ANVIL_BREAK, SoundSource.BLOCKS, 0.8F, 0.7F);
             else level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0F, 0.8F);
@@ -66,15 +66,19 @@ public class ForgeMenu extends AbstractContainerMenu {
         });
         if (fail) {
             msg(sp, "La trempe a échoué... les lingots sont perdus.", ChatFormatting.RED);
+            net.ringsofash.data.SmithJobs.forgeXp(sp, 2);
         } else {
-            if (sp.getRandom().nextFloat() < ForgeUpgrade.MEGA_CHANCE) {
+            if (sp.getRandom().nextFloat() < net.ringsofash.data.SmithJobs.megaChance(sp)) {
                 ForgeUpgrade.applyMega(tool, sp.level().registryAccess());
                 access.execute((level, pos) -> level.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.0F, 1.0F));
+                net.ringsofash.data.SmithJobs.forgeXp(sp, 5 * ForgeUpgrade.MAX);
                 msg(sp, "TREMPE ANCESTRALE ! L'objet vibre d'une puissance oubliée (durabilité -20 %).", ChatFormatting.LIGHT_PURPLE);
             } else {
                 Holder<Enchantment> h = ForgeUpgrade.holder(sp.level().registryAccess(), tool);
-                EnchantmentHelper.updateEnchantments(tool, m -> m.set(h, lvl + 1));
-                msg(sp, "Trempe réussie ! Niveau " + (lvl + 1) + " / " + ForgeUpgrade.MAX, ChatFormatting.GOLD);
+                final int nl = Math.min(ForgeUpgrade.MAX, lvl + net.ringsofash.data.SmithJobs.temperGain(sp, sp.getRandom()));
+                EnchantmentHelper.updateEnchantments(tool, m -> m.set(h, nl));
+                net.ringsofash.data.SmithJobs.forgeXp(sp, 5 * nl);
+                msg(sp, "Trempe réussie ! Niveau " + nl + " / " + ForgeUpgrade.MAX + (nl > lvl + 1 ? " (double trempe !)" : ""), ChatFormatting.GOLD);
             }
         }
         inv.setChanged();
