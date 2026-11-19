@@ -460,7 +460,7 @@ public final class TirithPlan {
             if (okL && built == 2) {                                   // galerie : on traverse les deux tours et le porche d'un bout a l'autre de la rue, sur un plancher au niveau de la rue
                 for (int x = xr - hw - 2; x <= xr + hw + 2; x++) for (int z = zc - 1; z <= zc + 1; z++) {
                     for (int y = base; y <= base + 3; y++) set(x, y, z, AIR);
-                    if (get(x, base - 1, z) == AIR) set(x, base - 1, z, PAVE);
+                    if (get(x, base - 1, z) == AIR && !(get(x, base - 2, z) == AIR && get(x, base - 3, z) == AIR)) set(x, base - 1, z, PAVE);   // pas de tablier au-dessus de la rampe : l'escalier monte librement jusqu'a la porte
                 }
             }
             int zTop = z0 - (hi - lo) - 2;

@@ -36,26 +36,44 @@ def main(plan):
     xs = (np.arange(gx0, gx1) + 0.5) * cs - 2500
     zs = (np.arange(gz0, gz1) + 0.5) * cs - 2500
     X, Z = np.meshgrid(xs, zs)
+    rng = np.random.default_rng(1215)
+
+    def field(sig, amp=1.0):
+        f_ = gaussian_filter(rng.standard_normal(X.shape), sig)
+        return f_ / f_.std() * amp
+    # distance au plan mesuree dans un espace deforme : la crete ne suit plus le rectangle du plan, elle serpente
+    Xw, Zw = X + field(20, 55), Z + field(20, 55)
+    xcw = np.clip(Xw, OX + 1, OX + W - 2); zcw = np.clip(Zw, OZ + 1, OZ + D - 2)
+    d = np.hypot(Xw - xcw, Zw - zcw)
     xc = np.clip(X, OX + 1, OX + W - 2); zc = np.clip(Z, OZ + 1, OZ + D - 2)
-    d = np.hypot(X - xc, Z - zc)
     rim = top[(zc - OZ).astype(int), (xc - OX).astype(int)].astype(np.float32)
-    # lisser le rebord le long de chaque cote (le plan est bosselé)
-    rim = gaussian_filter(rim, 6)
+    rim = gaussian_filter(rim, 6)                                           # lisser le rebord le long de chaque cote (le plan est bosselé)
     rimv = np.maximum(0, rim - 3)
-    rimv = rimv * sm((rimv - 14) / 24.0)                                    # un rebord bas (arbres, toits) ne fait pas de montagne
-    L = np.minimum(470, 150 + 3.2 * rimv)                                   # pente tres longue : environ 1 bloc de haut pour 3 a 4 de large
+    rimv = np.minimum(95, rimv * sm((rimv - 14) / 24.0))                    # un rebord bas (arbres, toits) ne fait pas de montagne ; plafond de hauteur
+    mod = np.clip(0.95 + 0.22 * field(26), 0.65, 1.2)                          # hauteurs variables : cols et sommets
+    L = np.minimum(470, 150 + 3.2 * rimv) * np.clip(1 + 0.25 * field(30), 0.7, 1.35)   # pente tres longue : environ 1 bloc de haut pour 3 a 4 de large
     s_ = np.clip(d / L, 0, 1)
     f = (1 - s_) ** 1.9                                                     # profil concave : raide pres de la crete, longue queue douce vers la plaine
-    rng = np.random.default_rng(1215)
-    noise = gaussian_filter(rng.standard_normal(X.shape), 9); noise /= noise.std()
+    noise = field(9)
     ridge = np.clip(1 - np.abs(gaussian_filter(rng.standard_normal(X.shape), 7) * 3.0), 0, 1)
-    bell = np.exp(-(((d - 0.16 * L) / (0.14 * L)) ** 2))                    # sommets et croupes juste derriere le rebord
-    t = rimv * f * (1 + 0.12 * noise * (1 - s_)) + 0.42 * rimv * bell * (0.35 + 0.65 * ridge) * (1 - s_)
+    t = rimv * mod * f * (1 + 0.12 * noise * (1 - s_))
+    for k in range(14):                                                     # sommets isoles derriere le rebord, a longues pentes concaves
+        ang = rng.uniform(0, 2 * np.pi)
+        rr = rng.uniform(210, 330)
+        px_, pz_ = OX + W / 2 + np.cos(ang) * rr * 1.05, OZ + D / 2 + np.sin(ang) * rr * 1.05
+        a_ = rng.uniform(0.2, 0.45)
+        rho = rng.uniform(80, 150)
+        if pz_ > OZ + D - 40:
+            continue                                                        # pas de sommet au sud (la plaine)
+        cx_ = int(np.clip(px_, OX + 1, OX + W - 2) - OX); cz_ = int(np.clip(pz_, OZ + 1, OZ + D - 2) - OZ)
+        a_ *= max(30.0, float(top[cz_, cx_]) - 3)
+        rp = np.hypot(X - px_, Z - pz_)
+        t = t + a_ * (1 + (rp / rho) ** 2) ** -1.3 * (0.8 + 0.2 * ridge)
     # on ne touche pas l'interieur du plan ni la plaine au sud ; on estompe vers l'est (Argonath)
     fe = 1 - sm((X - (OX + W)) / 200.0)
     fa = sm((np.hypot(X + 310, Z + 480) - 90) / 90.0)
     t = t * fe * fa
-    t[d <= 0] = 0
+    t[(X > OX) & (X < OX + W) & (Z > OZ) & (Z < OZ + D)] = 0
     target = Y0S + 3 + t
     sub = h[gz0:gz1, gx0:gx1]
     raise_ = np.where((t > 1.5) & (target > sub), np.rint(target), sub).astype(np.int32)
