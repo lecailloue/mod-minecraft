@@ -84,6 +84,7 @@ public final class TirithPlan {
         rocks();
         carveStreets();
         openStairTop();
+        railEdges(CX + 8, CZ + 12, CX + 32, CZ + 34, PROW_TOP - 1);
         for (int x = 0; x < W; x++) for (int z = 0; z < D; z++) {
             int t = -OFF - 1;
             for (int y = H - OFF - 1; y >= -OFF; y--) if (g[idx(x, y, z)] != AIR) { t = y; break; }
@@ -391,6 +392,20 @@ public final class TirithPlan {
                 if (b == AIR || b == 111 || b == 20 || b == WB_STAIR) set(x, PROW_TOP - 1, z, WB);
             }
         }
+    }
+
+    /** garde-corps : un mur bas sur chaque case de sol (a la hauteur y) qui borde le vide, pour que le palier et le haut de l'escalier du flanc ne soient plus un surplomb nu */
+    private void railEdges(int x0, int z0, int x1, int z1, int y) {
+        int[][] dd = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        java.util.List<int[]> add = new ArrayList<>();
+        for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++) {
+            if (get(x, y, z) == AIR || get(x, y + 1, z) != AIR) continue;
+            for (int[] o : dd) {
+                int nx = x + o[0], nz = z + o[1];
+                if (!area(nx, nz) || get(nx, y, nz) == AIR) { add.add(new int[]{x, y + 1, z}); break; }
+            }
+        }
+        for (int[] a : add) set(a[0], a[1], a[2], WB_WALL);
     }
 
     private void terraces() {

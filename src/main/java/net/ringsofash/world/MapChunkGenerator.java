@@ -154,12 +154,28 @@ public final class MapChunkGenerator extends ChunkGenerator {
     private static boolean landBiome(int b) { return b != MapData.B_MER && b != MapData.B_RIVAGE && b != MapData.B_RIVIERE && b != MapData.B_LAVE; }
 
     /** Bloc a l'altitude y pour la colonne decrite (h = dernier bloc solide, wt = surface de l'eau). */
+    /** Chemin d'entree de Fondcombe : pierre blanche, depuis la route de l'esplanade est vers l'est. */
+    private static final int[][] WHITE_ROAD = {{-344, -162}, {-318, -160}, {-292, -166}, {-262, -171}, {-232, -168}, {-204, -160}, {-176, -152}, {-146, -150}};
+
+    static boolean onWhiteRoad(int x, int z) {
+        if (x < -346 || x > -144 || z < -176 || z > -144) return false;
+        for (int i = 0; i + 1 < WHITE_ROAD.length; i++) {
+            double ax = WHITE_ROAD[i][0], az = WHITE_ROAD[i][1], bx = WHITE_ROAD[i + 1][0], bz = WHITE_ROAD[i + 1][1];
+            double dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz)));
+            double ex = ax + t * dx - x, ez = az + t * dz - z;
+            double w = 2.6 + 0.5 * Math.sin(x * 0.11);
+            if (ex * ex + ez * ez <= w * w) return true;
+        }
+        return false;
+    }
+
     static BlockState block(int x, int y, int z, int h, int wt, int b, int slope) {
         if (y > h) return y <= wt ? (wt > MapData.SEA || b == MapData.B_LAVE ? LAVA : WATER) : AIR;
         if (y <= -64) return BEDROCK;
         if (y < -59 && hash(x, y, z) < (-59 - y) / 5f) return BEDROCK;
         int depth = h - y;
         boolean under = wt > h;                       // sous l'eau
+        if (!under && depth <= 1 && h > MapData.SEA + 1 && onWhiteRoad(x, z)) return Reg.WHITE_STONE.get().defaultBlockState();
         BlockState top = null;
         int layers = 3;
         if (landBiome(b) && b != 2 && b != MapData.B_MONTS_CENDRE && h <= MapData.SEA + 1) {

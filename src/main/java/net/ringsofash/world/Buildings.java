@@ -1140,7 +1140,7 @@ public final class Buildings {
                 }
                 int hi = Math.min(Math.max(top, ground) + 18, maxY + 1);
                 for (int y = top + 1; y <= hi; y++) {
-                    if (p.raw(x, y, z) != RivendellPlan.AIR) continue;
+                    if (p.get(x, y, z) != RivendellPlan.AIR) continue;
                     if (!b.get(lx, y, lz).isAir()) b.s(lx, y, lz, Build.AIR);
                 }
                 for (int y = -RivendellPlan.OFF; y <= top; y++) {

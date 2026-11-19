@@ -50,7 +50,12 @@ public final class RivendellPlan {
     public byte raw(int x, int y, int z) { return ok(x, y, z) ? g[idx(x, y, z)] : AIR; }
     public byte get(int x, int y, int z) { byte v = raw(x, y, z); return v == (byte) AIRC ? AIR : v; }
     private int gi(int x, int y, int z) { return get(x, y, z) & 255; }
-    private void set(int x, int y, int z, int id) { if (ok(x, y, z)) g[idx(x, y, z)] = (byte) id; }
+    /** poser de l'air sur un bloc plein le marque comme air creuse : sous le niveau du terrain, le monde ne doit pas le reboucher de pierre (interieurs, arches, tunnels) */
+    private void set(int x, int y, int z, int id) {
+        if (!ok(x, y, z)) return;
+        int i = idx(x, y, z);
+        g[i] = (byte) (id == AIR && g[i] != AIR ? AIRC : id);
+    }
     private void setIfAir(int x, int y, int z, int id) { if (ok(x, y, z) && (g[idx(x, y, z)] == AIR || g[idx(x, y, z)] == (byte) AIRC)) g[idx(x, y, z)] = (byte) id; }
     public static boolean area(int x, int z) { return x >= 0 && x < W && z >= 0 && z < D; }
     public int top(int x, int z) { return top[z * W + x]; }
@@ -110,6 +115,7 @@ public final class RivendellPlan {
     }
     private static final double[][] RIV = {{262, 100}, {262, 150}, {262, 185}, {248, 225}, {212, 250}, {160, 262}, {100, 258}, {55, 280}, {22, 325}, {5, 352}};
     private static final double POOL_X = 262, POOL_Z = 88, POOL_R = 23;
+    public static final int LAKE_X = 262, LAKE_Z = 48, LAKE_R = 13, LAKE_LV = 88;   // le lac de la crete, source de la grande cascade
 
     private static double dist(double x, double z, double[][] poly) {
         double best = 1e9;
@@ -184,6 +190,8 @@ public final class RivendellPlan {
         h += sp * sm(t * 3) - fl;
         double sd = streamDist(xw, zw);
         h -= 18 * (1 - sm(sd / 18.0)) * sm(t * 2.5);                                                    // les ravines qui guident les cascades
+        h += 24 * Math.exp(-(Math.pow((xw - LAKE_X) / 44.0, 2) + Math.pow((zw - LAKE_Z) / 36.0, 2)));    // la montagne grossit autour du lac
+        if (zw < 34) h = 4 + (h - 4) * (0.5 + 0.5 * sm(zw / 34.0));                                      // le rebord nord redescend vers le relief naturel qui le prolonge
         return h;
     }
 
@@ -237,8 +245,11 @@ public final class RivendellPlan {
             int e = Math.min(Math.min(x, z), Math.min(W - 1 - x, D - 1 - z));
             edge[i] = (byte) Math.round(255 * sm(e / (double) BAND));
         }
+        lake(LAKE_X, LAKE_Z, LAKE_R, LAKE_LV, true);
+        lake(150, 34, 5, (int) Math.round(th[34 * W + 150]) - 1, false);
+        lake(46, 32, 5, (int) Math.round(th[32 * W + 46]) - 1, false);
         // plates-formes : les batiments poses sur une pente (epaule est, salle du Feu, aiguille) ont un sol de plain-pied avec le terrain qui les entoure
-        pad(292, 94, 330, 162, S, 9, false);
+        pad(292, 94, 316, 162, S, 16, false);
         pad(86, 76, 126, 100, T2, 6, true);
         pad(76, 100, 92, 114, S, 4, false);
         // etangs au pied des cascades de la terrasse
@@ -254,6 +265,33 @@ public final class RivendellPlan {
             int h = S + (102 - z);
             if (h > T2 - 1) break;
             for (int x = 128; x <= 130; x++) { th[z * W + x] = h; ramp[z * W + x] = (byte) (1 + N); }
+        }
+    }
+
+    /** cuvette d'eau sur la pente : un bassin, une berge un peu plus haute tout autour, et (pour le grand lac) un seuil au sud ou l'eau deborde vers la cascade */
+    private void lake(int cx, int cz, int r, int lv, boolean outlet) {
+        int ext = r + 16;
+        for (int dz = -ext; dz <= ext; dz++) for (int dx = -ext; dx <= ext; dx++) {
+            int x = cx + dx, z = cz + dz;
+            if (!area(x, z)) continue;
+            int i = z * W + x;
+            double d = Math.hypot(dx, dz) * (1 + 0.14 * vn(x / 6.0, z / 6.0, 81));
+            if (d < r) {
+                th[i] = lv - 3 + (int) Math.round(2.5 * (d / r) * (d / r));
+                wl[i] = (short) lv;
+            } else if (d < r + 16) {
+                double berm = lv + 3 - (d - r) * (outlet ? 0.45 : 0.3);
+                if (th[i] < berm) th[i] = (int) Math.round(berm);
+                if (wl[i] > -999 && th[i] >= wl[i]) wl[i] = -999;
+            }
+        }
+        if (outlet) {                                                              // le seuil : un couloir ou le sol reste sous le niveau de l'eau
+            for (int z = cz; z <= cz + r + 20; z++) for (int x = cx - 9; x <= cx + 9; x++) {
+                if (!area(x, z)) continue;
+                int i = z * W + x;
+                if (wl[i] > -999) continue;
+                if (th[i] > lv - 1) th[i] = lv - 1;
+            }
         }
     }
 
@@ -283,9 +321,9 @@ public final class RivendellPlan {
 
     // ------------------------------------------------------------------ cascades : lits creuses, nappes d'eau tombante devant chaque marche de roche
     private void carve() {
-        channel(262, 3.0, 9, 2, (int) Math.round(zC(262)) + 2, 3, 91);
-        channel(150, 2.0, 2, 28, (int) Math.round(zA(150)) + 2, 2, 92);
-        channel(46, 2.0, 2, 24, (int) Math.round(zA(46)) + 2, 2, 93);
+        channel(262, 3.0, 9, LAKE_Z + LAKE_R - 2, (int) Math.round(zC(262)) + 2, 3, 91);
+        channel(150, 2.0, 2, 34, (int) Math.round(zA(150)) + 2, 2, 92);
+        channel(46, 2.0, 2, 32, (int) Math.round(zA(46)) + 2, 2, 93);
     }
 
     private void channel(int cx, double wob, int hw, int z0, int z1, int thick, int seed) {
@@ -796,6 +834,27 @@ public final class RivendellPlan {
             }
         }
         for (int x = 74; x <= 152; x++) { int zc = (int) Math.round(zA(x + 0.5)) + 3; reserve(x, zc, x, zc, 2); }
+        gallery();
+    }
+
+    /** derriere les arcs, la falaise est creusee en vraie galerie : sol de bois dore, mur de fond enduit, poutres et lanternes ; plus d'arc colle a la roche nue */
+    private void gallery() {
+        for (int x = 75; x <= 145; x++) {
+            int zf = (int) Math.round(zA(x + 0.5)), zc = zf + 3;
+            for (int z = zf - 6; z < zc; z++) {
+                for (int y = 17; y <= 28; y++) set(x, y, z, AIR);
+                set(x, 16, z, GP);
+                set(x, 29, z, ((x - 74) % 6 == 0) ? TIMBER : GP);
+            }
+            for (int y = 16; y <= 29; y++) {
+                boolean pil = (x - 74) % 6 == 0;
+                set(x, y, zf - 7, pil ? WPIL : (y == 16 || y == 29) ? GP : (y >= 20 && y <= 25 && (x - 74) % 6 >= 2 && (x - 74) % 6 <= 4) ? GLASS : PLASTER);
+            }
+            if ((x - 74) % 6 == 0) {                                               // pilier de refend et lanterne
+                for (int z = zf - 6; z < zc; z++) if ((z - zf) % 3 == 0) for (int y = 17; y <= 28; y++) set(x, y, z, y == 17 || y == 28 ? QB : WPIL);
+                set(x + 3, 28, zf - 3, HLANT);
+            }
+        }
     }
 
     // ------------------------------------------------------------------ terrasse du Conseil
@@ -883,7 +942,7 @@ public final class RivendellPlan {
     }
 
     private void gazebos() {
-        gazebo(322, 120, S + 1, false);
+        gazebo(312, 120, S + 1, false);
         gazebo(205, 218, 1, false);
         gazebo(60, 112, S + 1, false);
     }
@@ -1025,7 +1084,7 @@ public final class RivendellPlan {
     private void valley() {
         house(118, 214, 130, 226, 1, 3, 7, 6, 1, 2, 2, true);
         house(138, 196, 152, 210, 1, 4, 7, 7, 0, 2, 1, true);                                  // haute maison au pied de l'escalier
-        house(310, 140, 324, 156, S + 1, 3, 7, 7, 1, 2, 0, true);                               // maison de l'epaule est, face a l'arche
+        house(298, 140, 312, 156, S + 1, 3, 7, 7, 1, 2, 0, true);                               // maison de l'epaule est, face a l'arche
         house(300, 100, 312, 112, S + 1, 4, 7, 6, 0, 2, 2, true);
         for (int x = 296; x <= 312; x++) for (int z = 136; z <= 138; z++) pave(x, z, S, WS);
         int xb = 190, ya = 5;
@@ -1080,7 +1139,7 @@ public final class RivendellPlan {
         band(124, 228, 136, 229, 1, 0, false);                                              // de la porte de la maison du gue a la route
         band(153, 203, 171, 203, 1, 0, false);                                              // de la haute maison au pied de l'escalier
         band(306, 113, 306, 128, 1, S, false);                                              // de la maison nord-est a l'esplanade
-        for (int x = 294; x <= 330; x++) for (int z = 128; z <= 136; z++) pave(x, z, S, WS);
+        for (int x = 294; x <= 351; x++) for (int z = 128; z <= 136; z++) pave(x, z, S, WS);
     }
 
     // ------------------------------------------------------------------ jardins

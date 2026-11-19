@@ -1066,16 +1066,28 @@ def crow():
     for s in (1, -1):
         x0 = 3.3 * s
         n = sd(s)
-        w2 = G(f'wing_{n}2', (x0 + 7 * s, 12.6, -1), children=[
-            B(f'prim_a_{n}', min(x0 + 7 * s, x0 + 17 * s), 12.1, -5, 10, 1.2, 3, 'cblack', key='c_prim_a'),
-            B(f'prim_b_{n}', min(x0 + 7 * s, x0 + 18 * s), 12.1, -2, 11, 1.2, 3, 'cblack', key='c_prim_b'),
-            B(f'prim_c_{n}', min(x0 + 7 * s, x0 + 17 * s), 12.1, 1, 10, 1.2, 3, 'cblack', key='c_prim_a'),
-            B(f'prim_d_{n}', min(x0 + 7 * s, x0 + 15 * s), 12.1, 4, 8, 1.2, 3, 'cblack', key='c_prim_d'),
-        ])
-        wings.append(G(f'wing_{n}', (x0, 12.6, -1), children=[
-            B(f'wing_in_{n}', min(x0, x0 + 7 * s), 12, -4, 7, 1.6, 10, 'cblack', key='c_wingin'),
-            B(f'wing_cov_{n}', min(x0, x0 + 6 * s), 13.4, -3, 6, .8, 5, 'cblack', key='c_wingcov'),
-            w2]))
+        wx = x0 + 7 * s                                                    # poignet
+
+        def feather(name, px, pz, L, w, ang, y, key, pivot_y=None):          # plume qui part du pivot vers l'exterieur, balayee vers l'arriere de ang degres
+            lo = min(px, px + L * s)
+            return G(name, (px, y + .3, pz), rot=(0, -s * ang, 0), children=[B(name + '_b', lo, y, pz - w / 2, L, .6, w, 'cblack', key=key)])
+        prim = []
+        spec = [(-3.6, 9.0, -8), (-2.4, 11.0, -1), (-1.2, 12.0, 5), (0.0, 12.0, 11), (1.2, 11.0, 17), (2.4, 10.0, 24), (3.6, 8.0, 32)]
+        for k, (dz, L, ang) in enumerate(spec):
+            prim.append(feather(f'prim{k}_{n}', wx, -1 + dz, L, 1.8, ang, 12.0 + .12 * k, f'c_pf{k}'))
+        prim.append(B(f'wrist_{n}', min(wx - 1.2 * s, wx + 1.8 * s), 12.4, -4.6, 3, 1.8, 3.2, 'cblack', key='c_wrist'))
+        for k, dz in enumerate((-3.6, -1.6, .4, 2.4)):                   # tectrices primaires : recouvrent les bases des plumes
+            prim.append(feather(f'pcov{k}_{n}', wx, -1 + dz, 5.5 - .4 * k, 1.9, -2 + 6 * k, 12.7, f'c_pc{k}'))
+        w2 = G(f'wing_{n}2', (wx, 12.6, -1), children=prim)
+        inner = [
+            B(f'arm_{n}', min(x0, x0 + 7.4 * s), 12.2, -3.6, 7.4, 1.9, 3.6, 'cblack', key='c_arm'),
+            B(f'cov1_{n}', min(x0 + .4 * s, x0 + 6.4 * s), 13.0, -3.2, 6, .9, 3.4, 'cblack', key='c_cov1'),
+            B(f'cov2_{n}', min(x0 + .4 * s, x0 + 6.8 * s), 12.6, -.2, 6.4, .9, 3.0, 'cblack', key='c_cov2'),
+            B(f'cov3_{n}', min(x0 + .6 * s, x0 + 6.4 * s), 12.2, 2.6, 5.8, .9, 2.4, 'cblack', key='c_cov3'),
+        ]
+        for k in range(6):                                                  # secondaires : eventail le long du bord de fuite
+            inner.append(feather(f'sec{k}_{n}', x0 + .5 * s, 2.0 + 1.4 * k, 7.4 - .5 * k, 1.7, 2 + 4 * k, 11.9 + .1 * k, f'c_sf{k}'))
+        wings.append(G(f'wing_{n}', (x0, 12.6, -1), children=inner + [w2]))
     tail = G('tail', (0, 10, 6), children=[
         B('tail_c', -2.2, 9, 6, 4.4, 1.2, 10, 'cblack', key='c_tailc'),
         G('tail_l', (0, 10, 6), rot=(0, 9, 0), children=[B('tail_l_f', -3.6, 9, 6, 2, 1.2, 8, 'cblack', key='c_tailf')]),

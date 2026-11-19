@@ -277,10 +277,10 @@ public final class HelmsDeepPlan {
         }
         // escaliers sur la face nord
         for (int[] fl : new int[][]{{58, 60}, {126, 128}}) {
-            for (int z = 69; z <= 83; z++) {
+            for (int z = 65; z <= 83; z++) {                                                      // les premieres marches descendent sous le sol : l'escalier part toujours de terre
                 int y = z - 69;
                 for (int x = fl[0] - 1; x <= fl[1] + 1; x++) {
-                    box(x, -1, z, x, y - 1, z, BRICK);
+                    box(x, Math.min(-1, y - 6), z, x, y - 1, z, BRICK);
                     if (x == fl[0] - 1 || x == fl[1] + 1) { set(x, y, z, BRICK); set(x, y + 1, z, WALLB); }
                     else set(x, y, z, stair(0, S_, false));
                 }
