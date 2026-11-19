@@ -1014,6 +1014,31 @@ def stag():
     return legs + [body]
 
 
+# ================================================================== modele : FLECHE GEANTE (projectile de l'archer)
+@register('giant_arrow')
+def giant_arrow():
+    """fleche d'archer de guerre : hampe de bois, bagues d'or, pointe nain en croix, trois penes rouges ; axe a y=6, pointe vers -z"""
+    B, G = mkT(1.0)
+    Y = 6.0
+    kids = [
+        B('shaft', -1.5, Y - 1.5, -8, 3, 3, 22, 'wood', key='a_shaft'),
+        B('band_a', -1.9, Y - 1.9, 3, 3.8, 3.8, 1.6, 'goldm', key='a_banda'),
+        B('band_b', -1.9, Y - 1.9, -7, 3.8, 3.8, 1.6, 'goldm', key='a_bandb'),
+        B('nock', -1.2, Y - 1.2, 14, 2.4, 2.4, 1.6, 'bone', key='a_nock'),
+        B('socket', -2.2, Y - 2.2, -11, 4.4, 4.4, 3.2, 'dwsteel', key='a_socket'),
+    ]
+    wds = (8.0, 7.0, 5.8, 4.4, 3.0, 1.6)
+    for i, wd in enumerate(wds):
+        z = -13.4 - i * 2.4
+        kids.append(B(f'head_h{i}', -wd / 2, Y - .7, z, wd, 1.4, 2.4, 'dwsteel', key=f'a_hh{i}'))
+        kids.append(B(f'head_v{i}', -.7, Y - wd / 2, z, 1.4, wd, 2.4, 'dwsteel', key=f'a_hv{i}'))
+    for i, rz in enumerate((0, 120, 240)):
+        kids.append(G(f'vane{i}', (0, Y, 10), rot=(0, 0, rz), children=[
+            B(f'vane{i}_a', -.35, Y + 1.5, 9, .7, 4.6, 6, 'clothr2', key='a_vane'),
+            B(f'vane{i}_b', -.35, Y + 1.5, 4.5, .7, 3.0, 4.5, 'clothr2', key='a_vaneb')]))
+    return [G('arrow', (0, Y, 0), children=kids)]
+
+
 # ================================================================== modele : CORBEAU
 @register('crow')
 def crow():
@@ -1158,9 +1183,9 @@ def preview(name, groups, tex, yaws=(35, 125, 215, 305), scale=4.0, W=560, H=800
     Image.fromarray(tex, 'RGBA').save(f'{out}/{name}_tex.png')
 
 
-PSCALE = {'boar': 7.0, 'stag': 8.0, 'crow': 22.0, 'eagle': 9.0}
+PSCALE = {'boar': 7.0, 'stag': 8.0, 'crow': 22.0, 'eagle': 9.0, 'giant_arrow': 12.0}
 
-MODNAME = {'mumak': 'mammoth', 'boar': 'war_boar', 'stag': 'stag', 'crow': 'crow', 'eagle': 'eagle'}
+MODNAME = {'mumak': 'mammoth', 'boar': 'war_boar', 'stag': 'stag', 'crow': 'crow', 'eagle': 'eagle', 'giant_arrow': 'giant_arrow'}
 
 
 def gen():

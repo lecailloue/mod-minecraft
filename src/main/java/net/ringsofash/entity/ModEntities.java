@@ -73,6 +73,8 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<TreemanEntity>> TREEMAN = reg("treeman", TreemanEntity::new, MobCategory.CREATURE, 1.6F, 5.0F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<EagleEntity>> EAGLE = reg("eagle", EagleEntity::new, MobCategory.CREATURE, 1.6F, 1.6F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<MountEntity>> STAG = reg("stag", MountEntity::new, MobCategory.CREATURE, 1.1F, 2.1F, false);
+    public static final DeferredHolder<EntityType<?>, EntityType<GiantArrowEntity>> GIANT_ARROW = ENTITIES.register("giant_arrow",
+            () -> EntityType.Builder.<GiantArrowEntity>of(GiantArrowEntity::new, MobCategory.MISC).sized(0.6F, 0.6F).clientTrackingRange(4).updateInterval(20).build("giant_arrow"));
     public static final DeferredHolder<EntityType<?>, EntityType<BeastEntity>> CROW = reg("crow", BeastEntity::new, MobCategory.AMBIENT, 0.4F, 0.5F, false);
 
     /** l'Oeil : boite de 12 blocs (il mesure environ 15 blocs de large une fois dessine), visible de tres loin */

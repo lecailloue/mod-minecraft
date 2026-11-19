@@ -282,6 +282,20 @@ public final class Jobs {
         if (e.getLevel().isClientSide() || e.loadedFromDisk() || !(e.getEntity() instanceof AbstractArrow arrow) || arrow.getTags().contains(CLONE)) return;
         if (!(arrow.getOwner() instanceof ServerPlayer p) || choice(p, Job.WARRIOR, 0) != 3) return;
         int o10 = choice(p, Job.WARRIOR, 1), o15 = choice(p, Job.WARRIOR, 2);
+        // fleche geante : l'arme tire une fleche ordinaire, on la remplace par la grande (meme etat, memes degats)
+        if (o10 == 3 && !(arrow instanceof net.ringsofash.entity.GiantArrowEntity)) {
+            net.ringsofash.entity.GiantArrowEntity big = net.ringsofash.entity.ModEntities.GIANT_ARROW.get().create(arrow.level());
+            if (big != null) {
+                CompoundTag tag = new CompoundTag();
+                arrow.saveWithoutId(tag);
+                big.load(tag);
+                big.setUUID(UUID.randomUUID());
+                big.setOwner(p);
+                arrow.level().addFreshEntity(big);
+                e.setCanceled(true);
+            }
+            return;
+        }
         if (o15 == 1) arrow.setRemainingFireTicks(200);
         if (o10 == 3) {
             arrow.setPierceLevel((byte) 5);
