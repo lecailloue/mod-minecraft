@@ -972,9 +972,9 @@ def stag():
         x = 4 * s
         if hind:
             kids = [B(f'{nm}_thigh', x - 3, 15, z - 3.5, 6, 11, 7, 'wcoat', key='s_thigh'),
-                    G(f'{nm}_hock', (x, 15, z), rot=(18, 0, 0), children=[
-                        B(f'{nm}_shin', x - 1.6, 3, z - 1.6, 3.2, 12, 3.2, 'wcoat', key='s_shin'),
-                        B(f'{nm}_hoof', x - 2, 0, z - 2.6, 4, 3.5, 5, 'hoof', key='s_hoof')])]
+                    B(f'{nm}_hockb', x - 1.5, 11, z + 1.2, 3, 5, 2.4, 'wcoat', key='s_hockb'),
+                    B(f'{nm}_shin', x - 1.6, 3, z - 1.6, 3.2, 12, 3.2, 'wcoat', key='s_shin'),
+                    B(f'{nm}_hoof', x - 2, 0, z - 2.6, 4, 3.5, 5, 'hoof', key='s_hoof')]
         else:
             kids = [B(f'{nm}_arm', x - 2.4, 15, z - 2.8, 4.8, 11, 5.6, 'wcoat', key='s_arm'),
                     B(f'{nm}_shin', x - 1.6, 3, z - 1.6, 3.2, 13, 3.2, 'wcoat', key='s_fshin'),
@@ -1006,8 +1006,8 @@ def stag():
         B('nose_strap', -2.6, 46.1, -23, 5.2, .8, 3, 'elfleath', key='s_nstrap'),
         antler(B, G, 1, 's_antr'), antler(B, G, -1, 's_antl'),
         # oreilles : feuille large ouverte vers l'avant (face interieure rose devant), ecartee de cote et penchee en avant
-        G('ear_r', (3.2, 49.5, -12), rot=(-10, 0, -62), children=[B('ear_r_o', 3.0, 49.5, -12.7, 3.8, 9, 1.4, 'wcoat', key='s_ear'), B('ear_r_i', 3.7, 50.3, -13.3, 2.4, 7.2, .6, 'earin', key='s_earin')]),
-        G('ear_l', (-3.2, 49.5, -12), rot=(-10, 0, 62), children=[B('ear_l_o', -6.8, 49.5, -12.7, 3.8, 9, 1.4, 'wcoat', key='s_ear'), B('ear_l_i', -6.1, 50.3, -13.3, 2.4, 7.2, .6, 'earin', key='s_earin')]),
+        G('ear_r', (3.2, 49.5, -12), rot=(24, 0, -62), children=[B('ear_r_o', 3.0, 49.5, -12.7, 3.8, 9, 1.4, 'wcoat', key='s_ear'), B('ear_r_i', 3.7, 50.3, -13.3, 2.4, 7.2, .6, 'earin', key='s_earin')]),
+        G('ear_l', (-3.2, 49.5, -12), rot=(24, 0, 62), children=[B('ear_l_o', -6.8, 49.5, -12.7, 3.8, 9, 1.4, 'wcoat', key='s_ear'), B('ear_l_i', -6.1, 50.3, -13.3, 2.4, 7.2, .6, 'earin', key='s_earin')]),
     ])
     neck.children.append(head)
     body = G('body', (0, 28, 0), children=body_kids + [neck])
