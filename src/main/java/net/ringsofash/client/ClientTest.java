@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"399", "401", "417", "419_fond", "414b"};
+    private static final String[] ONLY = {"399", "410", "420", "421", "422", "199", "202", "203", "216", "217"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -457,6 +457,9 @@ public final class ClientTest {
         rivT("417_fondcombe_pilier_sud", 140, 26, 345, 140, 14, 300, 6000);
         rivT("418_fondcombe_pilier_ouest", 20, 24, 300, 70, 14, 300, 6000);
         rivT("419_fondcombe_pilier_haut", 130, 36, 262, 130, 14, 300, 6000);
+        rivT("420_fondcombe_pente_ouest", -230, 105, 176, 60, 60, 176, 6000);
+        rivT("421_fondcombe_pente_est", 590, 105, 200, 351, 60, 150, 6000);
+        rivT("422_fondcombe_pente_nord", 262, 150, -140, 262, 70, 40, 6000);
         helmT("430_helm_chargement", 120, 40, 215, 150, 15, 80, 6000);              // charge les chunks du site : sa capture ne compte pas
         helmT("431_helm_vue_sud", 130, 46, 214, 150, 18, 80, 6000);
         helmT("432_helm_muraille", 80, 12, 130, 92, 14, 86, 6000);

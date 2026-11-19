@@ -1746,6 +1746,21 @@ public final class Buildings {
 
     private static double tRnd(int x, int y, int z) { return (tHash(x, y, z) % 1024) / 1024.0; }
 
+    /** vrai si la colonne est sous l'eau (le fond est recouvert d'un fluide) */
+    private static boolean wetCol(Build b, int x, int z) {
+        int gy = b.groundY(x, z);
+        return !b.get(x, gy + 1, z).getFluidState().isEmpty();
+    }
+
+    /** hauteur du dessus de la route : le sol, ou la surface de l'eau si la colonne est immergee (le dessous est comble de pierre) */
+    private static int roadGy(Build b, int x, int z) {
+        int gy = b.groundY(x, z), y = gy + 1;
+        while (y <= gy + 24 && !b.get(x, y, z).getFluidState().isEmpty()) y++;
+        if (y == gy + 1) return gy;
+        for (int yy = gy + 1; yy <= y - 2; yy++) b.s(x, yy, z, Blocks.STONE.defaultBlockState());
+        return y - 1;
+    }
+
     /** la route d'acces : une esplanade pavee devant la grande porte, puis une route qui serpente vers le sud, pavee, bordee de bordures, de lanternes, d'etendards et de buissons */
     private static void tirithRoad(Build b, TirithPlan p, BlockState[] pal) {
         final int cx = TirithPlan.CX, zA = TirithPlan.CZ + (int) TirithPlan.R[0] + 9, zEnd = TirithPlan.D - 1;
@@ -1771,7 +1786,7 @@ public final class Buildings {
                     else if (d <= hw - 1) top = (x + z) % 2 == 0 ? SBR : PAVE2;
                     else top = q < 0.45 ? PATHB : q < 0.75 ? COARSE : GRAVEL;
                 } else continue;
-                int gy = b.groundY(x, z);
+                int gy = roadGy(b, x, z);                                                  // sur l'eau : la route est surelevee jusqu'a la surface (plus de trous dans l'eau)
                 b.s(x, gy, z, top);
                 for (int y = gy + 1; y <= gy + 5; y++) if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR);
                 for (int y = gy - 1; y >= gy - 3; y--) {                                   // dessous : pierre, pas d'eau ni de trou
@@ -1785,7 +1800,7 @@ public final class Buildings {
             for (int side = -1; side <= 1; side += 2) {                                      // lanternes sur la bordure
                 if (off != 5 + (side > 0 ? 0 : 0) || (z - zA) / 11 % 2 != (side > 0 ? 0 : 1)) continue;
                 int x = (int) Math.round(xc + side * (hw + 1.2));
-                if (!b.in(x, 0, z)) continue;
+                if (!b.in(x, 0, z) || wetCol(b, x, z)) continue;
                 int gy = b.groundY(x, z);
                 b.s(x, gy, z, SBR);
                 b.s(x, gy + 1, z, pal[TirithPlan.SBRW]); b.s(x, gy + 2, z, pal[TirithPlan.SBRW]); b.s(x, gy + 3, z, pal[TirithPlan.FENCE_B]);
@@ -1793,7 +1808,7 @@ public final class Buildings {
             }
             if ((z - zA) % 17 == 9) for (int side = -1; side <= 1; side += 2) {              // etendards blancs sur mats
                 int x = (int) Math.round(xc + side * (hw + 3));
-                if (!b.in(x, 0, z)) continue;
+                if (!b.in(x, 0, z) || wetCol(b, x, z)) continue;
                 int gy = b.groundY(x, z);
                 for (int y = 1; y <= 7; y++) b.s(x, gy + y, z, pal[TirithPlan.FENCE_B]);
                 for (int j = 0; j < 5; j++) { b.s(x - side, gy + 6 - j, z, j == 4 ? pal[TirithPlan.WOOL_G] : pal[TirithPlan.WOOL_W]); }
@@ -1801,7 +1816,7 @@ public final class Buildings {
             }
             for (int side = -1; side <= 1; side += 2) for (int k = 2; k <= 5; k++) {          // buissons, fleurs, rochers sur les bas-cotes
                 int x = (int) Math.round(xc + side * (hw + k)), zz = z;
-                if (!b.in(x, 0, zz) || p.kindAt(x, zz) != 0) continue;
+                if (!b.in(x, 0, zz) || p.kindAt(x, zz) != 0 || wetCol(b, x, zz)) continue;
                 double q = tRnd(x, 9, zz);
                 int gy = b.groundY(x, zz);
                 if (q < 0.1) { b.s(x, gy + 1, zz, pal[TirithPlan.OAKLEAF]); if (q < 0.04) b.s(x, gy + 2, zz, pal[TirithPlan.OAKLEAF]); }

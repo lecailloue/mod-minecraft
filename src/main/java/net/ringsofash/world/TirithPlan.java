@@ -83,6 +83,7 @@ public final class TirithPlan {
         citadel();
         rocks();
         carveStreets();
+        gateRails();
         openStairTop();
         railEdges(CX + 8, CZ + 12, CX + 32, CZ + 34, PROW_TOP - 1);
         for (int x = 0; x < W; x++) for (int z = 0; z < D; z++) {
@@ -359,7 +360,8 @@ public final class TirithPlan {
                 if (rr < ro - 12.5 || rr > ro - 7.5) continue;
                 for (int y = b; y <= b + 3; y++) set(x, y, z, AIR);
                 int below = get(x, b - 1, z);
-                if (below == AIR || below == WB_WALL || below == FENCE_B) set(x, b - 1, z, PAVE);
+                boolean floating = get(x, b - 2, z) == AIR && get(x, b - 3, z) == AIR;      // pas de tablier suspendu au-dessus de la rampe : la rampe reste la seule voie
+                if ((below == AIR || below == WB_WALL || below == FENCE_B) && !floating) set(x, b - 1, z, PAVE);
             }
         }
     }
@@ -378,7 +380,23 @@ public final class TirithPlan {
                 if (kind[i] == 4 && (flank[i] || !(fill[i] >= b - 1 && fill[i] <= b))) continue;
                 for (int y = b; y <= b + 3; y++) set(x, y, z, AIR);
                 int below = get(x, b - 1, z);
-                if (below == AIR || below == WB_WALL || below == FENCE_B) set(x, b - 1, z, PAVE);
+                boolean floating = get(x, b - 2, z) == AIR && get(x, b - 3, z) == AIR;
+                if ((below == AIR || below == WB_WALL || below == FENCE_B) && !floating) set(x, b - 1, z, PAVE);
+            }
+        }
+    }
+
+    /** garde-corps du pont de chaque porte (apres le percement des rues) : un mur bas sur les bords du tablier qui surplombent la rampe */
+    private void gateRails() {
+        int[][] dd = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        for (int n = 0; n < ramps.size(); n++) {
+            int[] r = ramps.get(n);
+            int xr = r[0], hw = r[1], base = r[4], zc = r[2] - (n == 0 ? 9 : 5);
+            for (int x = xr - hw - 2; x <= xr + hw + 2; x++) for (int z = zc - 2; z <= zc + 2; z++) {
+                if (get(x, base - 1, z) != PAVE || get(x, base - 2, z) != AIR || get(x, base, z) != AIR) continue;
+                for (int[] o : dd) {
+                    if (get(x + o[0], base - 1, z + o[1]) == AIR) { set(x, base, z, WB_WALL); break; }
+                }
             }
         }
     }
@@ -402,7 +420,9 @@ public final class TirithPlan {
             if (get(x, y, z) == AIR || get(x, y + 1, z) != AIR) continue;
             for (int[] o : dd) {
                 int nx = x + o[0], nz = z + o[1];
-                if (!area(nx, nz) || get(nx, y, nz) == AIR) { add.add(new int[]{x, y + 1, z}); break; }
+                if (!area(nx, nz)) { add.add(new int[]{x, y + 1, z}); break; }
+                int nb = get(nx, y, nz) & 255, nbBelow = get(nx, y - 1, nz) & 255;
+                if (nb == AIR && !(nbBelow >= WB_STAIR && nbBelow < WB_STAIR + 8)) { add.add(new int[]{x, y + 1, z}); break; }   // le haut des marches reste ouvert
             }
         }
         for (int[] a : add) set(a[0], a[1], a[2], WB_WALL);

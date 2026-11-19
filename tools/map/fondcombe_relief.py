@@ -30,7 +30,7 @@ def main(plan):
     bio = np.frombuffer(raw[n * n * 4:], dtype=np.uint8).reshape(n, n).copy()
     cs = 2.5
     # fenetre autour du plan
-    R = 220
+    R = 460
     gx0, gx1 = int((OX - R + 2500) / cs), int((OX + W + R + 2500) / cs)
     gz0, gz1 = int((OZ - R + 2500) / cs), int((OZ + D + R + 2500) / cs)
     xs = (np.arange(gx0, gx1) + 0.5) * cs - 2500
@@ -42,16 +42,18 @@ def main(plan):
     # lisser le rebord le long de chaque cote (le plan est bosselé)
     rim = gaussian_filter(rim, 6)
     rimv = np.maximum(0, rim - 3)
-    L = np.minimum(170, 70 + rimv)
-    f = 1 - sm(d / L)
+    rimv = rimv * sm((rimv - 14) / 24.0)                                    # un rebord bas (arbres, toits) ne fait pas de montagne
+    L = np.minimum(470, 150 + 3.2 * rimv)                                   # pente tres longue : environ 1 bloc de haut pour 3 a 4 de large
+    s_ = np.clip(d / L, 0, 1)
+    f = (1 - s_) ** 1.9                                                     # profil concave : raide pres de la crete, longue queue douce vers la plaine
     rng = np.random.default_rng(1215)
-    noise = gaussian_filter(rng.standard_normal(X.shape), 7); noise /= noise.std()
-    ridge = np.clip(1 - np.abs(gaussian_filter(rng.standard_normal(X.shape), 5) * 3.2), 0, 1)
-    bell = np.exp(-(((d - 0.45 * L) / (0.3 * L)) ** 2))
-    t = rimv * f * (1 + 0.10 * noise) + 0.30 * rimv * bell * (0.6 + 0.4 * ridge)
+    noise = gaussian_filter(rng.standard_normal(X.shape), 9); noise /= noise.std()
+    ridge = np.clip(1 - np.abs(gaussian_filter(rng.standard_normal(X.shape), 7) * 3.0), 0, 1)
+    bell = np.exp(-(((d - 0.16 * L) / (0.14 * L)) ** 2))                    # sommets et croupes juste derriere le rebord
+    t = rimv * f * (1 + 0.12 * noise * (1 - s_)) + 0.42 * rimv * bell * (0.35 + 0.65 * ridge) * (1 - s_)
     # on ne touche pas l'interieur du plan ni la plaine au sud ; on estompe vers l'est (Argonath)
-    fe = 1 - sm((X - (OX + W)) / 70.0)
-    fa = sm((np.hypot(X + 310, Z + 480) - 150) / 60.0)
+    fe = 1 - sm((X - (OX + W)) / 200.0)
+    fa = sm((np.hypot(X + 310, Z + 480) - 90) / 90.0)
     t = t * fe * fa
     t[d <= 0] = 0
     target = Y0S + 3 + t

@@ -47,6 +47,7 @@ import net.neoforged.neoforge.event.level.SleepFinishedTimeEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.ringsofash.data.Jobs;
 import net.ringsofash.data.Guide;
 import net.ringsofash.data.ModData;
 import net.ringsofash.data.Net;
@@ -439,6 +440,30 @@ public final class GameEvents {
     }
 
     // ------------------------------------------------------------------ commandes
+    private interface JobAction { void run(ServerPlayer p, Jobs.Job j, int v); }
+
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<net.minecraft.commands.CommandSourceStack> jobLit(String name, Jobs.Job j) {
+        return Commands.literal(name).executes(ctx -> {
+            ServerPlayer p = ctx.getSource().getPlayerOrException();
+            Jobs.reset(p, j);
+            p.sendSystemMessage(Component.literal("Métier retiré : " + j.fr).withStyle(ChatFormatting.YELLOW));
+            return 1;
+        });
+    }
+
+    /** ajoute les trois metiers (guerrier, mineur, forgeron) puis une valeur entiere sous un noeud de commande */
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<net.minecraft.commands.CommandSourceStack> jobArg(com.mojang.brigadier.builder.LiteralArgumentBuilder<net.minecraft.commands.CommandSourceStack> parent, JobAction act) {
+        String[] names = {"guerrier", "mineur", "forgeron"};
+        for (int i = 0; i < 3; i++) {
+            final Jobs.Job job = Jobs.Job.values()[i];
+            parent.then(Commands.literal(names[i]).then(Commands.argument("valeur", IntegerArgumentType.integer(0, 1000000)).executes(ctx -> {
+                act.run(ctx.getSource().getPlayerOrException(), job, IntegerArgumentType.getInteger(ctx, "valeur"));
+                return 1;
+            })));
+        }
+        return parent;
+    }
+
     private static void onCommands(RegisterCommandsEvent e) {
         e.getDispatcher().register(Commands.literal("anneaux")
                 .then(Commands.literal("reputation").executes(ctx -> {
@@ -486,6 +511,24 @@ public final class GameEvents {
                             return 1;
                         })))
                 .then(Commands.literal("lieux").requires(s -> s.hasPermission(2)).executes(ctx -> { seeingStone(ctx.getSource().getPlayerOrException()); return 1; }))
+                .then(Commands.literal("metier").requires(s -> s.hasPermission(2))
+                        .then(jobArg(Commands.literal("xp"), (p, j, v) -> {
+                            if (v <= 0) return;
+                            Jobs.addXp(p, j, v);
+                        }))
+                        .then(jobArg(Commands.literal("niveau"), (p, j, v) -> {
+                            int lv = Math.max(1, Math.min(Jobs.MAX_LEVEL, v));
+                            Jobs.setXp(p, j, Jobs.xpFor(lv));
+                            p.sendSystemMessage(Component.literal(j.fr + " : niveau " + lv).withStyle(ChatFormatting.GOLD));
+                        }))
+                        .then(Commands.literal("retirer")
+                                .then(Commands.literal("tous").executes(ctx -> {
+                                    ServerPlayer p = ctx.getSource().getPlayerOrException();
+                                    for (Jobs.Job j : Jobs.Job.values()) Jobs.reset(p, j);
+                                    p.sendSystemMessage(Component.literal("Tous les métiers ont été retirés.").withStyle(ChatFormatting.YELLOW));
+                                    return 1;
+                                }))
+                                .then(jobLit("guerrier", Jobs.Job.WARRIOR)).then(jobLit("mineur", Jobs.Job.MINER)).then(jobLit("forgeron", Jobs.Job.SMITH))))
                 .then(Commands.literal("rep").requires(s -> s.hasPermission(2)).then(Commands.argument("valeur", IntegerArgumentType.integer(-100, 100)).executes(ctx -> {
                     ServerPlayer p = ctx.getSource().getPlayerOrException();
                     int v = IntegerArgumentType.getInteger(ctx, "valeur");

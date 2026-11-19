@@ -178,6 +178,23 @@ public final class Jobs {
         Net.sync(p);
     }
 
+    /** Commande : fixe l'XP d'un metier (en gardant les competences deja choisies dont le palier est toujours atteint). */
+    public static void setXp(ServerPlayer p, Job j, int xp) {
+        PlayerLore l = ModData.lore(p);
+        l.jobXp[j.ordinal()] = Math.max(0, xp);
+        int lv = level(l.jobXp[j.ordinal()]);
+        for (int t = 0; t < 3; t++) if (lv < TIERS[t]) l.jobChoice[j.ordinal() * 3 + t] = 0;
+        Net.sync(p);
+    }
+
+    /** Commande : retire le metier (XP et competences). */
+    public static void reset(ServerPlayer p, Job j) {
+        PlayerLore l = ModData.lore(p);
+        l.jobXp[j.ordinal()] = 0;
+        for (int t = 0; t < 3; t++) l.jobChoice[j.ordinal() * 3 + t] = 0;
+        Net.sync(p);
+    }
+
     /** Choix definitif d'une competence ; verifie niveau, ordre des paliers et competence disponible. */
     public static void choose(ServerPlayer p, int jobIdx, int t, int opt) {
         if (jobIdx < 0 || jobIdx >= Job.values().length || t < 0 || t > 2) return;
