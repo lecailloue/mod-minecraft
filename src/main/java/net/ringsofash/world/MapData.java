@@ -115,7 +115,7 @@ public final class MapData {
                 g += (float) (amp * (0.5 * (rid2 - 0.5f) + 0.5 * n3));
             }
         }
-        return Math.round(g);
+        return MoriaPlan.surface(x, z, Math.round(g));
     }
 
     /** Altitude de la surface du liquide : eau (mer, rivieres) ou lave dans le cratere du volcan ; MIN_VALUE s'il n'y en a pas. */
@@ -127,6 +127,8 @@ public final class MapData {
             long dx = x - volcano[0], dz = z - volcano[1];
             if (dx * dx + dz * dz <= (long) volcano[2] * volcano[2] && h < volcano[3]) return volcano[3];
         }
+        int lt = MoriaPlan.lakeTop(x, z, h);
+        if (lt != Integer.MIN_VALUE) return lt;
         return h < SEA ? SEA : Integer.MIN_VALUE;
     }
 

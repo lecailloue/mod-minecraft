@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"211", "223"};
+    private static final String[] ONLY = {"43", "440"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -575,6 +575,18 @@ public final class ClientTest {
                 }
             }));
         }
+        // Moria : l'entree (falaise, lac, portes), la Grande Salle, l'escalier, le gouffre, les Forges, la tombe, une galerie
+        morT("430_moria_porte", 212.5, 86, -360.5, 168, 102, -360.5, 6000);
+        morT("431_moria_lac", 305.5, 125, -360.5, 168, 100, -360.5, 6000);
+        morT("432_moria_couloir", 158.5, 85, -360.5, 90, 95, -360.5, 6000);
+        morT("433_moria_grande_salle", 128.5, 100, -296.5, 40, 100, -400.5, 6000);
+        morT("434_moria_escalier", 75.5, 96, -478.5, 75.5, 50, -545.5, 6000);
+        morT("435_moria_pont", 75.5, 40, -556.5, 76, 10, -640.5, 6000);
+        morT("436_moria_forges", 75.5, -8, -692.5, 90, 10, -790.5, 6000);
+        morT("437_moria_cascade", 56.5, -12, -770.5, 56, 10, -832.5, 6000);
+        morT("438_moria_colosse", 26.5, -8, -690.5, 26.5, 22, -716.5, 6000);
+        morT("439_moria_tombe", 266.5, -16, -760.5, 280, -16, -760.5, 6000);
+        morT("440_moria_galerie", -125.5, -16, -762.5, -190, -16, -725.5, 6000);
         // Edoras (centre 352, 1180, perron du palais au sud, route en lacets depuis le sud-ouest) ; py = niveau du sol sous la colline
         final int EX = 352, EZ = 1180;
         for (Object[] it : new Object[][]{{"100_edoras_loin_sud_ouest", -125, 105, 60, -135F, -14F, 6000}}) {
@@ -1273,6 +1285,20 @@ public final class ClientTest {
             float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
             lands.setDayTime(time);
             view(p, lands, pl[0] + fx - 176 + 0.5, py + fy, pl[1] + fz - 176 + 0.5, yaw, pitch);
+        }));
+    }
+
+    /** vue dans les mines de la Moria, en coordonnees du monde : de (fx, fy, fz) vers (tx, ty, tz) ; vision nocturne pour voir les salles sombres */
+    private static void morT(String name, double fx, double fy, double fz, double tx, double ty, double tz, int time) {
+        SCENES.add(new Scene(name, 600, p -> {
+            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+            int cx = (int) fx >> 4, cz = (int) fz >> 4;
+            for (int dx = -7; dx <= 7; dx++) for (int dz = -7; dz <= 7; dz++) lands.getChunk(cx + dx, cz + dz);
+            double ddx = tx - fx, ddy = ty - fy, ddz = tz - fz;
+            float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
+            lands.setDayTime(time);
+            p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.NIGHT_VISION, 100000, 0, true, false));
+            view(p, lands, fx, fy, fz, yaw, pitch);
         }));
     }
 

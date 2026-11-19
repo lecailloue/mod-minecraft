@@ -169,10 +169,71 @@ public final class MapChunkGenerator extends ChunkGenerator {
         return false;
     }
 
+    private static BlockState[] moriaPal;
+
+    private static synchronized BlockState[] moriaPal() {
+        if (moriaPal != null) return moriaPal;
+        BlockState[] p = new BlockState[MoriaPlan.NIDS];
+        java.util.Arrays.fill(p, STONE);
+        net.minecraft.core.Direction[] dirs = {net.minecraft.core.Direction.NORTH, net.minecraft.core.Direction.EAST, net.minecraft.core.Direction.SOUTH, net.minecraft.core.Direction.WEST};
+        p[MoriaPlan.AIR] = AIR;
+        p[MoriaPlan.DSTONE] = Reg.DWARVEN_STONE.get().defaultBlockState();
+        p[MoriaPlan.DCOBBLE] = Reg.DWARVEN_COBBLESTONE.get().defaultBlockState();
+        p[MoriaPlan.DBRICKS] = Reg.DWARVEN_BRICKS.get().defaultBlockState();
+        p[MoriaPlan.DPILLAR] = Reg.DWARVEN_PILLAR.get().defaultBlockState();
+        p[MoriaPlan.DCHISEL] = Reg.DWARVEN_CHISELED.get().defaultBlockState();
+        p[MoriaPlan.DRUNES] = Reg.DWARVEN_RUNES.get().defaultBlockState();
+        p[MoriaPlan.DLAMP] = Reg.DWARVEN_LAMP.get().defaultBlockState();
+        p[MoriaPlan.WHITE] = Reg.WHITE_STONE.get().defaultBlockState();
+        p[MoriaPlan.DEEPSLATE] = DEEPSLATE;
+        p[MoriaPlan.LAVA] = LAVA;
+        p[MoriaPlan.WATER] = WATER;
+        p[MoriaPlan.MAGMA] = Blocks.MAGMA_BLOCK.defaultBlockState();
+        p[MoriaPlan.OAKP] = Blocks.DARK_OAK_PLANKS.defaultBlockState();
+        p[MoriaPlan.OAKLOG] = Blocks.DARK_OAK_LOG.defaultBlockState();
+        p[MoriaPlan.OAKLOGX] = Blocks.DARK_OAK_LOG.defaultBlockState().setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS, net.minecraft.core.Direction.Axis.X);
+        p[MoriaPlan.OAKLOGZ] = Blocks.DARK_OAK_LOG.defaultBlockState().setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS, net.minecraft.core.Direction.Axis.Z);
+        p[MoriaPlan.FENCE] = Blocks.DARK_OAK_FENCE.defaultBlockState();
+        p[MoriaPlan.CHAIN] = Blocks.CHAIN.defaultBlockState();
+        p[MoriaPlan.LANTERN] = Blocks.LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true);
+        p[MoriaPlan.SLANTERN] = Blocks.SOUL_LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true);
+        p[MoriaPlan.WEB] = Blocks.COBWEB.defaultBlockState();
+        p[MoriaPlan.BONES] = Blocks.BONE_BLOCK.defaultBlockState();
+        p[MoriaPlan.QUARTZ] = Blocks.QUARTZ_BLOCK.defaultBlockState();
+        p[MoriaPlan.QSLAB] = Blocks.QUARTZ_SLAB.defaultBlockState();
+        p[MoriaPlan.BOOKS] = Blocks.BOOKSHELF.defaultBlockState();
+        p[MoriaPlan.BARS] = Blocks.IRON_BARS.defaultBlockState();
+        p[MoriaPlan.FORGE] = Reg.DWARVEN_FORGE.get().defaultBlockState();
+        p[MoriaPlan.ANVIL] = Blocks.ANVIL.defaultBlockState();
+        p[MoriaPlan.BSLAB] = Reg.DWARVEN_BRICKS_SLAB.get().defaultBlockState();
+        p[MoriaPlan.BWALL] = Reg.DWARVEN_BRICKS_WALL.get().defaultBlockState();
+        p[MoriaPlan.GRAVEL] = GRAVEL;
+        p[MoriaPlan.SPRLOG] = Blocks.SPRUCE_LOG.defaultBlockState();
+        p[MoriaPlan.SPRLEAF] = Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+        p[MoriaPlan.BLACKSTONE] = Blocks.BLACKSTONE.defaultBlockState();
+        p[MoriaPlan.ORE] = Reg.LUNARGENT_ORE.get().defaultBlockState();
+        p[MoriaPlan.ORE + 1] = Reg.SOMBREFER_ORE.get().defaultBlockState();
+        p[MoriaPlan.ORE + 2] = Reg.BRAISITE_ORE.get().defaultBlockState();
+        p[MoriaPlan.ORE + 3] = Reg.BRUMECRISTAL_ORE.get().defaultBlockState();
+        p[MoriaPlan.ORE + 4] = Reg.ORRUNE_ORE.get().defaultBlockState();
+        for (int i = 0; i < 4; i++) {
+            p[MoriaPlan.BSTAIR + i] = Reg.DWARVEN_BRICKS_STAIRS.get().defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, dirs[i]);
+            p[MoriaPlan.DSTAIR + i] = Reg.DWARVEN_STONE_STAIRS.get().defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, dirs[i]);
+            p[MoriaPlan.BSTAIR_TOP + i] = Reg.DWARVEN_BRICKS_STAIRS.get().defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, dirs[i]).setValue(net.minecraft.world.level.block.StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP);
+        }
+        return moriaPal = p;
+    }
+
+    static BlockState moria(int id) { return moriaPal()[id]; }
+
     static BlockState block(int x, int y, int z, int h, int wt, int b, int slope) {
-        if (y > h) return y <= wt ? (wt > MapData.SEA || b == MapData.B_LAVE ? LAVA : WATER) : AIR;
+        if (y > h) return y <= wt ? (wt > MapData.SEA && !MoriaPlan.inLake(x, z) || b == MapData.B_LAVE ? LAVA : WATER) : AIR;
         if (y <= -64) return BEDROCK;
         if (y < -59 && hash(x, y, z) < (-59 - y) / 5f) return BEDROCK;
+        if (MoriaPlan.inBox(x, y, z)) {                                          // les mines de la Moria, creusees sous la carte
+            int m = MoriaPlan.at(x, y, z, h);
+            if (m != MoriaPlan.KEEP) return moria(m);
+        }
         int depth = h - y;
         boolean under = wt > h;                       // sous l'eau
         if (!under && depth <= 1 && h > MapData.SEA + 1 && onWhiteRoad(x, z)) return Reg.WHITE_STONE.get().defaultBlockState();
