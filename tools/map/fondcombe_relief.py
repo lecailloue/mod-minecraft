@@ -46,6 +46,11 @@ def main(plan):
     xcw = np.clip(Xw, OX + 1, OX + W - 2); zcw = np.clip(Zw, OZ + 1, OZ + D - 2)
     d = np.hypot(Xw - xcw, Zw - zcw)
     xc = np.clip(X, OX + 1, OX + W - 2); zc = np.clip(Z, OZ + 1, OZ + D - 2)
+    dl, dr_, du, dd = X - OX, OX + W - X, Z - OZ, OZ + D - Z                 # a l'interieur du plan : on projette sur le bord le plus proche
+    mn = np.minimum(np.minimum(dl, dr_), np.minimum(du, dd))
+    ins = (X > OX) & (X < OX + W) & (Z > OZ) & (Z < OZ + D)
+    xc = np.where(ins & (mn == dl), OX + 1, np.where(ins & (mn == dr_), OX + W - 2, xc))
+    zc = np.where(ins & (mn == du), OZ + 1, np.where(ins & (mn == dd), OZ + D - 2, zc))
     rim = top[(zc - OZ).astype(int), (xc - OX).astype(int)].astype(np.float32)
     rim = gaussian_filter(rim, 6)                                           # lisser le rebord le long de chaque cote (le plan est bosselé)
     rimv = np.maximum(0, rim - 3)
@@ -73,7 +78,10 @@ def main(plan):
     fe = 1 - sm((X - (OX + W)) / 200.0)
     fa = sm((np.hypot(X + 310, Z + 480) - 90) / 90.0)
     t = t * fe * fa
-    t[(X > OX) & (X < OX + W) & (Z > OZ) & (Z < OZ + D)] = 0
+    # a l'interieur, seule la bande de raccord du plan (30 blocs) est relevee : le sol de la carte y continue le relief exterieur (sinon mur droit au bord du plan)
+    inside = (X > OX) & (X < OX + W) & (Z > OZ) & (Z < OZ + D)
+    din = np.minimum(np.minimum(X - OX, OX + W - X), np.minimum(Z - OZ, OZ + D - Z))
+    t = t * np.where(inside, 1 - sm((din - 26) / 12.0), 1.0)                # dans le plan, seule la bande de raccord garde le relief (continuite avec l'exterieur)
     target = Y0S + 3 + t
     sub = h[gz0:gz1, gx0:gx1]
     raise_ = np.where((t > 1.5) & (target > sub), np.rint(target), sub).astype(np.int32)
