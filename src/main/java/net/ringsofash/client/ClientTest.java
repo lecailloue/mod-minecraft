@@ -551,7 +551,7 @@ public final class ClientTest {
                     case 8 -> view(p, lands, TX + 200.5, py + 120, TZ + 40.5, 90F, -14F);
                     case 9 -> look(p, lands, ox + CX - 40.5, py + 44, oz + CZ + 96.5, ox + CX - 4, py + 74, oz + CZ + 78);                     // l'eperon de roche vu de la rue du niveau 2
                     case 10 -> look(p, lands, ox + CX - 95.5, py + 150, oz + CZ + 20.5, ox + CX - 15, py + 185, oz + CZ - 28);                  // la falaise de la montagne
-                    case 11 -> look(p, lands, ox + CX + 34.5, py + 112, oz + CZ + 36.5, ox + CX + 21, py + 126, oz + CZ + 9);                  // la rampe du flanc, qui debouche dans la cour
+                    case 11 -> look(p, lands, ox + CX + 42.5, top + 4, oz + CZ + 26.5, ox + CX + 24, top - 3, oz + CZ + 23.5);                  // la rampe du flanc, qui debouche dans la cour
                     case 12 -> look(p, lands, ox + CX - 9.5, py + 56, oz + CZ + 80.5, ox + CX + 10, py + 56.5, oz + CZ + 78.5);                  // un tunnel sous l'eperon
                     case 13 -> {                                                                                                               // une porte de maison, de pres
                         int[] d = findDoor(tp, CX - 48, CX - 16, CZ + 60, CZ + 125);
@@ -570,7 +570,7 @@ public final class ClientTest {
                     case 19 -> look(p, lands, ox + CX - 34.5, py + 104, oz + CZ + 136.5, ox + CX, py + 108, oz + CZ + 100);                      // le bout de l'eperon : face droite, terrasses blanches
                     case 20 -> look(p, lands, ox + CX + 0.5, top + 16, oz + CZ + 36.5, ox + CX + 0.5, top - 8, oz + CZ + 96);                    // le dessus de l'eperon : sol blanc, barrieres, marches
                     case 21 -> look(p, lands, ox + CX - 27.5, py + 20.6, oz + CZ + 123.5, ox + CX - 18, py + 20.4, oz + CZ + 116.5);               // la porte d'une tour de la grande porte, vue de la rue
-                    case 23 -> look(p, lands, ox + 206 + 0.5, py + 44, oz + 262.5, ox + 206, py + 34, oz + 244);                                 // le haut d'une rampe, sans dalle sur les marches
+                    case 23 -> look(p, lands, ox + 206 + 0.5, py + 52, oz + 280.5, ox + 206, py + 32, oz + 248);                                 // le haut d'une rampe, sans dalle sur les marches
                     default -> look(p, lands, ox + CX - 30.5, py + 19.8, oz + CZ + 116.5, ox + CX - 8, py + 19.8, oz + CZ + 116.5);               // a travers la tour, la galerie et l'autre tour
                 }
             }));
