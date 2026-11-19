@@ -457,9 +457,9 @@ public final class ClientTest {
         rivT("417_fondcombe_pilier_sud", 140, 26, 345, 140, 14, 300, 6000);
         rivT("418_fondcombe_pilier_ouest", 20, 24, 300, 70, 14, 300, 6000);
         rivT("419_fondcombe_pilier_haut", 130, 36, 262, 130, 14, 300, 6000);
-        rivO("420_fondcombe_pente_ouest", -300, 120, 120, 40, 90, 120, 26, 0, 0);
-        rivO("422_fondcombe_pente_nord", 200, 130, -330, 200, 90, 20, 8, 26, 8);
-        rivO("423_fondcombe_pente_nordouest", -280, 190, -280, 80, 80, 40, 22, 22, 0);
+        rivO("420_fondcombe_pente_ouest", -110, 100, 120, 40, 75, 120, 10, 0, 0);
+        rivO("422_fondcombe_pente_nord", 200, 100, -110, 200, 75, 40, 4, 10, 4);
+        rivO("423_fondcombe_pente_nordouest", -80, 115, -80, 60, 80, 40, 10, 10, 0);
         helmT("430_helm_chargement", 120, 40, 215, 150, 15, 80, 6000);              // charge les chunks du site : sa capture ne compte pas
         helmT("431_helm_vue_sud", 130, 46, 214, 150, 18, 80, 6000);
         helmT("432_helm_muraille", 80, 12, 130, 92, 14, 86, 6000);
