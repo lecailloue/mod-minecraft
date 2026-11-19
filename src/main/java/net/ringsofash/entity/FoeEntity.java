@@ -43,7 +43,7 @@ import net.ringsofash.gen.Reg;
 
 import javax.annotation.Nullable;
 
-/** Ennemis de melee : orques, gobelins, trolls, loups de guerre, spectres des tertres, hommes sauvages, mammouths. */
+/** Ennemis de melee : orques, gobelins, trolls, wargs, spectres des tertres, hommes sauvages, mammouths. */
 public class FoeEntity extends Monster {
     public enum Kind { ORC, WAR_ORC, ORC_CHIEF, GOBLIN, CAVE_TROLL, STONE_TROLL, TROLL_CHIEF, WARG, WILD_MAN, MAMMOTH, DEAD_SOLDIER, GOBLIN_KING }
 

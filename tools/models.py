@@ -39,20 +39,47 @@ def troll():
     save(statue, f'{A}/textures/entity/troll_statue.png')
 
 def warg():
+    """Warg : enorme loup-hyene de la Terre du Milieu, dos vouté et crinière hérissée, tete lourde, pas de selle"""
     m = Model('warg', 64, 64, 7)
-    c = '#423c38'; dark = '#2c2826'
+    c = '#5a4a3a'; dark = '#2e251f'; mid = '#46392f'; lt = '#7c6850'; belly = '#5e4e3f'; fang = '#e6dec8'
     b = m.part('body', (0, 14, 0))
-    b.box((-5, 9, -6), (10, 9, 20), c)
-    b.box((-6, 10, -11), (12, 12, 9), dark, noise=0.16)
-    h = m.part('head', (0, 18, -11))
-    h.box((-4, 14, -18), (8, 8, 7), c, art={'front': ['........', '........', '.r....r.', '........', '........']}, pal=EYE)
-    h.box((-2, 14, -23), (4, 4, 5), dark, art={'front': ['.kk.', '....', 'w..w', '....']}, pal=EYE)
-    h.box((-4, 22, -14), (2, 3, 1), dark); h.box((2, 22, -14), (2, 3, 1), dark)
-    m.part('leg_fr', (-4, 10, -7)).box((-6, 0, -9), (4, 10, 4), c)
-    m.part('leg_fl', (4, 10, -7)).box((2, 0, -9), (4, 10, 4), c, mirror=True)
-    m.part('leg_br', (-4, 10, 11)).box((-6, 0, 9), (4, 10, 4), c)
-    m.part('leg_bl', (4, 10, 11)).box((2, 0, 9), (4, 10, 4), c, mirror=True)
-    m.part('tail', (0, 15, 14)).box((-1, 13, 14), (3, 3, 10), dark)
+    b.box((-6, 10, -10), (12, 12, 11), c, noise=0.2, grad=lt)            # epaules massives, plus hautes que la croupe
+    b.box((-5, 10, 1), (10, 9, 11), mid, noise=0.2, grad=c)              # arriere-train plus bas
+    b.box((-4, 8, -6), (8, 3, 13), belly, noise=0.16)                    # ventre
+    b.box((-7, 12, -9), (1, 8, 7), mid, noise=0.25); b.box((6, 12, -9), (1, 8, 7), mid, noise=0.25)   # touffes de flanc
+    b.box((-5, 22, -9), (10, 2, 10), lt, noise=0.25)                     # bosse d'epaules (crinière)
+    # crete de poils hérissés le long de l'echine (3 rangees) : plus haute aux epaules, decroit vers la croupe
+    for i, z in enumerate((-9, -6.5, -4, -1.5, 1, 3.5, 6, 8.5, 11)):
+        h = max(2, 6 - i * 0.5)
+        y0 = 24 - max(0, (z + 1)) * 0.28 if z > -1 else 24
+        b.box((-1, y0, z), (2, round(h), 2), lt if i % 2 else c, noise=0.3)
+        if i < 7:
+            b.box((-4, y0 - 1, z + 0.5), (2, round(h * 0.6) + 1, 2), c, noise=0.3)
+            b.box((2, y0 - 1, z + 0.5), (2, round(h * 0.6) + 1, 2), c, noise=0.3)
+    n = m.part('neck', (0, 19, -9))
+    n.box((-4, 15, -16), (8, 8, 8), c, noise=0.22)                       # cou epais
+    n.box((-5.5, 14, -15), (11, 3, 5), lt, noise=0.3)                    # collerette de poils
+    n.box((-4.5, 21, -15), (9, 3, 6), lt, noise=0.3)
+    h = m.part('head', (0, 17, -16), parent='neck')
+    h.box((-5, 12, -24), (10, 10, 9), c, art={'front': ['.........', '.........', '.yy..yy..', '.yk..ky..', '.........']}, pal={**EYE, 'y': '#e8b020', 'k': '#201008'})
+    h.box((-3.5, 12, -31), (7, 6, 7), mid, noise=0.18)                     # museau
+    h.box((-2.5, 15.5, -32), (5, 2, 1), dark)                            # truffe
+    h.box((-5, 20.5, -24.6), (10, 2, 1), dark, noise=0.3)                 # arcade sourciliere
+    h.box((-6, 12, -20), (1, 6, 6), lt, noise=0.3); h.box((5, 12, -20), (1, 6, 6), lt, noise=0.3)   # favoris
+    h.box((-5.5, 22, -19), (3, 5, 2), mid, noise=0.18); h.box((2.5, 22, -19), (3, 5, 2), mid, noise=0.18)  # oreilles pointues
+    h.box((-3.3, 10.2, -30), (1, 2, 1), fang); h.box((2.3, 10.2, -30), (1, 2, 1), fang)                  # crocs superieurs
+    h.box((-3.3, 11, -27), (1, 1, 1), fang); h.box((2.3, 11, -27), (1, 1, 1), fang)
+    j = m.part('jaw', (0, 13, -23), parent='head')
+    j.box((-3, 10, -30), (6, 2, 7), dark, noise=0.18)
+    j.box((-2, 12, -29.5), (1, 2, 1), fang); j.box((1, 12, -29.5), (1, 2, 1), fang)                  # crocs inferieurs
+    # pattes avant : grosses, musclees, griffues
+    m.part('leg_fr', (-4.5, 12, -6)).box((-7, 3, -9), (5, 9, 6), c, noise=0.22).box((-6.5, 0, -10), (5, 4, 7), dark, noise=0.2).box((-6.5, 0, -11), (1, 1, 1), fang).box((-5, 0, -11), (1, 1, 1), fang).box((-3.5, 0, -11), (1, 1, 1), fang)
+    m.part('leg_fl', (4.5, 12, -6)).box((2, 3, -9), (5, 9, 6), c, noise=0.22, mirror=True).box((1.5, 0, -10), (5, 4, 7), dark, noise=0.2, mirror=True).box((1.5, 0, -11), (1, 1, 1), fang).box((3, 0, -11), (1, 1, 1), fang).box((4.5, 0, -11), (1, 1, 1), fang)
+    # pattes arriere : cuisse puissante, jarret recule
+    m.part('leg_br', (-4, 12, 9)).box((-6.5, 6, 7), (4, 7, 6), mid, noise=0.22).box((-6, 0, 9.5), (3, 7, 3), dark, noise=0.2).box((-6.5, 0, 8), (4, 2, 5), dark, noise=0.2)
+    m.part('leg_bl', (4, 12, 9)).box((2.5, 6, 7), (4, 7, 6), mid, noise=0.22, mirror=True).box((3, 0, 9.5), (3, 7, 3), dark, noise=0.2, mirror=True).box((2.5, 0, 8), (4, 2, 5), dark, noise=0.2, mirror=True)
+    t = m.part('tail', (0, 17, 12)); t.box((-1.5, 14, 12), (3, 3, 6), mid, noise=0.25)
+    t2 = m.part('tail2', (0, 16, 18), parent='tail'); t2.box((-2, 11, 18), (4, 5, 6), dark, noise=0.3)
     m.export(); m.preview(f'{PREVIEW}/warg.png')
 
 def stag():

@@ -5,7 +5,7 @@ from PIL import Image
 MOBS = [  # id, nom, constante, couleur1, couleur2
     ('orc', 'Orque', 0x5f7248, 0x2a2622), ('war_orc', 'Orque noir', 0x3a3a34, 0x8a1a14), ('orc_chief', 'Chef orque', 0x4a4034, 0xc02018),
     ('goblin', 'Gobelin', 0x7a8a52, 0xf0e040), ('goblin_king', 'Roi des gobelins', 0xc4a898, 0xd8a838), ('cave_troll', 'Troll des cavernes', 0x6d7868, 0x8a947e), ('stone_troll', 'Troll de pierre', 0x8a8a84, 0x5a5a56), ('troll_chief', 'Troll chef de meute', 0x2b2b30, 0xc02018),
-    ('warg', 'Loup de guerre', 0x423c38, 0xc02010), ('wild_man', 'Homme sauvage', 0xa87a58, 0x2a1c12),
+    ('warg', 'Warg', 0x423c38, 0xc02010), ('wild_man', 'Homme sauvage', 0xa87a58, 0x2a1c12),
     ('mammoth', 'Mûmak', 0x6a5544, 0xe8dfc4), ('war_boar', 'Sanglier de guerre', 0x2c2420, 0x8a8e98), ('dead_soldier', 'Soldat spectral', 0x7ad8a0, 0xe0fff0), ('shadow_rider', 'Être des ombres', 0x0c0a0e, 0x4a4a54), ('shadow_chief', 'Chef des ombres', 0x08060a, 0xa8a8b8), ('shadow_dragon', 'Dragon des ombres', 0x141418, 0xc8c8d8),
     ('giant_spider', 'Araignée géante', 0x1a1420, 0xa01828), ('lurker', 'Guetteur des profondeurs', 0x27332e, 0x9fe060), ('cave_thief', 'Créature blême', 0xb8b8a8, 0xd8f0ff),
     ('fire_demon', 'Fléau de Braise', 0x1f1717, 0xff7a18), ('ash_lord', 'Seigneur de Cendre', 0x141216, 0xff5a18), ('dragon', 'Vieux Ver', 0x7c211b, 0xc08a3a),

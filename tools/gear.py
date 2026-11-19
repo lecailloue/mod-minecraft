@@ -135,7 +135,7 @@ def build():
     mat = lambda c, **k: matpal(c, **k)
     # ---- materiaux et butin
     item('troll_hide', 'Cuir de troll', tex=sprite(FOODS['pelt'], mat('#6d7868')))
-    item('warg_pelt', 'Fourrure de loup de guerre', tex=sprite(FOODS['pelt'], mat('#423c38')))
+    item('warg_pelt', 'Fourrure de warg', tex=sprite(FOODS['pelt'], mat('#423c38')))
     item('spider_silk', "Soie d'araignée géante", tex=sprite(FOODS['coil'], mat('#e6e6ee')))
     item('wight_dust', 'Poussière des tertres', tex=sprite(FOODS['dust'], mat('#9adcc8')))
     item('demon_heart', 'Cœur de braise', java="new MiscItems.Info(\"Encore brûlant. Convoité par les mages.\", props().fireResistant().rarity(Rarity.EPIC))", tex=sprite(FOODS['heart'], mat('#e0501a', gem='#ffd040')))

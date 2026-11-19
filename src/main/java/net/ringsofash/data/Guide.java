@@ -53,7 +53,7 @@ public final class Guide {
         b("cave_troll", "Troll des cavernes", "Trois blocs de haut, gris et massif. Ses grands coups de poing sont lents mais envoient valser. Il chasse à quatre pattes, comme un gorille : ne comptez pas le distancer.");
         b("stone_troll", "Troll de pierre", "Le soleil le change en statue. Une pioche en vient alors à bout sans risque.");
         b("troll_chief", "Troll chef de meute", "Plus grand, casqué, les yeux rouges. Arrive avec sa meute de trolls et la lance sur vous. Son coup de poing est lent... et terrible.");
-        b("warg", "Loup de guerre", "Chasse en meute dans les plaines. Parfois monté par un orque.");
+        b("warg", "Warg", "Chasse en meute dans les plaines. Parfois monté par un orque.");
         b("wild_man", "Homme sauvage", "Hostile... sauf si votre réputation générale est bonne.");
         b("mammoth", "Mammouth", "Paisible tant qu'on ne le frappe pas. Sinon, courez.");
         b("shadow_rider", "Être des ombres", "Cavalier noir sous une grande cape, sans rien sous la capuche. Ne craint pas le soleil. Très rapide. Sent un anneau à près de cent blocs, même à travers les murs. Craint le feu et les lames des tertres.");

@@ -34,7 +34,7 @@ def build():
          tex=sprite(FOODS['cloak'], mat('#2a2a32', trim='#a0a4b4')))
     # ---------------------------------------------------------------- butin des creatures
     item('orc_tooth', "Croc d'orque", tex=sprite(FOODS['tusk'], mat('#cfc6a0', trim='#4a3a2a')))
-    item('warg_fang', 'Croc de loup de guerre', tex=sprite(FOODS['tusk'], mat('#e0dccc', trim='#3a3430')))
+    item('warg_fang', 'Croc de warg', tex=sprite(FOODS['tusk'], mat('#e0dccc', trim='#3a3430')))
     item('goblin_ear', 'Oreille de gobelin', tex=sprite(FOODS['scale'], mat('#6f8a4a')))
     item('troll_tooth', 'Dent de troll', tex=sprite(FOODS['tusk'], mat('#b8b090', trim='#5a4a30')))
     item('boar_tusk', 'Défense de sanglier', tex=sprite(FOODS['tusk'], mat('#e8e0c8', trim='#6a5a3a')))
