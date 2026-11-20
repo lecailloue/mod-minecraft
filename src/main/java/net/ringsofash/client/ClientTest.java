@@ -627,7 +627,7 @@ public final class ClientTest {
         morT("501_portes_cour_haut", 230.5, 135.5, -360.5, 170, 95, -360, 6000);
         morT("502_portes_portail_proche", 182.5, 84.5, -352.5, 166, 104, -360, 6000);
         morT("503_portes_seuil", 196.5, 82.5, -360.5, 166, 92, -360, 6000);
-        morT("504_portes_nain_face", 214.5, 96.5, -333.5, 172, 98, -333, 6000);
+        morT("504_portes_nain_face", 212.5, 104.5, -346.5, 174, 104, -333, 6000);
         morT("505_portes_nain_profil", 200.5, 92.5, -352.5, 176, 100, -334, 6000);
         morT("476_moria_chambre_lits", -183.5, -17.6, -690.5, -188.5, -19.2, -697.5, 6000);
         morT("477_moria_cuisine_four", -174.5, -17.5, -689.5, -173.5, -19, -697.5, 6000);

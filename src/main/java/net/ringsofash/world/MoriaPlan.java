@@ -18,8 +18,8 @@ public final class MoriaPlan {
             YELLOWWOOL = 71, CAULDRON = 72, COPPER = 73, SHROOM = 74, IRONB = 75, SMBAS = 76, CRACKB = 77, DTILES = 78, CRDEEP = 79,
             DCHEST = 80 /* 80..83 : N E S O, face avant vers cette direction */, DBEDF = 84 /* 84..87 : direction du pied vers la tete */, DBEDH = 88 /* 88..91 */,
             DFURN = 92 /* 92..95 */, DCRAFT = 96,
-            DBEDFL = 97 /* 97..100 : lit accole a gauche (vu depuis le pied) */, DBEDFR = 101, DBEDHL = 105, DBEDHR = 109, BLUEW = 113;
-    public static final int NIDS = 114;
+            DBEDFL = 97 /* 97..100 : lit accole a gauche (vu depuis le pied) */, DBEDFR = 101, DBEDHL = 105, DBEDHR = 109, BLUEW = 113, POLDEEP = 114, COBDEEP = 115, DEEPBR = 116, CHISDEEP = 117, POLBLK = 118;
+    public static final int NIDS = 119;
 
     public static final int F0 = 80;       // sol de la cour et de la Grande Salle
     public static final int F1 = 17;       // sol du gouffre (le pont) et de son palier
@@ -129,6 +129,19 @@ public final class MoriaPlan {
     }
 
     // ------------------------------------------------------------------ les Portes : un portail evase a quatre gradins, puis les vantaux et le couloir d'entree
+    /** les blocs nains sont teintes (vert/bleu) selon l'endroit : aux Portes on prend de la pierre sombre sans teinte, grise et noire */
+    private static int neutral(int id) {
+        switch (id) {
+            case DSTONE: return POLDEEP;
+            case DCOBBLE: return COBDEEP;
+            case DBRICKS: return DEEPBR;
+            case DPILLAR: return POLBLK;
+            case DCHISEL: return CHISDEEP;
+            case DLAMP: return POLBLK;
+            default: return id;
+        }
+    }
+
     private static int gate(int x, int y, int z, int h) {
         if (x >= GX) return court(x, y, z, h);
         if (x < 139 || z < GZ - 50 || z > GZ + 50 || y < F0 || y > F0 + 72) return KEEP;
@@ -714,7 +727,7 @@ public final class MoriaPlan {
         if ((r = tomb(x, y, z, h)) != KEEP) return r;
         if ((r = MoriaRooms.at(x, y, z, h)) != KEEP) return r;
         if ((r = tunnels(x, y, z, h)) != KEEP) return r;
-        if ((r = gate(x, y, z, h)) != KEEP) return r;
+        if ((r = neutral(gate(x, y, z, h))) != KEEP) return r;
         if ((r = stairRun(x, y, z, h, 50, 100, -552, -473, F0, F1, F0 + 50)) != KEEP) return r;
         if ((r = stairRun(x, y, z, h, 50, 100, -687, -649, F1, F2, F2 + 66)) != KEEP) return r;
         if ((r = chasm(x, y, z, h)) != KEEP) return r;
