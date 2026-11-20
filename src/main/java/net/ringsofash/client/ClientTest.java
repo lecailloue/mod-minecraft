@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"472", "473", "474", "475"};
+    private static final String[] ONLY = {"476", "477", "478", "479"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -603,6 +603,10 @@ public final class ClientTest {
         morT("464_moria_falaise_ouest", -190.5, -12, -640.5, -262, -5, -640.5, 6000);
         morT("466_moria_four_b", -42.5, -8, -735.5, -42, -13, -698, 6000);
         morT("467_moria_four_c", 64.5, -8, -735.5, 64, -14, -698, 6000);
+        morT("476_moria_chambre_lits", -183.5, -17.6, -690.5, -188.5, -19.2, -697.5, 6000);
+        morT("477_moria_cuisine_four", -174.5, -17.5, -689.5, -173.5, -19, -697.5, 6000);
+        morT("478_moria_etude_table", -221.5, -17.5, -576.5, -218.5, -19, -569, 6000);
+        morT("479_moria_lit_gros_plan", -186.5, -17.8, -692.5, -188.5, -18.8, -696.5, 6000);
         morT("472_moria_pont_vue", -278.5, -16, -880.5, -150, -14, -880, 6000);
         morT("473_moria_pont_dessous", -214.5, -40, -845.5, -214, -14, -880, 6000);
         morT("474_moria_pont_wagons", -251.5, -13, -868.5, -252, -17, -880, 6000);

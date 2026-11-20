@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","category":"misc","pattern":["RRR","PPP","B B"],"key":{"R":{"item":"minecraft:red_wool"},"P":{"item":"ringsofash:ancient_planks"},"B":{"item":"ringsofash:dwarven_bricks"}},"result":{"id":"ringsofash:dwarven_bed","count":1}}

@@ -30,6 +30,7 @@ public class RingsOfAsh {
                     out.accept(e.get());
                     if (e.get() instanceof net.ringsofash.item.Artifacts.Piece) out.accept(net.ringsofash.item.Artifacts.artifact(e.get()));     // version artefact (secrete) a cote de la version ordinaire
                 });
+                net.ringsofash.block.Furniture.ITEMS.getEntries().forEach(e -> out.accept(e.get()));
                 out.accept(net.ringsofash.fluid.ModFluids.ICHOR_BUCKET.get());
             })
             .build());
@@ -37,6 +38,7 @@ public class RingsOfAsh {
     public RingsOfAsh(IEventBus modBus) {
         Reg.BLOCKS.register(modBus);
         Reg.ITEMS.register(modBus);
+        net.ringsofash.block.Furniture.register(modBus);
         TABS.register(modBus);
         net.ringsofash.menu.ModMenus.MENUS.register(modBus);
         net.ringsofash.item.Artifacts.init(modBus);

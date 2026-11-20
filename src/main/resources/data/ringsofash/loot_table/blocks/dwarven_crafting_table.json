@@ -1,0 +1,1 @@
+{"type":"minecraft:block","random_sequence":"ringsofash:blocks/dwarven_crafting_table","pools":[{"rolls":1.0,"bonus_rolls":0.0,"entries":[{"type":"minecraft:item","name":"ringsofash:dwarven_crafting_table"}],"conditions":[{"condition":"minecraft:survives_explosion"}]}]}

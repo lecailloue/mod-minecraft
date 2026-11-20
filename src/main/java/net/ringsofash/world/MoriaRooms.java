@@ -958,7 +958,7 @@ final class MoriaRooms {
             if (zl < 1) return AIR;
             if (rr == 7 && xl == 4 && zl == 4) return LANTERN;
             if (rr == 7 && xl == 5 && zl == 4) return AIR;
-            return interior(cell, rr, xl + 1, zl);
+            return interior(cell, rr, xl + 1, zl, side);
         }
         return rock(x, y, z);
     }
@@ -1002,10 +1002,15 @@ final class MoriaRooms {
         return KEEP;
     }
 
-    private static int interior(int cell, int v, int xl, int zl) {
+    /** side 0 = falaise nord (le fond est au nord), 1 = sud (fond au sud), 2 = ouest (fond a l'ouest) ; renvoie le mobilier nain tourne vers la piece */
+    private static int interior(int cell, int v, int xl, int zl, int side) {
+        int fd = side == 0 ? 2 : side == 1 ? 0 : 1;                                          // direction qui regarde vers la facade (N E S O = 0 1 2 3)
+        int dd = (fd + 2) & 3;                                                              // direction du fond
         switch ((cell >> 3) % 4) {
-            case 0:                                                                          // chambre
-                if (v == 1 && xl <= 2 && zl >= 6) return xl == 1 ? BLACKWOOL : REDWOOL;
+            case 0:                                                                          // chambre : deux lits nains, un coffre au pied
+                if (v == 1 && (xl == 2 || xl == 3) && zl == 7) return DBEDF + dd;
+                if (v == 1 && (xl == 2 || xl == 3) && zl == 8) return DBEDH + dd;
+                if (v == 1 && xl == 2 && zl == 6) return DCHEST + fd;
                 if (v <= 2 && zl == 8 && xl >= 6 && xl <= 9) return BOOKS;
                 if (v == 1 && xl == 7 && zl == 2) return FENCE;
                 if (v == 2 && xl >= 6 && xl <= 8 && zl == 2) return BSLAB;
@@ -1013,19 +1018,20 @@ final class MoriaRooms {
             case 1:                                                                          // forge
                 if (v == 1 && xl == 9 && zl == 2) return FORGE;
                 if (v == 1 && xl == 7 && zl == 2) return ANVIL;
-                if (v <= 2 && ((xl == 1 || xl == 2) && zl == 8) && !(v == 2 && xl == 2)) return BARREL;
+                if (v == 1 && (xl == 2 || xl == 3) && zl == 8) return DCHEST + fd;
                 break;
             case 2:                                                                          // cuisine
-                if (v == 1 && xl == 9 && zl == 8) return FURNACE;
+                if (v == 1 && xl == 9 && zl == 8) return DFURN + fd;
                 if (v == 1 && xl == 8 && zl == 8) return CAULDRON;
                 if (v == 1 && xl == 5 && zl == 7) return CAMPFIRE;
-                if (v <= 2 && xl == 1 && (zl == 7 || zl == 8) && !(v == 2 && zl == 7)) return BARREL;
+                if (v == 1 && xl == 2 && zl == 8) return DCHEST + fd;
                 if (v == 1 && xl == 4 && zl == 3) return FENCE;
                 if (v == 2 && xl >= 3 && xl <= 5 && zl == 3) return BSLAB;
                 break;
             default:                                                                         // etude
                 if (v <= 2 && zl == 8 && xl >= 1 && xl <= 9) return BOOKS;
-                if (v == 1 && xl == 9 && zl == 2) return CRAFT;
+                if (v == 1 && xl == 9 && zl == 2) return DCRAFT;
+                if (v == 1 && xl == 8 && zl == 2) return DCHEST + fd;
                 if (v == 1 && xl == 4 && zl == 3) return FENCE;
                 if (v == 2 && xl >= 3 && xl <= 5 && zl == 3) return BSLAB;
         }

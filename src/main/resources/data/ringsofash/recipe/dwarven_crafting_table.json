@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","category":"misc","pattern":["BB","PP","PP"],"key":{"B":{"item":"ringsofash:dwarven_bricks"},"P":{"item":"ringsofash:ancient_planks"}},"result":{"id":"ringsofash:dwarven_crafting_table","count":1}}

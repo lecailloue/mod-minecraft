@@ -1,0 +1,1 @@
+{"type":"minecraft:block","random_sequence":"ringsofash:blocks/dwarven_bed","pools":[{"rolls":1.0,"bonus_rolls":0.0,"entries":[{"type":"minecraft:item","name":"ringsofash:dwarven_bed"}],"conditions":[{"condition":"minecraft:block_state_property","block":"ringsofash:dwarven_bed","properties":{"part":"foot"}},{"condition":"minecraft:survives_explosion"}]}]}

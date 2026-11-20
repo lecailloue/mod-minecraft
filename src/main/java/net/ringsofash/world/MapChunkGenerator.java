@@ -236,7 +236,14 @@ public final class MapChunkGenerator extends ChunkGenerator {
         p[MoriaPlan.CRACKB] = Blocks.CRACKED_STONE_BRICKS.defaultBlockState();
         p[MoriaPlan.DTILES] = Blocks.DEEPSLATE_TILES.defaultBlockState();
         p[MoriaPlan.CRDEEP] = Blocks.CRACKED_DEEPSLATE_BRICKS.defaultBlockState();
+        p[MoriaPlan.DCRAFT] = net.ringsofash.block.Furniture.CRAFTING.get().defaultBlockState();
         for (int i = 0; i < 4; i++) {
+            p[MoriaPlan.DCHEST + i] = net.ringsofash.block.Furniture.CHEST.get().defaultBlockState().setValue(net.ringsofash.block.DwarvenChestBlock.FACING, dirs[i]);
+            p[MoriaPlan.DFURN + i] = net.ringsofash.block.Furniture.FURNACE.get().defaultBlockState().setValue(net.minecraft.world.level.block.AbstractFurnaceBlock.FACING, dirs[i]);
+            p[MoriaPlan.DBEDF + i] = net.ringsofash.block.Furniture.BED.get().defaultBlockState().setValue(net.minecraft.world.level.block.BedBlock.FACING, dirs[i])
+                    .setValue(net.minecraft.world.level.block.BedBlock.PART, net.minecraft.world.level.block.state.properties.BedPart.FOOT);
+            p[MoriaPlan.DBEDH + i] = net.ringsofash.block.Furniture.BED.get().defaultBlockState().setValue(net.minecraft.world.level.block.BedBlock.FACING, dirs[i])
+                    .setValue(net.minecraft.world.level.block.BedBlock.PART, net.minecraft.world.level.block.state.properties.BedPart.HEAD);
             p[MoriaPlan.BSTAIR + i] = Reg.DWARVEN_BRICKS_STAIRS.get().defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, dirs[i]);
             p[MoriaPlan.DSTAIR + i] = Reg.DWARVEN_STONE_STAIRS.get().defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, dirs[i]);
             p[MoriaPlan.BSTAIR_TOP + i] = Reg.DWARVEN_BRICKS_STAIRS.get().defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, dirs[i]).setValue(net.minecraft.world.level.block.StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP);
