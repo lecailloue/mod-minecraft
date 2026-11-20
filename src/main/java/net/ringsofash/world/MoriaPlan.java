@@ -480,7 +480,7 @@ public final class MoriaPlan {
     }
 
     // ------------------------------------------------------------------ assemblage
-    public static boolean inBox(int x, int y, int z) { return x >= -300 && x <= 345 && z >= -960 && z <= -225 && y >= -63 && y <= 176; }
+    public static boolean inBox(int x, int y, int z) { return x >= -500 && x <= 345 && z >= -1140 && z <= -225 && y >= -63 && y <= 176; }
 
     public static int at(int x, int y, int z, int h) {
         if (!inBox(x, y, z)) return KEEP;

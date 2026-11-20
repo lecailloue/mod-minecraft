@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"443", "444", "445", "446", "447", "448", "449", "45"};
+    private static final String[] ONLY = {"436", "443", "444", "445", "450", "452", "454", "456", "457", "458", "459", "460", "461", "462"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -592,6 +592,13 @@ public final class ClientTest {
         morT("453_moria_scelle", 214.5, -14, -836.5, 214.5, -10, -849, 6000);
         morT("454_moria_mine", -150.5, 0, -863.5, -214, -30, -863, 6000);
         morT("455_moria_mine_fond", -214.5, -8, -800.5, -214.5, -40, -880, 6000);
+        morT("456_moria_four", 64.5, -6, -730.5, 64, -8, -690, 6000);
+        morT("457_moria_relief_salle", 60.5, 95, -330.5, 60, 100, -250, 6000);
+        morT("458_moria_galerie", -300.5, -15, -863.5, -380, -17, -850, 6000);
+        morT("459_moria_descente", -205.5, -17, -990.5, -182, -48, -990, 6000);
+        morT("460_moria_veine", -180.5, -45, -1078.5, -195, -45, -1092, 6000);
+        morT("461_moria_colosse_village", -196.5, -2, -600.5, -172, 10, -575, 6000);
+        morT("462_moria_ravine", -250.5, -12, -640.5, -150, -30, -640, 6000);
         morT("431_moria_lac", 305.5, 125, -360.5, 168, 100, -360.5, 6000);
         morT("432_moria_couloir", 158.5, 85, -360.5, 90, 95, -360.5, 6000);
         morT("433_moria_grande_salle", 128.5, 100, -296.5, 40, 100, -400.5, 6000);
