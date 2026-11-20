@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"43", "440"};
+    private static final String[] ONLY = {"430", "431", "432", "433", "441", "442"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -576,7 +576,9 @@ public final class ClientTest {
             }));
         }
         // Moria : l'entree (falaise, lac, portes), la Grande Salle, l'escalier, le gouffre, les Forges, la tombe, une galerie
-        morT("430_moria_porte", 212.5, 86, -360.5, 168, 102, -360.5, 6000);
+        morT("430_moria_porte", 192.5, 86, -360.5, 168, 92, -360.5, 6000);
+        morT("441_moria_porte_loin", 222.5, 92, -372.5, 168, 92, -360.5, 6000);
+        morT("442_moria_porte_dedans", 150.5, 84, -360.5, 168, 90, -360.5, 6000);
         morT("431_moria_lac", 305.5, 125, -360.5, 168, 100, -360.5, 6000);
         morT("432_moria_couloir", 158.5, 85, -360.5, 90, 95, -360.5, 6000);
         morT("433_moria_grande_salle", 128.5, 100, -296.5, 40, 100, -400.5, 6000);
