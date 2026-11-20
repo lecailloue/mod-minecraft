@@ -150,7 +150,7 @@ public final class MoriaPlan {
             }
             return KEEP;
         }
-        if (dd == 0 && v >= 2 && v <= 52 && ((nh >= 0 && nd == nh + 1) || (v >= 49 && nd <= 1 && nh < 0))) return (v + au) % 6 == 0 ? GOLD : DCHISEL;
+        if (dd == 0 && v >= 2 && v <= 52 && ((nh >= 0 && nd == nh + 1) || (v >= 49 && nd <= 1 && nh < 0))) return DCHISEL;
         if (inside) {
             if (x == GX - 6 || x == GX - 5) {                        // les vantaux de pierre, fermes, avec une entrebaillure au centre
                 boolean gap = (au <= 2 && v <= 19) || (au <= 1 && v <= 22) || (au == 0 && v <= 25);
@@ -158,24 +158,23 @@ public final class MoriaPlan {
                 if (x == GX - 6) return DSTONE;
                 double in = wcd(v, 0) - au;
                 if (v >= 3 && in >= 1.0 && in < 2.0 && (v + au) % 2 == 0) return DRUNES;                  // arc d'ithildin le long de l'arche
-                if (au >= 3 && (v == 5 || v == 11 || v == 17)) return IRONB;                               // les bandes de fer des vantaux
+                if (au >= 3 && (v == 5 || v == 11 || v == 17)) return BLACKSTONE;                         // les bandes de pierre noire des vantaux
                 if (au >= 3 && v >= 4 && v <= 16 && (v == 8 || v == 14)) return (au + v) % 3 == 0 ? DSTONE : DRUNES;   // lignes d'inscription
-                if ((au == 0 && v >= 26 && v <= 31) || (v == 28 && au <= 2)) return v == 28 && au == 0 ? WHITE : DRUNES;   // l'etoile de Durin
+                if ((au == 0 && v >= 26 && v <= 31) || (v == 28 && au <= 2)) return v == 28 && au == 0 ? DCHISEL : DRUNES;   // l'etoile de Durin
                 return (au == 4 && v >= 3 && v <= 16) ? DCHISEL : DBRICKS;
             }
-            if (dd == 3 && (au == 3 || au == 6) && (v == 8 || v == 14)) return GOLD;                    // les clous d'or qui saillent des vantaux
-            if (dd <= 2 && v >= 3 && dOutE(au, v, ex) > -1.5 && (au + v) % 3 == 0) return (au + v) % 9 == 0 ? DLAMP : DCHISEL;   // les claveaux en dents, avec leurs lampes
+            if (dd == 3 && (au == 3 || au == 6) && (v == 8 || v == 14)) return DCHISEL;                 // les bossages qui saillent des vantaux
+            if (dd <= 2 && v >= 3 && dOutE(au, v, ex) > -1.5 && (au + v) % 3 == 0) return (au + v) % 18 == 0 ? DLAMP : DCHISEL;   // les claveaux en dents, avec leurs lampes
             return AIR;
         }
         double dOut = dOutE(au, v, ex);
         if (dd <= 3) {                                               // les gradins du portail evase
             if (dd == 0) {
                 if (dOut > 7) return facade(x, y, z, h, au, v);
-                if (dOut <= 1.5) return WHITE;
-                if (dOut <= 3.5) return DCHISEL;
-                if (dOut > 4.5 && dOut < 7 && r01(u, v, 17) < 0.05) return DRUNES;                       // les etoiles
-                if (dOut <= 4.5 && v >= 6 && (v + au) % 3 == 0) return DRUNES;                           // la guirlande d'ithildin autour du portail
-                return DBRICKS;
+                if (dOut <= 1.5) return DCHISEL;
+                if (dOut <= 3.5) return (au + v) % 2 == 0 ? DEEPSLATE : BLACKSTONE;
+                if (dOut <= 5.5 && v >= 6) return (v + au) % 3 == 0 ? DCHISEL : DEEPSLATE;                // la guirlande taillee autour du portail
+                return r01(au, v, 41) < 0.6 ? DEEPSLATE : DBRICKS;
             }
             if (dOut <= 1) return (au + v) % 4 == 0 ? DRUNES : DCHISEL;                                 // le bandeau de l'arc
             boolean vis = v >= 1 && au <= halfW(v, ex + 1);                                             // face du gradin, visible depuis l'exterieur
@@ -183,8 +182,8 @@ public final class MoriaPlan {
             double q = r01(au, v, 31 + dd);
             int k = (int) Math.floor(dOut);
             if (k == 1) return (au + v) % 2 == 0 ? DCHISEL : DBRICKS;
-            if (k == 2) return (au + v) % 4 == 0 ? DRUNES : q < 0.6 ? DEEPSLATE : DSTONE;
-            if (k == 3) return (au + v) % 8 == 0 ? GOLD : DBRICKS;
+            if (k == 2) return (au + v) % 11 == 0 ? DRUNES : q < 0.6 ? DEEPSLATE : DSTONE;
+            if (k == 3) return (au + v) % 8 == 0 ? DCHISEL : DEEPSLATE;
             return q < 0.5 ? DBRICKS : q < 0.75 ? DSTONE : q < 0.9 ? DEEPSLATE : BLACKSTONE;
         }
         if (dOut <= 2) {                                             // parois du couloir
@@ -216,40 +215,92 @@ public final class MoriaPlan {
         if (au == 17 || au == 38) return DPILLAR;                                     // nervures (elles avancent dans la cour)
         if (v == 58) return DCHISEL;
         if (v % 14 == 13) return DCHISEL;
-        if (v == 52 && au % 3 == 0 && au <= 36) return DRUNES;                       // la frise d'ithildin sous la corniche
-        if (au <= 1 && v >= 50 && v <= 56 && Math.abs(v - 53) + au <= 3) return GOLD;   // l'etoile d'or au dessus du portail
-        if (au % 8 == 4 && v % 14 >= 3 && v % 14 <= 9) return DRUNES;
+        int em = Math.abs(v - 53);
+        if (au + em <= 4 && v >= 49) return au + em == 4 ? DCHISEL : au + em == 0 ? DRUNES : BLACKSTONE;            // l'embleme taille au dessus du portail
+        if ((au + v) % 8 == 0 || Math.floorMod(au - v, 8) == 0) return DCHISEL;                                      // treillis en losanges
         double q = r01(au, v, 29);
-        return q < 0.78 ? DBRICKS : q < 0.9 ? DSTONE : DCOBBLE;
+        return q < 0.55 ? DEEPSLATE : q < 0.8 ? DBRICKS : q < 0.92 ? DSTONE : BLACKSTONE;
     }
 
-    /** nain geant debout, de face vers +x : l = decalage lateral, dx = distance a la falaise, v = hauteur. */
+    /** nain geant debout, de face vers +x, appuye sur une immense hache : l = decalage lateral, dx = distance a la falaise, v = hauteur (54 de haut) */
     private static int dwarf(int l, int dx, int v) {
         int al = Math.abs(l);
-        if (v < 0 || v > 46 || dx < 0 || dx > 8 || al > 9) return KEEP;
-        if (v <= 3) return dx <= 7 && al <= 6 ? (v == 3 ? DCHISEL : DBRICKS) : KEEP;                  // le socle
-        if (v <= 15) return (dx >= 1 && dx <= 5 && al >= 1 && al <= 4) ? DSTONE : KEEP;              // les jambes
-        if (v == 16) return dx <= 5 && al <= 5 ? (dx == 5 && al <= 1 ? GOLD : DCHISEL) : KEEP;        // la ceinture
-        if (v <= 28) {
-            if (dx <= 5 && al <= 5) return DSTONE;                                                   // le torse
-            if (dx >= 1 && dx <= 4 && al >= 6 && al <= 7 && v >= 18) return DSTONE;                  // les bras
-            if (v <= 19 && dx >= 4 && dx <= 6 && al >= 6 && al <= 7) return DCHISEL;                 // les poings
-            if (dx == 6 && al <= 2 && v >= 19) return DCOBBLE;                                       // la barbe
-            return KEEP;
+        if (v < 0 || v > 54 || dx < 0 || dx > 11 || al > 9) return KEEP;
+        if (v <= 4) {                                                                              // le socle a gradins
+            int in = v / 2;
+            if (dx < in || dx > 11 - in || al > 9 - in) return KEEP;
+            return v == 4 ? DCHISEL : r01(l, v, dx) < 0.3 ? DEEPSLATE : DBRICKS;
         }
-        if (v <= 30) return dx <= 5 && al <= 8 ? DCHISEL : KEEP;                                     // les epaulieres
-        if (v <= 37) {
-            if (dx >= 1 && dx <= 5 && al <= 3) {
-                if (dx == 5 && v == 35 && al == 2) return DRUNES;                                   // les yeux
-                return DSTONE;
+        if (dx >= 10 && dx <= 11) {                                                                // la hache : manche et lame
+            if (al <= 1 && v <= 51) return v % 6 == 3 ? DCHISEL : DPILLAR;
+            if (v >= 40 && v <= 52) {
+                double hw = 7 - Math.abs(v - 46) * 1.1;
+                if (al >= 2 && al <= hw) return al >= hw - 1 ? DCHISEL : BLACKSTONE;
             }
-            if (dx == 6 && al <= 1 && v >= 33 && v <= 34) return DSTONE;                             // le nez
-            if (dx == 6 && al <= 2 && v <= 33) return DCOBBLE;
+        }
+        int la = Math.abs(al - 4);
+        if (v <= 17) {                                                                             // les jambes (5 de large) et les bottes
+            if (la > 2 || al < 1) return KEEP;
+            if (v <= 7) return dx >= 3 && dx <= 10 && (dx <= 8 || v <= 6) ? (v == 7 ? DCHISEL : DEEPSLATE) : KEEP;
+            if (dx < 3 || dx > (v >= 12 && v <= 14 ? 9 : 8)) return KEEP;
+            return v == 13 && dx == 9 ? DCHISEL : r01(l, v, dx) < 0.25 ? DCOBBLE : DSTONE;
+        }
+        if (v <= 20) {                                                                             // la jupe de mailles
+            if (dx < 2 || dx > 9 || al > 7) return KEEP;
+            if (v == 18 && dx >= 8) return al % 2 == 0 ? DCHISEL : KEEP;
+            return (al + v) % 2 == 0 ? DCOBBLE : DSTONE;
+        }
+        if (v <= 22) {                                                                             // la ceinture et sa boucle
+            if (dx >= 2 && dx <= 9 && al <= 6) return DEEPSLATE;
+            if (dx == 10 && al <= 2) return DCHISEL;
             return KEEP;
         }
-        if (v <= 42) return dx >= 0 && dx <= 5 && al <= 4 ? (v == 42 ? DCHISEL : DBRICKS) : KEEP;     // le casque
-        if (v <= 45) return dx >= 2 && dx <= 3 && al <= 1 ? DCHISEL : KEEP;                          // la crete
-        return KEEP;
+        if (v >= 23 && v <= 30) {                                                                  // les bras (devant la barbe)
+            if (dx >= 3 && dx <= 7 && al >= 8 && al <= 9 && v >= 26) return DSTONE;
+            if (dx >= 5 && dx <= 10 && v >= 23 && v <= 26) {
+                double alc = 8 - (dx - 5) * 1.0;
+                if (al >= alc - 1 && al <= alc + 1) return DSTONE;
+            }
+            if (dx >= 9 && dx <= 11 && al <= 2 && v >= 22 && v <= 27) return DCHISEL;              // les poings
+        }
+        if (v >= 27 && v <= 32 && dx >= 3 && dx <= 7 && al >= 8 && al <= 9) return DSTONE;
+        if (dx >= 9 && dx <= 10 && v >= 23 && v <= 40) {                                           // la barbe tressee
+            int bw = Math.max(1, (v - 21) / 4);
+            if (al <= bw) return (al + v) % 2 == 0 ? DCOBBLE : DEEPSLATE;
+        }
+        if (v >= 23 && v <= 34) {                                                                  // le torse
+            int tw = v <= 26 ? 5 : v <= 29 ? 6 : 7;
+            if (dx >= 2 && dx <= 8 && al <= tw) {
+                if (dx == 8 && (v == 29 || (al == 0 && v >= 24))) return DCHISEL;
+                return r01(l, v, dx) < 0.2 ? DEEPSLATE : DSTONE;
+            }
+            return KEEP;
+        }
+        if (v <= 38) {                                                                             // les epaulieres
+            if (dx >= 1 && dx <= 9) return v == 38 ? DCHISEL : al >= 8 ? DEEPSLATE : DSTONE;
+            return KEEP;
+        }
+        if (v <= 40) {
+            if (al >= 7 && al <= 9 && dx >= 3 && dx <= 7) return DCHISEL;                           // les pointes des epaulieres
+            if (dx >= 3 && dx <= 6 && al <= 2) return DSTONE;                                       // le cou
+            return KEEP;
+        }
+        if (v <= 47) {                                                                             // la tete
+            if (dx >= 2 && dx <= 8 && al <= 4) return dx == 8 && v == 44 && al == 2 ? BLACKSTONE : DSTONE;
+            if (dx == 9 && al <= 4 && v == 45) return DCHISEL;                                      // l'arcade
+            if (dx == 9 && al == 0 && v >= 42 && v <= 44) return DSTONE;                            // le nez
+            if (dx == 9 && al <= 5 && v == 42) return DCOBBLE;                                      // la moustache
+            return KEEP;
+        }
+        if (v <= 52) {                                                                             // le casque a cornes
+            int cw = v <= 50 ? 5 : 3;
+            if (dx >= 2 && dx <= 8 && al <= cw) return v == 48 ? DCHISEL : DEEPSLATE;
+            if (v >= 48 && v <= 51 && al == 6 && dx >= 4 && dx <= 6) return DCHISEL;
+            if (v >= 51 && al == 7 && dx >= 4 && dx <= 6) return DCHISEL;
+            if (dx == 9 && al == 0 && v >= 46 && v <= 48) return DCHISEL;                           // le nasal
+            return KEEP;
+        }
+        return dx >= 4 && dx <= 5 && al <= 1 ? DCHISEL : KEEP;                                      // la crete
     }
 
     /** la grande cour : chaussee dallee entre deux parapets a braziers, statues, bannieres, nervures, bassins des cascades */
@@ -266,10 +317,10 @@ public final class MoriaPlan {
         int ra = Math.min(Math.abs(au - 17), Math.abs(au - 38));
         if (ra <= 1 && dx <= 2 && v >= 1 && v <= 55) {                              // les nervures : socle, fut, chapiteau d'or
             if (v <= 3) return v == 3 ? DCHISEL : DBRICKS;
-            if (v >= 50) return v == 52 ? GOLD : (v == 50 || v == 55) ? DCHISEL : DBRICKS;
+            if (v >= 50) return (v == 50 || v == 52 || v == 55) ? DCHISEL : DEEPSLATE;
             if (ra == 0 && dx <= 1) return DPILLAR;
         }
-        if (dx <= 2 && (v == 57 || v == 58) && au <= 47) return v == 57 ? (au % 4 == 0 ? GOLD : DCHISEL) : DBRICKS;
+        if (dx <= 2 && (v == 57 || v == 58) && au <= 47) return v == 57 ? DCHISEL : DEEPSLATE;
         if (dx <= 2 && (v == 59 || v == 60) && au <= 47 && au % 4 != 3) return v == 59 ? DBRICKS : BWALL;   // les creneaux
         if (dx == 3 && v == 56 && au % 6 == 0 && au <= 46 && au >= 12) return DCHISEL;                       // les consoles sous la corniche
         // les deux nains geants, et leurs bannieres
@@ -278,12 +329,6 @@ public final class MoriaPlan {
             int l = (u < 0 ? -1 : 1) * (au - ST_AU);
             int sd = dwarf(l, dx, v);
             if (sd != KEEP) return sd;
-            if (dx == 7 && dl <= 2 && v >= 6 && v <= 28) {                                           // la banniere bleue a losanges d'or
-                int dv = v - 17;
-                if (dl == 0 && (Math.abs(dv) == 3 || Math.abs(dv + 8) == 3)) return GOLD;
-                if (dl == 1 && (Math.abs(dv) == 2 || Math.abs(dv + 8) == 2 || Math.abs(dv) == 4 || Math.abs(dv + 8) == 4)) return GOLD;
-                return v <= 8 && dl == 2 ? KEEP : BLUEW;
-            }
         }
         // les braziers : deux pres de la porte, puis un tous les 16 le long des parapets
         boolean poste = (dx == 5 && au == 17) || (au == 15 && dx >= 14 && (dx - 14) % 16 == 0);
