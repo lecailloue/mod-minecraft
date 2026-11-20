@@ -224,11 +224,7 @@ public final class MoriaPlan {
             }
             if (broken && Math.max(ax, az) <= 7 && y - F0 <= 3 - Math.max(ax, az) / 2 + (int) (r01(x, y, z) * 1.5)) return r01(x, y, z) < 0.5 ? DCOBBLE : DSTONE;   // eboulis de la colonne tombee
         }
-        int r = statue(x, y, z, 22, -452, F0, 1);
-        if (r != KEEP) return r;
-        r = statue(x, y, z, 106, -452, F0, 1);
-        if (r != KEEP) return r;
-        r = rubble(x, y, z, F0);
+        int r = rubble(x, y, z, F0);
         if (r != KEEP) return r;
         r = hangingLamp(x, y, z, ceil, 16);
         if (r != KEEP) return r;
@@ -364,10 +360,7 @@ public final class MoriaPlan {
                 if (y == F2 + 3 && ax == 7 && az == 5) return DLAMP;
             }
         }
-        int r = statue(x, y, z, 26, -716, F2, 1);
-        if (r != KEEP) return r;
-        r = statue(x, y, z, 122, -716, F2, 1);
-        if (r != KEEP) return r;
+        int r;
         // echafaudage
         int ex = Math.abs(x - 102), ez = Math.abs(z + 800);
         if (ex <= 6 && ez <= 6 && y <= F2 + 36) {

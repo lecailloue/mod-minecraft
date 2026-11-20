@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"436", "443", "444", "445", "450", "452", "454", "456", "457", "458", "459", "460", "461", "462"};
+    private static final String[] ONLY = {"436", "443", "444", "450", "452", "454", "456", "457", "458", "459", "460", "461", "462", "463", "464", "465"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -580,7 +580,7 @@ public final class ClientTest {
         morT("441_moria_porte_loin", 222.5, 92, -372.5, 168, 92, -360.5, 6000);
         morT("442_moria_porte_dedans", 150.5, 84, -360.5, 168, 90, -360.5, 6000);
         morT("443_moria_rue", -128.5, -12, -730.5, -240, -4, -730.5, 6000);
-        morT("444_moria_quartier", -130.5, 6, -690.5, -200, -10, -630.5, 6000);
+        morT("444_moria_quartier", -125.5, -10, -630.5, -235, 0, -690.5, 6000);
         morT("445_moria_roi", -232.5, -16, -600.5, -255, -12, -591.5, 6000);
         morT("446_moria_festins", -126.5, -12, -507.5, -250, -12, -507.5, 6000);
         morT("447_moria_armurerie", -77.5, -14, -596.5, -77.5, -10, -660.5, 6000);
@@ -597,8 +597,11 @@ public final class ClientTest {
         morT("458_moria_galerie", -300.5, -15, -863.5, -380, -17, -850, 6000);
         morT("459_moria_descente", -205.5, -17, -990.5, -182, -48, -990, 6000);
         morT("460_moria_veine", -180.5, -45, -1078.5, -195, -45, -1092, 6000);
-        morT("461_moria_colosse_village", -196.5, -2, -600.5, -172, 10, -575, 6000);
-        morT("462_moria_ravine", -250.5, -12, -640.5, -150, -30, -640, 6000);
+        morT("461_moria_falaise_nord", -225.5, -17, -670.5, -222, 0, -690.5, 6000);
+        morT("462_moria_ravine", -202.5, -14, -640.5, -250, -5, -690.5, 6000);
+        morT("463_moria_palais", -202.5, -14, -615.5, -178, -12, -578, 6000);
+        morT("464_moria_falaise_ouest", -190.5, -12, -640.5, -262, -5, -640.5, 6000);
+        morT("465_moria_four_sud", 100.5, -6, -785.5, 100, -8, -830, 6000);
         morT("431_moria_lac", 305.5, 125, -360.5, 168, 100, -360.5, 6000);
         morT("432_moria_couloir", 158.5, 85, -360.5, 90, 95, -360.5, 6000);
         morT("433_moria_grande_salle", 128.5, 100, -296.5, 40, 100, -400.5, 6000);

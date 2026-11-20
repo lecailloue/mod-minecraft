@@ -97,115 +97,39 @@ final class MoriaRooms {
         return KEEP;
     }
 
-    // ------------------------------------------------------------------ statues d'ornement
-    /** colosse (52 de haut, MoriaPlan.statue) tourne : dir 0 = face vers +z, 1 = -z, 2 = +x, 3 = -x */
-    static int colossus(int x, int y, int z, int cx, int cz, int base, int dir) {
-        if (Math.abs(x - cx) > 13 || Math.abs(z - cz) > 13) return KEEP;
-        switch (dir) {
-            case 0: return statue(x, y, z, cx, cz, base, 1);
-            case 1: return statue(x, y, z, cx, cz, base, -1);
-            case 2: return statue(cx + (z - cz), y, cz + (x - cx), cx, cz, base, 1);
-            default: return statue(cx + (z - cz), y, cz - (x - cx), cx, cz, base, 1);
-        }
-    }
-
-    /** gardien (30 de haut, hache a la main), meme orientation */
-    static int guard(int x, int y, int z, int cx, int cz, int base, int dir) {
-        int dx = x - cx, dz = z - cz;
-        if (Math.abs(dx) > 10 || Math.abs(dz) > 10) return KEEP;
-        int l, f;
-        switch (dir) {
-            case 0: l = dx; f = dz; break;
-            case 1: l = dx; f = -dz; break;
-            case 2: l = dz; f = dx; break;
-            default: l = dz; f = -dx; break;
-        }
-        return guardCore(l, f, y - base);
-    }
-
-    private static int guardCore(int l, int f, int v) {
-        int al = Math.abs(l), af = Math.abs(f);
-        if (v < 0 || v > 30 || al > 9 || af > 4) return KEEP;
-        if (v <= 2) return al <= 4 && af <= 4 ? (v == 2 ? DCHISEL : DBRICKS) : KEEP;
-        if (l == 7 && f == 0 && v >= 3 && v <= 24) return DPILLAR;                                        // le manche de la hache
-        if (l >= 6 && l <= 9 && af <= 1 && v >= 21 && v <= 24 && !(l == 9 && (v == 21 || v == 24))) return DCHISEL;       // le fer
-        if (v <= 10) return al >= 1 && al <= 3 && af <= 2 ? DSTONE : KEEP;
-        if (v == 11) return al <= 4 && af <= 2 ? DCHISEL : KEEP;
-        if (v <= 19) {
-            if (al <= 4 && af <= 2) return (v >= 14 && v <= 17 && f == 2) ? DCHISEL : DSTONE;
-            if (al >= 5 && al <= 6 && af <= 1) return DBRICKS;
-            return KEEP;
-        }
-        if (v <= 21) return al <= 5 && af <= 2 ? DSTONE : KEEP;
-        if (v == 22) return al <= 1 && af <= 1 ? DSTONE : KEEP;
-        if (v <= 26) {
-            if (al <= 2 && af <= 2) {
-                if (f == 2 && v == 25 && al == 1) return DRUNES;
-                if (f >= 1 && v <= 24 && al <= 1) return DCOBBLE;
-                return DSTONE;
-            }
-            return KEEP;
-        }
-        if (v <= 28) return al <= 3 && af <= 3 ? DBRICKS : KEEP;
-        return v == 29 && al <= 1 && af <= 1 ? DCHISEL : (v == 30 && al == 0 && af == 0 ? DCHISEL : KEEP);
-    }
-
     // ------------------------------------------------------------------ bas-reliefs geants (guerrier nain, visage sculpte)
-    private static final String[] WARRIOR = {
-            "....###....",
-            "...#####...",
-            "..#######..",
-            "..##o#o##..",
-            "..#######..",
-            "...#####...",
-            "..#######..",
-            ".#########.",
-            ".#########.",
-            "###.###.###",
-            "#.#######.#",
-            "#.#######.#",
-            "#.##ooo##.#",
-            "#.#######.#",
-            "..#######..",
-            "..###.###..",
-            "..###.###..",
-            "..###.###..",
-            "..###.###..",
-            "..###.###..",
-            "..###.###..",
-            ".####.####.",
-            ".####.####.",
-            "#####.#####",
-    };
-    private static final String[] FACE = {
-            "..#########..",
-            ".###########.",
-            "#############",
-            "##ooo###ooo##",
-            "##o#o###o#o##",
-            "#############",
-            "######o######",
-            "######o######",
-            "#####ooo#####",
-            "#############",
-            "###ooooooo###",
-            "#############",
-            ".###########.",
-            "..#########..",
-            "...#######...",
-            "...#######...",
-            "....#####....",
-            "....#####....",
-            ".....###.....",
-            ".....###.....",
-            "......#......",
+    /** arche aveugle sculptee, ornee d'une rune d'ithildin */
+    private static final String[] ARCH = {
+            "....#....",
+            "...#.#...",
+            "..#...#..",
+            "..#.o.#..",
+            ".#..o..#.",
+            ".#.....#.",
+            ".#.ooo.#.",
+            ".#..o..#.",
+            ".#.ooo.#.",
+            ".#..o..#.",
+            ".#.....#.",
+            ".#.ooo.#.",
+            ".#..o..#.",
+            ".#.....#.",
+            ".#..o..#.",
+            ".#.ooo.#.",
+            ".#..o..#.",
+            ".#.....#.",
+            ".#.....#.",
+            ".#.....#.",
+            ".#.....#.",
+            ".#.....#.",
+            "#########",
     };
 
     /** a = coordonnee le long du mur, a0/pitch = les panneaux (centres a a0 + pitch/2 + k * pitch), dep = profondeur depuis la face du mur, v = hauteur au dessus du sol. */
     private static int relief(int a, int a0, int pitch, int v, int dep, int scale, int salt) {
         int idx = Math.floorDiv(a - a0, pitch);
         if ((hsh(idx, salt, 5) & 3) == 0) return KEEP;
-        String[] m = (hsh(idx, salt, 7) & 1) == 0 ? WARRIOR : FACE;
+        String[] m = ARCH;
         int cols = m[0].length(), w = cols * scale;
         int off = Math.floorMod(a - a0, pitch) - pitch / 2;
         if (off + w / 2 < 0) return KEEP;
@@ -235,31 +159,67 @@ final class MoriaRooms {
         return relief(z, r.z0, pitch, v, m, scale, 17 + r.kind);
     }
 
-    /** Grande Salle (F0) et Forges (F2) : grands bas-reliefs sur les murs interieurs */
+    private static boolean nearPassage(int x, int z) {
+        for (int[] p : P) if (x >= p[0] - 5 && x <= p[1] + 5 && z >= p[2] - 5 && z <= p[3] + 5) return true;
+        return false;
+    }
+
+    /** relief des murs : pilastres, corniches, bossages irreguliers, panneaux et runes incrustees. m = distance au mur, a = abscisse le long du mur, v = hauteur */
+    private static int wallTex(int m, int a, int v, int ceilV, int salt) {
+        if (m > 3 || v < 1 || v > ceilV - 2) return KEEP;
+        int am = Math.floorMod(a, 14), vm = Math.floorMod(v, 12);
+        int pr;
+        if (am <= 2) pr = (v >= ceilV - 8 || v <= 3) ? 4 : 3;
+        else {
+            double n = vn(a / 2.5, v / 2.5, salt);
+            pr = n < 0.40 ? 0 : n < 0.64 ? 1 : n < 0.86 ? 2 : 3;
+            if (am == 3 || am == 13) pr = Math.max(pr, 1);
+            if (am >= 5 && am <= 11 && vm >= 3 && vm <= 8) pr = Math.min(pr, 1);          // le creux du panneau
+        }
+        if (vm >= 10) pr = Math.max(pr, vm == 11 ? 2 : 1);
+        if (v <= 2) pr = Math.max(pr, 2);
+        if (m >= pr) return KEEP;
+        if (am <= 2) return vm == 11 ? DCHISEL : DPILLAR;
+        if (vm >= 10) return DCHISEL;
+        if (m == pr - 1 && am == 8 && vm == 5) return DRUNES;
+        if (m == pr - 1 && (am == 5 || am == 11) && vm >= 3 && vm <= 8) return DCHISEL;
+        double q = r01(a, v, m + salt);
+        return q < 0.5 ? DBRICKS : q < 0.72 ? DCOBBLE : q < 0.9 ? DSTONE : DEEPSLATE;
+    }
+
+    /** Grande Salle (F0) et Forges (F2) : grands bas-reliefs et relief des murs */
     private static int bigRelief(int x, int y, int z, int h) {
         // Grande Salle : x [-12, 138], z [-472, -248], sol F0
-        if (y > F0 + 3 && y < F0 + 56 && x >= -12 && x <= 138 && z >= -472 && z <= -248) {
+        if (y > F0 + 0 && y < F0 + 56 && x >= -12 && x <= 138 && z >= -472 && z <= -248) {
             if (h - 11 < F0 + 54) return KEEP;
             int dW = x + 12, dE = 138 - x, dN = z + 472, dS = -248 - z;
             int m = Math.min(Math.min(dW, dE), Math.min(dN, dS));
-            if (m < 2) {
-                int v = y - F0;
-                if (m == dN && x >= 44 && x <= 106) return KEEP;                 // le haut de l'escalier
-                if (m == dE && Math.abs(z + 360) <= 14) return KEEP;             // le couloir de la porte
-                if (m == dN || m == dS) return relief(x, -6, 56, v, m, 2, 21);
-                return relief(z, -360, 56, v, m, 2, 23);
+            if (m > 3) return KEEP;
+            int v = y - F0;
+            if (m == dN && x >= 40 && x <= 110) return KEEP;                 // le haut de l'escalier
+            if (m == dE && Math.abs(z + 360) <= 18) return KEEP;             // le couloir de la porte
+            if (m < 2 && v > 3) {
+                int rl = (m == dN || m == dS) ? relief(x, -6, 56, v, m, 2, 21) : relief(z, -360, 56, v, m, 2, 23);
+                if (rl != KEEP) return rl;
             }
-            return KEEP;
+            boolean ns = m == dN || m == dS;
+            return wallTex(m, ns ? x : z, v, 54, 41);
         }
         // Forges : x [-110, 250], z [-830, -688], sol F2
-        if (y > F + 3 && y < F + 56 && x >= -110 && x <= 250 && z >= -830 && z <= -688) {
+        if (y > F && y < F + 70 && x >= -110 && x <= 250 && z >= -830 && z <= -688) {
             int dW = x + 110, dE = 250 - x, dN = z + 830, dS = -688 - z;
             int m = Math.min(Math.min(dW, dE), Math.min(dN, dS));
-            if (m < 2) {
-                int v = y - F;
-                if (m == dN || m == dS) return relief(x, -16, 64, v, m, 2, 25);
-                return relief(z, -16, 64, v, m, 2, 27);
+            if (m > 3) return KEEP;
+            if (nearPassage(x, z)) return KEEP;
+            if (m == dN && x >= 36 && x <= 72) return KEEP;                  // la cascade
+            if (m == dE && z >= -800 && z <= -720) return KEEP;              // vers la tombe
+            int v = y - F;
+            if (m < 2 && v > 3) {
+                int rl = (m == dN || m == dS) ? relief(x, -16, 64, v, m, 2, 25) : relief(z, -16, 64, v, m, 2, 27);
+                if (rl != KEEP) return rl;
             }
+            boolean ns = m == dN || m == dS;
+            return wallTex(m, ns ? x : z, v, Math.min(66, h - 11 - F), 43);
         }
         return KEEP;
     }
@@ -268,58 +228,66 @@ final class MoriaRooms {
     private static final int[] FN = {-98, -50, 64, 160, 222};     // contre le mur nord (z = -688)
     private static final int[] FS = {-100, -40, 100, 180, 240};   // contre le mur sud (z = -830)
 
+    /** four geant, comme un four de Minecraft grossi : corps de pierre, gueule de lave, grille rougeoyante, couronne et cheminee. */
     private static int furnace(int x, int y, int z, int h) {
-        if (y < F || y > F + 75) return KEEP;
+        if (y < F || y > F + 90) return KEEP;
         int[] cs;
         int f;
-        if (z >= -711 && z <= -688) { cs = FN; f = -688 - z; }
-        else if (z >= -830 && z <= -807) { cs = FS; f = z + 830; }
+        if (z >= -709 && z <= -688) { cs = FN; f = -688 - z; }
+        else if (z >= -830 && z <= -809) { cs = FS; f = z + 830; }
         else return KEEP;
         int cx = Integer.MIN_VALUE;
-        for (int c : cs) if (Math.abs(x - c) <= 9) { cx = c; break; }
+        for (int c : cs) if (Math.abs(x - c) <= 10) { cx = c; break; }
         if (cx == Integer.MIN_VALUE) return KEEP;
-        int ceil = Math.min(F + 72, h - 11);
-        if (ceil < F + 40) return KEEP;
-        int u = x - cx, au = Math.abs(u), v = y - F;
-        if (f >= 20) {                                                   // le tablier devant le four
-            if (v == 1 && au == 6 && f == 20) return ANVIL;
-            if (v == 1 && au == 8 && f == 21) return BARREL;
+        int ceil = Math.min(F + 76, h - 11);
+        if (ceil < F + 44) return KEEP;
+        int au = Math.abs(x - cx), v = y - F;
+        if (f >= 14) {                                                    // le tablier devant la gueule
+            if (v == 1 && f <= 15 && au <= 6) return BSLAB;
+            if (v == 1 && f == 18 && au == 7) return ANVIL;
+            if (v == 1 && f == 17 && au == 9) return BARREL;
+            if (f == 15 && au == 10 && v >= 1) return lampPost(v, 5);
             return KEEP;
         }
+        if (v > ceil) return KEEP;
+        // la cheminee
+        if (v >= 26) {
+            if (au <= 3 && f >= 3 && f <= 9) return (v - 26) % 6 == 5 ? DCHISEL : (au == 3 || f == 3 || f == 9 ? DBRICKS : DCOBBLE);
+            return KEEP;
+        }
+        // la couronne (trois gradins)
+        if (v >= 22) {
+            int hw = 9 - (v - 22) / 2, hd = 13 - (v - 22);
+            if (au <= hw && f <= hd) return (v == 22 || v == 25 || au == hw) ? DCHISEL : DBRICKS;
+            return KEEP;
+        }
+        int hw = v <= 6 ? 10 : 9;
+        if (au > hw || (au == 10 && f > 9)) return KEEP;
+        // la gueule
         int mouthTop = au <= 1 ? 9 : au == 2 ? 8 : au == 3 ? 6 : -1;
-        // le creux (chambre de chauffe)
-        boolean chamber = f >= 4 && f <= 19 && v >= 1 && v <= 10 && (f >= 15 ? v <= mouthTop : au <= 4);
-        if (chamber) {
-            if (v == 1) {
-                if (f >= 6 && f <= 13 && au <= 3) return LAVA;
-                if (f >= 14) return BSLAB;
-            }
+        if (au <= 3 && f >= 4 && v >= 1 && v <= mouthTop) {
+            if (v == 1 && f >= 7 && f <= 12) return LAVA;
+            if (v == 1 && f == 13) return BSLAB;
+            if (f == 4 || (v == 6 && f == 5 && au == 0)) return DLAMP;
             return AIR;
         }
-        if (v == 0) return f >= 6 && f <= 13 && au <= 3 ? MAGMA : KEEP;
-        // la cheminee
-        if (v >= 11) {
-            if (v > ceil) return KEEP;
-            if (au <= 1 && f >= 6 && f <= 10) return AIR;
-            if (v <= 14 && au <= 7 && f <= 19) {
-                if (f == 19) return (v == 11 || v == 14) ? DCHISEL : (v == 12 && au <= 6 && (au + 1) % 3 == 0 ? DRUNES : DBRICKS);
-                return DBRICKS;
-            }
-            if (au <= 3 && f >= 4 && f <= 12) return (v - F) % 12 == 11 ? DCHISEL : DBRICKS;
-            return KEEP;
+        if (v == 0) return au <= 3 && f >= 7 && f <= 12 ? MAGMA : KEEP;
+        // la grille rougeoyante au dessus
+        if (v >= 12 && v <= 14 && au <= 4 && f >= 11) {
+            if (f == 13) return BARS;
+            if (f == 12) return DLAMP;
         }
-        int hw = v <= 9 ? 8 : 7;
-        if (au > hw) return KEEP;
-        if (f == 19) {                                                   // la facade
-            if (au >= 7 && au <= 8) return DPILLAR;
-            if (v == 10) return DCHISEL;
-            if (au == 6 && v == 3) return DLAMP;
-            if (mouthTop >= 0 && (v == mouthTop + 1 || v == mouthTop + 2 || au == 4 || (au == 5 && v <= 6))) return DCHISEL;
-            if (v >= 5 && v <= 9 && au >= 4 && au <= 6 && (au + v) % 3 == 0) return DRUNES;
-            return DBRICKS;
+        if (f == 13) {                                                    // la face avant
+            if (au >= 9) return DPILLAR;
+            if (au == 4 && v <= 8 || au == 5 && v <= 7) return DCHISEL;
+            if (mouthTop >= 0 && v >= mouthTop + 1 && v <= mouthTop + 2) return DCHISEL;
+            if (v == 10 || v == 11 || v == 21) return DCHISEL;
+            if (v == 17 && au % 4 == 2) return DRUNES;
+            if (v >= 15 && v <= 20 && (au + v) % 3 == 0) return DCHISEL;
+            return DSTONE;
         }
-        if (au == hw) return v % 6 == 5 ? DCHISEL : DBRICKS;
-        return DBRICKS;
+        if (au == hw) return (v + f) % 5 == 0 ? DCHISEL : DCOBBLE;
+        return r01(x, y, z) < 0.5 ? DCOBBLE : DSTONE;
     }
 
     // ------------------------------------------------------------------ salles
@@ -349,10 +317,14 @@ final class MoriaRooms {
     private static int nicheH(int off) { return off <= 1 ? 9 : off == 2 ? 6 : -1; }
 
     private static int room(int x, int y, int z, int h, Room r) {
-        if (x < r.x0 - 3 || x > r.x1 + 3 || z < r.z0 - 3 || z > r.z1 + 3 || y < (r.kind == VILL ? F - 50 : F) || y > F + r.hgt + 6) return KEEP;
-        int ceil = Math.min(F + r.hgt + (int) Math.round(3 * domes(r, x, z)), h - 11);
+        boolean vill = r.kind == VILL;
+        if (x < r.x0 - 3 || x > r.x1 + 3 || z < r.z0 - 3 || z > r.z1 + 3 || y < (vill ? F - 50 : F) || y > F + r.hgt + (vill ? 12 : 6)) return KEEP;
+        int ceil = vill ? Math.min(F + r.hgt + (int) Math.round(9 * vn(x / 15.0, z / 15.0, 91)), h - 11) : Math.min(F + r.hgt + (int) Math.round(3 * domes(r, x, z)), h - 11);
         if (ceil < F + 14) return KEEP;
-        boolean in = x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1;
+        int ex1 = r.x1;
+        if (vill && Math.abs(z - VZ) > 12) ex1 -= (int) Math.round(5 * vn(z / 8.0, 3.0, 92));
+        boolean in = x >= r.x0 && x <= ex1 && z >= r.z0 && z <= r.z1;
+        if (!in && vill) return KEEP;
         if (!in) {
             if (y < F || y > ceil + 1) return KEEP;
             boolean xw = x < r.x0 || x > r.x1, zw = z < r.z0 || z > r.z1;
@@ -363,18 +335,13 @@ final class MoriaRooms {
             int m = Math.floorMod(a, p);
             boolean band = (y - F) % 12 == 11;
             int vy = y - F;
-            // niches en ogive avec leur gardien de pierre (Grande Rue, festins, salles a piliers)
+            // niches en ogive avec leur lampe (Grande Rue, festins, salles a piliers)
             if (layer <= 2 && (r.kind == PH || r.kind == AVE || r.kind == DINE) && (r.kind == PH || (Math.floorDiv(a, p) & 1) == 1)) {
                 int off = Math.abs(m - p / 2);
                 int hN = nicheH(off);
                 boolean nearCorner = xw ? (z < r.z0 + 4 || z > r.z1 - 4) : (x < r.x0 + 4 || x > r.x1 - 4);
                 if (hN >= 0 && vy >= 1 && vy <= hN && !nearCorner) {
-                    if (layer == 2) {                                              // la statuette
-                        if (off <= 1 && vy <= 3) return DSTONE;
-                        if (off <= 1 && vy <= 6) return off == 0 ? DCHISEL : DSTONE;
-                        if (off == 0 && vy <= 8) return vy == 7 ? DRUNES : DPILLAR;
-                        return AIR;
-                    }
+                    if (layer == 2) return off == 0 && vy == 3 ? DLAMP : AIR;
                     if (off == 2 && vy == 4) return DLAMP;
                     return AIR;
                 }
@@ -387,7 +354,7 @@ final class MoriaRooms {
         int fl = r.kind == VILL ? vFloor(x, z) : F;
         if (y < fl) return r.kind == VILL ? mason(x, y, z) : KEEP;
         if (y == fl) return r.kind == VILL ? vFloorBlock(x, z) : floorRoom(r, x, z);
-        if (y == ceil + 1) return vaultTop(x, z);
+        if (y == ceil + 1) return vill ? KEEP : vaultTop(x, z);
         if (y > ceil) return KEEP;
         int rl = roomRelief(r, x, y, z);
         if (rl != KEEP) return rl;
@@ -401,8 +368,22 @@ final class MoriaRooms {
             default: v = treasury(r, x, y, z, ceil); break;
         }
         if (v != KEEP) return v;
+        if (!vill) {
+            int dW = x - r.x0, dE = r.x1 - x, dN = z - r.z0, dS = r.z1 - z;
+            int m = Math.min(Math.min(dW, dE), Math.min(dN, dS));
+            if (m <= 3 && !nearPassage(x, z)) {
+                boolean ns = m == dN || m == dS;
+                int t = wallTex(m, ns ? x : z, y - F, ceil - F, 51 + r.kind);
+                if (t != KEEP) return t;
+            }
+        }
         int q = hangingLamp(x, y, z, ceil, 16);
         if (q != KEEP) return q;
+        if (!vill && y >= ceil - 1) {                                       // plafond a caissons
+            boolean bx = Math.floorMod(x, 8) < 2, bz = Math.floorMod(z, 8) < 2;
+            if (y == ceil && (bx || bz)) return DCHISEL;
+            if (y == ceil - 1 && bx && bz) return DPILLAR;
+        }
         if (y == ceil && r01(x, 12, z) < 0.012) return WEB;
         return AIR;
     }
@@ -464,10 +445,6 @@ final class MoriaRooms {
         for (int j = 0; j < 4; j++) {
             int gx = r.x0 + 35 + 28 * j;
             if (Math.abs(x - gx) <= 10) {
-                int g = guard(x, y, z, gx, r.z0 + 3, F, 0);
-                if (g != KEEP) return g;
-                g = guard(x, y, z, gx, r.z1 - 3, F, 1);
-                if (g != KEEP) return g;
             }
         }
         if (v == 1 && Math.abs(z - zc) <= 1) return RCARPET;
@@ -481,35 +458,29 @@ final class MoriaRooms {
     }
 
     // ------------------------------------------------------------------ le Quartier des nains : une ravine de lave, des terrasses, des ponts
-    private static final int VZ = -640;
+    private static final int VZ = -630;
     private static final int[] LANES = {-245, -212, -177, -145};
-    private static final int[] HX = {-258, -242, -226, -190, -174, -158};
-    /** zLo, zHi, direction de la porte (+1 : cote zHi), decalage de niveau */
-    private static final int[][] HROWS = {
-            {-696, -687, 1, 0}, {-679, -670, 1, -9}, {-664, -655, 1, -18},
-            {-625, -616, -1, -18}, {-611, -602, -1, -9}, {-597, -588, -1, 0}, {-583, -574, -1, 0},
-    };
 
     private static boolean ravine(int x, int z) {
         double a = (x + 199) / 57.0, b = (z - VZ) / 12.5;
         return a * a + b * b <= 1;
     }
 
-    /** altitude du sol du quartier (corniches au bord, terrasses descendantes, ravine au centre) */
+    /** altitude du sol du quartier : corniche haute au pied des falaises, terrasses descendantes, ravine de lave au centre */
     static int vFloor(int x, int z) {
         if (ravine(x, z)) return F - 48;
         int d = Math.abs(z - VZ);
         if (x >= -138 && x <= -120 && Math.abs(z + 631) <= 6) return F - Math.min(18, -120 - x);
         for (int xs : LANES) {
             if (Math.abs(x - xs) <= 2) {
-                if (d >= 40) return F;
-                if (d >= 31) return F - (40 - d);
-                if (d >= 26) return F - 9;
-                if (d >= 17) return F - 9 - (26 - d);
+                if (d >= 38) return F;
+                if (d >= 29) return F - (38 - d);
+                if (d >= 25) return F - 9;
+                if (d >= 16) return F - 9 - (25 - d);
                 return F - 18;
             }
         }
-        return d >= 40 ? F : d >= 26 ? F - 9 : F - 18;
+        return d >= 38 ? F : d >= 25 ? F - 9 : F - 18;
     }
 
     /** direction (0 N, 1 E, 2 S, 3 O) de montee si la case est une marche d'escalier, sinon -1 */
@@ -518,7 +489,7 @@ final class MoriaRooms {
         if (x >= -138 && x <= -121 && Math.abs(z + 631) <= 6) return 1;
         int d = Math.abs(z - VZ);
         for (int xs : LANES) {
-            if (Math.abs(x - xs) <= 2 && ((d >= 31 && d < 40) || (d >= 17 && d < 26))) return z < VZ ? 0 : 2;
+            if (Math.abs(x - xs) <= 2 && ((d >= 29 && d < 38) || (d >= 16 && d < 25))) return z < VZ ? 0 : 2;
         }
         return -1;
     }
@@ -534,17 +505,31 @@ final class MoriaRooms {
         return Math.min(Math.min(vFloor(x + 1, z), vFloor(x - 1, z)), Math.min(vFloor(x, z + 1), vFloor(x, z - 1)));
     }
 
+    /** roche brute des falaises et des soutenements */
+    private static int rock(int x, int y, int z) {
+        double q = r01(x, y, z);
+        return q < 0.28 ? DEEPSLATE : q < 0.5 ? DCOBBLE : q < 0.74 ? DSTONE : q < 0.88 ? BLACKSTONE : DBRICKS;
+    }
+
     private static int mason(int x, int y, int z) {
-        if (y > minNeighbour(x, z)) return (y - F) % 9 == 0 || r01(x, y, z) < 0.07 ? DCHISEL : DBRICKS;
+        if (y > minNeighbour(x, z)) return rock(x, y, z);
         return KEEP;
+    }
+
+    private static int stalactite(int x, int y, int z, int ceil) {
+        if (y < ceil - 9 || y > ceil) return KEEP;
+        if (r01(x, 31, z) >= 0.045) return KEEP;
+        int len = 2 + hsh(x, 9, z) % 8;
+        return y > ceil - len ? DEEPSLATE : KEEP;
     }
 
     private static int village(Room r, int x, int y, int z, int ceil) {
         int v = y - F;
         int fy = vFloor(x, z);
-        // la maison du roi, au nord
-        int k = kingsHouse(x, y, z);
-        if (k != KEEP) return k;
+        int cl = cliff(x, y, z);
+        if (cl != KEEP) return cl;
+        int st = stalactite(x, y, z, ceil);
+        if (st != KEEP) return st;
         // le grand pont (de la Grande Rue aux festins) et ses piles
         int bx = Math.abs(x + 202);
         if (bx <= 4) {
@@ -575,29 +560,131 @@ final class MoriaRooms {
         if (p != KEEP) return p;
         // la lave de la ravine
         if (ravine(x, z)) return y <= F - 41 ? LAVA : AIR;
-        // les statues geantes sur les corniches
-        int s = colossus(x, y, z, -172, -572, F, 1);
-        if (s != KEEP) return s;
-        s = colossus(x, y, z, -134, -688, F, 0);
-        if (s != KEEP) return s;
-        // les maisons
-        for (int[] row : HROWS) {
-            if (z < row[0] - 2 || z > row[1] + 2) continue;
-            int base = F + row[3];
-            for (int hx : HX) {
-                if (x < hx - 2 || x > hx + 12) continue;
-                if (row[0] == -583 && (hx == -190 || hx == -174 || hx <= -226)) continue;
-                if (row[0] == -597 && hx <= -226) continue;
-                int hv = house(x, y, z, hx, row, base);
-                if (hv != KEEP) return hv;
-            }
-        }
         // bordure des corniches : garde-corps et torches
         if (y >= fy + 1 && y <= fy + 3 && (y == fy + 1 || (x + z) % 8 == 0) && stairFacing(x, z) < 0 && minNeighbour(x, z) < fy - 1) {
             if (y == fy + 1) return (x + z) % 8 == 0 ? DBRICKS : BWALL;
             return y == fy + 2 ? DBRICKS : DLAMP;
         }
         return KEEP;
+    }
+
+    // ------------------------------------------------------------------ les falaises habitees : des appartements creuses dans la roche
+    /** direction de la marche selon le mur (side 0 nord, 1 sud : +x = est ; side 2 ouest : +z = sud) */
+    private static int stairDir(int side, boolean plus) {
+        if (side < 2) return plus ? 1 : 3;
+        return plus ? 2 : 0;
+    }
+
+    private static int cliff(int x, int y, int z) {
+        int side, q0, a;
+        if (z <= -682 && x >= -262 && x <= -120) { side = 0; q0 = -682 - z; a = x + 262; }
+        else if (z >= -578 && x >= -262 && x <= -120) { side = 1; q0 = z + 578; a = x + 262; }
+        else if (x <= -244 && x >= -262 && z > -682 && z < -578) { side = 2; q0 = -244 - x; a = z + 681; }
+        else return KEEP;
+        int r = y - F;
+        if (r < 0) return side == 2 ? rock(x, y, z) : KEEP;
+        int i = a / 12, xl = a % 12;
+        boolean corridor = side < 2 && (i == 4 || i == 5);
+        if (corridor) return KEEP;
+        boolean stairU = side < 2 ? (i == 2 || i == 9) : i == 3;
+        boolean palaceU = side == 1 && (i == 6 || i == 7);
+        if (palaceU) { int pr = palace(a - 72, q0, r); if (pr != KEEP) return pr; }
+        // les escaliers taillés le long des balcons
+        if (stairU && r >= 1) {
+            int ts = (r - 1) / 9;
+            if (ts <= 2) {
+                int rp = r - 9 * ts, dd = q0 - 3 * ts;
+                boolean up = (ts & 1) == 0;
+                if (xl >= 1 && xl <= 9) {
+                    int kk = up ? xl - 1 : 9 - xl;
+                    if (dd == -2 || dd == -1) {
+                        if (rp == kk + 1) return DSTAIR + stairDir(side, up);
+                        if (rp < kk + 1) return DBRICKS;
+                        return AIR;
+                    }
+                    int jx = (ts & 1) == 0 ? 1 : 9;
+                    if (dd == -3 && (ts >= 1 || side == 2) && rp <= kk + 2) return (ts >= 1 && xl == jx) ? AIR : BWALL;
+                }
+            }
+        }
+        int t = Math.min(r / 9, 4), rr = r - 9 * t;
+        int d = q0 - 3 * t;
+        if (rr == 0) {                                                       // le plancher / balcon de l'etage
+            if (d < -3) return AIR;
+            if (d == -3) return DCHISEL;
+            double q = r01(x, y, z);
+            return q < 0.55 ? DBRICKS : q < 0.8 ? DSTONE : DCOBBLE;
+        }
+        if (t >= 4) {                                                        // le sommet : roche brute qui recule
+            int jit = (int) Math.round(2 * vn(a / 5.0, r / 5.0, 88));
+            return d >= jit ? rock(x, y, z) : AIR;
+        }
+        if (d < 0) {                                                         // balcon
+            if (d == -3 && (t >= 1 || side == 2)) {
+                boolean junction = stairU && t >= 1 && xl == (((t - 1) & 1) == 0 ? 9 : 1);
+                if (!junction) {
+                    if (xl == 0) return rr <= 2 ? DPILLAR : rr == 3 ? DLAMP : AIR;
+                    if (rr == 1) return BWALL;
+                }
+            }
+            return AIR;
+        }
+        // d >= 0 : la roche et les appartements
+        if (palaceU || stairU || rr == 8) {
+            if (d == 0) return rr == 8 ? DCHISEL : (xl == 0 || xl == 9 ? DPILLAR : (r01(x, y, z) < 0.5 ? DBRICKS : rock(x, y, z)));
+            return rock(x, y, z);
+        }
+        int dmax = 16 - 3 * t;
+        boolean apt = xl >= 1 && xl <= 8;
+        if (d == 0) {                                                        // la facade
+            if (apt) {
+                if (xl >= 4 && xl <= 5 && rr <= 3) return AIR;
+                if (xl >= 3 && xl <= 6 && rr == 4) return DCHISEL;
+                if (xl >= 4 && xl <= 5 && rr == 5) return DRUNES;
+                if ((xl == 2 || xl == 7) && rr >= 3 && rr <= 5) return rr == 4 ? BARS : DCHISEL;
+                if (xl == 3 || xl == 6) return (rr <= 3) ? DCHISEL : DBRICKS;
+                return r01(x, y, z) < 0.55 ? DBRICKS : rock(x, y, z);
+            }
+            return xl == 0 || xl == 9 ? DPILLAR : (r01(x, y, z) < 0.5 ? DBRICKS : rock(x, y, z));
+        }
+        if (apt && d <= dmax) {                                              // l'interieur
+            int cell = hsh(i, t, side + 7);
+            int zl = d - (dmax - 8);
+            if (zl < 1) return AIR;
+            if (rr == 7 && xl == 4 && zl == 4) return LANTERN;
+            if (rr == 7 && xl == 5 && zl == 4) return AIR;
+            return interior(cell, rr, xl + 1, zl);
+        }
+        return rock(x, y, z);
+    }
+
+    /** la salle du roi : un palais taille dans la falaise sud. ar = 0..23 le long de la facade, d = profondeur, r = hauteur */
+    private static int palace(int ar, int d, int r) {
+        if (r < 1 || r > 13) return KEEP;
+        double dc = Math.abs(ar - 11.5);
+        if (d < 0) {                                                         // les piles avancees
+            if (d >= -2 && (ar <= 2 || ar >= 21) && r <= 12) return r >= 11 ? DCHISEL : DPILLAR;
+            return KEEP;
+        }
+        if (d == 0) {
+            int ow = r <= 6 ? 5 : r == 7 ? 4 : r == 8 ? 2 : -1;
+            if (ow >= 0 && dc <= ow + 0.5) return AIR;
+            if (ar <= 2 || ar >= 21) return r == 13 ? DCHISEL : DPILLAR;
+            if (dc <= 6.5 && r <= 8) return DCHISEL;
+            if (r >= 10 && r <= 12) return r == 11 && ar % 3 == 0 ? DRUNES : DCHISEL;
+            return DBRICKS;
+        }
+        if (d > 16 || ar < 2 || ar > 21) return KEEP;
+        if (d <= 3 && r >= 9) return KEEP;                                   // le vestibule reste bas
+        if (r == 13) return d % 4 == 0 || ar % 6 == 2 ? DCHISEL : DBRICKS;
+        if ((ar == 5 || ar == 6 || ar == 17 || ar == 18) && (d == 5 || d == 6 || d == 10 || d == 11)) return r == 12 ? DCHISEL : DPILLAR;
+        if (d >= 13 && r <= (d >= 15 ? 2 : 1)) return DBRICKS;
+        if ((ar == 11 || ar == 12) && d == 15 && r == 3) return GOLD;
+        if (d == 16 && ar >= 10 && ar <= 13 && r >= 3 && r <= 11) return (ar == 10 || ar == 13 || r == 11) ? GOLD : DCHISEL;
+        if (r == 1 && (ar == 11 || ar == 12) && d <= 12) return RCARPET;
+        if (r == 12 && (ar == 3 || ar == 20) && d % 5 == 3) return DLAMP;
+        if (r == 1 && (ar == 3 || ar == 20) && d % 4 == 2) return BARREL;
+        return AIR;
     }
 
     private static int platform(int x, int y, int z, int px, int py, int ceil) {
@@ -608,59 +695,6 @@ final class MoriaRooms {
         if (y == py + 1 && dx == 2 && dz == 2) return BARREL;
         if (dx == 4 && dz == 4 && y > py + 1 && y <= ceil) return CHAIN;
         return KEEP;
-    }
-
-    private static int house(int x, int y, int z, int hx, int[] row, int base) {
-        int xl = x - hx;
-        int zl = row[2] > 0 ? row[1] - z : z - row[0];             // 0 = cote de la porte
-        int v = y - base;
-        // lampadaires devant la porte
-        if (zl == -1 && (xl == 1 || xl == 9)) return lampPost(v, 3);
-        if (xl < 0 || xl > 10 || zl < 0 || zl > 9) return KEEP;
-        int cell = hsh(hx, row[0], 3);
-        boolean temple = cell % 3 == 0;
-        boolean xe = xl == 0 || xl == 10, ze = zl == 0 || zl == 9;
-        if (!temple) {
-            int k = Math.min(zl, 9 - zl), roofV = 6 + k;
-            if (v >= 6) {
-                if (v > roofV) return KEEP;
-                if (v == roofV) return k == 4 ? DSTONE : DSTAIR + ((zl < 5) == (row[2] > 0) ? 0 : 2);
-                return xe ? DBRICKS : (k == 4 && xl == 5 && zl == 4 ? CHAIN : AIR);
-            }
-            if (v < 1) return KEEP;
-            if (xe || ze) {
-                if (xe && ze) return DPILLAR;
-                if (zl == 0 && xl >= 4 && xl <= 6 && v <= 3) return AIR;
-                if (v == 3 && ((ze && (xl == 2 || xl == 8)) || (xe && (zl == 4 || zl == 5)))) return BARS;
-                if (v == 5) return DCHISEL;
-                return DBRICKS;
-            }
-            if (v == 5 && xl == 5 && zl == 4) return LANTERN;
-            return interior(cell, v, xl, zl);
-        }
-        // maison a colonnade et fronton
-        int k = Math.min(xl, 10 - xl), roofV = 7 + k;
-        if (v >= 7) {
-            if (v > roofV) return KEEP;
-            if (v == roofV) return k == 5 ? DSTONE : DSTAIR + (xl < 5 ? 1 : 3);
-            if (zl == 0) return (v == roofV - 1 && xl == 5) ? DRUNES : DBRICKS;      // le fronton
-            if (zl == 9) return DBRICKS;
-            return AIR;
-        }
-        if (v < 1) return KEEP;
-        if (zl <= 1) {                                                              // le portique
-            if (zl == 0 && (xl == 0 || xl == 3 || xl == 7 || xl == 10)) return v == 6 ? DCHISEL : DPILLAR;
-            if (v == 6 && zl == 0) return DCHISEL;
-            return AIR;
-        }
-        if (xe || ze || zl == 2) {
-            if (zl == 2 && xl >= 4 && xl <= 6 && v <= 3) return AIR;
-            if (v == 3 && ((zl == 2 && (xl == 2 || xl == 8)) || (xe && (zl == 5 || zl == 6)))) return BARS;
-            if (xe && ze) return DPILLAR;
-            return v == 6 ? DCHISEL : DBRICKS;
-        }
-        if (v == 5 && xl == 5 && zl == 5) return LANTERN;
-        return interior(cell, v, xl, zl - 1);
     }
 
     private static int interior(int cell, int v, int xl, int zl) {
@@ -693,49 +727,6 @@ final class MoriaRooms {
         return AIR;
     }
 
-    /** la maison du roi : un palais pose sur la corniche nord, face a la ravine */
-    private static int kingsHouse(int x, int y, int z) {
-        final int X0 = -258, X1 = -208, Z0 = -596, Z1 = -566, WH = 12;
-        if (x < X0 - 1 || x > X1 + 1 || z < Z0 - 1 || z > Z1 + 1) return KEEP;
-        int v = y - F, xl = x - X0, zl = z - Z0;
-        boolean inb = x >= X0 && x <= X1 && z >= Z0 && z <= Z1;
-        int cxl = Math.min(xl, 50 - xl), czl = Math.min(zl, 30 - zl);
-        if (cxl >= -1 && cxl <= 1 && czl >= -1 && czl <= 1) {                              // tourelles d'angle
-            if (v >= 1 && v <= WH + 8) return (cxl == 1 && czl == 1) ? KEEP : DPILLAR;
-            if (v == WH + 9) return DLAMP;
-        }
-        if (!inb) return KEEP;
-        boolean xe = xl == 0 || xl == 50, ze = zl == 0 || zl == 30;
-        if (v == WH + 1) return DSTONE;
-        if (v == WH + 2) return (xe || ze) ? ((xl + zl) % 2 == 0 ? BWALL : KEEP) : KEEP;
-        if (v > WH + 2) return KEEP;
-        if (xe || ze) {
-            if (zl == 0 && xl >= 27 && xl <= 33 && v <= 8) return AIR;                       // la grande porte, face a la ravine
-            if (zl == 0 && xl >= 26 && xl <= 34 && v <= 9 && (xl == 26 || xl == 34 || v == 9)) return DCHISEL;
-            if (v >= 6 && v <= 8 && ((ze && xl % 8 == 4) || (xe && zl % 8 == 4))) return BARS;
-            if (v == WH) return DCHISEL;
-            if ((xe && zl % 10 == 0) || (ze && xl % 8 == 0)) return DPILLAR;
-            return DBRICKS;
-        }
-        // interieur : la salle du roi (trone a l'ouest)
-        int dzc = zl - 15;
-        if (xl <= 7 && Math.abs(dzc) <= 6 && v == 1) return DBRICKS;                          // estrade
-        if (xl == 3 && dzc == 0 && v == 2) return DSTAIR + 3;                                 // le fauteuil du roi
-        if (xl <= 2 && Math.abs(dzc) <= 2 && v >= 2 && v <= 9 - Math.abs(dzc) * 2) return Math.abs(dzc) == 2 ? GOLD : DCHISEL;
-        if (xl == 3 && Math.abs(dzc) == 2 && v == 2) return DSTONE;
-        if (v == 1 && xl >= 8 && Math.abs(dzc) <= 2) return RCARPET;
-        if (v == 1 && xl >= 8 && Math.abs(dzc) == 3 && Math.floorMod(xl, 6) == 1) return BARREL;
-        if ((xl == 14 || xl == 22 || xl == 30 || xl == 38 || xl == 46) && (zl == 7 || zl == 23)) return v <= WH ? DPILLAR : KEEP;
-        if (zl == 29 && v <= 3 && xl >= 10 && xl <= 24) return BOOKS;
-        if (zl == 29 && v <= 3 && xl >= 38 && xl <= 48) return BOOKS;
-        if (v == 1 && xl >= 41 && xl <= 48 && zl >= 24 && zl <= 28) return xl == 41 ? BLACKWOOL : REDWOOL;       // le lit du roi
-        if (v == 1 && xl >= 14 && xl <= 34 && (zl == 4 || zl == 26)) return FENCE;
-        if (v == 2 && xl >= 14 && xl <= 34 && (zl == 4 || zl == 26)) return BSLAB;
-        if (xl % 8 == 6 && (zl == 7 || zl == 15 || zl == 23) && v >= WH - 3 && v < WH) return CHAIN;
-        if (xl % 8 == 6 && (zl == 7 || zl == 15 || zl == 23) && v == WH - 4) return LANTERN;
-        return AIR;
-    }
-
     // ------------------------------------------------------------------ la salle des festins
     private static final int[] ROWS_T = {-515, -501, -481, -467};
 
@@ -747,14 +738,6 @@ final class MoriaRooms {
             if (p != KEEP) return p;
         }
         // les gardiens des deux pignons
-        int g = guard(x, y, z, r.x0 + 10, r.z0 + 12, F, 2);
-        if (g != KEEP) return g;
-        g = guard(x, y, z, r.x0 + 10, r.z1 - 12, F, 2);
-        if (g != KEEP) return g;
-        g = guard(x, y, z, r.x1 - 6, r.z0 + 12, F, 3);
-        if (g != KEEP) return g;
-        g = guard(x, y, z, r.x1 - 6, r.z1 - 12, F, 3);
-        if (g != KEEP) return g;
         // les tables et les bancs
         if (x >= -250 && x <= -134) {
             for (int zt : ROWS_T) {
@@ -800,10 +783,6 @@ final class MoriaRooms {
                 return r01(x, y, z) < 0.5 ? DCOBBLE : DSTONE;
         }
         // un gardien a chaque bout, dans l'axe
-        int g = guard(x, y, z, cx, r.z0 + 4, F, 0);
-        if (g != KEEP) return g;
-        g = guard(x, y, z, cx, r.z1 - 4, F, 1);
-        if (g != KEEP) return g;
         int dx = x - cx, dz = z - cz;
         switch (r.variant) {
             case 1: {                                                                        // armurerie : enclumes, forge, tonneaux
@@ -863,15 +842,7 @@ final class MoriaRooms {
                 if (p != KEEP) return p;
             }
         }
-        int s = statue(x, y, z, cx - 32, -938, F, 1);
-        if (s != KEEP) return s;
-        s = statue(x, y, z, cx + 32, -938, F, 1);
-        if (s != KEEP) return s;
         // deux colosses de plus, de chaque cote de l'entree
-        s = colossus(x, y, z, cx - 34, -856, F, 0);
-        if (s != KEEP) return s;
-        s = colossus(x, y, z, cx + 34, -856, F, 0);
-        if (s != KEEP) return s;
         int v = y - top;
         if (adx <= 2 && v == 1 && z <= -837 && z >= -944) return RCARPET;
         if (adx == 9 && (z + 850) % 12 == 0 && z <= -850 && z >= -946 && n == 0) { int lp = lampPost(y - F, 4); if (lp != KEEP) return lp; }
@@ -900,10 +871,6 @@ final class MoriaRooms {
             if (v <= top) { double q = r01(x, y, z); return q < 0.1 ? RAWGOLD : q < 0.115 ? ORE + 4 : GOLD; }
             if (v == top + 1 && r01(x, 22, z) < 0.012) return BONES;
         } else {
-            int g = guard(x, y, z, 240, -876, F, 0);
-            if (g != KEEP) return g;
-            g = guard(x, y, z, 286, -876, F, 0);
-            if (g != KEEP) return g;
             int pl = pile(x, y, z, F, 11, 0.4, GOLD);
             if (pl != KEEP) return pl;
         }
@@ -951,16 +918,6 @@ final class MoriaRooms {
         return p;
     }
 
-    private static final double[][] RIM = new double[6][3];
-    static {
-        for (int i = 0; i < 6; i++) {
-            double th = Math.toRadians(30 + 60 * i), cs = Math.cos(th), sn = Math.sin(th);
-            RIM[i][0] = Math.round(MCX + 0.92 * MA * cs);
-            RIM[i][1] = Math.round(MCZ + 0.92 * MB * sn);
-            RIM[i][2] = Math.abs(cs) > Math.abs(sn) ? (cs > 0 ? 3 : 2) : (sn > 0 ? 1 : 0);
-        }
-    }
-
     private static int mine(int x, int y, int z, int h) {
         if (x < -292 || x > -136 || z < -950 || z > -776 || y < F - 28 || y > F + 52) return KEEP;
         double dd = mdd(x, z);
@@ -972,13 +929,6 @@ final class MoriaRooms {
         int dx = x - MCX, dz = z - MCZ, v = y - fy;
         boolean flat = fy != mineFloor(x, z, dd, false);        // true = terrasse (pas de rampe)
         if (y == fy) { double q = r01(x, 2, z); return q < 0.35 ? GRAVEL : q < 0.55 ? DCOBBLE : DEEPSLATE; }
-        // les gardiens du bord
-        for (double[] rm : RIM) {
-            if (Math.abs(x - rm[0]) <= 10 && Math.abs(z - rm[1]) <= 10) {
-                int g = guard(x, y, z, (int) rm[0], (int) rm[1], F, (int) rm[2]);
-                if (g != KEEP) return g;
-            }
-        }
         // le chevalement au centre
         int adx = Math.abs(dx), adz = Math.abs(dz);
         if (adx <= 6 && adz <= 6) {
