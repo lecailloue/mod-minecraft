@@ -316,18 +316,35 @@ final class MoriaRooms {
 
     private static int nicheH(int off) { return off <= 1 ? 9 : off == 2 ? 6 : -1; }
 
+    /** la grotte du quartier : coins arrondis (rayon 30) pour ne pas faire une boite */
+    private static boolean roundedCorner(Room r, int x, int z) {
+        final int R = 30;
+        int cx = x < r.x0 + R ? r.x0 + R : (x > r.x1 - R ? r.x1 - R : x);
+        int cz = z < r.z0 + R ? r.z0 + R : (z > r.z1 - R ? r.z1 - R : z);
+        return Math.hypot(x - cx, z - cz) <= R;
+    }
+
+    /** le plafond de la grotte s'abaisse vers les bords : une coupole irreguliere */
+    private static int vEdge(Room r, int x, int z) {
+        double e = Math.hypot((x - (r.x0 + r.x1) / 2.0) / 71.0, (z - (r.z0 + r.z1) / 2.0) / 70.0);
+        double t = Math.max(0, Math.min(1, (e - 0.5) / 0.6));
+        return (int) Math.round(8 * t * t);
+    }
+
     private static int room(int x, int y, int z, int h, Room r) {
         boolean vill = r.kind == VILL;
         if (x < r.x0 - 3 || x > r.x1 + 3 || z < r.z0 - 3 || z > r.z1 + 3 || y < (vill ? F - 50 : F) || y > F + r.hgt + (vill ? 12 : 6)) return KEEP;
-        int ceil = vill ? Math.min(F + r.hgt + (int) Math.round(9 * vn(x / 15.0, z / 15.0, 91)), h - 11) : Math.min(F + r.hgt + (int) Math.round(3 * domes(r, x, z)), h - 11);
+        int ceil = vill ? Math.min(F + r.hgt + (int) Math.round(9 * vn(x / 15.0, z / 15.0, 91)) - vEdge(r, x, z), h - 11) : Math.min(F + r.hgt + (int) Math.round(3 * domes(r, x, z)), h - 11);
         if (ceil < F + 14) return KEEP;
         int ex1 = r.x1;
-        if (vill && Math.abs(z - VZ) > 12) ex1 -= (int) Math.round(5 * vn(z / 8.0, 3.0, 92));
-        boolean in = x >= r.x0 && x <= ex1 && z >= r.z0 && z <= r.z1;
-        if (!in && vill) {
-            int dist = Math.max(Math.max(r.x0 - x, x - ex1), Math.max(r.z0 - z, z - r.z1));
-            return dist <= 4 && y <= ceil + 3 && y >= F - 12 ? rock(x, y, z) : KEEP;
+        if (vill) {
+            double u = (z - VZ) / 70.0;
+            ex1 -= (int) Math.round(18 * (1 - Math.sqrt(Math.max(0, 1 - 0.96 * u * u))));
+            if (Math.abs(z - VZ) > 12) ex1 -= (int) Math.round(6 * vn(z / 12.0, 3.0, 92));
         }
+        boolean in = x >= r.x0 && x <= ex1 && z >= r.z0 && z <= r.z1;
+        if (in && vill) in = roundedCorner(r, x, z);
+        if (!in && vill) return y <= ceil + 3 && y >= F - 12 ? rock(x, y, z) : KEEP;
         if (!in) {
             if (y < F || y > ceil + 1) return KEEP;
             boolean xw = x < r.x0 || x > r.x1, zw = z < r.z0 || z > r.z1;
@@ -577,11 +594,19 @@ final class MoriaRooms {
         return plus ? 2 : 0;
     }
 
+    /** les falaises s'incurvent : les ailes s'avancent vers le centre, la grotte prend une forme ovale */
+    private static int bow(int center, double half) {
+        double u = (center - half) / half;
+        return (int) Math.round(11 * (1 - Math.sqrt(Math.max(0, 1 - 0.96 * u * u))));
+    }
+
     private static int cliff(int x, int y, int z) {
         int side, q0, a;
-        if (z <= -682 && x >= -262 && x <= -120) { side = 0; q0 = -682 - z; a = x + 262; }
-        else if (z >= -578 && x >= -262 && x <= -120) { side = 1; q0 = z + 578; a = x + 262; }
-        else if (x <= -244 && x >= -262 && z > -682 && z < -578) { side = 2; q0 = -244 - x; a = z + 681; }
+        int shNS = bow(Math.min(11, Math.max(0, (x + 262) / 12)) * 12 + 6, 72.0);
+        int shW = bow(Math.min(8, Math.max(0, (z + 681) / 12)) * 12 + 6, 51.0);
+        if (z <= -682 + shNS && x >= -262 && x <= -120) { side = 0; q0 = -682 + shNS - z; a = x + 262; }
+        else if (z >= -578 - shNS && x >= -262 && x <= -120) { side = 1; q0 = z + 578 + shNS; a = x + 262; }
+        else if (x <= -244 + shW && x >= -262 && z > -682 && z < -578) { side = 2; q0 = -244 + shW - x; a = z + 681; }
         else return KEEP;
         int r = y - F;
         if (r < 0) return side == 2 ? rock(x, y, z) : KEEP;
