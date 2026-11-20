@@ -51,6 +51,7 @@ final class MoriaRooms {
         int r;
         if ((r = passage(x, y, z)) != KEEP) return r;
         for (Room rm : R) if ((r = room(x, y, z, h, rm)) != KEEP) return r;
+        if ((r = pitBridge(x, y, z)) != KEEP) return r;
         if ((r = mine(x, y, z, h)) != KEEP) return r;
         if ((r = gal(x, y, z, h)) != KEEP) return r;
         if ((r = furnace(x, y, z, h)) != KEEP) return r;
@@ -1280,6 +1281,85 @@ final class MoriaRooms {
         if ((v == 13 || v == 25 || v == 35) && (ex == 6 || ez == 6)) return FENCE;
         if ((ex == 3 && ez == 6 || ex == 6 && ez == 3) && v <= 11) return v % 4 == 3 ? OAKP : FENCE;
         if (ex == 0 && ez == 0 && v <= 34) return v % 2 == 0 ? OAKLOG : FENCE;
+        return KEEP;
+    }
+
+    // ------------------------------------------------------------------ le pont suspendu au dessus de la mine, et ses grands wagons de minerai
+    private static final int BXA = -282, BXB = -146, BZC = -880;
+    /** debut de chaque wagon (9 de long) ; les wagons a 11 d'ecart sont attelés ensemble */
+    private static final int[] WAG = {-266, -255, -244, -196, -185, -164};
+
+    private static int cableY(int x) {
+        double t = (x - (BXA + BXB) / 2.0) / ((BXB - BXA) / 2.0);
+        return F + 12 + (int) Math.round(18.0 * t * t);
+    }
+
+    private static int pitBridge(int x, int y, int z) {
+        if (x < BXA - 3 || x > BXB + 3 || z < BZC - 9 || z > BZC + 9 || y < F - 1 || y > F + 32) return KEEP;
+        int lz = z - BZC, alz = Math.abs(lz), v = y - F;
+        // les deux pylones
+        for (int px : new int[]{BXA, BXB}) {
+            int ax = Math.abs(x - px);
+            if (ax <= 1 && Math.abs(alz - 6) <= 1 && v >= 0 && v <= 30) {
+                if (v <= 2) return DBRICKS;
+                return v % 6 == 5 ? DCHISEL : DPILLAR;
+            }
+            if (ax <= 1 && alz <= 7 && (v == 31 || v == 30)) return v == 31 ? DCHISEL : (alz == 0 ? DLAMP : DBRICKS);
+            if (ax <= 1 && alz <= 5 && v == 16) return DCHISEL;
+            if (ax <= 1 && alz <= 5 && v == 8) return alz == 0 ? DLAMP : DBRICKS;
+        }
+        if (x < BXA - 1 || x > BXB + 1) return KEEP;
+        // les cables porteurs et leurs suspentes
+        if (alz == 5 && x >= BXA + 2 && x <= BXB - 2) {
+            int y0 = cableY(x), y1 = cableY(x - 1), y2 = cableY(x + 1);
+            if (y >= Math.min(y0, Math.min(y1, y2)) && y <= Math.max(y0, Math.max(y1, y2)) && y >= Math.min(y0, y1) && y <= Math.max(y0, y1)) return BARS;
+            if (y > F + 1 && y < y0 && Math.floorMod(x, 4) == 0) return CHAIN;
+        }
+        if (alz <= 5 && v == 0 && alz == 5) return Math.floorMod(x, 4) == 0 ? OAKLOGZ : KEEP;
+        if (alz > 4) return KEEP;
+        // le tablier
+        if (v == 0) {
+            if (Math.floorMod(x, 4) == 0) return OAKLOGZ;
+            return alz == 4 ? OAKLOGX : OAKP;
+        }
+        // les wagons
+        for (int k = 0; k < WAG.length; k++) {
+            int lx = x - WAG[k];
+            if (lx < -2 || lx > 11) continue;
+            boolean linked = k + 1 < WAG.length && WAG[k + 1] - WAG[k] == 11;
+            if (lx >= 9 && lx <= 10) {                                         // l'attelage
+                if (linked && alz == 0 && v == 2) return DCHISEL;
+                if (linked && alz == 0 && v == 3 && lx == 9) return BWALL;
+                continue;
+            }
+            if (lx < 0 || lx > 8 || alz > 2) continue;
+            boolean wall = alz == 2 || lx == 0 || lx == 8;
+            if (v == 1) {
+                if (alz == 2 && (lx == 1 || lx == 2 || lx == 6 || lx == 7)) return BLACKSTONE;     // les roues
+                if (alz < 2 && (lx == 1 || lx == 2 || lx == 6 || lx == 7) && alz == 0) return DEEPSLATE;
+                return KEEP;
+            }
+            if (v == 2) return alz == 0 && (lx == 0 || lx == 8) ? DCHISEL : DBRICKS;
+            int ore = ORE + k % 5;
+            if (v == 3 || v == 4) {
+                if (wall) return (lx % 8 == 0 && alz == 2) ? DPILLAR : (v == 4 && lx % 4 == 2 ? DCHISEL : DBRICKS);
+                double q = r01(x, y, z);
+                return v == 3 ? (q < 0.12 ? RAWGOLD : q < 0.55 ? ore : DCOBBLE) : (q < 0.8 ? (q < 0.1 ? RAWGOLD : ore) : KEEP);
+            }
+            if (v == 5) {
+                if (wall) return DCHISEL;
+                return r01(x, y, z) < 0.55 ? ore : KEEP;
+            }
+            if (v == 6 && !wall && lx >= 2 && lx <= 6 && r01(x, y, z) < 0.3) return ore;
+            return KEEP;
+        }
+        // les rails et les garde-corps
+        if (v == 1) {
+            if (alz == 2) return RAILX;
+            if (alz == 4) return Math.floorMod(x, 8) == 0 ? DPILLAR : FENCE;
+            return KEEP;
+        }
+        if (alz == 4 && Math.floorMod(x, 8) == 0 && v <= 3) return v == 3 ? DLAMP : DPILLAR;
         return KEEP;
     }
 
