@@ -319,25 +319,35 @@ wj(A + '/blockstates/dwarven_chest.json', {'variants': {
     for f, y in (('north', 0), ('east', 90), ('south', 180), ('west', 270)) for o in ('false', 'true')}})
 
 # --- lit
-def bed(head, dz=0):
+def bed(head, jl=False, jr=False):
+    """jl / jr : un autre lit est accole a gauche / a droite (le lit regarde le nord dans le modele : gauche = ouest, droite = est)"""
     m = M({'stone': 'stone', 'carved': 'carved', 'wood': 'wood', 'wd': 'wood_dark', 'iron': 'iron', 'gold': 'gold', 'bt': 'blanket_top',
            'bs': 'blanket_side', 'sheet': 'sheet_top', 'pt': 'pillow_top', 'ps': 'pillow_side', 'we': 'woodend'})
+    def sides(n, d=None):                       # faces d'un element qui touche le voisin : pas de face du cote accole
+        f = dict(d) if d else {k: n for k in ('north', 'south', 'east', 'west', 'up', 'down')}
+        if jl: f['west'] = None
+        if jr: f['east'] = None
+        return f
     for (x, z) in ((0, 0), (14, 0), (0, 14), (14, 14)):
+        if (x == 0 and jl) or (x == 14 and jr): continue
         m.box((x, 0, z), (x + 2, 3, z + 2), allf('stone'))
-    m.box((0, 3, 0), (16, 6, 16), {'north': 'wood', 'south': 'wood', 'east': 'wood', 'west': 'wood', 'up': 'wd', 'down': 'wd'})
+    m.box((0, 3, 0), (16, 6, 16), sides(None, {'north': 'wood', 'south': 'wood', 'east': 'wood', 'west': 'wood', 'up': 'wd', 'down': 'wd'}))
+    x0, x1 = (0 if jl else 1), (16 if jr else 15)
     if head:
-        m.box((1, 6, 2), (15, 9, 16), {'north': 'bs', 'south': 'bs', 'east': 'bs', 'west': 'bs', 'up': 'sheet', 'down': 'wd'})
+        m.box((x0, 6, 2), (x1, 9, 16), sides(None, {'north': 'bs', 'south': 'bs', 'east': 'bs', 'west': 'bs', 'up': 'sheet', 'down': 'wd'}))
         m.box((2, 9, 3), (14, 11, 9), {'north': 'ps', 'south': 'ps', 'east': 'ps', 'west': 'ps', 'up': 'pt', 'down': 'ps'})
-        m.box((0, 3, 0), (16, 15, 2), {'north': 'carved', 'south': 'carved', 'east': 'stone', 'west': 'stone', 'up': 'stone', 'down': 'stone'})
-        m.box((0, 15, 0), (16, 16, 2), allf('gold'))
+        m.box((0, 3, 0), (16, 15, 2), sides(None, {'north': 'carved', 'south': 'carved', 'east': 'stone', 'west': 'stone', 'up': 'stone', 'down': 'stone'}))
+        m.box((0, 15, 0), (16, 16, 2), sides('gold'))
         for x in (2, 13): m.box((x, 12, 2), (x + 1, 13, 2.6), {'south': 'gold'})
     else:
-        m.box((1, 6, 0), (15, 9.5, 15), {'north': 'bs', 'south': 'bs', 'east': 'bs', 'west': 'bs', 'up': 'bt', 'down': 'wd'})
-        m.box((0, 3, 14), (16, 10, 16), {'north': 'stone', 'south': 'carved', 'east': 'stone', 'west': 'stone', 'up': 'stone', 'down': 'stone'})
-        m.box((0, 10, 14), (16, 11, 16), allf('gold'))
+        m.box((x0, 6, 0), (x1, 9.5, 15), sides(None, {'north': 'bs', 'south': 'bs', 'east': 'bs', 'west': 'bs', 'up': 'bt', 'down': 'wd'}))
+        m.box((0, 3, 14), (16, 10, 16), sides(None, {'north': 'stone', 'south': 'carved', 'east': 'stone', 'west': 'stone', 'up': 'stone', 'down': 'stone'}))
+        m.box((0, 10, 14), (16, 11, 16), sides('gold'))
     return m
-wj(A + '/models/block/dwarven_bed_head.json', bed(True).json())
-wj(A + '/models/block/dwarven_bed_foot.json', bed(False).json())
+for part in ('head', 'foot'):
+    for jl in (0, 1):
+        for jr in (0, 1):
+            wj(A + '/models/block/dwarven_bed_%s_%d%d.json' % (part, jl, jr), bed(part == 'head', bool(jl), bool(jr)).json())
 item = bed(True); item.el = item.shift(-16 + 8)                  # la tete devant (nord), les pieds derriere
 foot = bed(False); item.el += foot.shift(0 + 8)
 wj(A + '/models/block/dwarven_bed_item.json', item.json())
@@ -351,7 +361,10 @@ bv = {}
 for f, y in (('north', 0), ('east', 90), ('south', 180), ('west', 270)):
     for part in ('head', 'foot'):
         for occ in ('false', 'true'):
-            bv['facing=%s,occupied=%s,part=%s' % (f, occ, part)] = {'model': 'ringsofash:block/dwarven_bed_' + part, 'y': y}
+            for jl in (0, 1):
+                for jr in (0, 1):
+                    bv['facing=%s,join_left=%s,join_right=%s,occupied=%s,part=%s' % (f, str(bool(jl)).lower(), str(bool(jr)).lower(), occ, part)] = \
+                        {'model': 'ringsofash:block/dwarven_bed_%s_%d%d' % (part, jl, jr), 'y': y}
 wj(A + '/blockstates/dwarven_bed.json', {'variants': bv})
 
 # --- petit four

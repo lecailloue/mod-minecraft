@@ -1008,8 +1008,10 @@ final class MoriaRooms {
         int dd = (fd + 2) & 3;                                                              // direction du fond
         switch ((cell >> 3) % 4) {
             case 0:                                                                          // chambre : deux lits nains, un coffre au pied
-                if (v == 1 && (xl == 2 || xl == 3) && zl == 7) return DBEDF + dd;
-                if (v == 1 && (xl == 2 || xl == 3) && zl == 8) return DBEDH + dd;
+                if (v == 1 && (xl == 2 || xl == 3) && (zl == 7 || zl == 8)) {                // deux lits accoles : ils se raccordent en lit double
+                    boolean toRight = (xl == 2) == (side == 0);                              // le voisin est a droite du lit (vu du pied) ?
+                    return (zl == 7 ? (toRight ? DBEDFR : DBEDFL) : (toRight ? DBEDHR : DBEDHL)) + dd;
+                }
                 if (v == 1 && xl == 2 && zl == 6) return DCHEST + fd;
                 if (v <= 2 && zl == 8 && xl >= 6 && xl <= 9) return BOOKS;
                 if (v == 1 && xl == 7 && zl == 2) return FENCE;

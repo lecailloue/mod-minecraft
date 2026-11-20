@@ -17,8 +17,9 @@ public final class MoriaPlan {
             GOLD = 60, RAWGOLD = 61, RAILX = 62, RAILZ = 63, BARREL = 64, RCARPET = 65, REDWOOL = 66, BLACKWOOL = 67, CAMPFIRE = 68, CRAFT = 69, FURNACE = 70,
             YELLOWWOOL = 71, CAULDRON = 72, COPPER = 73, SHROOM = 74, IRONB = 75, SMBAS = 76, CRACKB = 77, DTILES = 78, CRDEEP = 79,
             DCHEST = 80 /* 80..83 : N E S O, face avant vers cette direction */, DBEDF = 84 /* 84..87 : direction du pied vers la tete */, DBEDH = 88 /* 88..91 */,
-            DFURN = 92 /* 92..95 */, DCRAFT = 96;
-    public static final int NIDS = 97;
+            DFURN = 92 /* 92..95 */, DCRAFT = 96,
+            DBEDFL = 97 /* 97..100 : lit accole a gauche (vu depuis le pied) */, DBEDFR = 101, DBEDHL = 105, DBEDHR = 109;
+    public static final int NIDS = 113;
 
     public static final int F0 = 80;       // sol de la cour et de la Grande Salle
     public static final int F1 = 17;       // sol du gouffre (le pont) et de son palier
