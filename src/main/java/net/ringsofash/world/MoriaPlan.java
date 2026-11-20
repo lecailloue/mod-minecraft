@@ -138,6 +138,19 @@ public final class MoriaPlan {
         int w = halfW(v, ex);
         boolean inside = v >= 1 && au <= w;
         if (v == 0 && au <= GW + 3 * ex + 1) return (x % 8 == 0 && au <= 1) ? DRUNES : floorPat(x, z);
+        // la niche en ogive creusee derriere chaque statue
+        int nd = Math.abs(au - ST_AU), nh = nicheHalf(v);
+        if (nh >= 0 && nd <= nh) {
+            if (dd <= 2) return AIR;
+            if (dd == 3) {
+                if (nd == 5 && (v == 10 || v == 40)) return DLAMP;
+                if (nd % 2 == 0 && v % 4 == 0 && nd <= nh - 1) return DRUNES;
+                double q = r01(au, v, 37);
+                return q < 0.45 ? DEEPSLATE : q < 0.8 ? DSTONE : BLACKSTONE;
+            }
+            return KEEP;
+        }
+        if (dd == 0 && v >= 2 && v <= 52 && ((nh >= 0 && nd == nh + 1) || (v >= 49 && nd <= 1 && nh < 0))) return (v + au) % 6 == 0 ? GOLD : DCHISEL;
         if (inside) {
             if (x == GX - 6 || x == GX - 5) {                        // les vantaux de pierre, fermes, avec une entrebaillure au centre
                 boolean gap = (au <= 2 && v <= 19) || (au <= 1 && v <= 22) || (au == 0 && v <= 25);
@@ -145,10 +158,13 @@ public final class MoriaPlan {
                 if (x == GX - 6) return DSTONE;
                 double in = wcd(v, 0) - au;
                 if (v >= 3 && in >= 1.0 && in < 2.0 && (v + au) % 2 == 0) return DRUNES;                  // arc d'ithildin le long de l'arche
-                if (au >= 3 && v >= 4 && v <= 16 && (v == 7 || v == 12)) return (au + v) % 3 == 0 ? DSTONE : DRUNES;   // lignes d'inscription
+                if (au >= 3 && (v == 5 || v == 11 || v == 17)) return IRONB;                               // les bandes de fer des vantaux
+                if (au >= 3 && v >= 4 && v <= 16 && (v == 8 || v == 14)) return (au + v) % 3 == 0 ? DSTONE : DRUNES;   // lignes d'inscription
                 if ((au == 0 && v >= 26 && v <= 31) || (v == 28 && au <= 2)) return v == 28 && au == 0 ? WHITE : DRUNES;   // l'etoile de Durin
                 return (au == 4 && v >= 3 && v <= 16) ? DCHISEL : DBRICKS;
             }
+            if (dd == 3 && (au == 3 || au == 6) && (v == 8 || v == 14)) return GOLD;                    // les clous d'or qui saillent des vantaux
+            if (dd <= 2 && v >= 3 && dOutE(au, v, ex) > -1.5 && (au + v) % 3 == 0) return (au + v) % 9 == 0 ? DLAMP : DCHISEL;   // les claveaux en dents, avec leurs lampes
             return AIR;
         }
         double dOut = dOutE(au, v, ex);
@@ -164,8 +180,12 @@ public final class MoriaPlan {
             if (dOut <= 1) return (au + v) % 4 == 0 ? DRUNES : DCHISEL;                                 // le bandeau de l'arc
             boolean vis = v >= 1 && au <= halfW(v, ex + 1);                                             // face du gradin, visible depuis l'exterieur
             if (!vis) return KEEP;
-            if (dOut <= 4 && (au + v) % 5 == 0) return DRUNES;
-            return r01(au, v, 31 + dd) < 0.7 ? DBRICKS : DSTONE;
+            double q = r01(au, v, 31 + dd);
+            int k = (int) Math.floor(dOut);
+            if (k == 1) return (au + v) % 2 == 0 ? DCHISEL : DBRICKS;
+            if (k == 2) return (au + v) % 4 == 0 ? DRUNES : q < 0.6 ? DEEPSLATE : DSTONE;
+            if (k == 3) return (au + v) % 8 == 0 ? GOLD : DBRICKS;
+            return q < 0.5 ? DBRICKS : q < 0.75 ? DSTONE : q < 0.9 ? DEEPSLATE : BLACKSTONE;
         }
         if (dOut <= 2) {                                             // parois du couloir
             if (dOut <= 1 && Math.floorMod(x, 9) == 0) return DPILLAR;
@@ -178,6 +198,13 @@ public final class MoriaPlan {
     private static final int ST_AU = 27;        // axe des deux statues de nains geants (de part et d'autre de la porte)
     private static final int WF_AU = 43;        // axe des cascades
 
+    /** demi-largeur de la niche des statues a la hauteur v (-1 hors de la niche) : droite puis en ogive */
+    private static int nicheHalf(int v) {
+        if (v < 3 || v > 51) return -1;
+        if (v <= 40) return 7;
+        return (int) Math.floor(7 * (1 - Math.pow((v - 40) / 12.0, 1.5)));
+    }
+
     /** la falaise taillee au dessus et autour de l'ogive : nervures, bandeaux, panneaux, grand losange d'ithildin, cascades. x in GX-3..GX-1 */
     private static int facade(int x, int y, int z, int h, int au, int v) {
         if (au > 47 || v < 1 || v > 70 || y > h - 2) return KEEP;
@@ -189,8 +216,6 @@ public final class MoriaPlan {
         if (au == 17 || au == 38) return DPILLAR;                                     // nervures (elles avancent dans la cour)
         if (v == 58) return DCHISEL;
         if (v % 14 == 13) return DCHISEL;
-        int d = Math.abs(au - ST_AU);
-        if (d <= 8 && v <= 50) return (d == 8 || v == 50) ? DCHISEL : DSTONE;        // le fond sombre des niches des statues
         if (v == 52 && au % 3 == 0 && au <= 36) return DRUNES;                       // la frise d'ithildin sous la corniche
         if (au <= 1 && v >= 50 && v <= 56 && Math.abs(v - 53) + au <= 3) return GOLD;   // l'etoile d'or au dessus du portail
         if (au % 8 == 4 && v % 14 >= 3 && v % 14 <= 9) return DRUNES;
@@ -238,8 +263,15 @@ public final class MoriaPlan {
             if (!rim && (y == F0 || y == F0 - 1)) return WATER;
         }
         // les nervures et la corniche qui avancent devant la falaise
-        if (dx <= 1 && v >= 1 && v <= 56 && (au == 17 || au == 38)) return DPILLAR;
-        if (dx <= 2 && (v == 57 || v == 58) && au <= 47) return v == 57 ? DCHISEL : DBRICKS;
+        int ra = Math.min(Math.abs(au - 17), Math.abs(au - 38));
+        if (ra <= 1 && dx <= 2 && v >= 1 && v <= 55) {                              // les nervures : socle, fut, chapiteau d'or
+            if (v <= 3) return v == 3 ? DCHISEL : DBRICKS;
+            if (v >= 50) return v == 52 ? GOLD : (v == 50 || v == 55) ? DCHISEL : DBRICKS;
+            if (ra == 0 && dx <= 1) return DPILLAR;
+        }
+        if (dx <= 2 && (v == 57 || v == 58) && au <= 47) return v == 57 ? (au % 4 == 0 ? GOLD : DCHISEL) : DBRICKS;
+        if (dx <= 2 && (v == 59 || v == 60) && au <= 47 && au % 4 != 3) return v == 59 ? DBRICKS : BWALL;   // les creneaux
+        if (dx == 3 && v == 56 && au % 6 == 0 && au <= 46 && au >= 12) return DCHISEL;                       // les consoles sous la corniche
         // les deux nains geants, et leurs bannieres
         int dl = Math.abs(au - ST_AU);
         if (au >= ST_AU - 9 && au <= ST_AU + 9) {
