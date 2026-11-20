@@ -15,7 +15,7 @@ public final class MoriaPlan {
             QSLAB = 22, BOOKS = 23, BARS = 24, FORGE = 25, ANVIL = 26, BSLAB = 27, BSTAIR = 28 /* 28..31 : N E S O, monte vers cette direction */, BWALL = 32,
             GRAVEL = 33, SPRLOG = 34, SPRLEAF = 35, ORE = 40 /* 40..44 */, BLACKSTONE = 46, OAKLOGX = 47, OAKLOGZ = 48, DSTAIR = 52 /* 52..55 */, BSTAIR_TOP = 56 /* 56..59 */,
             GOLD = 60, RAWGOLD = 61, RAILX = 62, RAILZ = 63, BARREL = 64, RCARPET = 65, REDWOOL = 66, BLACKWOOL = 67, CAMPFIRE = 68, CRAFT = 69, FURNACE = 70,
-            YELLOWWOOL = 71, CAULDRON = 72, COPPER = 73, SHROOM = 74, IRONB = 75, SMBAS = 76;
+            YELLOWWOOL = 71, CAULDRON = 72, COPPER = 73, SHROOM = 74, IRONB = 75, SMBAS = 76, CRACKB = 77, DTILES = 78, CRDEEP = 79;
     public static final int NIDS = 80;
 
     public static final int F0 = 80;       // sol de la cour et de la Grande Salle
@@ -76,11 +76,35 @@ public final class MoriaPlan {
     }
 
     // ------------------------------------------------------------------ geometrie commune
+    /** dallage : grands carreaux de 8 bordes de pierre taillee, chacun avec son motif (damier, rangees, fissures, diagonales, anneaux, rune), usure irreguliere */
     static int floorPat(int x, int z) {
-        int q = (Math.floorDiv(x, 4) + Math.floorDiv(z, 4)) & 1;
+        int tx = Math.floorDiv(x, 8), tz = Math.floorDiv(z, 8), lx = Math.floorMod(x, 8), lz = Math.floorMod(z, 8);
+        int h = hsh(tx, tz, 5);
         double r = r01(x, 3, z);
-        if (r < 0.06) return DCOBBLE;
-        return q == 0 ? DBRICKS : DSTONE;
+        if (lx == 0 || lz == 0) return r < 0.12 ? DCOBBLE : DCHISEL;
+        if (r < 0.04) return DCOBBLE;
+        if (r < 0.07) return CRACKB;
+        switch (h % 6) {
+            case 0: return (((lx >> 1) + (lz >> 1)) & 1) == 0 ? DBRICKS : DSTONE;
+            case 1: return (lx == 3 || lx == 4) && (lz == 3 || lz == 4) ? DRUNES : DTILES;
+            case 2: return (lz & 1) == 0 ? DBRICKS : (((lx + lz) & 3) == 0 ? DTILES : DSTONE);
+            case 3: return r < 0.4 ? CRACKB : r < 0.55 ? DCOBBLE : DBRICKS;
+            case 4: return ((lx + lz) & 3) < 2 ? DSTONE : DTILES;
+            default: {
+                int d = Math.max(Math.abs(2 * lx - 7), Math.abs(2 * lz - 7)) / 2;
+                return d == 0 ? DRUNES : (d & 1) == 0 ? DBRICKS : CRDEEP;
+            }
+        }
+    }
+
+    /** petit relief du sol (un bloc au dessus du dallage) : estrades, bornes, bosses */
+    static int floorRel(int x, int z) {
+        int tx = Math.floorDiv(x, 8), tz = Math.floorDiv(z, 8), lx = Math.floorMod(x, 8), lz = Math.floorMod(z, 8);
+        int h = hsh(tx, tz, 9);
+        if (h % 9 == 0 && lx >= 2 && lx <= 5 && lz >= 2 && lz <= 5) return BSLAB;
+        if ((tx & 3) == 0 && (tz & 3) == 0 && lx == 0 && lz == 0) return BWALL;
+        if (r01(x, 17, z) < 0.012) return BSLAB;
+        return KEEP;
     }
 
     private static final int GW = 6, GH = 12, GT = 26;              // porte : demi-largeur, hauteur des montants, hauteur du sommet de l'ogive

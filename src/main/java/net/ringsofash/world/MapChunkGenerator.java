@@ -233,6 +233,9 @@ public final class MapChunkGenerator extends ChunkGenerator {
         p[MoriaPlan.SHROOM] = Blocks.SHROOMLIGHT.defaultBlockState();
         p[MoriaPlan.IRONB] = Blocks.IRON_BLOCK.defaultBlockState();
         p[MoriaPlan.SMBAS] = Blocks.SMOOTH_BASALT.defaultBlockState();
+        p[MoriaPlan.CRACKB] = Blocks.CRACKED_STONE_BRICKS.defaultBlockState();
+        p[MoriaPlan.DTILES] = Blocks.DEEPSLATE_TILES.defaultBlockState();
+        p[MoriaPlan.CRDEEP] = Blocks.CRACKED_DEEPSLATE_BRICKS.defaultBlockState();
         for (int i = 0; i < 4; i++) {
             p[MoriaPlan.BSTAIR + i] = Reg.DWARVEN_BRICKS_STAIRS.get().defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, dirs[i]);
             p[MoriaPlan.DSTAIR + i] = Reg.DWARVEN_STONE_STAIRS.get().defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, dirs[i]);

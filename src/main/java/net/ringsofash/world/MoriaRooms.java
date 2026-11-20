@@ -55,6 +55,7 @@ final class MoriaRooms {
         if ((r = gal(x, y, z, h)) != KEEP) return r;
         if ((r = furnace(x, y, z, h)) != KEEP) return r;
         if ((r = forgeProps(x, y, z, h)) != KEEP) return r;
+        if ((r = floorExtra(x, y, z)) != KEEP) return r;
         return bigRelief(x, y, z, h);
     }
 
@@ -534,6 +535,30 @@ final class MoriaRooms {
         }
     }
 
+    /** relief du sol dans la Grande Salle et les Forges, hors des zones occupees */
+    private static int floorExtra(int x, int y, int z) {
+        if (y == F0 + 1 && x >= -8 && x <= 134 && z >= -468 && z <= -252) {
+            if (z < -440 && x >= 38 && x <= 112) return KEEP;
+            if (x >= 114 && Math.abs(z + 360) <= 18) return KEEP;
+            if (Math.abs(z + 360) <= 4) return KEEP;
+            int dx = Math.floorMod(x - 8, 28), dz = Math.floorMod(z + 346, 28);
+            if ((dx <= 6 || dx >= 22) && (dz <= 6 || dz >= 22)) return KEEP;
+            return floorRel(x, z);
+        }
+        if (y == F + 1 && x >= -106 && x <= 246 && z >= -826 && z <= -692) {
+            if (Math.abs(z - (-759 + 5 * Math.sin(x / 31.0))) < 9) return KEEP;
+            if ((z >= -712 && z <= -688) || (z >= -830 && z <= -806)) return KEEP;
+            if (x >= 36 && x <= 72 && z <= -818) return KEEP;
+            for (int fx : new int[]{-70, -34, 18, 138, 190, 230}) if (Math.abs(x - fx) <= 9 && z >= -806 && z <= -790) return KEEP;
+            if (Math.abs(x - 102) <= 9 && Math.abs(z + 800) <= 9) return KEEP;
+            if (x >= 236 && z >= -800 && z <= -720) return KEEP;
+            int px = Math.floorMod(x + 54, 32);
+            if ((px <= 6 || px >= 26) && (Math.abs(z + 806) <= 6 || Math.abs(z + 716) <= 6)) return KEEP;
+            return floorRel(x, z);
+        }
+        return KEEP;
+    }
+
     // ------------------------------------------------------------------ salles
     private static double domes(Room r, int x, int z) {
         switch (r.kind) {
@@ -638,6 +663,13 @@ final class MoriaRooms {
                 boolean ns = m == dN || m == dS;
                 int t = wallTex(m, ns ? x : z, y - F, ceil - F, 51 + r.kind);
                 if (t != KEEP) return t;
+            }
+        }
+        if (!vill && y == F + 1) {
+            int dW = x - r.x0, dE = r.x1 - x, dN = z - r.z0, dS = r.z1 - z;
+            if (Math.min(Math.min(dW, dE), Math.min(dN, dS)) > 3 && !nearPassage(x, z)) {
+                int fr = floorRel(x, z);
+                if (fr != KEEP) return fr;
             }
         }
         int q = hangingLamp(x, y, z, ceil, 16);
