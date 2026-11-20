@@ -632,6 +632,6 @@ public final class MoriaPlan {
         if ((r = chasm(x, y, z, h)) != KEEP) return r;
         if ((r = hall(x, y, z, h)) != KEEP) return r;
         if ((r = forge(x, y, z, h)) != KEEP) return r;
-        return ore(x, y, z);
+        return y > h ? KEEP : ore(x, y, z);                                  // pas de minerai dans l'air au dessus du sol
     }
 }
