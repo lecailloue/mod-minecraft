@@ -13,8 +13,10 @@ public final class MoriaPlan {
     public static final int KEEP = -1, AIR = 0, DSTONE = 1, DCOBBLE = 2, DBRICKS = 3, DPILLAR = 4, DCHISEL = 5, DRUNES = 6, DLAMP = 7, WHITE = 8, DEEPSLATE = 9,
             LAVA = 10, WATER = 11, MAGMA = 12, OAKP = 13, OAKLOG = 14, FENCE = 15, CHAIN = 16, LANTERN = 17, SLANTERN = 18, WEB = 19, BONES = 20, QUARTZ = 21,
             QSLAB = 22, BOOKS = 23, BARS = 24, FORGE = 25, ANVIL = 26, BSLAB = 27, BSTAIR = 28 /* 28..31 : N E S O, monte vers cette direction */, BWALL = 32,
-            GRAVEL = 33, SPRLOG = 34, SPRLEAF = 35, ORE = 40 /* 40..44 */, BLACKSTONE = 46, OAKLOGX = 47, OAKLOGZ = 48, DSTAIR = 52 /* 52..55 */, BSTAIR_TOP = 56 /* 56..59 */;
-    public static final int NIDS = 64;
+            GRAVEL = 33, SPRLOG = 34, SPRLEAF = 35, ORE = 40 /* 40..44 */, BLACKSTONE = 46, OAKLOGX = 47, OAKLOGZ = 48, DSTAIR = 52 /* 52..55 */, BSTAIR_TOP = 56 /* 56..59 */,
+            GOLD = 60, RAWGOLD = 61, RAILX = 62, RAILZ = 63, BARREL = 64, RCARPET = 65, REDWOOL = 66, BLACKWOOL = 67, CAMPFIRE = 68, CRAFT = 69, FURNACE = 70,
+            YELLOWWOOL = 71, CAULDRON = 72;
+    public static final int NIDS = 80;
 
     public static final int F0 = 80;       // sol de la cour et de la Grande Salle
     public static final int F1 = 17;       // sol du gouffre (le pont) et de son palier
@@ -23,18 +25,18 @@ public final class MoriaPlan {
     public static final int GX = 168, GZ = -360;   // plan de la falaise (la porte est a l'ouest de x = GX), axe de la porte
 
     // ------------------------------------------------------------------ bruits
-    private static int hsh(int x, int y, int z) {
+    static int hsh(int x, int y, int z) {
         long h = x * 73856093L ^ y * 19349663L ^ z * 83492791L ^ 0x9E3779B97F4A7C15L;
         h = (h ^ (h >>> 29)) * 0xBF58476D1CE4E5B9L;
         h ^= h >>> 32;
         return (int) (h & 0x7fffffff);
     }
 
-    private static double r01(int x, int y, int z) { return (hsh(x, y, z) & 0xFFFFF) / 1048575.0; }
+    static double r01(int x, int y, int z) { return (hsh(x, y, z) & 0xFFFFF) / 1048575.0; }
 
-    private static double sm(double t) { t = t < 0 ? 0 : t > 1 ? 1 : t; return t * t * (3 - 2 * t); }
+    static double sm(double t) { t = t < 0 ? 0 : t > 1 ? 1 : t; return t * t * (3 - 2 * t); }
 
-    private static double vn(double x, double z, int seed) {
+    static double vn(double x, double z, int seed) {
         int ix = (int) Math.floor(x), iz = (int) Math.floor(z);
         double fx = sm(x - ix), fz = sm(z - iz);
         double a = (hsh(ix, seed, iz) & 0xFFFF) / 65535.0, b = (hsh(ix + 1, seed, iz) & 0xFFFF) / 65535.0;
@@ -74,7 +76,7 @@ public final class MoriaPlan {
     }
 
     // ------------------------------------------------------------------ geometrie commune
-    private static int floorPat(int x, int z) {
+    static int floorPat(int x, int z) {
         int q = (Math.floorDiv(x, 4) + Math.floorDiv(z, 4)) & 1;
         double r = r01(x, 3, z);
         if (r < 0.06) return DCOBBLE;
@@ -139,7 +141,7 @@ public final class MoriaPlan {
     }
 
     // ------------------------------------------------------------------ colosses
-    private static int statue(int x, int y, int z, int cx, int cz, int base, int face) {
+    static int statue(int x, int y, int z, int cx, int cz, int base, int face) {
         int dx = x - cx, dz = (z - cz) * face, v = y - base, ax = Math.abs(dx), az = Math.abs(dz);
         if (v < 0 || v > 52 || ax > 12 || az > 12) return KEEP;
         if (v <= 4) return ax <= 9 && az <= 9 ? (v == 4 ? DCHISEL : DBRICKS) : KEEP;
@@ -168,7 +170,7 @@ public final class MoriaPlan {
         return a * b;
     }
 
-    private static int rubble(int x, int y, int z, int fy) {
+    static int rubble(int x, int y, int z, int fy) {
         int gx = Math.floorDiv(x, 9), gz = Math.floorDiv(z, 9);
         if (r01(gx, 7, gz) >= 0.13) return KEEP;
         int cx = gx * 9 + 3 + hsh(gx, 1, gz) % 3, cz = gz * 9 + 3 + hsh(gx, 2, gz) % 3;
@@ -178,7 +180,7 @@ public final class MoriaPlan {
         return KEEP;
     }
 
-    private static int hangingLamp(int x, int y, int z, int ceil, int grid) {
+    static int hangingLamp(int x, int y, int z, int ceil, int grid) {
         if (Math.floorMod(x, grid) != 0 || Math.floorMod(z, grid) != 8 || r01(x, 9, z) < 0.35) return KEEP;
         if (y >= ceil - 8 && y <= ceil) return CHAIN;
         if (y == ceil - 9) return LANTERN;
@@ -424,13 +426,7 @@ public final class MoriaPlan {
 
     // ------------------------------------------------------------------ galeries de mine
     private static final int[][][] TUN = {
-            {{-111, -765}, {-150, -760}, {-190, -725}, {-245, -720}, {-295, -690}},
-            {{-111, -715}, {-130, -670}, {-160, -640}, {-175, -580}, {-160, -520}},
             {{251, -715}, {285, -700}, {320, -660}, {335, -600}, {325, -540}},
-            {{120, -831}, {125, -870}, {160, -910}, {200, -945}},
-            {{20, -831}, {10, -880}, {-40, -920}, {-100, -950}},
-            {{200, -831}, {230, -870}, {280, -900}},
-            {{20, -687}, {10, -640}, {-30, -600}, {-80, -560}},
     };
 
     private static int tunnels(int x, int y, int z, int h) {
@@ -474,7 +470,7 @@ public final class MoriaPlan {
     // ------------------------------------------------------------------ minerai
     private static int ore(int x, int y, int z) {
         if (y > 110) return KEEP;
-        double p = 0.0035;
+        double p = Math.max(0.0035, MoriaRooms.oreP(x, y, z));
         if (y < F2 + 12 && y > F2 - 10) {
             for (int[][] pl : TUN) { int[] e = pl[pl.length - 1]; if (Math.hypot(x - e[0], z - e[1]) < 15) { p = 0.07; break; } }
         }
@@ -491,6 +487,7 @@ public final class MoriaPlan {
         int r;
         if ((r = waterfall(x, y, z)) != KEEP) return r;
         if ((r = tomb(x, y, z, h)) != KEEP) return r;
+        if ((r = MoriaRooms.at(x, y, z, h)) != KEEP) return r;
         if ((r = tunnels(x, y, z, h)) != KEEP) return r;
         if ((r = gate(x, y, z, h)) != KEEP) return r;
         if ((r = stairRun(x, y, z, h, 50, 100, -552, -473, F0, F1, F0 + 50)) != KEEP) return r;
