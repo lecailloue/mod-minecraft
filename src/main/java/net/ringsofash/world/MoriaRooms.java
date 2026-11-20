@@ -33,7 +33,7 @@ final class MoriaRooms {
             {-119, -111, -737, -723, 24},     // 0 grande rue -> Forges
             {-205, -199, -711, -701, 16},     // 1 grande rue -> quartier
             {-205, -199, -559, -537, 16},     // 2 quartier -> festins
-            {-205, -195, -779, -749, 22},     // 3 grande rue -> mine
+            {-205, -195, -788, -749, 22},     // 3 grande rue -> mine (entre de quelques blocs dans la mine : sinon un bouchon de roche ferme le passage)
             {-80, -74, -687, -673, 22},       // 4 Forges -> armurerie
             {190, 196, -687, -669, 22},       // 5 Forges -> archives
             {-80, -74, -855, -831, 22},       // 6 Forges -> crypte
@@ -41,6 +41,9 @@ final class MoriaRooms {
             {210, 218, -868, -831, 18},       // 8 Forges -> tresor (eboule, scelle)
             {-119, -113, -634, -628, 18},     // 9 quartier -> armurerie
     };
+
+    /** sens de chaque passage : true = il va du nord au sud (le long de z), false = de l'ouest a l'est. Impossible a deviner d'apres les dimensions (le 0 est plus long en z mais va en x, le 7 est plus long en x mais va en z). */
+    private static final boolean[] PZ = {false, true, true, true, true, true, true, true, true, false};
 
     private static boolean inAny(int x, int z) {
         for (Room r : R) if (x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1) return true;
@@ -65,7 +68,7 @@ final class MoriaRooms {
         if (y < F || y > F + 33) return KEEP;
         for (int i = 0; i < P.length; i++) {
             int[] p = P[i];
-            boolean alongZ = p[3] - p[2] > p[1] - p[0];
+            boolean alongZ = PZ[i];
             int lx0 = alongZ ? p[0] - 1 : p[0], lx1 = alongZ ? p[1] + 1 : p[1], lz0 = alongZ ? p[2] : p[2] - 1, lz1 = alongZ ? p[3] : p[3] + 1;
             if (x < lx0 || x > lx1 || z < lz0 || z > lz1) continue;
             int hh = p[4];
@@ -215,6 +218,7 @@ final class MoriaRooms {
             if (m > 3) return KEEP;
             if (nearPassage(x, z)) return KEEP;
             if (m == dN && x >= 36 && x <= 72) return KEEP;                  // la cascade
+            if (m == dS && x >= 46 && x <= 104) return KEEP;                 // le pied de l'escalier (arrivee du gouffre)
             if (m == dE && z >= -800 && z <= -720) return KEEP;              // vers la tombe
             int v = y - F;
             if (m < 2 && v > 3) {
@@ -762,8 +766,16 @@ final class MoriaRooms {
         return a * a + b * b <= 1;
     }
 
+    /** la corniche au pied de la falaise ouest : sans elle les appartements de l'ouest (sol F) surplombent la terrasse basse de 9 a 18 blocs et personne n'y monte */
+    private static boolean ledge(int x, int z) {
+        if (z <= -682 || z >= -578 || x < -262) return false;
+        int xe = -244 + bow(Math.min(8, Math.max(0, (z + 681) / 12)) * 12 + 6, 51.0);
+        return x <= xe + 4;
+    }
+
     /** altitude du sol du quartier : corniche haute au pied des falaises, terrasses descendantes, ravine de lave au centre */
     static int vFloor(int x, int z) {
+        if (ledge(x, z)) return F;
         if (ravine(x, z)) return F - 48;
         int d = Math.abs(z - VZ);
         if (x >= -138 && x <= -120 && Math.abs(z + 631) <= 6) return F - Math.min(18, -120 - x);
@@ -781,7 +793,7 @@ final class MoriaRooms {
 
     /** direction (0 N, 1 E, 2 S, 3 O) de montee si la case est une marche d'escalier, sinon -1 */
     private static int stairFacing(int x, int z) {
-        if (ravine(x, z)) return -1;
+        if (ledge(x, z) || ravine(x, z)) return -1;
         if (x >= -138 && x <= -121 && Math.abs(z + 631) <= 6) return 1;
         int d = Math.abs(z - VZ);
         for (int xs : LANES) {
@@ -791,7 +803,7 @@ final class MoriaRooms {
     }
 
     private static int vFloorBlock(int x, int z) {
-        if (ravine(x, z)) { double q = r01(x, 2, z); return q < 0.4 ? MAGMA : BLACKSTONE; }
+        if (ravine(x, z) && !ledge(x, z)) { double q = r01(x, 2, z); return q < 0.4 ? MAGMA : BLACKSTONE; }
         int sf = stairFacing(x, z);
         if (sf >= 0) return BSTAIR + sf;
         return floorPat(x, z);
@@ -881,13 +893,15 @@ final class MoriaRooms {
         int side, q0, a;
         int shNS = bow(Math.min(11, Math.max(0, (x + 262) / 12)) * 12 + 6, 72.0);
         int shW = bow(Math.min(8, Math.max(0, (z + 681) / 12)) * 12 + 6, 51.0);
-        if (z <= -682 + shNS && x >= -262 && x <= -120) { side = 0; q0 = -682 + shNS - z; a = x + 262; }
-        else if (z >= -578 - shNS && x >= -262 && x <= -120) { side = 1; q0 = z + 578 + shNS; a = x + 262; }
-        else if (x <= -244 + shW && x >= -262 && z > -682 && z < -578) { side = 2; q0 = -244 + shW - x; a = z + 681; }
+        // 3 cases de plus vers l'exterieur (q0 < 0) : seule la premiere volee des escaliers y est taillee
+        if (z <= -682 + shNS + 3 && x >= -262 && x <= -120) { side = 0; q0 = -682 + shNS - z; a = x + 262; }
+        else if (z >= -578 - shNS - 3 && x >= -262 && x <= -120) { side = 1; q0 = z + 578 + shNS; a = x + 262; }
+        else if (x <= -244 + shW + 3 && x >= -262 && z > -682 && z < -578) { side = 2; q0 = -244 + shW - x; a = z + 681; }
         else return KEEP;
         int r = y - F;
-        if (r < 0) return side == 2 ? rock(x, y, z) : KEEP;
         int i = a / 12, xl = a % 12;
+        if (q0 < 0 && !(side < 2 ? (i == 2 || i == 9) : i == 3)) return KEEP;
+        if (r < 0) return side == 2 && q0 >= 0 ? rock(x, y, z) : KEEP;
         boolean corridor = side < 2 && (i == 4 || i == 5);
         if (corridor) return KEEP;
         boolean stairU = side < 2 ? (i == 2 || i == 9) : i == 3;
@@ -901,7 +915,7 @@ final class MoriaRooms {
                 boolean up = (ts & 1) == 0;
                 if (xl >= 1 && xl <= 9) {
                     int kk = up ? xl - 1 : 9 - xl;
-                    if (dd == -2 || dd == -1) {
+                    if (dd == -1) {                                          // la volee ne prend que la voie interieure : la voie exterieure reste libre le long du balcon
                         if (rp == kk + 1) return DSTAIR + stairDir(side, up);
                         if (rp < kk + 1) return DBRICKS;
                         return AIR;
@@ -911,6 +925,7 @@ final class MoriaRooms {
                 }
             }
         }
+        if (q0 < 0) return KEEP;
         int t = Math.min(r / 9, 4), rr = r - 9 * t;
         int d = q0 - 3 * t;
         if (rr == 0) {                                                       // le plancher / balcon de l'etage
