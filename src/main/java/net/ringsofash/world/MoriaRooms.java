@@ -1246,9 +1246,31 @@ final class MoriaRooms {
         return p;
     }
 
+    /** le grand escalier de la mine : 5 de large, taille dans les terrasses depuis la grande rue (rebord nord) jusqu'au fond, avec des lampadaires */
+    private static final int MSX = -200, MSZ0 = -782, MSZ1 = -866;
+
+    private static int mineDepthAt(int z) {
+        double dd = Math.hypot((MSX - MCX) / MA, (z - MCZ) / MB);
+        return (int) Math.round(26 * sm((0.93 - dd) / 0.75));
+    }
+
+    private static int mineStair(int x, int y, int z, int ceilM) {
+        int sx = Math.abs(x - MSX);
+        if (sx > 2 || z > MSZ0 || z < MSZ1) return KEEP;
+        int L = F - mineDepthAt(z);
+        if (y > L) return y <= ceilM ? AIR : KEEP;
+        if (y < L) return y >= L - 3 ? DBRICKS : KEEP;
+        if (sx == 2 && Math.floorMod(z, 8) == 0) return DCHISEL;
+        if (mineDepthAt(z - 1) > mineDepthAt(z)) return DSTAIR + 2;           // une marche : on monte vers le rebord (+z)
+        return sx == 2 ? DCHISEL : DBRICKS;
+    }
+
     private static int mine(int x, int y, int z, int h) {
         if (x < -292 || x > -136 || z < -950 || z > -776 || y < F - 28 || y > F + 52) return KEEP;
         double dd = mdd(x, z);
+        int ceilS = Math.min(F + 50 - (int) Math.round(10 * Math.min(dd, 1.0) * Math.min(dd, 1.0)), h - 11);
+        int ms = mineStair(x, y, z, ceilS);
+        if (ms != KEEP) return ms;
         if (dd > 1.0) return KEEP;
         int fy = mineFloor(x, z, dd, true);
         int ceilM = Math.min(F + 50 - (int) Math.round(10 * dd * dd), h - 11);
@@ -1401,8 +1423,8 @@ final class MoriaRooms {
             new Gal(F, F, new int[][]{{-278, -821}, {-320, -800}, {-360, -790}, {-400, -770}, {-440, -770}}),                   // 5 nord-ouest
             new Gal(F, F, new int[][]{{-380, -850}, {-370, -820}, {-360, -790}}),                                               // 6 liaison
             new Gal(F, F, new int[][]{{-320, -990}, {-270, -1010}, {-214, -1010}}),                                             // 7 liaison sud
-            new Gal(F, LB, new int[][]{{-210, -990}, {-180, -990}}),                                                            // 8 la descente (escalier)
-            new Gal(LB, LB, new int[][]{{-180, -990}, {-150, -990}, {-120, -1010}, {-90, -1040}, {-60, -1050}}),                // 9 niveau bas
+            new Gal(F, LB, new int[][]{{-203, -990}, {-173, -990}}),                                                            // 8 la descente (escalier) : elle part du bord de la salle du treuil, sinon son plafond est le sol de la salle
+            new Gal(LB, LB, new int[][]{{-173, -990}, {-150, -990}, {-120, -1010}, {-90, -1040}, {-60, -1050}}),                // 9 niveau bas
             new Gal(LB, LB, new int[][]{{-150, -990}, {-170, -1030}, {-190, -1080}}),                                           // 10
             new Gal(LB, LB, new int[][]{{-90, -1040}, {-100, -1090}, {-140, -1100}}),                                           // 11 (inondee)
     };

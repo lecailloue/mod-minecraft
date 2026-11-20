@@ -285,6 +285,30 @@ public final class MoriaPlan {
     // ------------------------------------------------------------------ le gouffre et son pont
     private static final int CX0 = 26, CX1 = 126, CZ0 = -648, CZ1 = -553;
 
+    private static final int BZ0 = -644, BZ1 = -557, BH = 6;
+
+    /** hauteur de la bosse du tablier au dessus de F1 (0 aux deux bouts, BH au milieu) */
+    private static int bridgeDy(int z) {
+        double zm = (BZ0 + BZ1) / 2.0, half = (BZ1 - BZ0) / 2.0, u = (z - zm) / half;
+        return (int) Math.round(BH * (1 - u * u));
+    }
+
+    /** pont en arche : tablier de 3 de large qui monte en bosse, dessous une arche pleine qui s'epaissit vers les culees ; marches en pierre a chaque palier */
+    private static int arcBridge(int x, int y, int z) {
+        if (z < BZ0 || z > BZ1 || Math.abs(x - 76) > 1) return KEEP;
+        double zm = (BZ0 + BZ1) / 2.0, half = (BZ1 - BZ0) / 2.0, u = (z - zm) / half;
+        int dy = bridgeDy(z), top = F1 + dy;
+        int yi = (int) Math.round(F1 + BH - 2 - 22 * u * u);
+        if (y > top || y < yi) return KEEP;
+        if (y == top) {
+            boolean rising = z <= zm ? dy > bridgeDy(z - 1) : dy > bridgeDy(z + 1);
+            if (rising) return DSTAIR + (z <= zm ? 2 : 0);
+            return Math.abs(x - 76) == 1 ? DCHISEL : DBRICKS;
+        }
+        if (y == yi) return DCHISEL;
+        return Math.floorMod(z, 6) == 0 && Math.abs(x - 76) == 1 ? DCHISEL : DBRICKS;
+    }
+
     private static int chasm(int x, int y, int z, int h) {
         if (x < CX0 - 8 || x > CX1 + 8 || z < CZ0 || z > CZ1 || y < -52 || y > 170) return KEEP;
         double xl = CX0 + 7 * (2 * vn(z / 21.0, 3.1, 61) - 1), xr = CX1 + 7 * (2 * vn(z / 19.0, 8.3, 62) - 1);
@@ -293,8 +317,9 @@ public final class MoriaPlan {
         boolean ew = Math.min(x - xl, xr - x) < Math.min(z - CZ0, CZ1 - z) + 1;
         int ceil = Math.min(h - 11, 160);
         if (y > ceil) return KEEP;
-        // le pont
-        if (x >= 74 && x <= 78 && (y == F1 || y == F1 - 1)) return y == F1 && (x == 74 || x == 78) ? DCHISEL : DBRICKS;
+        // le pont : une arche etroite sans garde-corps, comme celui de Khazad-dum
+        int br = arcBridge(x, y, z);
+        if (br != KEEP) return br;
         if (dEdge < 5) {
             if (y == F1) return floorPat(x, z);
             if (y == F1 + 1 && ew && dEdge >= 4 && z > CZ0 + 6 && z < CZ1 - 6) return Math.floorMod(z, 10) == 0 ? DLAMP : BWALL;     // garde-corps du chemin de ronde
