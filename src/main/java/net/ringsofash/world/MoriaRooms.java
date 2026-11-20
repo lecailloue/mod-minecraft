@@ -324,7 +324,10 @@ final class MoriaRooms {
         int ex1 = r.x1;
         if (vill && Math.abs(z - VZ) > 12) ex1 -= (int) Math.round(5 * vn(z / 8.0, 3.0, 92));
         boolean in = x >= r.x0 && x <= ex1 && z >= r.z0 && z <= r.z1;
-        if (!in && vill) return KEEP;
+        if (!in && vill) {
+            int dist = Math.max(Math.max(r.x0 - x, x - ex1), Math.max(r.z0 - z, z - r.z1));
+            return dist <= 4 && y <= ceil + 3 && y >= F - 12 ? rock(x, y, z) : KEEP;
+        }
         if (!in) {
             if (y < F || y > ceil + 1) return KEEP;
             boolean xw = x < r.x0 || x > r.x1, zw = z < r.z0 || z > r.z1;
@@ -354,8 +357,7 @@ final class MoriaRooms {
         int fl = r.kind == VILL ? vFloor(x, z) : F;
         if (y < fl) return r.kind == VILL ? mason(x, y, z) : KEEP;
         if (y == fl) return r.kind == VILL ? vFloorBlock(x, z) : floorRoom(r, x, z);
-        if (y == ceil + 1) return vill ? KEEP : vaultTop(x, z);
-        if (y > ceil) return KEEP;
+        if (y > ceil) return vill ? (y <= ceil + 3 ? rock(x, y, z) : KEEP) : (y == ceil + 1 ? vaultTop(x, z) : KEEP);
         int rl = roomRelief(r, x, y, z);
         if (rl != KEEP) return rl;
         int v;
@@ -508,7 +510,7 @@ final class MoriaRooms {
     /** roche brute des falaises et des soutenements */
     private static int rock(int x, int y, int z) {
         double q = r01(x, y, z);
-        return q < 0.28 ? DEEPSLATE : q < 0.5 ? DCOBBLE : q < 0.74 ? DSTONE : q < 0.88 ? BLACKSTONE : DBRICKS;
+        return q < 0.3 ? DEEPSLATE : q < 0.56 ? DCOBBLE : q < 0.82 ? DSTONE : q < 0.93 ? DBRICKS : BLACKSTONE;
     }
 
     private static int mason(int x, int y, int z) {
@@ -631,7 +633,7 @@ final class MoriaRooms {
         }
         // d >= 0 : la roche et les appartements
         if (palaceU || stairU || rr == 8) {
-            if (d == 0) return rr == 8 ? DCHISEL : (xl == 0 || xl == 9 ? DPILLAR : (r01(x, y, z) < 0.5 ? DBRICKS : rock(x, y, z)));
+            if (d == 0) return rr == 8 ? DCHISEL : (xl == 0 || xl == 9 ? DPILLAR : DBRICKS);
             return rock(x, y, z);
         }
         int dmax = 16 - 3 * t;
@@ -641,11 +643,12 @@ final class MoriaRooms {
                 if (xl >= 4 && xl <= 5 && rr <= 3) return AIR;
                 if (xl >= 3 && xl <= 6 && rr == 4) return DCHISEL;
                 if (xl >= 4 && xl <= 5 && rr == 5) return DRUNES;
-                if ((xl == 2 || xl == 7) && rr >= 3 && rr <= 5) return rr == 4 ? BARS : DCHISEL;
-                if (xl == 3 || xl == 6) return (rr <= 3) ? DCHISEL : DBRICKS;
-                return r01(x, y, z) < 0.55 ? DBRICKS : rock(x, y, z);
+                if ((xl == 3 || xl == 6) && rr <= 3) return DCHISEL;
+                if ((xl <= 2 || xl >= 7) && rr >= 3 && rr <= 5) return BARS;
+                if ((xl <= 2 || xl >= 7) && (rr == 2 || rr == 6)) return DCHISEL;
+                return rr == 7 ? DCHISEL : DBRICKS;
             }
-            return xl == 0 || xl == 9 ? DPILLAR : (r01(x, y, z) < 0.5 ? DBRICKS : rock(x, y, z));
+            return xl == 0 || xl == 9 ? DPILLAR : DBRICKS;
         }
         if (apt && d <= dmax) {                                              // l'interieur
             int cell = hsh(i, t, side + 7);
