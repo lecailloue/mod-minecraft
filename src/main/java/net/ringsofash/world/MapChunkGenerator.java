@@ -228,6 +228,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
         p[MoriaPlan.CRAFT] = Blocks.CRAFTING_TABLE.defaultBlockState();
         p[MoriaPlan.FURNACE] = Blocks.FURNACE.defaultBlockState();
         p[MoriaPlan.YELLOWWOOL] = Blocks.YELLOW_WOOL.defaultBlockState();
+        p[MoriaPlan.BLUEW] = Blocks.BLUE_WOOL.defaultBlockState();
         p[MoriaPlan.CAULDRON] = Blocks.CAULDRON.defaultBlockState();
         p[MoriaPlan.COPPER] = Blocks.WAXED_CUT_COPPER.defaultBlockState();
         p[MoriaPlan.SHROOM] = Blocks.SHROOMLIGHT.defaultBlockState();

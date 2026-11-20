@@ -18,13 +18,14 @@ public final class MoriaPlan {
             YELLOWWOOL = 71, CAULDRON = 72, COPPER = 73, SHROOM = 74, IRONB = 75, SMBAS = 76, CRACKB = 77, DTILES = 78, CRDEEP = 79,
             DCHEST = 80 /* 80..83 : N E S O, face avant vers cette direction */, DBEDF = 84 /* 84..87 : direction du pied vers la tete */, DBEDH = 88 /* 88..91 */,
             DFURN = 92 /* 92..95 */, DCRAFT = 96,
-            DBEDFL = 97 /* 97..100 : lit accole a gauche (vu depuis le pied) */, DBEDFR = 101, DBEDHL = 105, DBEDHR = 109;
-    public static final int NIDS = 113;
+            DBEDFL = 97 /* 97..100 : lit accole a gauche (vu depuis le pied) */, DBEDFR = 101, DBEDHL = 105, DBEDHR = 109, BLUEW = 113;
+    public static final int NIDS = 114;
 
     public static final int F0 = 80;       // sol de la cour et de la Grande Salle
     public static final int F1 = 17;       // sol du gouffre (le pont) et de son palier
     public static final int F2 = -20;      // sol des Forges et des galeries
     public static final int LW = 72;       // niveau du lac
+    public static final int CT_X1 = 262;           // fin de la grande cour dallee
     public static final int GX = 168, GZ = -360;   // plan de la falaise (la porte est a l'ouest de x = GX), axe de la porte
 
     // ------------------------------------------------------------------ bruits
@@ -53,29 +54,21 @@ public final class MoriaPlan {
         return Math.sqrt(a * a + b * b);
     }
 
-    public static boolean inLake(int x, int z) {
-        return x > 205 && x < 300 && z > -440 && z < -275 && lakeR(x, z) < 1.0;
-    }
+    /** le lac devant les Portes a ete supprime : la cour s'ouvre sur la pente de la montagne */
+    public static boolean inLake(int x, int z) { return false; }
 
     /** niveau de l'eau du lac a cet endroit, ou MIN_VALUE */
-    public static int lakeTop(int x, int z, int h) { return inLake(x, z) && h < LW ? LW : Integer.MIN_VALUE; }
+    public static int lakeTop(int x, int z, int h) { return Integer.MIN_VALUE; }
 
     /** la cour taillee devant les Portes : sol de montagne sans neige */
-    public static boolean inCourt(int x, int z) { return x >= GX - 2 && x <= 232 && Math.abs(z - GZ) <= 46; }
+    public static boolean inCourt(int x, int z) { return x >= GX - 2 && x <= CT_X1 + 14 && Math.abs(z - GZ) <= 62; }
 
-    /** relief : la falaise taillee devant les Portes (cour plate a F0), le bassin du lac et sa digue */
+    /** relief : la falaise taillee devant les Portes (grande cour plate a F0) */
     public static int surface(int x, int z, int g) {
-        if (x < GX || x > 335 || z < -450 || z > -265) return g;
-        int out = g;
+        if (x < GX || x > CT_X1 + 18 || z < GZ - 64 || z > GZ + 64) return g;
         double u = Math.abs(z - GZ);
-        double w = (1 - sm((u - 30) / 14.0)) * (1 - sm((x - 222) / 14.0));
-        if (w > 0) out = (int) Math.round(g + (Math.min(g, F0) - g) * w);
-        double r = lakeR(x, z);
-        if (r < 1.3) {                                                   // cuvette du lac et berges en pente douce
-            int bed = r < 1.0 ? LW - 2 - (int) Math.round(14 * sm((1 - r) / 0.8)) : LW - 2 + (int) Math.round((r - 1) * 40);
-            out = Math.min(out, bed);
-        }
-        return out;
+        double w = (1 - sm((u - 48) / 12.0)) * (1 - sm((x - CT_X1) / 16.0));
+        return w > 0 ? (int) Math.round(g + (Math.min(g, F0) - g) * w) : g;
     }
 
     // ------------------------------------------------------------------ geometrie commune
@@ -125,12 +118,9 @@ public final class MoriaPlan {
 
     // ------------------------------------------------------------------ les Portes et le couloir d'entree
     private static int gate(int x, int y, int z, int h) {
-        if (x < 139 || x > GX + 1 || z < GZ - 30 || z > GZ + 30 || y < F0 || y > F0 + 45) return KEEP;
+        if (x >= GX) return court(x, y, z, h);
+        if (x < 139 || z < GZ - 50 || z > GZ + 50 || y < F0 || y > F0 + 72) return KEEP;
         int u = z - GZ, v = y - F0, au = Math.abs(u);
-        if (x >= GX) {
-            if (y == h && y == F0 && x <= GX + 30 && au <= 8) return (x + z) % 6 == 0 ? DCHISEL : floorPat(x, z);       // dallage devant la porte
-            return KEEP;
-        }
         int w = halfW(v);
         boolean face = x >= GX - 3;
         if (v >= 1 && au <= w) {
@@ -149,7 +139,7 @@ public final class MoriaPlan {
         if (v == 0 && au <= GW + 1) return (x % 8 == 0 && au <= 1) ? DRUNES : floorPat(x, z);
         double dOut = v <= GT ? au - wc(v) : Math.hypot(u, v - GT);
         if (face) {
-            if (dOut > 7 || v > GT + 9) return KEEP;
+            if (dOut > 7 || v > GT + 9) return facade(x, y, z, h, au, v);
             boolean front = x == GX - 1;
             if (dOut > 0 && dOut <= 1.5 && front) return WHITE;
             if (dOut > 1.5 && dOut <= 3.5) return DCHISEL;
@@ -163,6 +153,99 @@ public final class MoriaPlan {
         if (dOut <= 2) {                                             // parois du couloir
             if (dOut <= 1 && Math.floorMod(x, 9) == 0) return DPILLAR;
             return DBRICKS;
+        }
+        return KEEP;
+    }
+
+    // ------------------------------------------------------------------ la facade des Portes (inspiree d'Erebor) et la grande cour
+    private static final int ST_AU = 20;        // axe des deux statues de nains geants (de part et d'autre de la porte)
+    private static final int WF_AU = 40;        // axe des cascades
+
+    /** la falaise taillee au dessus et autour de l'ogive : nervures, bandeaux, panneaux, grand losange d'ithildin, cascades. x in GX-3..GX-1 */
+    private static int facade(int x, int y, int z, int h, int au, int v) {
+        if (au > 47 || v < 1 || v > 70 || y > h - 2) return KEEP;
+        if (au >= WF_AU - 2 && au <= WF_AU + 2) {                                    // la cascade : un chenal taille dans la falaise
+            if (au == WF_AU - 2 || au == WF_AU + 2) return x == GX - 1 && v <= 62 ? DCHISEL : KEEP;
+            return y <= h - 3 ? WATER : KEEP;
+        }
+        if (x != GX - 1 || v > 58) return KEEP;
+        if (au == 9 || au == 31) return DPILLAR;                                      // nervures (elles avancent dans la cour)
+        if (v == 58) return DCHISEL;
+        if (v % 14 == 13) return DCHISEL;
+        int d = Math.abs(au - ST_AU);
+        if (d <= 8 && v <= 50) return (d == 8 || v == 50) ? DCHISEL : DSTONE;        // le fond sombre des niches des statues
+        int dia = au + Math.abs(v - 42);
+        if (au <= 14 && v >= 28 && dia == 13) return DRUNES;                          // le grand losange au dessus de la porte
+        if (au <= 1 && v >= 40 && v <= 44 && Math.abs(v - 42) + au <= 2) return GOLD;
+        if (au % 8 == 4 && v % 14 >= 3 && v % 14 <= 9) return DRUNES;
+        double q = r01(au, v, 29);
+        return q < 0.78 ? DBRICKS : q < 0.9 ? DSTONE : DCOBBLE;
+    }
+
+    /** nain geant debout, de face vers +x : l = decalage lateral, dx = distance a la falaise, v = hauteur. */
+    private static int dwarf(int l, int dx, int v) {
+        int al = Math.abs(l);
+        if (v < 0 || v > 46 || dx < 0 || dx > 8 || al > 9) return KEEP;
+        if (v <= 3) return dx <= 7 && al <= 6 ? (v == 3 ? DCHISEL : DBRICKS) : KEEP;                  // le socle
+        if (v <= 15) return (dx >= 1 && dx <= 5 && al >= 1 && al <= 4) ? DSTONE : KEEP;              // les jambes
+        if (v == 16) return dx <= 5 && al <= 5 ? (dx == 5 && al <= 1 ? GOLD : DCHISEL) : KEEP;        // la ceinture
+        if (v <= 28) {
+            if (dx <= 5 && al <= 5) return DSTONE;                                                   // le torse
+            if (dx >= 1 && dx <= 4 && al >= 6 && al <= 7 && v >= 18) return DSTONE;                  // les bras
+            if (v <= 19 && dx >= 4 && dx <= 6 && al >= 6 && al <= 7) return DCHISEL;                 // les poings
+            if (dx == 6 && al <= 2 && v >= 19) return DCOBBLE;                                       // la barbe
+            return KEEP;
+        }
+        if (v <= 30) return dx <= 5 && al <= 8 ? DCHISEL : KEEP;                                     // les epaulieres
+        if (v <= 37) {
+            if (dx >= 1 && dx <= 5 && al <= 3) {
+                if (dx == 5 && v == 35 && al == 2) return DRUNES;                                   // les yeux
+                return DSTONE;
+            }
+            if (dx == 6 && al <= 1 && v >= 33 && v <= 34) return DSTONE;                             // le nez
+            if (dx == 6 && al <= 2 && v <= 33) return DCOBBLE;
+            return KEEP;
+        }
+        if (v <= 42) return dx >= 0 && dx <= 5 && al <= 4 ? (v == 42 ? DCHISEL : DBRICKS) : KEEP;     // le casque
+        if (v <= 45) return dx >= 2 && dx <= 3 && al <= 1 ? DCHISEL : KEEP;                          // la crete
+        return KEEP;
+    }
+
+    /** la grande cour : chaussee dallee entre deux parapets a braziers, statues, bannieres, nervures, bassins des cascades */
+    private static int court(int x, int y, int z, int h) {
+        if (x > CT_X1 + 2 || z < GZ - 50 || z > GZ + 50 || y < F0 - 3 || y > F0 + 72) return KEEP;
+        int u = z - GZ, au = Math.abs(u), v = y - F0, dx = x - GX;
+        // les bassins au pied des cascades
+        if (au >= WF_AU - 4 && au <= WF_AU + 4 && dx <= 8) {
+            boolean rim = dx == 8 || au == WF_AU - 4 || au == WF_AU + 4;
+            if (y == F0 && rim) return DCHISEL;
+            if (!rim && (y == F0 || y == F0 - 1)) return WATER;
+        }
+        // les nervures et la corniche qui avancent devant la falaise
+        if (dx <= 1 && v >= 1 && v <= 56 && (au == 9 || au == 31)) return DPILLAR;
+        if (dx <= 2 && (v == 57 || v == 58) && au <= 47) return v == 57 ? DCHISEL : DBRICKS;
+        // les deux nains geants, et leurs bannieres
+        int dl = Math.abs(au - ST_AU);
+        if (au >= ST_AU - 9 && au <= ST_AU + 9) {
+            int l = (u < 0 ? -1 : 1) * (au - ST_AU);
+            int sd = dwarf(l, dx, v);
+            if (sd != KEEP) return sd;
+            if (dx == 7 && dl <= 2 && v >= 6 && v <= 28) {                                           // la banniere bleue a losanges d'or
+                int dv = v - 17;
+                if (dl == 0 && (Math.abs(dv) == 3 || Math.abs(dv + 8) == 3)) return GOLD;
+                if (dl == 1 && (Math.abs(dv) == 2 || Math.abs(dv + 8) == 2 || Math.abs(dv) == 4 || Math.abs(dv + 8) == 4)) return GOLD;
+                return v <= 8 && dl == 2 ? KEEP : BLUEW;
+            }
+        }
+        // les braziers : deux pres de la porte, puis un tous les 16 le long des parapets
+        boolean poste = (dx == 4 && (au == 9 || au == 10)) || (au == 11 && dx >= 14 && (dx - 14) % 16 == 0);
+        if (poste && v >= 1 && v <= 4 && y > h - 1) return v <= 2 ? DPILLAR : v == 3 ? DCHISEL : CAMPFIRE;
+        // le parapet de la chaussee
+        if (au == 11 && dx >= 12 && dx <= CT_X1 - GX && v == 1 && y > h - 1 && Math.floorMod(dx, 16) >= 3 && Math.floorMod(dx, 16) <= 12) return BWALL;
+        // le dallage : la chaussee, et le parvis devant la falaise
+        if (y == h && h >= F0 && h <= F0 + 3 && (au <= 11 || (dx <= 14 && au <= 46)) && !(au >= WF_AU - 4 && au <= WF_AU + 4 && dx <= 8)) {
+            if (au == 0 && dx % 8 == 0) return DRUNES;
+            return (x + z) % 6 == 0 && au <= 11 ? DCHISEL : floorPat(x, z);
         }
         return KEEP;
     }
@@ -311,11 +394,15 @@ public final class MoriaPlan {
 
     private static int chasm(int x, int y, int z, int h) {
         if (x < CX0 - 8 || x > CX1 + 8 || z < CZ0 || z > CZ1 || y < -52 || y > 170) return KEEP;
-        double xl = CX0 + 7 * (2 * vn(z / 21.0, 3.1, 61) - 1), xr = CX1 + 7 * (2 * vn(z / 19.0, 8.3, 62) - 1);
-        if (x <= xl || x >= xr) return KEEP;
-        double dEdge = Math.min(Math.min(x - xl, xr - x), Math.min(z - CZ0, CZ1 - z) + 1);
-        boolean ew = Math.min(x - xl, xr - x) < Math.min(z - CZ0, CZ1 - z) + 1;
-        int ceil = Math.min(h - 11, 160);
+        // les parois : un trace general lisse, puis un relief qui change avec l'altitude (surplombs, replats, bosses) pour ne pas avoir de cannelures verticales
+        double xl = CX0 + 7 * (2 * vn(z / 21.0, 3.1, 61) - 1) + 5 * (2 * vn(z / 7.0 + y * 0.09, y / 6.0, 64) - 1) + 2 * (2 * vn(z / 3.0, y / 3.0, 68) - 1);
+        double xr = CX1 + 7 * (2 * vn(z / 19.0, 8.3, 62) - 1) + 5 * (2 * vn(z / 7.0 - y * 0.09, y / 6.0, 65) - 1) + 2 * (2 * vn(z / 3.0, y / 3.0, 69) - 1);
+        double zn = CZ0 + 4 * (2 * vn(x / 7.0 + y * 0.08, y / 6.0, 66) - 1) + 1.5 * (2 * vn(x / 3.0, y / 3.0, 70) - 1);
+        double zs = CZ1 + 4 * (2 * vn(x / 7.0 - y * 0.08, y / 6.0, 71) - 1) + 1.5 * (2 * vn(x / 3.0, y / 3.0, 72) - 1);
+        if (x <= xl || x >= xr || z < zn || z > zs) return KEEP;
+        double dEdge = Math.min(Math.min(x - xl, xr - x), Math.min(z - zn, zs - z) + 1);
+        boolean ew = Math.min(x - xl, xr - x) < Math.min(z - zn, zs - z) + 1;
+        int ceil = Math.min(h - 11 - (int) Math.round(3 * vn(x / 6.0, z / 6.0, 67)), 160);
         if (y > ceil) return KEEP;
         // le pont : une arche etroite sans garde-corps, comme celui de Khazad-dum
         int br = arcBridge(x, y, z);

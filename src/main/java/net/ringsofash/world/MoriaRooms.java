@@ -1271,9 +1271,11 @@ final class MoriaRooms {
         int ceilS = Math.min(F + 50 - (int) Math.round(10 * Math.min(dd, 1.0) * Math.min(dd, 1.0)), h - 11);
         int ms = mineStair(x, y, z, ceilS);
         if (ms != KEEP) return ms;
-        if (dd > 1.0) return KEEP;
+        // la paroi de la fosse : le contour change avec l'altitude (bosses, surplombs, replats) au lieu d'un cylindre lisse
+        double wallN = 0.05 * (2 * vn(x / 8.0 + y * 0.12, z / 8.0 - y * 0.08, 99) - 1) + 0.02 * (2 * vn(x / 3.0 + y / 4.0, z / 3.0, 98) - 1);
+        if (dd > 1.0 + wallN) return KEEP;
         int fy = mineFloor(x, z, dd, true);
-        int ceilM = Math.min(F + 50 - (int) Math.round(10 * dd * dd), h - 11);
+        int ceilM = Math.min(F + 50 - (int) Math.round(10 * dd * dd) - (int) Math.round(3 * vn(x / 6.0, z / 6.0, 96)), h - 11);
         if (ceilM < fy + 16 || y < fy) return KEEP;
         if (y > ceilM) return KEEP;
         int dx = x - MCX, dz = z - MCZ, v = y - fy;
