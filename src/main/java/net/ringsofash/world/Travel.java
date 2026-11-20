@@ -120,8 +120,7 @@ public final class Travel {
         }
         PlayerLore lore = ModData.lore(p);
         boolean first = !lore.arrived;
-        BlockPos dest = (!first && lore.hasLandsPos) ? BlockPos.of(lore.landsPos) : arrival(server, lands);
-        teleport(p, lands, dest, !first && lore.hasLandsPos);
+        teleport(p, lands, arrival(server, lands), false);                  // on arrive toujours au meme point (la surface sous -700 / 0)
         if (first) {
             lore.arrived = true;
             net.ringsofash.GameEvents.onFirstArrival(p);
@@ -160,11 +159,9 @@ public final class Travel {
         return false;
     }
 
-    /** Point d'arrivee : le village des semi-hommes, a l'emplacement place sur la carte ("comte"). */
+    /** Point d'arrivee dans la Hautemarche : toujours le meme (x=-700, y=74, z=0 ; teleport() repose le joueur sur le sol de cette colonne). */
     public static BlockPos arrival(MinecraftServer server, ServerLevel lands) {
-        int[] p = MapData.place("comte");
-        int x = p != null ? p[0] : 0, z = p != null ? p[1] : 0;
-        return new BlockPos(x, MapData.height(x, z) + 1, z);
+        return new BlockPos(-700, 74, 0);
     }
 
     /** La limite du monde : un joueur ne peut pas sortir de la carte de la Hautemarche. */

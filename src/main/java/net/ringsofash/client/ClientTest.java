@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"476", "479"};
+    private static final String[] ONLY = {"482", "483", "484"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -605,6 +605,9 @@ public final class ClientTest {
         morT("467_moria_four_c", 64.5, -8, -735.5, 64, -14, -698, 6000);
         morT("480_moria_four_nain", -170.5, -17.8, -693.5, -169.5, -18.6, -697.5, 6000);
         morT("481_moria_table_nain", -218.5, -17.6, -573.5, -218.5, -18.4, -569.5, 6000);
+        morT("482_comte_ancienne_cuvette", -1105.5, 125, -455.5, -1105, 85, -540, 6000);
+        morT("483_comte_cuvette_haut", -1105.5, 160, -535.5, -1105, 80, -520, 6000);
+        morT("484_spawn_hautemarche", -700.5, 80, -14.5, -700, 74, 0, 6000);
         morT("476_moria_chambre_lits", -183.5, -17.6, -690.5, -188.5, -19.2, -697.5, 6000);
         morT("477_moria_cuisine_four", -174.5, -17.5, -689.5, -173.5, -19, -697.5, 6000);
         morT("478_moria_etude_table", -221.5, -17.5, -576.5, -218.5, -19, -569, 6000);
