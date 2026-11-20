@@ -259,7 +259,13 @@ public final class MapChunkGenerator extends ChunkGenerator {
     static BlockState moria(int id) { return moriaPal()[id]; }
 
     static BlockState block(int x, int y, int z, int h, int wt, int b, int slope) {
-        if (y > h) return y <= wt ? (wt > MapData.SEA && !MoriaPlan.inLake(x, z) || b == MapData.B_LAVE ? LAVA : WATER) : AIR;
+        if (y > h) {
+            if (y <= MoriaPlan.aboveTop(x, z)) {                                      // la facade des Portes : statues, parapets, braziers au dessus du sol
+                int m = MoriaPlan.at(x, y, z, h);
+                if (m != MoriaPlan.KEEP) return moria(m);
+            }
+            return y <= wt ? (wt > MapData.SEA && !MoriaPlan.inLake(x, z) || b == MapData.B_LAVE ? LAVA : WATER) : AIR;
+        }
         if (y <= -64) return BEDROCK;
         if (y < -59 && hash(x, y, z) < (-59 - y) / 5f) return BEDROCK;
         if (MoriaPlan.inBox(x, y, z)) {                                          // les mines de la Moria, creusees sous la carte
@@ -366,12 +372,16 @@ public final class MapChunkGenerator extends ChunkGenerator {
                 int top = Math.max(h, wt);
                 int snow = wt > h ? 0 : snowLayers(x, z, h, b);
                 BlockState topState = AIR, floor = AIR;
-                for (int y = minY; y <= top; y++) {
+                int yEnd = Math.max(top, MoriaPlan.aboveTop(x, z)), hi = top;
+                BlockState hiState = AIR;
+                for (int y = minY; y <= yEnd; y++) {
                     BlockState s = block(x, y, z, h, wt, b, slope);
                     chunk.getSection(chunk.getSectionIndex(y)).setBlockState(lx, y & 15, lz, s, false);
                     if (y == h) floor = s;
                     if (y == top) topState = s;
+                    if (y > top && !s.isAir()) { hi = y; hiState = s; }
                 }
+                if (hi > top) { top = hi; topState = hiState; snow = 0; }
                 if (snow > 0) {
                     topState = Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS, snow);
                     chunk.getSection(chunk.getSectionIndex(h + 1)).setBlockState(lx, (h + 1) & 15, lz, topState, false);

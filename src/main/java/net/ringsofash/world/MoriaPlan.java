@@ -60,6 +60,11 @@ public final class MoriaPlan {
     /** niveau de l'eau du lac a cet endroit, ou MIN_VALUE */
     public static int lakeTop(int x, int z, int h) { return Integer.MIN_VALUE; }
 
+    /** altitude jusqu'a laquelle la facade des Portes construit au dessus du sol (MIN_VALUE hors de la cour) */
+    public static int aboveTop(int x, int z) {
+        return x >= GX && x <= CT_X1 + 2 && Math.abs(z - GZ) <= 50 ? F0 + 72 : Integer.MIN_VALUE;
+    }
+
     /** la cour taillee devant les Portes : sol de montagne sans neige */
     public static boolean inCourt(int x, int z) { return x >= GX - 2 && x <= CT_X1 + 14 && Math.abs(z - GZ) <= 62; }
 
