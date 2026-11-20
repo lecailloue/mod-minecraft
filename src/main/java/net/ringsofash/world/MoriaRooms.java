@@ -225,74 +225,195 @@ final class MoriaRooms {
     }
 
     // ------------------------------------------------------------------ les fours geants des Forges
-    private static final int[] FN = {-98, -50, 64, 160, 222};     // contre le mur nord (z = -688)
-    private static final int[] FS = {-100, -40, 100, 180, 240};   // contre le mur sud (z = -830)
+    private static final int[] FN = {-98, -50, 64, 160, 222};     // le long du mur nord (z = -688)
+    private static final int[] FS = {-100, -40, 100, 180, 240};   // le long du mur sud (z = -830)
+    /** 0 tour octogonale, 1 tour de brique a cheminee et rampe vers un moule, 2 forge a toit pyramidal, 3 forge a deux cheminees et rampe vers un moule */
+    private static final int[] TN = {0, 1, 2, 3, 1};
+    private static final int[] TS = {2, 0, 1, 3, 0};
 
-    /** four des nains : tour octogonale qui s'effile (5 a 9 blocs), socle a deux gradins, escalier, ailes en biais, fenetres rougeoyantes et bassin de lave en haut. */
-    private static int furnace(int x, int y, int z, int h) {
-        if (y < F || y > F + 12) return KEEP;
-        int[] cs;
-        int f;
-        boolean wallZ1;
-        if (z >= -712 && z <= -688) { cs = FN; f = -688 - z; wallZ1 = true; }
-        else if (z >= -830 && z <= -806) { cs = FS; f = z + 830; wallZ1 = false; }
-        else return KEEP;
-        int cx = Integer.MIN_VALUE, idx = 0;
-        for (int k = 0; k < cs.length; k++) if (Math.abs(x - cs[k]) <= 10) { cx = cs[k]; idx = k; break; }
-        if (cx == Integer.MIN_VALUE) return KEEP;
-        if (h - 11 < F + 14) return KEEP;
-        int u = x - cx, w = f - 12, v = y - F, au = Math.abs(u), aw = Math.abs(w);
-        double o = Math.max(Math.max(au, aw), (au + aw) * 0.71);
-        boolean tall = idx % 2 == 0;
-        int hb = tall ? 4 : 2, vc = 3 + hb;
-        int face = wallZ1 ? 2 : 0;
-        // accessoires devant l'escalier
-        if (aw >= 10 && w > 0) {
-            if (v >= 1 && au == 3 && w == 10) return lampPost(v, 3);
-            if (v == 1 && au == 5 && w == 11) return au == 5 && u > 0 ? ANVIL : BARREL;
+    private static double oct(int au, int aw) { return Math.max(Math.max(au, aw), (au + aw) * 0.71); }
+
+    /** goulotte de metal en fusion qui descend vers un moule : s = distance le long de la goulotte, t = decalage lateral, v = hauteur */
+    private static int chuteMold(int s, int t, int v, int s0, int hs0) {
+        int sm = s0 + hs0, at = Math.abs(t);
+        if (s < s0 || s > sm + 4 || at > 2 || v < 0) return KEEP;
+        if (s < sm) {
+            int hs = Math.max(1, hs0 - (s - s0));
+            if (at > 1) return KEEP;
+            if (at == 1) return v < 1 ? KEEP : v <= hs ? DBRICKS : v == hs + 1 ? BWALL : KEEP;
+            return v < 1 ? KEEP : v < hs ? DBRICKS : v == hs ? MAGMA : KEEP;
         }
-        // les ailes en biais (soufflets)
-        if (au >= 6 && au <= 8 && aw >= 6 && aw <= 8) {
-            if (v == 1) return au == 8 || aw == 8 ? DCHISEL : DBRICKS;
-            if (v == 2 && au >= 7 && aw >= 7) return au == 8 && aw == 8 ? DRUNES : DCHISEL;
-            if (v == 3 && au == 7 && aw == 7) return DLAMP;
+        boolean ring = at == 2 || s == sm || s == sm + 4;
+        if (v == 0) return ring ? KEEP : MAGMA;
+        if (ring) {
+            if (s == sm && t == 0 && v == 1) return MAGMA;
+            if (v == 1) return DBRICKS;
+            if (v == 2) return (at == 2 && (s == sm || s == sm + 4)) ? COPPER : DCHISEL;
+            if (v == 3 && at == 2 && (s == sm || s == sm + 4)) return DPILLAR;
+            if (v == 4 && at == 2 && (s == sm || s == sm + 4)) return DLAMP;
             return KEEP;
         }
-        // escalier de face
-        if (au <= 1 && w == 9 && v == 1) return DSTAIR + face;
-        if (au <= 1 && w == 8 && v == 2) return DSTAIR + face;
-        if (v == 1 && o <= 8.5) return o > 7.6 ? DCHISEL : DBRICKS;
-        if (v == 2 && o <= 7.2) return o > 6.4 ? DCHISEL : DBRICKS;
+        return v == 1 ? LAVA : AIR;
+    }
+
+    private static int furnace(int x, int y, int z, int h) {
+        if (y < F || y > F + 13) return KEEP;
+        int[] cs, ts;
+        int f;
+        boolean north;
+        if (z >= -712 && z <= -688) { cs = FN; ts = TN; f = -688 - z; north = true; }
+        else if (z >= -830 && z <= -806) { cs = FS; ts = TS; f = z + 830; north = false; }
+        else return KEEP;
+        int cx = Integer.MIN_VALUE, type = 0;
+        for (int k = 0; k < cs.length; k++) if (Math.abs(x - cs[k]) <= 16) { cx = cs[k]; type = ts[k]; break; }
+        if (cx == Integer.MIN_VALUE || h - 11 < F + 14) return KEEP;
+        int u = x - cx, v = y - F;
+        int face = north ? 2 : 0;
+        switch (type) {
+            case 0: return furnA(u, f - 12, v, face, x, y, z);
+            case 1: return furnB(u, f - 10, v, x, y, z);
+            case 2: return furnC(u, f - 10, v, x, y, z);
+            default: return furnD(u, f - 7, v, x, y, z);
+        }
+    }
+
+    /** tour octogonale qui s'effile, socle a deux gradins, escalier, ailes en biais, fenetres rougeoyantes, bassin de lave a creneaux (10 de haut) */
+    private static int furnA(int u, int w, int v, int face, int x, int y, int z) {
+        int au = Math.abs(u), aw = Math.abs(w);
+        double o = oct(au, aw);
+        if (w >= 10 && v >= 1) {
+            if (au == 4 && w == 10) return lampPost(v, 3);
+            if (v == 1 && au == 6 && w == 11) return u > 0 ? ANVIL : BARREL;
+        }
+        if (au >= 7 && au <= 9 && aw >= 7 && aw <= 9) {                   // les ailes (soufflets)
+            if (v == 1) return au == 9 || aw == 9 ? DCHISEL : DBRICKS;
+            if (v == 2 && au >= 8 && aw >= 8) return au == 9 && aw == 9 ? DRUNES : COPPER;
+            if (v == 3 && au == 8 && aw == 8) return DLAMP;
+            return KEEP;
+        }
+        if (au <= 2 && w == 10 && v == 1) return DSTAIR + face;
+        if (au <= 2 && w == 9 && v == 2) return DSTAIR + face;
+        if (au == 3 && ((w == 10 && v <= 1) || (w == 9 && v == 2))) return BWALL;
+        if (v == 1 && o <= 9.2) return o > 8.3 ? DCHISEL : DBRICKS;
+        if (v == 2 && o <= 8.0) return o > 7.2 ? DCHISEL : DBRICKS;
+        int vc = 8;
         if (v < 3 || v > vc + 2) return KEEP;
-        double rb = 5.6 - 0.3 * (Math.min(v, vc - 1) - 3);
-        double rc = rb + 0.8;
-        if (v == vc) {                                               // le bassin de lave
-            if (o > rc) return KEEP;
-            return o > rc - 1.4 ? DCHISEL : LAVA;
-        }
-        if (v == vc + 1) {
-            if (o > rc || o <= rc - 1.4) return o > rc ? KEEP : AIR;
-            return DBRICKS;
-        }
-        if (v == vc + 2) {                                           // les creneaux
-            if (o > rc || o <= rc - 1.4) return KEEP;
-            return (au + aw) % 2 == 0 ? DCHISEL : AIR;
-        }
+        double rb = 6.4 - 0.3 * (Math.min(v, vc - 1) - 3), rc = rb + 0.9;
+        if (v == vc) return o > rc ? KEEP : (o > rc - 1.5 ? COPPER : LAVA);
+        if (v == vc + 1) return o > rc ? KEEP : (o > rc - 1.5 ? DBRICKS : AIR);
+        if (v == vc + 2) return o > rc || o <= rc - 1.5 ? KEEP : ((au + aw) % 2 == 0 ? DCHISEL : AIR);
         if (o > rb) return KEEP;
-        // le corps de la tour
         if (v == vc - 1 && o <= rb - 2.2) return MAGMA;
-        boolean ring = o > rb - 1.1;
-        if (ring) {
-            if (v == 3 || v == vc - 1) return DCHISEL;
-            if (w > 0 && au <= 1 && v <= 4) {                       // la porte de fonte
-                if (au == 1) return DCHISEL;
-                return v == 3 ? DRUNES : DLAMP;
+        if (o > rb - 1.1) {
+            if (v == 3 || v == vc - 1) return COPPER;
+            if (w > 0 && au <= 1 && v <= 6) {                               // la porte de fonte
+                if (v == 6) return DCHISEL;
+                return au == 1 ? COPPER : (v == 5 ? COPPER : (v == 3 ? DRUNES : DLAMP));
             }
-            if (au >= 3 && aw >= 3 && Math.abs(au - aw) <= 1 && (v == 4 || (v == 5 && hb == 4))) return DLAMP;
-            if ((u == 0 || w == 0) && v >= 4) return DPILLAR;
+            boolean pil = u == 0 || w == 0 || au == aw;
+            if (pil && v >= 4) return DPILLAR;
+            boolean slit = Math.abs(au * 5 - aw * 2) <= 3 || Math.abs(aw * 5 - au * 2) <= 3;
+            if (slit && (v == 4 || v == 5 || v == 6)) return DLAMP;
         }
         double q = r01(x, y, z);
         return q < 0.55 ? DBRICKS : q < 0.8 ? DSTONE : DCOBBLE;
+    }
+
+    /** haute tour de brique sur un socle a trois gradins, cheminee fumante, robinets de cuivre, goulotte vers un moule de lave (10 de haut) */
+    private static int furnB(int u, int w, int v, int x, int y, int z) {
+        int au = Math.abs(u), aw = Math.abs(w);
+        double o = oct(au, aw);
+        if (u >= 6) { int c = chuteMold(u, w, v, 6, 5); if (c != KEEP) return c; }
+        if (v == 1 && o <= 9.5) return o > 8.6 ? DCHISEL : DBRICKS;
+        if (v == 2 && o <= 8.5) return o > 7.7 ? COPPER : DBRICKS;
+        if (v == 3 && o <= 7.5) return o > 6.7 ? DCHISEL : DBRICKS;
+        if (v < 4 || v > 10) return KEEP;
+        if (v == 8) {                                                       // le chapeau
+            if (o > 6.4) return KEEP;
+            if (o <= 2.4) return LAVA;
+            return o > 5.5 ? COPPER : DCHISEL;
+        }
+        if (v >= 9) {                                                       // la cheminee
+            if (o > 3.4 || o <= 2.4) return o <= 2.4 ? AIR : KEEP;
+            return v == 10 ? COPPER : DBRICKS;
+        }
+        if (o > 5.6) return KEEP;
+        if (v == 7 && o <= 2.4) return MAGMA;
+        if (o > 4.6) {
+            boolean tap = (au == 5 && w == 0) || (u == 0 && aw == 5);
+            if (tap && v == 5) return COPPER;
+            if (au == aw && au >= 3 && au <= 4 && v == 6) return DLAMP;      // les hublots
+            if (v == 7 || v == 4) return DCHISEL;
+            if (v == 5 && o > 5.0) return Math.floorMod(au + aw, 3) == 0 ? DCHISEL : DBRICKS;
+        }
+        double q = r01(x, y, z);
+        return q < 0.65 ? DBRICKS : q < 0.9 ? DSTONE : DCOBBLE;
+    }
+
+    /** grande forge ouverte a toit pyramidal, braises et feux derriere une grille, ventilation en haut (10 de haut) */
+    private static int furnC(int u, int w, int v, int x, int y, int z) {
+        int au = Math.abs(u), aw = Math.abs(w);
+        if (au > 10 || aw > 7) return KEEP;
+        if (v == 1) {
+            if (au <= 8 && aw <= 5) return MAGMA;
+            return au > 9 || aw > 6 ? DCHISEL : DBRICKS;
+        }
+        if (v >= 2 && v <= 6 && au <= 9 && aw <= 6) {
+            boolean post = au >= 8 && aw >= 5;
+            if (post) return v == 6 ? COPPER : DPILLAR;
+            if (w == 6) {                                                    // la face avant : une grille
+                if (v == 2) return DBRICKS;
+                if (v == 6) return au % 4 == 0 ? COPPER : DCHISEL;
+                if (au <= 7) return au % 4 == 0 ? DPILLAR : BARS;
+                return DBRICKS;
+            }
+            if (w == -6) return v == 6 ? DCHISEL : (au % 3 == 0 && v >= 3 && v <= 5 ? DLAMP : DBRICKS);
+            if (au == 9) return v == 6 ? DCHISEL : (aw <= 1 && v >= 3 && v <= 4 ? DLAMP : DBRICKS);
+            if (v == 2 && ((au % 4 == 1) && (aw == 0 || aw == 3))) return CAMPFIRE;
+            if (v == 2 && au <= 6 && aw <= 3 && r01(x, 2, z) < 0.18) return SHROOM;
+            return AIR;
+        }
+        if (v == 7) return (au > 9 || aw > 6) ? DCHISEL : DSTONE;
+        if (v == 8 && au <= 8 && aw <= 5) return (au > 7 || aw > 4) ? DCHISEL : DBRICKS;
+        if (v == 9 && au <= 6 && aw <= 3) return (au > 5 || aw > 2) ? DCHISEL : DBRICKS;
+        if (v == 10 && au <= 3 && aw <= 1) return (au == 3 || aw == 1) ? COPPER : LAVA;
+        return KEEP;
+    }
+
+    /** forge a deux cheminees, gueule de lave et goulotte qui descend vers un moule dans la salle (10 de haut) */
+    private static int furnD(int u, int w, int v, int x, int y, int z) {
+        int au = Math.abs(u), aw = Math.abs(w);
+        if (w >= 5) { int c = chuteMold(w, u, v, 5, 3); if (c != KEEP) return c; }
+        if (au > 9) return KEEP;
+        if ((v == 1 || v == 2) && aw <= 5) {
+            if (v == 2 && au <= 6 && aw <= 3) return MAGMA;
+            return v == 2 && (au > 8 || aw > 4) ? DCHISEL : DBRICKS;
+        }
+        if (v >= 3 && v <= 7 && au <= 8 && aw <= 4) {
+            boolean shell = au == 8 || aw == 4;
+            if (shell) {
+                if (au == 8 && aw == 4) return v == 7 ? COPPER : DPILLAR;
+                if (w == 4) {                                               // la face avant et sa gueule
+                    int top = au <= 1 ? 5 : au <= 3 ? 4 : 0;
+                    if (au <= 3 && v <= top) return v == 3 ? BSLAB : AIR;
+                    if (au == 4 && v <= 5 || au == 5 && v <= 4) return COPPER;
+                    if (au <= 3 && v == top + 1) return COPPER;
+                    return v == 7 ? DCHISEL : (v == 6 && au % 2 == 0 ? DRUNES : DBRICKS);
+                }
+                if (v == 7) return DCHISEL;
+                if (au == 8 && aw <= 1 && v >= 4 && v <= 5) return DLAMP;
+                if (w == -4 && au % 4 == 2 && v == 5) return DLAMP;
+                return r01(x, y, z) < 0.6 ? DBRICKS : DSTONE;
+            }
+            if (au <= 6 && aw <= 3) return v == 3 ? LAVA : AIR;
+            return DBRICKS;
+        }
+        if (v == 8 && au <= 8 && aw <= 4) return (au > 7 || aw > 3) ? DCHISEL : DSTONE;
+        if (v >= 9 && v <= 10 && au >= 4 && au <= 6 && w >= -3 && w <= -1) {
+            if (au == 5 && w == -2) return v == 9 ? LAVA : AIR;
+            return v == 10 ? COPPER : DBRICKS;
+        }
+        return KEEP;
     }
 
     // ------------------------------------------------------------------ salles
