@@ -15,7 +15,7 @@ public final class MoriaPlan {
             QSLAB = 22, BOOKS = 23, BARS = 24, FORGE = 25, ANVIL = 26, BSLAB = 27, BSTAIR = 28 /* 28..31 : N E S O, monte vers cette direction */, BWALL = 32,
             GRAVEL = 33, SPRLOG = 34, SPRLEAF = 35, ORE = 40 /* 40..44 */, BLACKSTONE = 46, OAKLOGX = 47, OAKLOGZ = 48, DSTAIR = 52 /* 52..55 */, BSTAIR_TOP = 56 /* 56..59 */,
             GOLD = 60, RAWGOLD = 61, RAILX = 62, RAILZ = 63, BARREL = 64, RCARPET = 65, REDWOOL = 66, BLACKWOOL = 67, CAMPFIRE = 68, CRAFT = 69, FURNACE = 70,
-            YELLOWWOOL = 71, CAULDRON = 72, COPPER = 73, SHROOM = 74;
+            YELLOWWOOL = 71, CAULDRON = 72, COPPER = 73, SHROOM = 74, IRONB = 75, SMBAS = 76;
     public static final int NIDS = 80;
 
     public static final int F0 = 80;       // sol de la cour et de la Grande Salle
