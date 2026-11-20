@@ -422,8 +422,8 @@ final class MoriaRooms {
     private static final int[] CROSS = {-70, 26, 125, 193};
 
     private static int pipeCell(int axisCoord, int dyc, int dOther) {
-        if (Math.floorMod(axisCoord, 8) == 0) return IRONB;
-        return SMBAS;
+        if (Math.floorMod(axisCoord, 8) == 0) return DCHISEL;
+        return DPILLAR;
     }
 
     /** pointe de chaque descente de tuyau : {x, z, decalages en x} par four, selon son type */
