@@ -108,52 +108,64 @@ public final class MoriaPlan {
         return KEEP;
     }
 
-    private static final int GW = 6, GH = 12, GT = 26;              // porte : demi-largeur, hauteur des montants, hauteur du sommet de l'ogive
+    private static final int GW = 7, GH = 14, GT = 32;              // porte : demi-largeur, hauteur des montants, hauteur du sommet de l'ogive (la plus profonde)
 
-    private static double wc(int v) {                               // demi-largeur de l'ogive a la hauteur v (continu)
-        if (v <= GH) return GW;
-        double t = Math.min(1, (v - GH) / (double) (GT - GH));
-        return GW * (1 - Math.pow(t, 1.5));
+    /** demi-largeur de l'ogive a la hauteur v ; ex = nombre de gradins vers l'exterieur (0 = la porte, 3 = l'entree evasee de la facade) */
+    private static double wcd(int v, int ex) {
+        double w = GW + 3 * ex, hh = GH + 3 * ex, t = GT + 5 * ex;
+        if (v <= hh) return w;
+        double q = Math.min(1, (v - hh) / (t - hh));
+        return w * (1 - Math.pow(q, 1.5));
     }
 
-    private static int halfW(int v) {                               // idem, entier (-1 hors de l'arche)
-        if (v < 1 || v >= GT) return -1;
-        return (int) Math.floor(wc(v));
+    private static int halfW(int v, int ex) {                       // idem, entier (-1 hors de l'ogive)
+        if (v < 1 || v >= GT + 5 * ex) return -1;
+        return (int) Math.floor(wcd(v, ex));
     }
 
-    // ------------------------------------------------------------------ les Portes et le couloir d'entree
+    private static double dOutE(int au, int v, int ex) {            // distance a l'ogive (negatif dedans)
+        double t = GT + 5 * ex;
+        return v <= t ? au - wcd(v, ex) : Math.hypot(au, v - t);
+    }
+
+    // ------------------------------------------------------------------ les Portes : un portail evase a quatre gradins, puis les vantaux et le couloir d'entree
     private static int gate(int x, int y, int z, int h) {
         if (x >= GX) return court(x, y, z, h);
         if (x < 139 || z < GZ - 50 || z > GZ + 50 || y < F0 || y > F0 + 72) return KEEP;
         int u = z - GZ, v = y - F0, au = Math.abs(u);
-        int w = halfW(v);
-        boolean face = x >= GX - 3;
-        if (v >= 1 && au <= w) {
-            if (x == GX - 3 || x == GX - 2) {                        // les vantaux de pierre, fermes, avec une entrebaillure au centre
-                boolean gap = (au <= 2 && v <= 13) || (au <= 1 && v <= 15) || (au == 0 && v <= 16);
+        int dd = GX - 1 - x;                                         // 0 = la facade, 3 = l'ogive de la porte
+        int ex = Math.max(0, 3 - dd);
+        int w = halfW(v, ex);
+        boolean inside = v >= 1 && au <= w;
+        if (v == 0 && au <= GW + 3 * ex + 1) return (x % 8 == 0 && au <= 1) ? DRUNES : floorPat(x, z);
+        if (inside) {
+            if (x == GX - 6 || x == GX - 5) {                        // les vantaux de pierre, fermes, avec une entrebaillure au centre
+                boolean gap = (au <= 2 && v <= 19) || (au <= 1 && v <= 22) || (au == 0 && v <= 25);
                 if (gap) return AIR;
-                if (x == GX - 3) return DSTONE;
-                double in = wc(v) - au;
+                if (x == GX - 6) return DSTONE;
+                double in = wcd(v, 0) - au;
                 if (v >= 3 && in >= 1.0 && in < 2.0 && (v + au) % 2 == 0) return DRUNES;                  // arc d'ithildin le long de l'arche
-                if (au >= 3 && v >= 4 && v <= 10 && (v == 6 || v == 9)) return (au + v) % 3 == 0 ? DSTONE : DRUNES;   // lignes d'inscription
-                if ((au == 0 && v >= 17 && v <= 22) || (v == 19 && au <= 2)) return v == 19 && au == 0 ? WHITE : DRUNES;   // l'etoile de Durin
-                return (au == 3 && v >= 3 && v <= 12) ? DCHISEL : DBRICKS;
+                if (au >= 3 && v >= 4 && v <= 16 && (v == 7 || v == 12)) return (au + v) % 3 == 0 ? DSTONE : DRUNES;   // lignes d'inscription
+                if ((au == 0 && v >= 26 && v <= 31) || (v == 28 && au <= 2)) return v == 28 && au == 0 ? WHITE : DRUNES;   // l'etoile de Durin
+                return (au == 4 && v >= 3 && v <= 16) ? DCHISEL : DBRICKS;
             }
             return AIR;
         }
-        if (v == 0 && au <= GW + 1) return (x % 8 == 0 && au <= 1) ? DRUNES : floorPat(x, z);
-        double dOut = v <= GT ? au - wc(v) : Math.hypot(u, v - GT);
-        if (face) {
-            if (dOut > 7 || v > GT + 9) return facade(x, y, z, h, au, v);
-            boolean front = x == GX - 1;
-            if (dOut > 0 && dOut <= 1.5 && front) return WHITE;
-            if (dOut > 1.5 && dOut <= 3.5) return DCHISEL;
-            if (front) {
-                if (dOut > 4.5 && dOut < 7 && r01(u, v, 17) < 0.05) return DRUNES;              // les etoiles
-                if (dOut > 3.5 && dOut <= 4.5 && v >= 6 && (v + au) % 3 == 0) return DRUNES;      // la guirlande d'ithildin autour de l'arche
+        double dOut = dOutE(au, v, ex);
+        if (dd <= 3) {                                               // les gradins du portail evase
+            if (dd == 0) {
+                if (dOut > 7) return facade(x, y, z, h, au, v);
+                if (dOut <= 1.5) return WHITE;
+                if (dOut <= 3.5) return DCHISEL;
+                if (dOut > 4.5 && dOut < 7 && r01(u, v, 17) < 0.05) return DRUNES;                       // les etoiles
+                if (dOut <= 4.5 && v >= 6 && (v + au) % 3 == 0) return DRUNES;                           // la guirlande d'ithildin autour du portail
                 return DBRICKS;
             }
-            return DSTONE;
+            if (dOut <= 1) return (au + v) % 4 == 0 ? DRUNES : DCHISEL;                                 // le bandeau de l'arc
+            boolean vis = v >= 1 && au <= halfW(v, ex + 1);                                             // face du gradin, visible depuis l'exterieur
+            if (!vis) return KEEP;
+            if (dOut <= 4 && (au + v) % 5 == 0) return DRUNES;
+            return r01(au, v, 31 + dd) < 0.7 ? DBRICKS : DSTONE;
         }
         if (dOut <= 2) {                                             // parois du couloir
             if (dOut <= 1 && Math.floorMod(x, 9) == 0) return DPILLAR;
@@ -163,8 +175,8 @@ public final class MoriaPlan {
     }
 
     // ------------------------------------------------------------------ la facade des Portes (inspiree d'Erebor) et la grande cour
-    private static final int ST_AU = 20;        // axe des deux statues de nains geants (de part et d'autre de la porte)
-    private static final int WF_AU = 40;        // axe des cascades
+    private static final int ST_AU = 27;        // axe des deux statues de nains geants (de part et d'autre de la porte)
+    private static final int WF_AU = 43;        // axe des cascades
 
     /** la falaise taillee au dessus et autour de l'ogive : nervures, bandeaux, panneaux, grand losange d'ithildin, cascades. x in GX-3..GX-1 */
     private static int facade(int x, int y, int z, int h, int au, int v) {
@@ -174,14 +186,13 @@ public final class MoriaPlan {
             return y <= h - 3 ? WATER : KEEP;
         }
         if (x != GX - 1 || v > 58) return KEEP;
-        if (au == 9 || au == 31) return DPILLAR;                                      // nervures (elles avancent dans la cour)
+        if (au == 17 || au == 38) return DPILLAR;                                     // nervures (elles avancent dans la cour)
         if (v == 58) return DCHISEL;
         if (v % 14 == 13) return DCHISEL;
         int d = Math.abs(au - ST_AU);
         if (d <= 8 && v <= 50) return (d == 8 || v == 50) ? DCHISEL : DSTONE;        // le fond sombre des niches des statues
-        int dia = au + Math.abs(v - 42);
-        if (au <= 14 && v >= 28 && dia == 13) return DRUNES;                          // le grand losange au dessus de la porte
-        if (au <= 1 && v >= 40 && v <= 44 && Math.abs(v - 42) + au <= 2) return GOLD;
+        if (v == 52 && au % 3 == 0 && au <= 36) return DRUNES;                       // la frise d'ithildin sous la corniche
+        if (au <= 1 && v >= 50 && v <= 56 && Math.abs(v - 53) + au <= 3) return GOLD;   // l'etoile d'or au dessus du portail
         if (au % 8 == 4 && v % 14 >= 3 && v % 14 <= 9) return DRUNES;
         double q = r01(au, v, 29);
         return q < 0.78 ? DBRICKS : q < 0.9 ? DSTONE : DCOBBLE;
@@ -221,13 +232,13 @@ public final class MoriaPlan {
         if (x > CT_X1 + 2 || z < GZ - 50 || z > GZ + 50 || y < F0 - 3 || y > F0 + 72) return KEEP;
         int u = z - GZ, au = Math.abs(u), v = y - F0, dx = x - GX;
         // les bassins au pied des cascades
-        if (au >= WF_AU - 4 && au <= WF_AU + 4 && dx <= 8) {
-            boolean rim = dx == 8 || au == WF_AU - 4 || au == WF_AU + 4;
+        if (au >= WF_AU - 3 && au <= WF_AU + 3 && dx <= 8) {
+            boolean rim = dx == 8 || au == WF_AU - 3 || au == WF_AU + 3;
             if (y == F0 && rim) return DCHISEL;
             if (!rim && (y == F0 || y == F0 - 1)) return WATER;
         }
         // les nervures et la corniche qui avancent devant la falaise
-        if (dx <= 1 && v >= 1 && v <= 56 && (au == 9 || au == 31)) return DPILLAR;
+        if (dx <= 1 && v >= 1 && v <= 56 && (au == 17 || au == 38)) return DPILLAR;
         if (dx <= 2 && (v == 57 || v == 58) && au <= 47) return v == 57 ? DCHISEL : DBRICKS;
         // les deux nains geants, et leurs bannieres
         int dl = Math.abs(au - ST_AU);
@@ -243,14 +254,14 @@ public final class MoriaPlan {
             }
         }
         // les braziers : deux pres de la porte, puis un tous les 16 le long des parapets
-        boolean poste = (dx == 4 && (au == 9 || au == 10)) || (au == 11 && dx >= 14 && (dx - 14) % 16 == 0);
+        boolean poste = (dx == 5 && au == 17) || (au == 15 && dx >= 14 && (dx - 14) % 16 == 0);
         if (poste && v >= 1 && v <= 4 && y > h - 1) return v <= 2 ? DPILLAR : v == 3 ? DCHISEL : CAMPFIRE;
         // le parapet de la chaussee
-        if (au == 11 && dx >= 12 && dx <= CT_X1 - GX && v == 1 && y > h - 1 && Math.floorMod(dx, 16) >= 3 && Math.floorMod(dx, 16) <= 12) return BWALL;
+        if (au == 15 && dx >= 12 && dx <= CT_X1 - GX && v == 1 && y > h - 1 && Math.floorMod(dx, 16) >= 3 && Math.floorMod(dx, 16) <= 12) return BWALL;
         // le dallage : la chaussee, et le parvis devant la falaise
-        if (y == h && h >= F0 && h <= F0 + 3 && (au <= 11 || (dx <= 14 && au <= 46)) && !(au >= WF_AU - 4 && au <= WF_AU + 4 && dx <= 8)) {
+        if (y == h && h >= F0 && h <= F0 + 3 && (au <= 15 || (dx <= 14 && au <= 46)) && !(au >= WF_AU - 3 && au <= WF_AU + 3 && dx <= 8)) {
             if (au == 0 && dx % 8 == 0) return DRUNES;
-            return (x + z) % 6 == 0 && au <= 11 ? DCHISEL : floorPat(x, z);
+            return (x + z) % 6 == 0 && au <= 15 ? DCHISEL : floorPat(x, z);
         }
         return KEEP;
     }
