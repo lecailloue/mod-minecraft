@@ -412,6 +412,49 @@ public final class MapChunkGenerator extends ChunkGenerator {
         WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(RandomSupport.generateUniqueSeed()));
         random.setDecorationSeed(region.getSeed(), cp.getMinBlockX(), cp.getMinBlockZ());
         NaturalSpawner.spawnMobsForChunkGeneration(region, biome, cp, random);
+        moriaDwarves(region, cp);
+    }
+
+    /** sols praticables a l'interieur de la Moria : de la pierre (ou la roche naturelle) sous deux blocs d'air creuses par le plan */
+    private static boolean moriaFloor(int x, int y, int z, int h) {
+        int below = MoriaPlan.at(x, y - 1, z, h);
+        boolean solid = below == MoriaPlan.KEEP ? y - 1 <= h : switch (below) {
+            case MoriaPlan.DSTONE, MoriaPlan.DCOBBLE, MoriaPlan.DBRICKS, MoriaPlan.DPILLAR, MoriaPlan.DCHISEL, MoriaPlan.DEEPSLATE, MoriaPlan.BLACKSTONE,
+                 MoriaPlan.OAKP, MoriaPlan.DTILES, MoriaPlan.CRDEEP, MoriaPlan.CRACKB, MoriaPlan.POLDEEP, MoriaPlan.COBDEEP, MoriaPlan.DEEPBR -> true;
+            default -> false;
+        };
+        return solid && MoriaPlan.at(x, y, z, h) == MoriaPlan.AIR && MoriaPlan.at(x, y + 1, z, h) == MoriaPlan.AIR && MoriaPlan.at(x, y + 2, z, h) == MoriaPlan.AIR;
+    }
+
+    /** des nains au travail dans les galeries, les salles et la mine : de petits groupes, mineurs pour la plupart, quelques gardes */
+    private void moriaDwarves(WorldGenRegion region, ChunkPos cp) {
+        int x0 = cp.getMinBlockX(), z0 = cp.getMinBlockZ();
+        if (!MoriaPlan.inBox(x0 + 8, 0, z0 + 8) && !MoriaPlan.inBox(x0, 0, z0)) return;
+        java.util.Random r = new java.util.Random(region.getSeed() ^ (x0 * 341873128712L) ^ (z0 * 132897987541L));
+        if (r.nextInt(100) >= 45) return;
+        for (int attempt = 0; attempt < 10; attempt++) {
+            int x = x0 + r.nextInt(16), z = z0 + r.nextInt(16);
+            int h = MapData.height(x, z);
+            java.util.List<Integer> ys = new java.util.ArrayList<>();
+            for (int y = -40; y <= Math.min(h - 3, 40); y++) if (moriaFloor(x, y, z, h)) ys.add(y);
+            if (ys.isEmpty()) continue;
+            int y = ys.get(r.nextInt(ys.size()));
+            int n = 1 + r.nextInt(3);
+            for (int i = 0; i < n; i++) {
+                int px = x + (i == 0 ? 0 : r.nextInt(5) - 2), pz = z + (i == 0 ? 0 : r.nextInt(5) - 2);
+                if (px < x0 || px > x0 + 15 || pz < z0 || pz > z0 + 15 || !moriaFloor(px, y, pz, MapData.height(px, pz))) continue;
+                net.ringsofash.entity.PeopleEntity e = net.ringsofash.entity.ModEntities.DWARF.get().create(region.getLevel());
+                if (e == null) continue;
+                BlockPos pos = new BlockPos(px, y, pz);
+                e.moveTo(px + 0.5, y, pz + 0.5, r.nextFloat() * 360F, 0);
+                e.finalizeSpawn(region, region.getCurrentDifficultyAt(pos), net.minecraft.world.entity.MobSpawnType.STRUCTURE, null);
+                e.setPersistenceRequired();
+                e.restrictTo(pos, 14);
+                e.setRole(r.nextInt(4) == 0 ? net.ringsofash.entity.PeopleEntity.GUARD : net.ringsofash.entity.PeopleEntity.CIVIL);
+                region.addFreshEntityWithPassengers(e);
+            }
+            return;
+        }
     }
 
     @Override public int getGenDepth() { return 512; }
