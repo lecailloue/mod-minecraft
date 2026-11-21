@@ -83,7 +83,7 @@ public final class EreborPlan {
                     short r = NO;
                     if (Math.abs(u) <= RX && v >= -RZ && v <= 160) {
                         for (int y = 300; y >= 56; y -= 2) {
-                            if (air(u, y, v) || air(u, y - 1, v) || (v >= VF - 12 && facade(u, y, v) != KEEP)) { r = (short) (y + 9); break; }
+                            if (air(u, y, v) || air(u, y - 1, v) || (v >= VF - 12 && facade(u, y, v) != KEEP)) { r = (short) (y + 14); break; }
                         }
                     }
                     c[iv * GW + iu] = r;
@@ -123,7 +123,9 @@ public final class EreborPlan {
         int u = x - EX, v = z - EZ;
         if (Math.abs(u) > GU - 1 || v < GV0 || v > 175) return Integer.MIN_VALUE;
         short[] c = cover();
-        int cv = c[(v - GV0) * GW + u + GU];
+        // contours irreguliers : on lit la carte de couverture en un point legerement decale
+        int su = u + (int) Math.round(12 * (vn(x * 0.035, z * 0.035, 31) - 0.5)), sv = v + (int) Math.round(12 * (vn(x * 0.035, z * 0.035, 32) - 0.5));
+        int cv = (su < -GU + 1 || su > GU - 2 || sv < GV0 || sv > 175) ? Short.MIN_VALUE : c[(sv - GV0) * GW + su + GU];
         // un renflement bas et irregulier qui donne une vraie silhouette a la montagne
         double wu = u + 40 * (vn(x * 0.011, z * 0.011, 21) - 0.5), wv = v + 30 + 40 * (vn(x * 0.011, z * 0.011, 22) - 0.5);
         double a = wu / RX, b = wv / RZ;
@@ -135,7 +137,8 @@ public final class EreborPlan {
             hh += 20 * Math.pow(1 - crag, 2) * (1 - r);
         }
         double t = FL0 + hh;
-        double rough = 7 * (vn(x * 0.06, z * 0.06, 6) - 0.5) + 3 * (vn(x * 0.19, z * 0.19, 8) - 0.5);
+        double rid = 1 - Math.abs(2 * vn(x * 0.05, z * 0.05, 12) - 1);
+        double rough = 16 * (vn(x * 0.04, z * 0.04, 6) - 0.4) + 10 * rid * rid - 5 + 5 * (vn(x * 0.17, z * 0.17, 8) - 0.5);
         if (cv != Short.MIN_VALUE) t = Math.max(t, cv + rough);
         if (t < FL0 + 2) return Integer.MIN_VALUE;
         return (int) t;

@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"629", "630", "631", "632", "609", "600", "601", "603", "605", "606", "607", "608", "610", "611", "612", "613", "614", "615", "616", "617", "618", "619", "620", "621", "622", "623", "624", "625", "626", "627", "628"};
+    private static final String[] ONLY = {"700", "701", "702", "703", "629", "630", "631", "632", "609", "600", "601", "603", "605", "606", "607", "608", "610", "611", "612", "613", "614", "615", "616", "617", "618", "619", "620", "621", "622", "623", "624", "625", "626", "627", "628"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -658,10 +658,14 @@ public final class ClientTest {
         morT("626_erebor_terrasse", 1777.5, 84.5, -1294.5, 1770, 86, -1283, 6000);
         morT("627_erebor_grande_salle_arcades", 1620.5, 82.5, -1321.5, 1642, 101, -1263, 6000);
         morT("628_erebor_galerie_niches", 1626.5, 116.5, -1383.5, 1657, 122, -1418, 6000);
-        morT("629_erebor_vue_sud", 1640.5, 150.5, -950.5, 1640, 150, -1250, 6000);
-        morT("630_erebor_vue_est", 1930.5, 230.5, -1330.5, 1640, 150, -1355, 6000);
-        morT("631_erebor_vue_nord_ouest", 1380.5, 230.5, -1650.5, 1640, 140, -1355, 6000);
-        morT("632_erebor_vue_sud_est", 1900.5, 190.5, -1050.5, 1640, 130, -1215, 6000);
+        morT("629_erebor_vue_sud", 1745.5, 120.5, -1110.5, 1665, 140, -1215, 6000);
+        morT("630_erebor_vue_est", 1770.5, 150.5, -1300.5, 1660, 150, -1300, 6000);
+        morT("631_erebor_vue_ouest", 1530.5, 140.5, -1120.5, 1620, 140, -1215, 6000);
+        morT("632_erebor_vue_dessus", 1640.5, 200.5, -1000.5, 1640, 150, -1215, 6000);
+        morT("700_moria_pont_fond", 76.5, 26.5, -628.5, 76, 24, -690, 6000);
+        morT("701_moria_pont_fond_haut", 76.5, 44.5, -600.5, 60, 40, -655, 6000);
+        morT("702_moria_pont_ouest", 112.5, 30.5, -600.5, 40, 25, -620, 6000);
+        morT("703_moria_pont_est", 40.5, 30.5, -600.5, 112, 25, -620, 6000);
         morT("476_moria_chambre_lits", -183.5, -17.6, -690.5, -188.5, -19.2, -697.5, 6000);
         morT("477_moria_cuisine_four", -174.5, -17.5, -689.5, -173.5, -19, -697.5, 6000);
         morT("478_moria_etude_table", -221.5, -17.5, -576.5, -218.5, -19, -569, 6000);
