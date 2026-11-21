@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"hob"};
+    private static final String[] ONLY = {"rivs"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -458,6 +458,11 @@ public final class ClientTest {
         rivT("417_fondcombe_pilier_sud", 140, 26, 345, 140, 14, 300, 6000);
         rivT("418_fondcombe_pilier_ouest", 20, 24, 300, 70, 14, 300, 6000);
         rivT("419_fondcombe_pilier_haut", 130, 36, 262, 130, 14, 300, 6000);
+        rivO("rivsa_salle", 136, 45, 296, 206, 5, 206, 8, 8, 8);
+        rivO("rivsb_aerien", 176, 120, 406, 206, -10, 186, 12, 12, 12);
+        rivO("rivsc_nord", 206, 60, 86, 206, 0, 206, 8, 10, 8);
+        rivO("rivsd_toits", 156, 35, 236, 236, 8, 206, 8, 8, 8);
+        rivO("rivse_cascades", 276, 70, 236, 206, 20, 206, 8, 8, 12);
         rivO("420_fondcombe_pente_ouest", -170, 80, 120, 10, 50, 120, 10, 0, 0);
         rivO("422_fondcombe_pente_nord", 160, 90, -190, 160, 50, 20, 4, 10, 4);
         rivO("423_fondcombe_pente_nordouest", -150, 90, -150, 40, 50, 40, 10, 10, 0);
