@@ -352,7 +352,7 @@ public final class EreborPlan {
         if (y >= FL0 + 13 && y <= FL0 + 14 && au >= 91 && au <= 103) return r01(u, y, v) < 0.5 ? PANDES : STB;
         if (au <= 36 && v >= -126 && v <= 127 && (y == FL0 - 1 || y == FL1 - 1)) {            // le grand axe : tapis sombre bordure d'or
             if (au <= 3) return (v & 7) == 0 ? CSTB : POLBK;
-            if (au == 4) return gold;
+            if (au == 4) return CSTB;
             if (au <= 36 && (Math.abs(au - 12) <= 0 || au == 28)) return CSTB;
             return ((u >> 2) + (v >> 2) & 1) == 0 ? PANDES : SMST;
         }
@@ -494,7 +494,7 @@ public final class EreborPlan {
             for (int ap : new int[]{114, 132}) {
                 if (Math.abs(a - ap) <= 1 && Math.abs(v - vp) <= 1) {
                     if (yy <= 1) return STB;
-                    if (yy >= H - 4) return yy == H - 4 ? gold : CSTB;
+                    if (yy >= H - 4) return CSTB;
                     return yy % 8 == 7 ? CSTB : MoriaPlan.DPILLAR;
                 }
             }
@@ -743,7 +743,7 @@ public final class EreborPlan {
             if (au >= 17 && au <= 20) {
                 if (yy <= 1) return STB;
                 if (yy == 2) return CUCUT;
-                if (yy >= 58) return yy == 62 ? gold : yy >= 63 ? CSTB : (yy % 2 == 0 ? CSTB : STB);
+                if (yy >= 58) return yy == 62 ? CSTB : yy >= 63 ? CSTB : (yy % 2 == 0 ? CSTB : STB);
                 if (yy % 10 == 0) return CSTB;
                 return PANDES;
             }
@@ -766,20 +766,23 @@ public final class EreborPlan {
         if (v <= -110) {
             int dy = y - (FL1 + 5);                                                  // dy = 0 : la cellule au dessus de l'estrade
             if (v >= -117 && v <= -113 && au <= 3 && dy == 0) return STB;                                                  // l'assise
-            if (v >= -118 && v <= -112 && au >= 4 && au <= 5 && dy >= 0 && dy <= 2) return dy == 2 ? gold : STB;          // les accoudoirs
+            if (v >= -118 && v <= -112 && au >= 4 && au <= 5 && dy >= 0 && dy <= 2) return dy == 2 ? CSTB : PANDES;          // les accoudoirs
             if (v >= -123 && v <= -119 && dy >= 0 && dy <= 30) {                      // le dossier
                 int hw = dy <= 12 ? 7 : 7 - (dy - 12) / 3;
                 if (au <= hw) {
                     if (au == hw) return dy % 4 == 0 ? CSTB : PANDES;
-                    if (dy >= 14 && dy <= 26 && au <= 3 && v == -119) return (au + dy) % 3 == 0 ? gold : MoriaPlan.DRUNES;
+                    if (dy >= 14 && dy <= 26 && au <= 3 && v == -119) return (au + dy) % 3 == 0 ? CSTB : MoriaPlan.DRUNES;
                     return STB;
                 }
             }
         }
-        if (v == -126 && au <= 22 && yy >= 4 && yy <= 56) {                         // le grand treillis d'or et de lumiere
-            int dd = Math.abs(au) + Math.abs(yy - 30);
-            if (dd % 8 == 0) return gold;
-            return dd % 8 == 4 ? SEAL : CSTB;
+        if (v == -126 && au <= 22 && yy >= 2 && yy <= 56) {                         // le fond de la salle du trone, sobre, dans le style de la Moria
+            int top = 50 - (au > 14 ? (au - 14) * 3 / 2 : 0);
+            if (yy > top) return KEEP;
+            if (au % 11 <= 1) return au > 18 && yy < 6 ? KEEP : MoriaPlan.DPILLAR;                    // de grands pilastres
+            if (yy == top) return CSTB;
+            if (yy % 12 == 6 && au % 11 >= 5 && au % 11 <= 6) return MoriaPlan.DRUNES;
+            return yy < 8 ? MSTB : (yy < 30 ? STB : PANDES);
         }
         return KEEP;
     }
@@ -905,14 +908,14 @@ public final class EreborPlan {
         if (kind == 6) {                                                                   // le treillis et l'embleme
             int dd = au + Math.abs(yy - 82);
             if (dd <= 3) return SEAL;
-            if (dd == 18) return gold;
+            if (dd == 18) return CSTB;
             if (dd <= 17 && dd >= 10) return dd % 3 == 0 ? CUCUT : PANDES;
             if (dd <= 9) return dd % 4 == 0 ? CSTB : TUFFB;
             if ((au + yy) % 8 == 0 || Math.floorMod(au - yy, 8) == 0) return CSTB;
             return r01(u, yy, 3) < 0.5 ? STB : TUFFB;
         }
         if (yy % 24 == 23 && kind == 0) return CSTB;
-        if (kind == 1 && yy < 52 && au - hw == 4 && p <= 0) return gold;                  // filet d'or autour du portail
+        if (kind == 1 && yy < 52 && au - hw == 4 && p <= 0) return CSTB;                  // filet de pierre taillee autour du portail
         return fmat(u, yy, p, kind);
     }
 
