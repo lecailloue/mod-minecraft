@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"15d", "70"};
+    private static final String[] ONLY = {"hob"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -607,22 +607,17 @@ public final class ClientTest {
         morT("481_moria_table_nain", -218.5, -17.6, -573.5, -218.5, -18.4, -569.5, 6000);
         morT("482_comte_ancienne_cuvette", -1105.5, 125, -455.5, -1105, 85, -540, 6000);
         morT("483_comte_cuvette_haut", -1105.5, 160, -535.5, -1105, 80, -520, 6000);
-        // la Comte (Hobbiteville) : coordonnees du plan 240 x 240 (centre en 120, 120), y = niveau du sol (premier bloc d air)
-        shiT("70a_comte_vue_sud", 120, 70, 290, 120, 10, 100, 6000);
-        shiT("70b_comte_vue_ouest", -50, 60, 100, 120, 5, 100, 6000);
-        shiT("70c_cul_de_sac", 128, 3, 100, 128, 6, 70, 6000);
-        shiT("70d_rangee_terriers", 44, 4, 104, 44, 4, 80, 6000);
-        shiT("70e_arbre_fete", 128, 32, 104, 124, 28, 38, 6000);
-        shiT("70f_pont_auberge", 150, 14, 168, 185, 2, 192, 6000);
-        shiT("70g_moulin_lac", 120, 12, 150, 205, 2, 175, 6000);
-        shiT("70h_interieur_cul_de_sac", 128, 1, 67, 128, 2, 48, 6000);
-        shiT("70i_interieur_terrier", 22, 1, 77, 22, 1, 70, 6000);
-        shiT("70j_auberge_dedans", 186, 1, 197, 180, 1, 199, 6000);
-        shiT("70k_champs_sud", 120, 40, 250, 60, 0, 210, 6000);
-        shiT("70l_pont_proche", 163, 4, 172, 172, 3, 186, 6000);
-        shiT("70m_chemin", 40, 3, 99, 120, 3, 97, 6000);
-        shiT("70n_vue_aerienne", 120, 150, 250, 120, 0, 110, 6000);
-        shiT("70o_vue_aerienne_nord", 120, 120, -40, 120, 0, 120, 6000);
+        // Hobbiteville : coordonnees du fichier source (x 0..324, z 9..366, y source : le sol du village est vers -38)
+        hobT("hoba_hobbiteville_aerien", 180, 40, 330, 180, -40, 150);
+        hobT("hobb_hobbiteville_nord", 180, 40, -20, 180, -40, 180);
+        hobT("hobc_village_sud_ouest", 78, -30, 205, 95, -42, 245);
+        hobT("hobd_village_sud_ouest_pres", 92, -37, 230, 90, -41, 246);
+        hobT("hobe_lac", 60, -10, 160, 150, -46, 195);
+        hobT("hobf_centre_village", 186, -28, 175, 186, -37, 130);
+        hobT("hobg_champs_est", 270, -20, 160, 220, -38, 180);
+        hobT("hobh_foret_ouest", 20, -20, 60, 80, -38, 120);
+        hobT("hobi_bord_nord_ouest", 0, -10, 30, 100, -38, 90);
+        hobT("hobj_bord_sud_est", 330, -5, 380, 250, -40, 300);
         morT("484_spawn_hautemarche", -700.5, 80, -14.5, -700, 74, 0, 6000);
         morT("485_moria_village_escalier_nord", -150.5, -17.5, -668.5, -148, -8, -682, 6000);
         morT("486_moria_village_falaise_ouest", -215.5, -10.5, -625.5, -246, -14, -630, 6000);
@@ -1489,18 +1484,20 @@ public final class ClientTest {
         }));
     }
 
-    /** vue sur la Comte, en coordonnees du plan (240 x 240) : de (fx, fy, fz) vers (tx, ty, tz) ; y relatif au premier bloc d air du centre */
-    private static void shiT(String name, double fx, double fy, double fz, double tx, double ty, double tz, int time) {
+    /** vue sur Hobbiteville, en coordonnees du fichier source : de (fx, fy, fz) vers (tx, ty, tz) */
+    private static void hobT(String name, double fx, double fy, double fz, double tx, double ty, double tz) {
         SCENES.add(new Scene(name, 420, p -> {
             ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
             int[] pl = net.ringsofash.world.MapData.place("comte");
             if (pl == null) return;
-            for (int dx = -9; dx <= 9; dx++) for (int dz = -9; dz <= 9; dz++) lands.getChunk((pl[0] >> 4) + dx, (pl[1] >> 4) + dz);
-            int py = net.ringsofash.world.SiteHeight.py(lands, pl[0], pl[1]);
+            int rx = net.ringsofash.world.HobbitonStamp.originX(pl[0]), rz = net.ringsofash.world.HobbitonStamp.originZ(pl[1]);
+            int off = net.ringsofash.world.HobbitonStamp.OFF, fz0 = net.ringsofash.world.HobbitonStamp.FILE_Z0;
+            double cx = rx + fx, cz = rz + fz - fz0;
+            for (int dx = -9; dx <= 9; dx++) for (int dz = -9; dz <= 9; dz++) lands.getChunk(((int) cx >> 4) + dx, ((int) cz >> 4) + dz);
             double ddx = tx - fx, ddy = ty - fy, ddz = tz - fz;
             float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
-            lands.setDayTime(time);
-            view(p, lands, pl[0] + fx - 120 + 0.5, py + fy, pl[1] + fz - 120 + 0.5, yaw, pitch);
+            lands.setDayTime(6000);
+            view(p, lands, cx + 0.5, fy + off, cz + 0.5, yaw, pitch);
         }));
     }
 
