@@ -474,7 +474,7 @@ public final class MoriaPlan {
     // ------------------------------------------------------------------ le gouffre et son pont
     private static final int CX0 = 26, CX1 = 126, CZ0 = -648, CZ1 = -553;
 
-    private static final int BZ0 = -644, BZ1 = -557, BH = 6;
+    private static final int BZ0 = -650, BZ1 = -551, BH = 6;
 
     /** hauteur de la bosse du tablier au dessus de F1 (0 aux deux bouts, BH au milieu) */
     private static int bridgeDy(int z) {

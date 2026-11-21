@@ -483,6 +483,25 @@ def d_r_gold(rows=(), horse=False):
     return f
 
 
+mat('rcp', (150, 26, 30), 4, 5, (1.05, .9, .85))    # cape rouge du roi
+
+
+def d_r_cape(face, F, rng):
+    for y in range(F.h):
+        F.hline(y, 0, F.w, (104, 14, 20) if y % 3 == 0 else (176, 40, 42), .38)
+    for x in range(1, F.w, 3): F.vline(x, 0, F.h, (96, 12, 18), .22)
+    if face == 'back':
+        F.hline(F.h - 1, 0, F.w, RG, .9); F.hline(F.h - 2, 0, F.w, RGD, .5)
+        F.vline(0, 0, F.h, RG, .9); F.vline(F.w - 1, 0, F.h, RG, .9)
+        F.hline(0, 0, F.w, RG, .9)
+        F.art(F.w // 2 - 3, 4, ['..##....', '.####.#.', '######..', '#####...', '.#.#.#..', '.#.#.#..', '.#..#...'], {'#': RG})      # cheval d'or
+        for y in range(11, F.h - 3, 3): F.px(2, y, RG, .7); F.px(F.w - 3, y, RG, .7)
+    elif face in ('left', 'right'):
+        F.vline(0, 0, F.h, RG, .8)
+    elif face == 'bottom':
+        F.rect(0, 0, F.w, F.h, RGD, .6)
+
+
 def d_r_helm(face, F, rng):
     scratches(F, rng, 4, RGL, .3)
     if face in ('front', 'back', 'left', 'right'):
@@ -571,6 +590,8 @@ def rohan():
     body = Part('body')
     body.box((-4, 0, -2), (8, 12, 4), 'rlb', .6, 'r_body', d_r_body)
     body.box((-1.5, 4, -3.1), (3, 2, 1), 'rgo', .1, 'r_emblem', G(horse=False))
+    cape = Part('cape', (0, -0.6, 2.4), (R(4), 0, 0)); body.children.append(cape)
+    cape.box((-5, 0, 0), (10, 21, 1), 'rcp', 0.3, 'r_cape', d_r_cape)                  # grande cape rouge, comme les rois elfe et nain
     ra = Part('right_arm')
     for i, (py, rz, x0) in enumerate(((-2.9, -10, -5.0), (-1.0, -22, -4.5))):
         pa = Part(f'pauld{i}', (0, py, 0), (0, 0, R(rz))); ra.children.append(pa)

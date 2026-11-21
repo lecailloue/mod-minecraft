@@ -145,6 +145,11 @@ public final class EreborPlan {
             double e = courtE(u, v, x, z);
             t = Math.min(t, FL0 + 20 + 1.6 * Math.max(0, -e));
         }
+        // deux larges passes de part et d'autre de la cour : la montagne s'efface jusqu'au terrain, on entre de plain-pied depuis la plaine
+        if (Math.abs(u) > 60 && v > VF + 4) {
+            double dn = Math.abs(v - (VF + 46)) - 15;
+            if (dn < 40) t = Math.min(t, FL0 + 1.3 * Math.max(0, dn));
+        }
         if (t < FL0 + 2) return Integer.MIN_VALUE;
         return (int) t;
     }
