@@ -645,7 +645,7 @@ public final class ClientTest {
         morT("613_erebor_mine_hall", 728.5, 65.5, -1077.5, 748, 64, -1052, 6000);
         morT("614_erebor_galerie_mine", 768.5, 64.5, -1062.5, 838, 63, -1062, 6000);
         morT("615_erebor_coffre_secret", 848.5, 188.5, -1303.5, 848, 187, -1316, 6000);
-        morT("616_erebor_descente", 726.5, 100.5, -1104.5, 726, 85, -1072, 6000);
+        morT("616_erebor_descente", 756.5, 141.5, -1064.5, 756, 102, -1102, 6000);
         morT("617_erebor_salle_minerais", 1030.5, 65.5, -1068.5, 1040, 63, -1050, 6000);
         morT("476_moria_chambre_lits", -183.5, -17.6, -690.5, -188.5, -19.2, -697.5, 6000);
         morT("477_moria_cuisine_four", -174.5, -17.5, -689.5, -173.5, -19, -697.5, 6000);
