@@ -72,13 +72,13 @@ public final class Settlement {
                 return Optional.of(new GenerationStub(new BlockPos(pl[0], py, pl[1]), b -> one.forEach(b::addPiece)));
             }
             if (kind.equals("shire")) {
-                // Hobbiteville : 2 x 3 morceaux, chacun une structure qui commence dans le chunk de son centre (une structure n'atteint que 8 chunks autour de son depart) ;
+                // Hobbiteville : 3 x 4 morceaux, chacun une structure qui commence dans le chunk de son centre (une structure n'atteint que 8 chunks autour de son depart) ;
                 // le centre du village est au lieu marque sur la carte (places.json)
                 int[] pl = MapData.place("comte");
                 if (pl == null) return Optional.empty();
                 int rx = HobbitonStamp.originX(pl[0]), rz = HobbitonStamp.originZ(pl[1]);
                 for (int tz = 0; tz < HobbitonStamp.TILES_Z; tz++) for (int tx = 0; tx < HobbitonStamp.TILES_X; tx++) {
-                    int ox = rx + tx * HobbitonStamp.TW, oz = rz + tz * HobbitonStamp.TD;
+                    int ox = rx - HobbitonStamp.PADX + tx * HobbitonStamp.TW, oz = rz - HobbitonStamp.PADZ + tz * HobbitonStamp.TD;
                     if (cp.x != ((ox + HobbitonStamp.TW / 2) >> 4) || cp.z != ((oz + HobbitonStamp.TD / 2) >> 4)) continue;
                     int py = h(c, ox + HobbitonStamp.TW / 2, oz + HobbitonStamp.TD / 2);
                     List<Piece> one = new ArrayList<>();

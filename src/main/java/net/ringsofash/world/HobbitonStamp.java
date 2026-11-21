@@ -3,6 +3,11 @@ package net.ringsofash.world;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.FarmBlock;
+import net.minecraft.world.level.block.TrapDoorBlock;
+import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.ringsofash.RingsOfAsh;
@@ -19,7 +24,9 @@ import java.util.zip.InflaterInputStream;
 public final class HobbitonStamp {
     private HobbitonStamp() {}
 
-    public static final int TW = 163, TD = 120, TILES_X = 2, TILES_Z = 3;
+    public static final int TW = 163, TD = 120, TILES_X = 3, TILES_Z = 4;
+    /** marge entre le bord de la region recopiee (TILES_X x TILES_Z morceaux) et le fichier source : les champs y debordent sur le relief naturel */
+    public static final int PADX = (TILES_X * TW - 325) / 2, PADZ = (TILES_Z * TD - 358) / 2;
     /** y du monde = y du fichier + OFF (le sol moyen de la source, -38, tombe a 72, le niveau de la plaine) */
     public static final int OFF = 110;
     /** le village : (x, z) dans le fichier, et premier z du fichier recopie */
@@ -96,6 +103,47 @@ public final class HobbitonStamp {
         return v;
     }
 
+    /** altitude de la surface d'une colonne : celle du fichier (fondue dans le relief pres du bord) ou, hors du fichier, celle du relief naturel */
+    private static int surf(int fx, int fz, int wx, int wz) {
+        if (fx >= 0 && fx < W && fz >= 0 && fz < D && ground[fz * W + fx] > -900) return ground[fz * W + fx] + OFF + shift(fx, fz, wx, wz);
+        return MapData.height(wx, wz);
+    }
+
+    private static int shift(int fx, int fz, int wx, int wz) {
+        int edge = Math.min(Math.min(fx, W - 1 - fx), Math.min(fz, D - 1 - fz));
+        double t = Math.max(0, 1 - edge / BLEND);
+        double w = t * t * (3 - 2 * t);
+        return (int) Math.round(w * (MapData.height(wx, wz) - (ground[fz * W + fx] + OFF)));
+    }
+
+    private static final int CELL = 9;
+    private static final BlockState FARM = Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE, 7);
+    private static final BlockState WHEAT = Blocks.WHEAT.defaultBlockState().setValue(CropBlock.AGE, 7);
+    private static final BlockState POTATO = Blocks.POTATOES.defaultBlockState().setValue(CropBlock.AGE, 7);
+    private static final BlockState DIRT = Blocks.DIRT.defaultBlockState();
+    private static final BlockState LAMP = Blocks.GLOWSTONE.defaultBlockState();
+    private static final BlockState WELL = Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF, Half.TOP).setValue(TrapDoorBlock.WATERLOGGED, true);
+
+    /** une colonne de champ : terre, terre labouree au niveau de sa case de 9 x 9 (un point d'eau enterre au centre) et culture ; rend false si la colonne n'est pas un champ (eau, trop pentu) */
+    private static boolean field(Build b, int vx, int vz, int fx, int fz, int wx, int wz, int crop, int ownSurf) {
+        int cvx = Math.floorDiv(vx, CELL) * CELL + CELL / 2, cvz = Math.floorDiv(vz, CELL) * CELL + CELL / 2;
+        int cwx = wx + cvx - vx, cwz = wz + cvz - vz;
+        if (MapData.waterTop(cwx, cwz) != Integer.MIN_VALUE || MapData.waterTop(wx, wz) != Integer.MIN_VALUE) return false;
+        int level = surf(fx + cvx - vx, fz + cvz - vz, cwx, cwz);
+        if (Math.abs(ownSurf - level) > 5) return false;
+        int lx = wx - b.ox, lz = wz - b.oz;
+        int tg = MapData.height(wx, wz);
+        for (int y = Math.min(tg, level) - 2; y < level; y++) b.s(lx, y - b.oy, lz, DIRT);
+        b.s(lx, level - b.oy, lz, FARM);
+        if (vx == cvx && vz == cvz) {                              // le point d'eau est enterre : lampe, puis eau sous la terre labouree
+            b.s(lx, level - 2 - b.oy, lz, LAMP);
+            b.s(lx, level - 1 - b.oy, lz, WELL);
+        }
+        b.s(lx, level + 1 - b.oy, lz, crop == HobbitonFields.WHEAT ? WHEAT : POTATO);
+        for (int y = level + 2; y <= Math.max(tg, level) + 16; y++) b.s(lx, y - b.oy, lz, Build.AIR);
+        return true;
+    }
+
     /** recopie le morceau (tx, tz) : la piece a pour origine (b.ox, b.oz) = son coin nord-ouest */
     public static void stamp(Build b, int tx, int tz) {
         load();
@@ -103,16 +151,15 @@ public final class HobbitonStamp {
         int xa = Math.max(b.clip.minX(), b.ox), xb = Math.min(b.clip.maxX(), b.ox + TW - 1);
         int za = Math.max(b.clip.minZ(), b.oz), zb = Math.min(b.clip.maxZ(), b.oz + TD - 1);
         for (int wz = za; wz <= zb; wz++) for (int wx = xa; wx <= xb; wx++) {
-            int fx = tx * TW + (wx - b.ox), fz = tz * TD + (wz - b.oz);
-            if (fx >= W || fz >= D) continue;
+            int vx = tx * TW + (wx - b.ox), vz = tz * TD + (wz - b.oz);
+            int fx = vx - PADX, fz = vz - PADZ;
+            boolean in = fx >= 0 && fx < W && fz >= 0 && fz < D && ground[fz * W + fx] > -900;   // colonne vide dans la source : on laisse le monde
+            int crop = HobbitonFields.crop(fx, fz);
+            if (crop != 0 && field(b, vx, vz, fx, fz, wx, wz, crop, surf(fx, fz, wx, wz))) continue;
+            if (!in) continue;
             int ix = fz * W + fx;
-            if (ground[ix] < -900) continue;                       // colonne vide dans la source : on laisse le monde
             int tg = MapData.height(wx, wz);
-            int edge = Math.min(Math.min(fx, W - 1 - fx), Math.min(fz, D - 1 - fz));
-            double t = Math.max(0, 1 - edge / BLEND);
-            double w = t * t * (3 - 2 * t);
-            int shift = (int) Math.round(w * (tg - (ground[ix] + OFF)));
-            int y0 = OFF + shift;
+            int y0 = OFF + shift(fx, fz, wx, wz);
             int lx = wx - b.ox, lz = wz - b.oz;
             int[] pp = {colOff[ix]};
             int runs = varint(pp);
