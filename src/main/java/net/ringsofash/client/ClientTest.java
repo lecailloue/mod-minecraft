@@ -621,6 +621,8 @@ public final class ClientTest {
         shiT("70k_champs_sud", 120, 40, 250, 60, 0, 210, 6000);
         shiT("70l_pont_proche", 163, 4, 172, 172, 3, 186, 6000);
         shiT("70m_chemin", 40, 3, 99, 120, 3, 97, 6000);
+        shiT("70n_vue_aerienne", 120, 150, 250, 120, 0, 110, 6000);
+        shiT("70o_vue_aerienne_nord", 120, 120, -40, 120, 0, 120, 6000);
         morT("484_spawn_hautemarche", -700.5, 80, -14.5, -700, 74, 0, 6000);
         morT("485_moria_village_escalier_nord", -150.5, -17.5, -668.5, -148, -8, -682, 6000);
         morT("486_moria_village_falaise_ouest", -215.5, -10.5, -625.5, -246, -14, -630, 6000);

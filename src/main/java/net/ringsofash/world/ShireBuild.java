@@ -81,6 +81,7 @@ public final class ShireBuild {
                 continue;
             }
             for (int y = Math.max(g + 1, top - 24); y < top; y++) b.s(x, y, z, dirt);
+            if (hh > 1) { b.s(x, top - 1, z, Blocks.MOSS_BLOCK); if (hh > 2) b.s(x, top - 2, z, Blocks.MOSS_BLOCK); }     // les flancs des collines restent verts
             int sf = p.sf[ix];
             double r = ShirePlan.rnd(x, z, 9);
             if (sf == ShirePlan.PATH) {
