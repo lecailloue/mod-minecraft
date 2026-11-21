@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"600", "601", "602", "603", "604", "605", "606", "607", "608", "609", "610", "611", "612", "613", "614", "615", "616", "617"};
+    private static final String[] ONLY = {"600", "601", "603", "605", "606", "607", "608", "610", "611", "612", "613", "614", "615", "616", "617", "618", "619", "620", "621", "622", "623", "624", "625", "626", "627", "628"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -647,6 +647,17 @@ public final class ClientTest {
         morT("615_erebor_coffre_secret", 848.5, 188.5, -1303.5, 848, 187, -1316, 6000);
         morT("616_erebor_descente", 756.5, 141.5, -1064.5, 756, 102, -1102, 6000);
         morT("617_erebor_salle_minerais", 1030.5, 65.5, -1068.5, 1040, 63, -1050, 6000);
+        morT("618_erebor_salle_forge", 848.5, 153.5, -1084.5, 815, 156, -1084, 6000);
+        morT("619_erebor_taverne", 908.5, 153.5, -1084.5, 941, 156, -1084, 6000);
+        morT("620_erebor_atelier", 848.5, 153.5, -1112.5, 817, 155, -1112, 6000);
+        morT("621_erebor_bibliotheque", 848.5, 189.5, -1248.5, 815, 191, -1248, 6000);
+        morT("622_erebor_gardes", 908.5, 189.5, -1248.5, 941, 191, -1248, 6000);
+        morT("623_erebor_forges_nef", 757.5, 155.5, -1040.5, 757, 166, -1100, 6000);
+        morT("624_erebor_balcon", 772.5, 166.5, -1084.5, 743, 160, -1090, 6000);
+        morT("625_erebor_quartiers_rue", 1000.5, 155.5, -1117.5, 1000, 152, -1062, 6000);
+        morT("626_erebor_terrasse", 1015.5, 158.5, -1091.5, 1008, 160, -1080, 6000);
+        morT("627_erebor_grande_salle_arcades", 858.5, 156.5, -1118.5, 880, 175, -1060, 6000);
+        morT("628_erebor_galerie_niches", 850.5, 190.5, -1180.5, 905, 195, -1240, 6000);
         morT("476_moria_chambre_lits", -183.5, -17.6, -690.5, -188.5, -19.2, -697.5, 6000);
         morT("477_moria_cuisine_four", -174.5, -17.5, -689.5, -173.5, -19, -697.5, 6000);
         morT("478_moria_etude_table", -221.5, -17.5, -576.5, -218.5, -19, -569, 6000);

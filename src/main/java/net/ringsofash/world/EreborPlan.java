@@ -14,7 +14,7 @@ import static net.ringsofash.world.MoriaPlan.vn;
  * - la facade : nervures, niches a statues de nains geants, rangees de fenetres, ecu de la Porte, corniche et creneaux ;
  * - la Porte, la Grande Salle de Thror (colonnes, statues, braseros), le Grand Escalier, la Galerie des Rois et la salle du trone ;
  * - la Tresorerie : un tas d'or, l'Arkenstone, des colonnes geantes, reliee a la Grande Salle par deux escaliers.
- * Tous les blocs sont des blocs vanille (pierre taillee, andesite, tuf, or, cuivre, lanternes).
+ * Les murs sont en pierre naine (brique, pierre, moellon, taillee, pilier) et ardoise des profondeurs ; or, cuivre et lanternes en decor.
  */
 public final class EreborPlan {
     private EreborPlan() {}
@@ -88,9 +88,9 @@ public final class EreborPlan {
     public static int at(int x, int y, int z, int h) {
         if (!inBox(x, y, z)) return KEEP;
         int u = x - EX, v = z - EZ;
-        if (air(u, y, v)) return decor(u, y, v);
+        if (air(u, y, v)) { int dc = decor(u, y, v); return dc == KEEP ? AIR : dc; }
         int r;
-        if (y >= FL0 + 44 && chimney(u, y, v, x, z)) return AIR;
+        if (y >= FL0 + 12 && chimney(u, y, v, x, z)) return AIR;
         if (nearAir(u, y, v)) { int l = lining(u, y, v); if (l != KEEP) return l; }
         if ((r = statues(u, y, v)) != KEEP) return r;
         if ((r = facade(u, y, v)) != KEEP) return r;
@@ -120,7 +120,8 @@ public final class EreborPlan {
     }
 
     private static int axisCeil(int u, int v) {
-        int drop = Math.max(0, (Math.abs(u) - 26) / 2);
+        int au = Math.abs(u);
+        int drop = (int) (12.0 * au * au / 1296.0);                    // une voute en berceau
         return (v >= -12 ? FL0 + 66 : FL1 + 66) - drop;
     }
 
@@ -156,6 +157,9 @@ public final class EreborPlan {
         if (v >= 127 && v <= VF + 3 && y >= FL0 && y < FL0 + 46 && au <= halfW(y - FL0)) return true;
         // l'axe : Grande Salle, Grand Escalier, Galerie des Rois
         if (au <= 36 && v >= -126 && v <= 127 && y >= axisFloor(v) && y < axisCeil(u, v)) return true;
+        // les niches des murs et les salles laterales
+        if (au >= 37 && au <= 38 && niche(y, v)) return true;
+        if (au >= 37 && au <= 64 && sideRoom(u, y, v) != 0) return true;
         // la Tresorerie
         if (u >= -86 && u <= 86 && v >= -128 && v <= -16 && y >= FT && y < treasCeil(u, v) && d2t(u, v) <= 1.75) return true;
         // les tunnels et les escaliers vers la Tresorerie
@@ -172,6 +176,86 @@ public final class EreborPlan {
 
     private static int flightB(int u, int v) { return tread(u, v, 0, -71, 30, -144, -136, 61); }
 
+    private static boolean niche(int y, int v) {
+        boolean hall = v >= 28 && v <= 122, gal = v <= -18 && v >= -122;
+        if (!hall && !gal) return false;
+        int yy = y - (hall ? FL0 : FL1);
+        if (yy < 0) return false;
+        int m = Math.floorMod(v, 12);
+        if (m < 2 || m > 9) return false;
+        double t = (m - 5.5) / 4.0;
+        return yy <= 18 + (int) (9 * Math.sqrt(Math.max(0, 1 - t * t)));
+    }
+
+    /** les salles laterales : 1 forge, 2 taverne, 3 atelier, 4 brasserie (Grande Salle) ; 5 bibliotheque, 6 salle des gardes (Galerie) */
+    private static int sideRoom(int u, int y, int v) {
+        int au = Math.abs(u);
+        if (au < 37 || au > 64) return 0;
+        int vc, half, f, kind;
+        if (v >= 61 && v <= 75) { vc = 68; half = 7; f = FL0; kind = u < 0 ? 1 : 2; }
+        else if (v >= 35 && v <= 45) { vc = 40; half = 5; f = FL0; kind = u < 0 ? 3 : 4; }
+        else if (v >= -103 && v <= -89) { vc = -96; half = 7; f = FL1; kind = u < 0 ? 5 : 6; }
+        else return 0;
+        int yy = y - f;
+        if (yy < 0) return 0;
+        if (au > 59 && Math.abs(v - vc) > half - (au - 59)) return 0;
+        return yy < roomH(v, vc, half) ? kind : 0;
+    }
+
+    private static int roomH(int v, int vc, int half) {
+        double t = (v - vc) / (half + 0.5);
+        return 10 + (int) ((half + 4) * Math.sqrt(Math.max(0, 1 - t * t)));
+    }
+
+    // ailes : forges (u < 0) et quartiers (u > 0)
+    private static int wingH(int a) {
+        double da = (a - 123) / 23.5;
+        return 12 + (int) (32 * Math.sqrt(Math.max(0, 1 - da * da)));
+    }
+
+    private static boolean wingAir(int u, int y, int v) {
+        int a = Math.abs(u), yy = y - FL0;
+        if (yy < 0 || a < 100 || a > 146 || v < 30 || v > 120) return false;
+        double da = (a - 123) / 23.5, dv = (v - 75) / 45.5;
+        if (Math.abs(da * da * da) + Math.abs(dv * dv * dv) > 1) return false;
+        return yy < wingH(a);
+    }
+
+    private static boolean storeAir(int u, int y, int v) {
+        int a = Math.abs(u), yy = y - FL0;
+        if (yy < 0 || a < 100 || a > 146 || v < 124 || v > 152) return false;
+        double da = (a - 123) / 23.5, dv = (v - 138) / 14.5;
+        if (Math.abs(da * da * da) + Math.abs(dv * dv * dv) > 1) return false;
+        return yy < 9 + (int) (14 * Math.sqrt(Math.max(0, 1 - da * da)));
+    }
+
+    private static int storeH(int a) { return 9 + (int) (14 * Math.sqrt(Math.max(0, 1 - ((a - 123) / 23.5) * ((a - 123) / 23.5)))); }
+
+    private static final int[] CH_V = {68, 80, 92, 104};
+
+    private static int chamberTop(int dv) { return 18 + (int) (4 * Math.sqrt(Math.max(0, 1 - (dv / 4.5) * (dv / 4.5)))); }
+
+    private static boolean chamber(int u, int y, int v) {
+        int a = -u, yy = y - FL0;
+        if (u >= 0 || a < 91 || a > 103 || yy < 15) return false;
+        for (int vc : CH_V) if (Math.abs(v - vc) <= 4 && yy < chamberTop(Math.abs(v - vc))) return true;
+        return false;
+    }
+
+    /** palier et escalier du balcon des forges : y de la marche */
+    private static int balStair(int u, int v) { return tread(u, v, 2, 49, 14, -109, -107, FL0); }
+
+    /** passage de l'allee des quartiers : y de la marche, ou MIN_VALUE ; dir : 1 vers l'est (cote exterieur), 3 vers l'ouest (cote interieur) */
+    private static int alleyT(int u, int v) {
+        for (int[] al : new int[][]{{60, 63}, {90, 93}}) {
+            int t = tread(u, v, 1, 130, 7, al[0], al[1], FL0);
+            if (t != Integer.MIN_VALUE) return t;
+            t = tread(u, v, 3, -114, 7, al[0], al[1], FL0);
+            if (t != Integer.MIN_VALUE) return t;
+        }
+        return Integer.MIN_VALUE;
+    }
+
     private static boolean air2(int u, int y, int v) {
         int au = Math.abs(u);
         if (y >= 91 && y <= FL0 + 7) {
@@ -180,10 +264,12 @@ public final class EreborPlan {
         }
         if (y >= FL0) {
             // les forges (ouest) et les quartiers (est), leurs portes et les entrepots
-            if (au >= 100 && au <= 146 && v >= 30 && v <= 120 && y < FL0 + 44) return true;
-            if (au >= 36 && au <= 100 && v >= 96 && v <= 104 && y <= FL0 + 9) return true;
-            if (au >= 100 && au <= 146 && v >= 124 && v <= 152 && y < FL0 + 22) return true;
-            if (au >= 124 && au <= 136 && v >= 120 && v <= 124 && y <= FL0 + 8) return true;
+            if (wingAir(u, y, v) || storeAir(u, y, v) || chamber(u, y, v)) return true;
+            if (au >= 36 && au <= 108 && v >= 96 && v <= 104) {                                  // la grande rue des forges : un tunnel voute
+                double t = Math.abs(v - 100) / 4.5;
+                if (y - FL0 < 7 + (int) (5 * Math.sqrt(Math.max(0, 1 - t * t)))) return true;
+            }
+            if (au >= 118 && au <= 128 && v >= 112 && v <= 126 && y - FL0 < 7 + (int) (4 * Math.sqrt(Math.max(0, 1 - ((au - 123) / 5.5) * ((au - 123) / 5.5))))) return true;
             // le coffre secret derriere le trone
             if (y >= FL1 && y <= FL1 + 8) {
                 if (u >= -31 && u <= -29 && v >= -150 && v <= -126 && y <= FL1 + 3) return true;
@@ -218,7 +304,7 @@ public final class EreborPlan {
     // ------------------------------------------------------------------ materiaux
     private static int stone(int u, int y, int v) {
         double q = r01(u, y, v);
-        return q < 0.58 ? STB : q < 0.74 ? TUFFB : q < 0.86 ? MSTB : q < 0.94 ? PANDES : MoriaPlan.CRACKB;
+        return q < 0.5 ? STB : q < 0.68 ? TUFFB : q < 0.82 ? MSTB : q < 0.94 ? PANDES : MoriaPlan.CRDEEP;
     }
 
     private static int mineLining(int u, int y, int v, boolean up) {
@@ -238,15 +324,32 @@ public final class EreborPlan {
         if (v >= VF - 6 && v <= VF + 4 && Math.abs(u) <= 30 && y <= FL0 + 60) return KEEP;          // le cadre de la Porte est dessine par la facade
         if (dn) return ceilPat(u, y, v);
         int w = (air(u + 1, y, v) || air(u - 1, y, v)) ? v : u;
-        int yy = y % 24;
-        if (yy == 0) return CSTB;
-        if (yy == 12) return Math.abs(u) < 100 && (w & 3) == 0 ? CUCUT : PANDES;
-        if (Math.floorMod(w + y / 3, 12) == 0) return PANDES;
-        return stone(u, y, v);
+        return wallPat(u, y, v, w);
+    }
+
+    /** les murs : pilastres, bandeaux, soubassement en moellon, panneaux de briques et runes, tous de la meme teinte et de textures differentes */
+    private static int wallPat(int u, int y, int v, int w) {
+        int b = Math.floorMod(y, 24), m = Math.floorMod(w, 12);
+        double q = r01(u, y, v);
+        if (b == 0) return CSTB;
+        if (b == 12) return Math.abs(u) < 100 && (w & 3) == 0 ? CUCUT : PANDES;
+        if (m <= 1) return b == 6 || b == 18 ? CSTB : MoriaPlan.DPILLAR;
+        if ((m == 6 || m == 7) && b == 6) return MoriaPlan.DRUNES;
+        if (b < 6) return q < 0.7 ? MSTB : STB;
+        if (b < 12) return q < 0.8 ? PANDES : STB;
+        return q < 0.58 ? STB : q < 0.78 ? TUFFB : q < 0.92 ? PANDES : MoriaPlan.CRDEEP;
     }
 
     private static int floorPat(int u, int y, int v) {
         int au = Math.abs(u);
+        int rk = sideRoom(u, y + 1, v);
+        if (rk != 0) {
+            if (rk == 1 && au >= 56 && au <= 60 && Math.abs(v - 68) <= 2) return Math.abs(v - 68) == 2 || au == 56 || au == 60 ? STB : MoriaPlan.LAVA;
+            if (rk == 1) return r01(u, y, v) < 0.5 ? POLBK : MoriaPlan.BLACKSTONE;
+            return ((u >> 1) + (v >> 1) & 1) == 0 ? PANDES : (r01(u, y, v) < 0.4 ? MSTB : SMST);
+        }
+        if (y == FL0 + 13 && u < 0 && au >= 91 && au <= 103) return PANDES;                  // le sol des chambres
+        if (y >= FL0 + 13 && y <= FL0 + 14 && au >= 91 && au <= 103) return r01(u, y, v) < 0.5 ? PANDES : STB;
         if (au <= 36 && v >= -126 && v <= 127 && (y == FL0 - 1 || y == FL1 - 1)) {            // le grand axe : tapis sombre bordure d'or
             if (au <= 3) return (v & 7) == 0 ? CSTB : POLBK;
             if (au == 4) return gold;
@@ -255,8 +358,10 @@ public final class EreborPlan {
         }
         if (y == FL0 - 1 && au >= 100 && au <= 146 && v >= 30 && v <= 120) {
             if (u < 0) {                                                                       // les forges : sol noir et un canal de lave
-                if (Math.abs(u + 130) <= 2 && v >= 36 && v <= 114) return Math.floorMod(v, 24) < 4 ? STB : MoriaPlan.LAVA;
-                return r01(u, y, v) < 0.5 ? POLBK : MoriaPlan.BLACKSTONE;
+                if ((au == 137 || au == 138) && v >= 40 && v <= 110) return Math.floorMod(v, 24) < 4 ? STB : MoriaPlan.LAVA;
+                if (au == 136 || au == 139) return v >= 40 && v <= 110 ? CSTB : MoriaPlan.BLACKSTONE;
+                double q = r01(u, y, v);
+                return q < 0.4 ? POLBK : q < 0.75 ? MoriaPlan.BLACKSTONE : MoriaPlan.DTILES;
             }
             return Math.abs(u - 122) <= 8 ? (((u >> 1) + (v >> 1) & 1) == 0 ? PANDES : SMST) : SMST;
         }
@@ -270,17 +375,7 @@ public final class EreborPlan {
         return r01(u, y, v) < 0.5 ? PANDES : TUFFB;
     }
 
-    private static int mapStatue(int id) {
-        return switch (id) {
-            case MoriaPlan.DSTONE, MoriaPlan.DPILLAR -> PANDES;
-            case MoriaPlan.DCOBBLE -> COBBLE;
-            case MoriaPlan.DBRICKS -> STB;
-            case MoriaPlan.DCHISEL -> CSTB;
-            case MoriaPlan.DEEPSLATE -> MoriaPlan.POLDEEP;
-            case MoriaPlan.DRUNES, MoriaPlan.DLAMP -> CUCUT;
-            default -> id;
-        };
-    }
+    private static int mapStatue(int id) { return id; }
 
     // ------------------------------------------------------------------ le decor des volumes creuses
     private static int decor(int u, int y, int v) {
@@ -301,9 +396,12 @@ public final class EreborPlan {
                 return AIR;
             }
         }
+        if (au >= 37 && au <= 64 && (r = sideRoomDecor(u, y, v)) != KEEP) return r;
+        if (au >= 37 && au <= 38 && niche(y, v)) return nicheDecor(u, y, v);
         if (y >= FL0) {
-            if (au >= 100 && au <= 146 && v >= 30 && v <= 120 && y < FL0 + 44) return u < 0 ? forge(u, y, v) : quarters(u, y, v);
-            if (au >= 100 && au <= 146 && v >= 124 && v <= 152 && y < FL0 + 22) return store(u, y, v);
+            if (wingAir(u, y, v)) return u < 0 ? forge(u, y, v) : quarters(u, y, v);
+            if (chamber(u, y, v)) return chamberDecor(u, y, v);
+            if (storeAir(u, y, v)) return store(u, y, v);
             if (y >= FL1 && y <= FL1 + 8 && v <= -150 && u >= -48 && u <= -12) return vault(u, y, v);
             return AIR;
         }
@@ -312,9 +410,9 @@ public final class EreborPlan {
     }
 
     private static boolean chimney(int u, int y, int v, int x, int z) {
-        if (u < -145 || u > -137) return false;
-        for (int vs : new int[]{40, 56, 72, 88, 104}) {
-            if (Math.abs(u + 141) <= 1 && Math.abs(v - vs) <= 1) {
+        if (u < -145 || u > -143) return false;
+        for (int vs : new int[]{56, 68, 80, 92}) {
+            if (Math.abs(v - vs) <= 1) {
                 int t = top(x, z);
                 return t != Integer.MIN_VALUE && y <= t + 1;
             }
@@ -322,47 +420,191 @@ public final class EreborPlan {
         return false;
     }
 
-    private static int forge(int u, int y, int v) {
-        int yy = y - FL0;
-        for (int vs : new int[]{40, 56, 72, 88, 104}) {
-            if (v >= vs - 1 && v <= vs + 1) {
-                if (u >= -142 && u <= -140 && yy <= 1) return yy == 0 ? MoriaPlan.FORGE : MoriaPlan.FURNACE;
-                if (u == -141 && v == vs && yy >= 2 && yy <= 43) return IRONBARS;                 // le tuyau jusqu'a la cheminee
-                if (u == -138 && v == vs && yy == 0) return MoriaPlan.ANVIL;
-                if (u == -143 && v == vs && yy <= 1) return MoriaPlan.BARREL;
-                if (u == -120 && v == vs && yy == 0) return MoriaPlan.CAULDRON;
-                if (u == -118 && v == vs && yy <= 1) return MoriaPlan.BARREL;
-                if (u == -119 && v == vs + 1 && yy == 0) return MoriaPlan.ANVIL;
-            }
+    // ------------------------------------------------------------------ les salles laterales, les niches
+    private static int nicheDecor(int u, int y, int v) {
+        boolean hall = v >= 28;
+        int yy = y - (hall ? FL0 : FL1), au = Math.abs(u), m = Math.floorMod(v, 12);
+        double t = (m - 5.5) / 4.0;
+        int top = 18 + (int) (9 * Math.sqrt(Math.max(0, 1 - t * t)));
+        if (m == 5 || m == 6) {
+            if (au == 37 && yy == 0 && (Math.floorDiv(v, 12) & 1) == 0) return MoriaPlan.CAMPFIRE;
+            if (au == 37 && yy == top) return SLANT;
         }
-        if (Math.floorMod(u, 12) == 6 && Math.floorMod(v, 16) == 8 && yy >= 36 && yy <= 43) return yy == 36 ? SLANT : MoriaPlan.CHAIN;
-        if (u == -130 && yy == 1 && Math.floorMod(v, 24) < 4 && v % 24 == 0) return KEEP;
         return KEEP;
     }
 
+    private static int sideRoomDecor(int u, int y, int v) {
+        int k = sideRoom(u, y, v);
+        if (k == 0) return KEEP;
+        int a = Math.abs(u), vc = k <= 2 ? 68 : k <= 4 ? 40 : -96, half = k == 3 || k == 4 ? 5 : 7;
+        int yy = y - (k <= 4 ? FL0 : FL1), h = roomH(v, vc, half), dv = v - vc;
+        // lustres : une chaine et une lanterne
+        if (dv == 0 && a % 8 == 4 && a >= 44 && a <= 60) { if (yy == h - 4) return SLANT; if (yy > h - 4) return MoriaPlan.CHAIN; }
+        boolean w = u < 0;
+        switch (k) {
+            case 1 -> {                                                         // la forge de la salle
+                if (yy <= 1 && (v == 62 || v == 74) && a >= 40 && a <= 52 && a % 4 == 0) return yy == 0 ? MoriaPlan.DFURN + (v == 62 ? 2 : 0) : MoriaPlan.BARREL;
+                if (yy == 0 && ((a == 44 && v == 66) || (a == 48 && v == 70) || (a == 52 && v == 66) || (a == 56 && v == 70))) return MoriaPlan.ANVIL;
+                if (yy <= 1 && a >= 62 && (v <= 63 || v >= 73)) return MoriaPlan.BARREL;
+                if (yy == 0 && a == 40 && v == 68) return MoriaPlan.CAULDRON;
+            }
+            case 2 -> {                                                         // la taverne : deux longues tables et des bancs
+                if ((v == 65 || v == 71) && a >= 42 && a <= 58) { if (yy == 1) return MoriaPlan.OAKP; if (yy == 0 && a % 4 == 2) return MoriaPlan.FENCE; }
+                if (yy == 0 && a >= 42 && a <= 58 && a % 2 == 0) {
+                    if (v == 63 || v == 69) return MoriaPlan.BSTAIR;
+                    if (v == 67 || v == 73) return MoriaPlan.BSTAIR + 2;
+                }
+                if (yy <= 1 && a >= 62 && (v <= 63 || v >= 73)) return MoriaPlan.BARREL;
+                if (yy == 0 && a == 63 && v == 68) return MoriaPlan.CAMPFIRE;
+            }
+            case 3 -> {                                                         // l'atelier des bijoutiers
+                if (yy == 0 && (v == 36 || v == 44) && a >= 40 && a <= 60) { int c = a % 8; if (c == 0) return MoriaPlan.DCRAFT; if (c == 4) return MoriaPlan.DCHEST + (v == 36 ? 2 : 0); }
+                if (yy == 0 && v == 40 && a >= 46 && a <= 58 && a % 4 == 2) return MoriaPlan.ANVIL;
+                if (yy <= 1 && a >= 62 && Math.abs(dv) <= 2) return yy == 0 ? gold : MoriaPlan.RAWGOLD;
+            }
+            case 4 -> {                                                         // la brasserie : des futs
+                if (yy <= 1 && (v == 36 || v == 44) && a >= 40 && a <= 62 && a % 6 != 0) return MoriaPlan.BARREL;
+                if (yy == 0 && v == 40 && a >= 44 && a <= 60 && a % 8 == 4) return MoriaPlan.CAULDRON;
+                if (yy <= 1 && a >= 62) return MoriaPlan.BARREL;
+            }
+            case 5 -> {                                                         // la bibliotheque
+                if (a >= 40 && a <= 60 && a % 4 == 0 && yy <= 4 && Math.abs(dv) >= 2 && Math.abs(dv) <= 7) return MoriaPlan.BOOKS;
+                if (yy <= 4 && a >= 62) return MoriaPlan.BOOKS;
+                if (yy == 0 && a == 50 && Math.abs(dv) <= 1) return MoriaPlan.CRAFT;
+            }
+            case 6 -> {                                                         // la salle des gardes : lits en rang, coffres
+                if ((v == -102 || v == -90) && yy == 0 && a >= 40 && a <= 57) { int c = a % 4; if (c == 0) return MoriaPlan.DBEDF + 1; if (c == 1) return MoriaPlan.DBEDH + 1; }
+                if (yy == 0 && a == 62 && (v == -101 || v == -91)) return MoriaPlan.DCHEST + 3;
+                if (yy == 0 && a == 48 && v == -96) return MoriaPlan.OAKP;
+                if (yy == 1 && a == 48 && v == -96) return MoriaPlan.BARREL;
+                if (yy == 0 && a == 56 && Math.abs(dv) == 1) return MoriaPlan.ANVIL;
+            }
+            default -> { }
+        }
+        return KEEP;
+    }
+
+    // ------------------------------------------------------------------ la salle des forges (ouest)
+    private static int forge(int u, int y, int v) {
+        int a = -u, yy = y - FL0, H = wingH(a);
+        int ts = balStair(u, v);
+        if (ts != Integer.MIN_VALUE && y <= ts) return y == ts ? STS + 2 : y < ts ? STB : KEEP;
+        // les piliers de la nef, leurs nervures et les lustres
+        for (int vp = 48; vp <= 108; vp += 12) {
+            for (int ap : new int[]{114, 132}) {
+                if (Math.abs(a - ap) <= 1 && Math.abs(v - vp) <= 1) {
+                    if (yy <= 1) return STB;
+                    if (yy >= H - 4) return yy == H - 4 ? gold : CSTB;
+                    return yy % 8 == 7 ? CSTB : MoriaPlan.DPILLAR;
+                }
+            }
+            if (v == vp && yy >= H - 3 && a >= 100 && a <= 146) return yy == H - 3 ? CSTB : STB;
+            if (v == vp + 6 && a == 123 && yy >= H - 9) return yy == H - 9 ? SLANT : MoriaPlan.CHAIN;
+        }
+        // le balcon des chambres : un plancher a mi-hauteur, une rambarde, des piliers
+        if (a >= 103 && a <= 110 && v >= 64 && v <= 108) {
+            if (yy == 14) return r01(u, y, v) < 0.5 ? PANDES : MSTB;
+            if (yy == 15 || yy == 16) { if (a == 110) return IRONBARS; }
+            if (yy < 14 && a >= 109 && (v == 74 || v == 75 || v == 86 || v == 87 || v == 98 || v == 99 || v == 64 || v == 108)) return yy <= 1 || yy >= 12 ? CSTB : MoriaPlan.DPILLAR;
+            if (yy <= 1 && a <= 105 && v % 3 == 0) { int k = hsh(v, 3, 5) % 6; return k == 0 || k == 1 ? MoriaPlan.BARREL : k == 2 ? MoriaPlan.DCHEST + 1 : k == 3 ? MoriaPlan.CRAFT : k == 4 ? MoriaPlan.ANVIL : KEEP; }
+            if (yy == 13 && a == 106 && v % 12 == 6) return SLANT;
+        }
+        // les postes de forge contre la paroi exterieure
+        for (int vs : new int[]{56, 68, 80, 92}) {
+            if (Math.abs(v - vs) <= 1 && a >= 143 && a <= 144 && yy <= 1) return yy == 0 ? MoriaPlan.DFURN + 1 : STB;
+            if (a == 144 && v == vs && yy >= 2 && yy < H) return IRONBARS;                     // le tuyau
+            if (v == vs && a == 141 && yy == 0) return MoriaPlan.ANVIL;
+            if (a == 141 && (v == vs - 2 || v == vs + 2) && yy <= 1) return MoriaPlan.BARREL;
+            if (a == 142 && v == vs + 3 && yy == 0) return MoriaPlan.CRAFT;
+            if (a == 140 && v == vs - 1 && yy == 0) return MoriaPlan.CAULDRON;
+            if (a == 140 && v == vs + 1 && yy <= 1 && a == 140) return MoriaPlan.RAWGOLD;
+        }
+        // bras de lave : ponts et lampes
+        if (a == 139 && yy == 0 && v % 12 == 4 && v >= 40 && v <= 110) return CAMP();
+        return KEEP;
+    }
+
+    private static int CAMP() { return MoriaPlan.CAMPFIRE; }
+
+    private static int chamberDecor(int u, int y, int v) {
+        int a = -u, yy = y - FL0, bv = 0;
+        for (int vc : CH_V) if (Math.abs(v - vc) <= 4) bv = vc;
+        int dv = v - bv;
+        if (yy == 15) {
+            if (a == 93 && dv == -2) return MoriaPlan.DBEDF + 3;
+            if (a == 92 && dv == -2) return MoriaPlan.DBEDH + 3;
+            if (a == 92 && dv == 3) return MoriaPlan.DCHEST + 1;
+            if (a == 92 && dv == 1) return MoriaPlan.CRAFT;
+        }
+        if (a == 97 && dv == 0 && yy == chamberTop(0) - 1) return SLANT;
+        return KEEP;
+    }
+
+    // ------------------------------------------------------------------ les quartiers (est) : rue, maisons, terrasses et cabanes
     private static int quarters(int u, int y, int v) {
-        int yy = y - FL0, d = Math.abs(u - 122);
+        int yy = y - FL0, d = Math.abs(u - 122), H = wingH(Math.abs(u));
         int row = Math.floorDiv(v - 34, 15), vr = Math.floorMod(v - 34, 15);
+        boolean outer = u > 122;
+        // la fontaine de la place nord
+        if (v >= 36 && v <= 44 && d <= 4) {
+            int c = Math.max(d, Math.abs(v - 40));
+            if (c == 4) return yy <= 1 ? CSTB : KEEP;
+            if (c <= 3) { if (yy == 0) return MoriaPlan.WATER; if (c == 0 && yy <= 7) return yy == 7 ? MoriaPlan.CAMPFIRE : MoriaPlan.DPILLAR; }
+        }
+        // le grand brasero de la place sud
+        if (v >= 111 && v <= 113 && d <= 1) { if (yy <= 1) return STB; if (yy == 2 && d == 0 && v == 112) return MoriaPlan.CAMPFIRE; }
+        // les marches des allees et les terrasses
+        int ta = alleyT(u, v);
+        if (ta != Integer.MIN_VALUE) return y == ta ? STS + (outer ? 1 : 3) : y < ta ? STB : KEEP;
+        if ((v >= 60 && v <= 63 || v >= 90 && v <= 93) && d >= 16 && d <= 20 && yy <= 7) return yy == 7 ? PANDES : STB;
         if (d <= 8) {                                                                            // la rue
-            if (d == 7 && vr == 8 && v < 118) { if (yy <= 2) return yy == 0 ? CSTB : STB; if (yy == 3) return MoriaPlan.CAMPFIRE; }
-            if (u == 122 && Math.floorMod(v, 10) == 5 && yy >= 38 && yy <= 43) return yy == 38 ? SLANT : MoriaPlan.CHAIN;
+            if (d == 7 && vr == 8 && v < 118 && row >= 0) { if (yy <= 2) return yy == 0 ? CSTB : STB; if (yy == 3) return MoriaPlan.CAMPFIRE; }
+            if (u == 122 && Math.floorMod(v, 10) == 5 && yy >= H - 6 && yy < H) return yy == H - 6 ? SLANT : MoriaPlan.CHAIN;
+            if (d == 5 && (row == 1 || row == 3) && vr >= 3 && vr <= 7) {                          // un etal de marche
+                if (yy == 0) return (vr == 3 || vr == 7) ? MoriaPlan.FENCE : MoriaPlan.OAKP;
+                if (yy == 1) return (vr == 3 || vr == 7) ? MoriaPlan.FENCE : vr == 5 ? MoriaPlan.BARREL : KEEP;
+                if (yy == 2 && (vr == 3 || vr == 7)) return MoriaPlan.FENCE;
+                if (yy == 3) return MoriaPlan.OAKP;
+            }
             return KEEP;
         }
-        if (row < 0 || row > 5 || vr > 10 || d > 20) return KEEP;
-        if (yy >= 6 && yy <= 7) return yy == 7 ? (d % 2 == 0 ? PSLB : PANDES) : STB;           // le toit
-        if (yy > 5) return KEEP;
+        if (row < 1 || row > 4 || vr > 10 || d > 20) return KEEP;
+        if (yy == 6) return STB;                                                                 // le toit : une terrasse
+        if (yy == 7) return r01(u, y, v) < 0.5 ? PANDES : MSTB;
+        if (yy > 7) {
+            if (d == 9 && yy == 8) return IRONBARS;                                              // la rambarde cote rue
+            // la cabane sur le toit
+            if (d >= 12 && d <= 19 && vr >= 2 && vr <= 8 && yy <= 12) {
+                if (yy == 12) return STB;
+                boolean wall = d == 12 || d == 19 || vr == 2 || vr == 8;
+                if (wall) {
+                    if (d == 12 && vr == 5 && yy <= 9) return AIR;
+                    if (yy >= 9 && yy <= 10 && ((d == 19 && vr >= 4 && vr <= 6) || ((vr == 2 || vr == 8) && d >= 15 && d <= 16))) return IRONBARS;
+                    return yy == 11 ? CSTB : stone(u, y, v);
+                }
+                if (yy == 8) {
+                    if (d == 17 && vr == 3) return MoriaPlan.DBEDF + (outer ? 1 : 3);
+                    if (d == 18 && vr == 3) return MoriaPlan.DBEDH + (outer ? 1 : 3);
+                    if (d == 18 && vr == 7) return MoriaPlan.DCHEST + (outer ? 3 : 1);
+                    if (d == 15 && vr == 7) return MoriaPlan.CRAFT;
+                }
+                if (yy == 11 && d == 15 && vr == 5) return SLANT;
+            }
+            return KEEP;
+        }
         boolean wall = d == 9 || d == 20 || vr == 0 || vr == 10;
         if (wall) {
             if (d == 9 && vr >= 4 && vr <= 6 && yy <= 3) return AIR;                            // la porte
             if (d == 9 && (vr == 2 || vr == 8) && yy >= 2 && yy <= 3) return IRONBARS;          // les fenetres
-            return yy == 5 ? CSTB : stone(u, y, v);
+            if (yy == 5) return CSTB;
+            return stone(u, y, v);
         }
-        int dirChest = u < 122 ? 1 : 3;
-        if (d == 18 && vr == 2 && yy == 0) return MoriaPlan.DBEDF + 2;
-        if (d == 18 && vr == 3 && yy == 0) return MoriaPlan.DBEDH + 2;
-        if (d == 18 && vr == 8 && yy == 0) return MoriaPlan.DCHEST + dirChest;
+        int dirChest = outer ? 3 : 1;
+        if (d == 18 && vr == 2 && yy == 0) return MoriaPlan.DBEDF + (outer ? 1 : 3);
+        if (d == 19 && vr == 2 && yy == 0) return MoriaPlan.DBEDH + (outer ? 1 : 3);
+        if (d == 19 && vr == 8 && yy == 0) return MoriaPlan.DCHEST + dirChest;
         if (d == 16 && vr == 5 && yy == 0) return MoriaPlan.CRAFT;
-        if (d == 18 && vr == 6 && yy == 0) return MoriaPlan.DFURN + dirChest;
+        if (d == 19 && vr == 6 && yy == 0) return MoriaPlan.DFURN + dirChest;
         if (d == 14 && vr == 5 && yy == 5) return SLANT;
         return KEEP;
     }
@@ -377,7 +619,8 @@ public final class EreborPlan {
                 return k <= 1 ? MoriaPlan.BARREL : k == 2 ? MoriaPlan.IRONB : k == 3 ? COALB : k == 4 ? RAWIRON : MoriaPlan.COPPER;
             }
         }
-        if (Math.floorMod(au, 12) == 6 && Math.floorMod(v, 12) == 6 && yy >= 17 && yy <= 21) return yy == 17 ? SLANT : MoriaPlan.CHAIN;
+        int H = storeH(au);
+        if (Math.floorMod(au, 12) == 6 && Math.floorMod(v, 12) == 6 && yy >= H - 5) return yy == H - 5 ? SLANT : MoriaPlan.CHAIN;
         return KEEP;
     }
 
@@ -610,7 +853,7 @@ public final class EreborPlan {
             case 3: return q < 0.5 ? TUFFB : MSTB;                                         // dos des niches
             case 4: return q < 0.4 ? GLOW : CSTB;                                          // fond des fenetres
             case 5: return PTUFF;                                                          // encadrement des fenetres
-            default: return q < 0.52 ? STB : q < 0.72 ? TUFFB : q < 0.84 ? MSTB : q < 0.93 ? PANDES : MoriaPlan.CRACKB;
+            default: return q < 0.52 ? STB : q < 0.72 ? TUFFB : q < 0.84 ? MSTB : q < 0.93 ? PANDES : MoriaPlan.CRDEEP;
         }
     }
 

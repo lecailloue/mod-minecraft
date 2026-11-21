@@ -260,16 +260,16 @@ public final class MapChunkGenerator extends ChunkGenerator {
         }
         net.minecraft.core.Direction[] ds = dirs;
         p[EreborPlan.SNOWB] = Blocks.SNOW_BLOCK.defaultBlockState();
-        p[EreborPlan.STB] = Blocks.STONE_BRICKS.defaultBlockState();
-        p[EreborPlan.MSTB] = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
-        p[EreborPlan.CSTB] = Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
-        p[EreborPlan.PANDES] = Blocks.POLISHED_ANDESITE.defaultBlockState();
-        p[EreborPlan.SMST] = Blocks.SMOOTH_STONE.defaultBlockState();
-        p[EreborPlan.TUFFB] = Blocks.TUFF_BRICKS.defaultBlockState();
-        p[EreborPlan.PTUFF] = Blocks.POLISHED_TUFF.defaultBlockState();
-        p[EreborPlan.CTUFF] = Blocks.CHISELED_TUFF.defaultBlockState();
-        p[EreborPlan.COBBLE] = Blocks.COBBLESTONE.defaultBlockState();
-        p[EreborPlan.ANDES] = Blocks.ANDESITE.defaultBlockState();
+        p[EreborPlan.STB] = Reg.DWARVEN_BRICKS.get().defaultBlockState();
+        p[EreborPlan.MSTB] = Reg.DWARVEN_COBBLESTONE.get().defaultBlockState();
+        p[EreborPlan.CSTB] = Reg.DWARVEN_CHISELED.get().defaultBlockState();
+        p[EreborPlan.PANDES] = Reg.DWARVEN_STONE.get().defaultBlockState();
+        p[EreborPlan.SMST] = Blocks.POLISHED_DEEPSLATE.defaultBlockState();
+        p[EreborPlan.TUFFB] = Blocks.DEEPSLATE_BRICKS.defaultBlockState();
+        p[EreborPlan.PTUFF] = Blocks.POLISHED_DEEPSLATE.defaultBlockState();
+        p[EreborPlan.CTUFF] = Blocks.CHISELED_DEEPSLATE.defaultBlockState();
+        p[EreborPlan.COBBLE] = Reg.DWARVEN_COBBLESTONE.get().defaultBlockState();
+        p[EreborPlan.ANDES] = Blocks.COBBLED_DEEPSLATE.defaultBlockState();
         p[EreborPlan.CUCUT] = Blocks.WAXED_CUT_COPPER.defaultBlockState();
         p[EreborPlan.CHCU] = Blocks.WAXED_CHISELED_COPPER.defaultBlockState();
         p[EreborPlan.SEAL] = Blocks.SEA_LANTERN.defaultBlockState();
@@ -278,11 +278,11 @@ public final class MapChunkGenerator extends ChunkGenerator {
         p[EreborPlan.GLOW] = Blocks.GLOWSTONE.defaultBlockState();
         p[EreborPlan.CALC] = Blocks.CALCITE.defaultBlockState();
         p[EreborPlan.POLBK] = Blocks.POLISHED_BLACKSTONE.defaultBlockState();
-        p[EreborPlan.SLB] = Blocks.STONE_BRICK_SLAB.defaultBlockState();
-        p[EreborPlan.SLT] = Blocks.STONE_BRICK_SLAB.defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE, net.minecraft.world.level.block.state.properties.SlabType.TOP);
-        p[EreborPlan.PSLB] = Blocks.POLISHED_ANDESITE_SLAB.defaultBlockState();
-        p[EreborPlan.PSLT] = Blocks.POLISHED_ANDESITE_SLAB.defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE, net.minecraft.world.level.block.state.properties.SlabType.TOP);
-        p[EreborPlan.WALLSTB] = Blocks.STONE_BRICK_WALL.defaultBlockState();
+        p[EreborPlan.SLB] = Reg.DWARVEN_BRICKS_SLAB.get().defaultBlockState();
+        p[EreborPlan.SLT] = Reg.DWARVEN_BRICKS_SLAB.get().defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE, net.minecraft.world.level.block.state.properties.SlabType.TOP);
+        p[EreborPlan.PSLB] = Reg.DWARVEN_STONE_SLAB.get().defaultBlockState();
+        p[EreborPlan.PSLT] = Reg.DWARVEN_STONE_SLAB.get().defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE, net.minecraft.world.level.block.state.properties.SlabType.TOP);
+        p[EreborPlan.WALLSTB] = Reg.DWARVEN_BRICKS_WALL.get().defaultBlockState();
         p[EreborPlan.COALO] = Blocks.COAL_ORE.defaultBlockState();
         p[EreborPlan.IRONO] = Blocks.IRON_ORE.defaultBlockState();
         p[EreborPlan.COPPERO] = Blocks.COPPER_ORE.defaultBlockState();
@@ -292,10 +292,10 @@ public final class MapChunkGenerator extends ChunkGenerator {
         p[EreborPlan.COALB] = Blocks.COAL_BLOCK.defaultBlockState();
         p[EreborPlan.RAWIRON] = Blocks.RAW_IRON_BLOCK.defaultBlockState();
         for (int i = 0; i < 4; i++) {
-            p[EreborPlan.STS + i] = Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, ds[i]);
+            p[EreborPlan.STS + i] = Reg.DWARVEN_BRICKS_STAIRS.get().defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, ds[i]);
             p[EreborPlan.STST + i] = p[EreborPlan.STS + i].setValue(net.minecraft.world.level.block.StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP);
-            p[EreborPlan.PAS + i] = Blocks.POLISHED_ANDESITE_STAIRS.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, ds[i]);
-            p[EreborPlan.TFS + i] = Blocks.TUFF_BRICK_STAIRS.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, ds[i]);
+            p[EreborPlan.PAS + i] = Reg.DWARVEN_STONE_STAIRS.get().defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, ds[i]);
+            p[EreborPlan.TFS + i] = Reg.DWARVEN_COBBLESTONE_STAIRS.get().defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, ds[i]);
         }
         return moriaPal = p;
     }
