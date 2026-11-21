@@ -178,7 +178,7 @@ def biome(id, fr, temp, down, sky, fog, water='#3f76e4', wfog='#050533', grass=N
     unknown = vset - set(VEG_ORDER)
     assert not unknown, unknown
     steps = [[] for _ in range(11)]
-    steps[1] = ['minecraft:lake_lava_underground'] + (['minecraft:lake_lava_surface'] if lava_surface else [])
+    steps[1] = (['minecraft:lake_lava_underground'] if id in ('volcan', 'rivieres_de_lave') else []) + (['minecraft:lake_lava_surface'] if lava_surface else [])   # pas de lacs de lave dans les salles
     steps[2] = ['minecraft:amethyst_geode']
     if ores:
         steps[6] = [o for o in ORES if id == 'volcan' or o != 'minecraft:ore_dirt'] + ([R(lunar)] if lunar else []) + ORES_TAIL

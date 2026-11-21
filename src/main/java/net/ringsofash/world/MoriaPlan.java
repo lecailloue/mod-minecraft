@@ -499,12 +499,14 @@ public final class MoriaPlan {
     }
 
     private static int chasm(int x, int y, int z, int h) {
-        if (x < CX0 - 8 || x > CX1 + 8 || z < CZ0 || z > CZ1 || y < -52 || y > 170) return KEEP;
+        if (x < CX0 - 8 || x > CX1 + 8 || z < CZ0 - 3 || z > CZ1 + 3 || y < -52 || y > 170) return KEEP;
         // les parois : un trace general lisse, puis un relief qui change avec l'altitude (surplombs, replats, bosses) pour ne pas avoir de cannelures verticales
         double xl = CX0 + 7 * (2 * vn(z / 21.0, 3.1, 61) - 1) + 5 * (2 * vn(z / 7.0 + y * 0.09, y / 6.0, 64) - 1) + 2 * (2 * vn(z / 3.0, y / 3.0, 68) - 1);
         double xr = CX1 + 7 * (2 * vn(z / 19.0, 8.3, 62) - 1) + 5 * (2 * vn(z / 7.0 - y * 0.09, y / 6.0, 65) - 1) + 2 * (2 * vn(z / 3.0, y / 3.0, 69) - 1);
         double zn = CZ0 + 4 * (2 * vn(x / 7.0 + y * 0.08, y / 6.0, 66) - 1) + 1.5 * (2 * vn(x / 3.0, y / 3.0, 70) - 1);
         double zs = CZ1 + 4 * (2 * vn(x / 7.0 - y * 0.08, y / 6.0, 71) - 1) + 1.5 * (2 * vn(x / 3.0, y / 3.0, 72) - 1);
+        // les deux entrees du gouffre (les grands escaliers) : la cavite doit se prolonger jusqu'a eux, sans bouchon de roche naturelle
+        if (x >= 48 && x <= 102) { zn = Math.min(zn, CZ0 - 2); zs = Math.max(zs, CZ1 + 2); }
         if (x <= xl || x >= xr || z < zn || z > zs) return KEEP;
         double dEdge = Math.min(Math.min(x - xl, xr - x), Math.min(z - zn, zs - z) + 1);
         boolean ew = Math.min(x - xl, xr - x) < Math.min(z - zn, zs - z) + 1;

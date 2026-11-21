@@ -141,7 +141,10 @@ public final class EreborPlan {
         double rough = -4 + 26 * Math.pow(rid, 1.5) * (0.4 + 0.6 * vn(x * 0.035, z * 0.035, 6)) + 6 * (vn(x * 0.17, z * 0.17, 8) - 0.5);
         if (cv != Short.MIN_VALUE) t = Math.max(t, cv + rough);
         // en avant de la facade, la roche retombe vite vers la plaine (contreforts de part et d'autre de la cour)
-        if (v > VF + 4) t = Math.min(t, FL0 + 130 - (v - VF - 4) * 1.6);
+        if (v > VF + 4) {
+            double e = courtE(u, v, x, z);
+            t = Math.min(t, Math.min(FL0 + 130 - (v - VF - 4) * 1.6, FL0 + 1.2 * Math.max(0, -e) + 3 * (v - VF - 4)));
+        }
         if (t < FL0 + 2) return Integer.MIN_VALUE;
         return (int) t;
     }
@@ -151,7 +154,7 @@ public final class EreborPlan {
         int t = top(x, z);
         int u = x - EX, v = z - EZ;
         if (t != Integer.MIN_VALUE) t += D;
-        if (Math.abs(u) <= 90 && v > VF - 8 && v <= 240) t = Math.max(t, FL0 + 96 + D);
+        if (Math.abs(u) <= 104 && v > VF - 8 && v <= 240) t = Math.max(t, FL0 + 96 + D);
         return t;
     }
 
@@ -171,7 +174,7 @@ public final class EreborPlan {
         if (nearAir(u, y, v)) { int l = lining(u, y, v); if (l != KEEP) return l; }
         if ((r = statues(u, y, v)) != KEEP) return r;
         if ((r = facade(u, y, v)) != KEEP) return r;
-        if ((r = court(u, y, v, h)) != KEEP) return r;
+        if ((r = court(u, y, v, h, x, z)) != KEEP) return r;
         return massif(x, y, z, h);
     }
 
@@ -997,23 +1000,33 @@ public final class EreborPlan {
     }
 
     // ------------------------------------------------------------------ la cour devant la facade
-    private static int court(int u, int y, int v, int h) {
-        int au = Math.abs(u);
-        if (au > 86 || v <= VF || v > 238) return KEEP;
-        if (y >= FL0) {
-            // les braseros le long de la chaussee
-            if (au == 16 && Math.floorMod(v - VF, 16) == 8 && v < 230) {
+    /** distance (signee, positive a l'interieur) au bord de la cour : une esplanade devant la porte qui se resserre en chaussee, aux bords irreguliers */
+    private static double courtE(int u, int v, int x, int z) {
+        int s = v - VF;
+        double W = s < 35 ? 92 : 26 + 66 * (1 - sm(cl((s - 35) / 85.0)));
+        double e = W + 10 * (2 * vn(x * 0.045, z * 0.045, 41) - 1) + 3 * (2 * vn(x * 0.15, z * 0.15, 42) - 1) - Math.abs(u);
+        return Math.min(e, (98 - s) + 6 * (2 * vn(x * 0.06, z * 0.06, 43) - 1));
+    }
+
+    private static int court(int u, int y, int v, int h, int x, int z) {
+        if (v <= VF || v > 240 || Math.abs(u) > 100) return KEEP;
+        double e = courtE(u, v, x, z);
+        if (e <= 0) return KEEP;
+        double w = sm(cl(e / 18.0));
+        int T = (int) Math.round((FL0 - 1) + (h - (FL0 - 1)) * (1 - w));       // le sol rejoint le terrain en pente douce vers l'exterieur
+        if (y > T) {
+            if (w < 0.15) return KEEP;
+            if (w > 0.9 && y >= FL0 && Math.abs(u) == 16 && Math.floorMod(v - VF, 16) == 8 && v < 230) {
                 int yy = y - FL0;
                 if (yy <= 2) return yy == 0 ? CSTB : STB;
                 if (yy == 3) return MoriaPlan.CAMPFIRE;
             }
             return AIR;
         }
-        if (y == FL0 - 1) return pavement(u, v);
+        if (y == T && w > 0.7) return pavement(u, v);
         if (y > h) return ROCK;
         return KEEP;
     }
-
     private static int pavement(int u, int v) {
         int au = Math.abs(u);
         if (au <= 13) {

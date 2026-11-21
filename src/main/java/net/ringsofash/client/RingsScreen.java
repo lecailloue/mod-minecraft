@@ -3,6 +3,8 @@ package net.ringsofash.client;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.ringsofash.RingsOfAsh;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.ringsofash.data.Net;
@@ -19,24 +21,20 @@ public class RingsScreen extends AbstractContainerScreen<RingsMenu> {
         this.inventoryLabelY = 86;
     }
 
+    private static final ResourceLocation TEX = ResourceLocation.fromNamespaceAndPath(RingsOfAsh.MODID, "textures/gui/rings.png");
+
     @Override
     protected void renderBg(GuiGraphics g, float pt, int mx, int my) {
         int x = leftPos, y = topPos;
-        g.fill(x - 2, y - 2, x + imageWidth + 2, y + imageHeight + 2, 0xFF14110E);
-        g.fill(x, y, x + imageWidth, y + imageHeight, 0xFF4A4642);
-        g.fill(x + 3, y + 3, x + imageWidth - 3, y + 82, 0xFF35322F);
-        g.fill(x + 3, y + 3, x + imageWidth - 3, y + 5, 0xFF6A645C);
-        for (int i = 0; i < 10; i++) {
+        g.blit(TEX, x, y, 0, 0, imageWidth, imageHeight, 256, 256);
+        for (int i = 0; i < 10; i++) {                                       // l'anneau actif est entoure d'or
+            if (i != Net.ClientRings.active) continue;
             Slot s = menu.slots.get(i);
-            boolean on = i == Net.ClientRings.active;
-            g.fill(x + s.x - 2, y + s.y - 2, x + s.x + 18, y + s.y + 18, on ? Ui.GOLD_L : 0xFF1C1A18);
-            g.fill(x + s.x - 1, y + s.y - 1, x + s.x + 17, y + s.y + 17, on ? Ui.GOLD : 0xFF2B2927);
-            g.fill(x + s.x, y + s.y, x + s.x + 16, y + s.y + 16, 0xFF5B5651);
-        }
-        for (int i = 10; i < menu.slots.size(); i++) {
-            Slot s = menu.slots.get(i);
-            g.fill(x + s.x - 1, y + s.y - 1, x + s.x + 17, y + s.y + 17, 0xFF1C1A18);
-            g.fill(x + s.x, y + s.y, x + s.x + 16, y + s.y + 16, 0xFF5B5651);
+            int sx = x + s.x - 1, sy = y + s.y - 1;
+            g.fill(sx - 1, sy - 1, sx + 19, sy, Ui.GOLD_L);
+            g.fill(sx - 1, sy + 18, sx + 19, sy + 19, Ui.GOLD_L);
+            g.fill(sx - 1, sy, sx, sy + 18, Ui.GOLD_L);
+            g.fill(sx + 18, sy, sx + 19, sy + 18, Ui.GOLD_L);
         }
         g.drawCenteredString(font, "Alt : choisir l'anneau actif", x + imageWidth / 2, y + 20, 0xFFD8C8A8);
         g.drawCenteredString(font, "Seul l'anneau actif agit", x + imageWidth / 2, y + 73, 0xFF9C9486);

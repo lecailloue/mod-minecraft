@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"600", "601", "603", "605", "606", "607", "609", "610", "611", "613", "629", "630", "631", "632"};
+    private static final String[] ONLY = {"12b", "12d", "12e", "12f", "419", "424", "426", "428", "432", "472", "473", "700", "701", "702", "703", "600", "601", "629", "631", "632", "606"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
