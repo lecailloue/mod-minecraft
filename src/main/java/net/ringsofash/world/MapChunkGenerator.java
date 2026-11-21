@@ -491,7 +491,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
             int x = x0 + r.nextInt(16), z = z0 + r.nextInt(16);
             int h = MapData.height(x, z);
             java.util.List<Integer> ys = new java.util.ArrayList<>();
-            if (ere) { for (int y = 60; y <= 260; y++) if (moriaFloor(x, y, z, h)) ys.add(y); }
+            if (ere) { for (int y = 60 + EreborPlan.D; y <= 260 + EreborPlan.D; y++) if (moriaFloor(x, y, z, h)) ys.add(y); }
             else for (int y = -40; y <= Math.min(h - 3, 40); y++) if (moriaFloor(x, y, z, h)) ys.add(y);
             if (ys.isEmpty()) continue;
             int y = ys.get(r.nextInt(ys.size()));

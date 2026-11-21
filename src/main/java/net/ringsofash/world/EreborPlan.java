@@ -19,7 +19,9 @@ import static net.ringsofash.world.MoriaPlan.vn;
 public final class EreborPlan {
     private EreborPlan() {}
 
-    public static final int EX = 878, EZ = -1152;
+    public static final int EX = 1640, EZ = -1355;
+    /** decalage vertical : le plan est ecrit comme si la plaine etait a y = 150 ; le vrai sol du site est a y = 76, donc tout est descendu de 74 blocs */
+    public static final int D = -74;
     static final int FL0 = 150;            // sol de la cour, de la Porte et de la Grande Salle
     static final int FL1 = 186;            // sol de la Galerie des Rois et du trone
     static final int FT = 100;             // sol de la Tresorerie
@@ -35,7 +37,7 @@ public final class EreborPlan {
     private static final int gold = MoriaPlan.GOLD;
 
     // ------------------------------------------------------------------ la montagne
-    private static final int RX = 175, RZ = 180;
+    private static final int RX = 175, RZ = 185;
 
     private static double ring(int u, int v) {
         // la facade reste plane ; ailleurs le contour est gauchi par du bruit pour casser le carre
@@ -57,40 +59,60 @@ public final class EreborPlan {
         return t;
     }
 
+    private static double cl(double a) { return a < 0 ? 0 : a > 1 ? 1 : a; }
+
+    /**
+     * Le massif : la vraie montagne de la carte (au nord-est, la zone neigeuse) est conservee ; on ne rajoute de la roche que
+     * la ou elle ne suffit pas a couvrir les salles (au sud, derriere la facade, et au nord), avec des pentes douces.
+     */
     private static int top0(int x, int z) {
         int u = x - EX, v = z - EZ;
-        if (Math.abs(u) > RX || Math.abs(v) > RZ) return Integer.MIN_VALUE;
-        double r = ring(u, v);
-        if (r >= 1) return Integer.MIN_VALUE;
-        double wall = Math.pow(sm((1 - r) / 0.16), 0.9);
-        double hh = 230 * (0.62 * wall + 0.38 * Math.pow(1 - r, 1.3));
-        hh *= 0.93 + 0.14 * vn(x * 0.03, z * 0.03, 5);
-        double crag = Math.abs(vn(x * 0.045, z * 0.045, 7) - 0.5) * 2;
-        hh += 26 * Math.pow(1 - crag, 2) * (1 - r) * wall;
-        hh += 5 * (vn(x * 0.13, z * 0.13, 6) - 0.5);
-        return FL0 + (int) hh;
+        if (Math.abs(u) > RX + 40 || v < -RZ - 70 || v > 175) return Integer.MIN_VALUE;
+        // A : un massif aux pentes naturelles, au contour gauchi
+        double wu = u + 40 * (vn(x * 0.011, z * 0.011, 21) - 0.5), wv = v + 30 + 40 * (vn(x * 0.011, z * 0.011, 22) - 0.5);
+        double a = wu / RX, b = wv / RZ;
+        double r = Math.sqrt(a * a + b * b);
+        double hh = 0;
+        if (r < 1) {
+            hh = 150 * Math.pow(1 - Math.pow(r, 2.2), 0.8) * (0.86 + 0.28 * vn(x * 0.02, z * 0.02, 5));
+            double crag = Math.abs(vn(x * 0.045, z * 0.045, 7) - 0.5) * 2;
+            hh += 24 * Math.pow(1 - crag, 2) * (1 - r);
+            hh += 5 * (vn(x * 0.13, z * 0.13, 6) - 0.5);
+        }
+        // B : la masse derriere la facade
+        int au = Math.abs(u);
+        if (v <= VF + 2) hh = Math.max(hh, 140 * sm(cl((112 - au) / 26.0)) * sm(cl((v + 40) / 80.0)));
+        // C : la masse au dessus des ailes (forges, quartiers, reserves)
+        hh = Math.max(hh, 66 * sm(cl((152 - au) / 22.0)) * sm(cl((v - 5) / 25.0)) * sm(cl((168 - v) / 16.0)));
+        if (hh < 1) return Integer.MIN_VALUE;
+        // la ou le sol naturel est plus bas que la plaine du site, la roche ajoutee rejoint le sol en pente douce
+        double nat = MapData.height(x, z) - D;
+        double drop = Math.max(0, FL0 - nat) * (1 - sm(cl(hh / 45.0)));
+        return FL0 + (int) (hh - drop);
     }
 
     /** altitude jusqu'a laquelle le plan construit au dessus du sol (MIN_VALUE hors du site) */
     public static int aboveTop(int x, int z) {
         int t = top(x, z);
         int u = x - EX, v = z - EZ;
-        if (Math.abs(u) <= 90 && v > VF - 8 && v <= 240) t = Math.max(t, FL0 + 96);
+        if (t != Integer.MIN_VALUE) t += D;
+        if (Math.abs(u) <= 90 && v > VF - 8 && v <= 240) t = Math.max(t, FL0 + 96 + D);
         return t;
     }
 
     public static boolean inBox(int x, int y, int z) {
         int u = x - EX, v = z - EZ;
-        return Math.abs(u) <= RX + 2 && v >= -RZ - 2 && v <= 242 && y >= 60 && y <= 460;
+        return Math.abs(u) <= RX + 2 && v >= -RZ - 50 && v <= 242 && y - D >= 56 && y - D <= 460;
     }
 
     // ------------------------------------------------------------------ assemblage
     public static int at(int x, int y, int z, int h) {
         if (!inBox(x, y, z)) return KEEP;
+        y -= D; h -= D;
         int u = x - EX, v = z - EZ;
         if (air(u, y, v)) { int dc = decor(u, y, v); return dc == KEEP ? AIR : dc; }
         int r;
-        if (y >= FL0 + 12 && chimney(u, y, v, x, z)) return AIR;
+        if (y >= FL0 + 12 && chimney(u, y, v, x, z, h)) return AIR;
         if (nearAir(u, y, v)) { int l = lining(u, y, v); if (l != KEEP) return l; }
         if ((r = statues(u, y, v)) != KEEP) return r;
         if ((r = facade(u, y, v)) != KEEP) return r;
@@ -409,12 +431,12 @@ public final class EreborPlan {
         return AIR;
     }
 
-    private static boolean chimney(int u, int y, int v, int x, int z) {
+    private static boolean chimney(int u, int y, int v, int x, int z, int h) {
         if (u < -145 || u > -143) return false;
         for (int vs : new int[]{56, 68, 80, 92}) {
             if (Math.abs(v - vs) <= 1) {
-                int t = top(x, z);
-                return t != Integer.MIN_VALUE && y <= t + 1;
+                int t = Math.max(top(x, z), h);
+                return y <= t + 1;
             }
         }
         return false;
