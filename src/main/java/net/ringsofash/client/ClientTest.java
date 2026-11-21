@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"633", "634", "635", "636", "12d", "12e"};
+    private static final String[] ONLY = {"633", "636", "12e"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -662,10 +662,10 @@ public final class ClientTest {
         morT("630_erebor_vue_est", 1860.5, 160.5, -1290.5, 1700, 140, -1300, 6000);
         morT("631_erebor_vue_ouest", 1530.5, 140.5, -1120.5, 1620, 140, -1215, 6000);
         morT("632_erebor_vue_dessus", 1640.5, 200.5, -1000.5, 1640, 150, -1215, 6000);
-        morT("633_erebor_mines_portail", 1705.5, 80.5, -1140.5, 1745, 80, -1173, 6000);
+        morT("633_erebor_mines_portail", 1660.5, 78.5, -1140.5, 1745, 79, -1173, 6000);
         morT("634_erebor_mines_escalier", 1757.5, 73.5, -1179.5, 1757.5, 28, -1225, 6000);
         morT("635_erebor_mines_bas", 1757.5, 8.5, -1243.5, 1757.5, -9, -1267, 6000);
-        morT("636_erebor_mines_vue", 1690.5, 100.5, -1100.5, 1745, 80, -1173, 6000);
+        morT("636_erebor_mines_vue", 1680.5, 95.5, -1128.5, 1745, 79, -1173, 6000);
         morT("700_moria_pont_fond", 76.5, 26.5, -628.5, 76, 24, -690, 6000);
         morT("701_moria_pont_fond_haut", 76.5, 44.5, -600.5, 60, 40, -655, 6000);
         morT("702_moria_pont_ouest", 112.5, 30.5, -600.5, 40, 25, -620, 6000);
