@@ -32,7 +32,7 @@ public final class ClientSetup {
 
     public static final KeyMapping REP_KEY = new KeyMapping("key.ringsofash.reputation", InputConstants.KEY_R, "key.categories.ringsofash");
     public static final KeyMapping RINGS_KEY = new KeyMapping("key.ringsofash.rings", InputConstants.KEY_G, "key.categories.ringsofash");
-    public static final KeyMapping DESCEND_KEY = new KeyMapping("key.ringsofash.descend", InputConstants.KEY_C, "key.categories.ringsofash");
+    public static final KeyMapping DESCEND_KEY = new KeyMapping("key.ringsofash.descend", InputConstants.KEY_DOWN, "key.categories.ringsofash");
     public static final KeyMapping SKILLS_KEY = new KeyMapping("key.ringsofash.skills", InputConstants.KEY_P, "key.categories.ringsofash");
     public static final KeyMapping SPECIAL_KEY = new KeyMapping("key.ringsofash.special", InputConstants.KEY_V, "key.categories.ringsofash");
     public static final KeyMapping MAP_KEY = new KeyMapping("key.ringsofash.map", InputConstants.KEY_M, "key.categories.ringsofash");
@@ -240,17 +240,17 @@ public final class ClientSetup {
         e.registerItem(armorExt("rohan", "chest"), Reg.ROHAN_CHESTPLATE.get());
         e.registerItem(armorExt("rohan", "legs"), Reg.ROHAN_LEGGINGS.get());
         e.registerItem(armorExt("rohan", "boots"), Reg.ROHAN_BOOTS.get());
-        e.registerItem(ext, Reg.ORC_SPEAR.get(), Reg.ORC_MACE.get(), Reg.GOBLIN_KING_STAFF.get(), Reg.GOBLIN_PICKAXE.get(),
-                Reg.ELVEN_GLAIVE.get(), Reg.DWARVEN_AXE.get(), Reg.DWARVEN_HAMMER.get(), Reg.ASH_MACE.get(), Reg.RIDER_SPEAR.get(), Reg.TROLL_CLUB.get(), Reg.LUNARGENT_PICKAXE.get(), Reg.ELVEN_BOW.get(), Reg.STAFF_FIRE.get(), Reg.STAFF_LIGHT.get(), Reg.STAFF_STORM.get(), Reg.STAFF_HEALING.get());
+        e.registerItem(ext, Reg.GOBLIN_PICKAXE.get(), Reg.LUNARGENT_PICKAXE.get(), Reg.ELVEN_BOW.get());
     }
 
     private static void setup(FMLClientSetupEvent e) {
         e.enqueueWork(() -> {
-            // la lame elfique luit quand des orques sont proches
-            ItemProperties.register(Reg.ELVEN_BLADE.get(), RingsOfAsh.id("glow"), (stack, level, entity, seed) -> orcNear(entity) ? 1.0F : 0.0F);
-            ItemProperties.register(Reg.ELVEN_GLAIVE.get(), RingsOfAsh.id("glow"), (stack, level, entity, seed) -> orcNear(entity) ? 1.0F : 0.0F);
-            ItemProperties.register(Reg.SENTINEL_BLADE.get(), RingsOfAsh.id("glow"), (stack, level, entity, seed) -> near(1, entity, m -> m instanceof net.minecraft.world.entity.monster.Enemy) ? 1.0F : 0.0F);
-            ItemProperties.register(Reg.SUN_BLADE.get(), RingsOfAsh.id("glow"), (stack, level, entity, seed) -> near(2, entity, SpecialSword::isUndead) ? 1.0F : 0.0F);
+            // dragon des ombres monte : Espace pour monter, fleche du bas pour descendre (WASD / ZQSD : avancer, reculer, cotes)
+            net.ringsofash.entity.ShadowDragonEntity.VERTICAL = pl -> {
+                Minecraft mc = Minecraft.getInstance();
+                if (pl != mc.player || mc.screen != null) return 0;
+                return (mc.options.keyJump.isDown() ? 1 : 0) - (DESCEND_KEY.isDown() ? 1 : 0);
+            };
             ItemProperties.register(Reg.ELVEN_BOW.get(), RingsOfAsh.id("pull"), (stack, level, entity, seed) ->
                     entity == null || entity.getUseItem() != stack ? 0.0F : (stack.getUseDuration(entity) - entity.getUseItemRemainingTicks()) / 20.0F);
             ItemProperties.register(Reg.ELVEN_BOW.get(), RingsOfAsh.id("pulling"), (stack, level, entity, seed) ->

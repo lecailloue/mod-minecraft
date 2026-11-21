@@ -38,10 +38,6 @@ public final class Trades {
         int premium;
         if (e.isMage()) {
             l.add(o(coin, 1, Items.FIREWORK_ROCKET, 6, 16));
-            l.add(o(coin, 12, Reg.STAFF_LIGHT.get(), 1, 2));
-            l.add(o2(Reg.SUNSTAR.get(), 12, coin, 8, Reg.STAFF_HEALING.get(), 1, 2));
-            l.add(o2(Reg.LUNARGENT_INGOT.get(), 4, coin, 10, Reg.STAFF_FIRE.get(), 1, 2));
-            l.add(o2(Reg.LUNARGENT_INGOT.get(), 6, coin, 14, Reg.STAFF_STORM.get(), 1, 2));
             l.add(o(coin, 10, Reg.SEEING_STONE.get(), 1, 1));
             return l.size();
         }
@@ -51,7 +47,6 @@ public final class Trades {
             l.add(o(coin, 8, Items.BOW, 1, 3));
             l.add(o(coin, 10, Reg.ELVEN_CLOAK.get(), 1, 2));
             premium = l.size();
-            l.add(o(coin, 12, Reg.WIGHT_BLADE.get(), 1, 1));
             l.add(o(coin, 14, Reg.LIGHT_PHIAL.get(), 1, 1));
             return premium;
         }
@@ -65,7 +60,7 @@ public final class Trades {
                     }
                     case 1 -> {
                         l.add(o(Items.IRON_INGOT, 4, coin, 2, 12)); l.add(o(Items.COAL, 15, coin, 1, 12)); l.add(o(coin, 6, Items.IRON_SWORD, 1, 4));
-                        l.add(o(coin, 9, Reg.RANGER_SWORD.get(), 1, 3)); l.add(o(coin, 10, Reg.RIDER_SPEAR.get(), 1, 3)); l.add(o(coin, 7, Items.SHIELD, 1, 3));
+                        l.add(o(coin, 7, Items.SHIELD, 1, 3));
                         premium = l.size(); l.add(o(coin, 18, Reg.WAR_HORN.get(), 1, 1));
                     }
                     case 2 -> {
@@ -89,10 +84,10 @@ public final class Trades {
                         premium = l.size(); l.add(o2(Reg.SUNSTAR.get(), 16, Reg.MOONBELL.get(), 16, Reg.RING_WINDS.get(), 1, 1));
                     }
                     case 1 -> {
-                        l.add(o(Reg.GOLDEN_SAPLING.get(), 3, Reg.ELVEN_BOW.get(), 1, 2)); l.add(o(Reg.GOLDEN_LOG.get(), 24, Reg.ELVEN_BLADE.get(), 1, 2));
+                        l.add(o(Reg.GOLDEN_SAPLING.get(), 3, Reg.ELVEN_BOW.get(), 1, 2));
                         l.add(o(Reg.SUNSTAR.get(), 10, Reg.ELVEN_HELMET.get(), 1, 2)); l.add(o(Reg.MOONBELL.get(), 12, Reg.ELVEN_CHESTPLATE.get(), 1, 2));
                         l.add(o(Reg.GOLDEN_LOG.get(), 20, Reg.ELVEN_LEGGINGS.get(), 1, 2)); l.add(o(Reg.SUNSTAR.get(), 8, Reg.ELVEN_BOOTS.get(), 1, 2));
-                        premium = l.size(); l.add(o2(Reg.LUNARGENT_INGOT.get(), 6, Reg.SUNSTAR.get(), 12, Reg.ELVEN_GLAIVE.get(), 1, 1));
+                        premium = l.size(); l.add(o2(Reg.LUNARGENT_INGOT.get(), 6, Reg.SUNSTAR.get(), 12, Reg.MIRUVOR.get(), 4, 2));
                     }
                     default -> {
                         l.add(os(Reg.SUNSTAR.get(), 4, PotionContents.createItemStack(Items.POTION, Potions.HEALING), 6));
@@ -107,10 +102,9 @@ public final class Trades {
             case DWARF -> {
                 switch (prof) {
                     case 0 -> {
-                        l.add(o(Items.IRON_INGOT, 10, Reg.DWARVEN_AXE.get(), 1, 2)); l.add(o(Items.GOLD_INGOT, 8, Reg.DWARVEN_HAMMER.get(), 1, 2));
                         l.add(o(Items.IRON_INGOT, 6, Reg.DWARVEN_HELMET.get(), 1, 2)); l.add(o(Items.DIAMOND, 3, Reg.DWARVEN_CHESTPLATE.get(), 1, 2));
                         l.add(o(Items.DIAMOND, 2, Reg.DWARVEN_LEGGINGS.get(), 1, 2)); l.add(o(Items.IRON_INGOT, 5, Reg.DWARVEN_BOOTS.get(), 1, 2));
-                        premium = l.size(); l.add(o(Reg.LUNARGENT_INGOT.get(), 5, Reg.LUNARGENT_SWORD.get(), 1, 1)); l.add(o(Reg.LUNARGENT_INGOT.get(), 4, Reg.LUNARGENT_PICKAXE.get(), 1, 1));
+                        premium = l.size(); l.add(o(Reg.LUNARGENT_INGOT.get(), 4, Reg.LUNARGENT_PICKAXE.get(), 1, 1));
                     }
                     case 1 -> {
                         l.add(o(Items.COAL, 24, Reg.DWARF_ALE.get(), 2, 8)); l.add(o(Items.RAW_IRON, 12, coin, 3, 12)); l.add(o(Items.RAW_GOLD, 8, coin, 4, 12));
@@ -130,7 +124,7 @@ public final class Trades {
                     case 0 -> {
                         l.add(o(Items.WHEAT, 16, Reg.HONEY_CAKE.get(), 2, 12)); l.add(o(Items.PUMPKIN, 6, Reg.HALFLING_STEW.get(), 2, 12)); l.add(o(Items.CARROT, 16, Reg.HALFLING_STEW.get(), 1, 12));
                         l.add(o(Items.POTATO, 16, coin, 1, 12)); l.add(o(coin, 1, Reg.PIPEWEED.get(), 3, 8));
-                        premium = l.size(); l.add(o(coin, 8, Reg.HALFLING_DAGGER.get(), 1, 1));
+                        premium = l.size(); l.add(o(coin, 6, Reg.HONEY_CAKE.get(), 4, 8));
                     }
                     case 1 -> {
                         l.add(o(coin, 1, Reg.HALFLING_STEW.get(), 1, 16)); l.add(o(coin, 1, Reg.HONEY_CAKE.get(), 2, 16)); l.add(o(coin, 2, Reg.DWARF_ALE.get(), 2, 12));

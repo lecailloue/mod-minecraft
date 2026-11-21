@@ -117,16 +117,6 @@ public class FoeEntity extends Monster {
     public int orcColor() {
         return switch (kind()) { case ORC -> Math.floorMod(variant(), 4); case WAR_ORC -> Math.floorMod(variant(), 2); default -> 0; };
     }
-    /** L'arme que tient chaque modele d'orque (celle qu'il laisse tomber). */
-    private ItemStack orcWeapon() {
-        return new ItemStack(switch (orcModel()) {
-            case 0, 5 -> Reg.ORC_CLEAVER.get();
-            case 1, 4 -> Reg.ORC_SCIMITAR.get();
-            case 2 -> Reg.ORC_MACHETE.get();
-            case 3 -> Reg.ORC_SPEAR.get();
-            default -> Reg.ORC_MACE.get();
-        });
-    }
     /** Soldat spectral : 0 a 3 = veteran / hoplite / guerrier a cornes / rodeur a la dague, 4 = Roi des morts (5 % des apparitions). */
     public int spectreModel() { return kind() == Kind.DEAD_SOLDIER ? Math.max(0, Math.min(4, variant())) : 0; }
     public boolean isDeadKing() { return spectreModel() == 4; }
@@ -229,11 +219,8 @@ public class FoeEntity extends Monster {
     @Override
     protected void populateDefaultEquipmentSlots(RandomSource r, DifficultyInstance difficulty) {
         ItemStack hand = switch (kind()) {
-            case ORC, WAR_ORC, ORC_CHIEF -> orcWeapon();
             case GOBLIN -> goblinModel() == 2 ? new ItemStack(Reg.GOBLIN_PICKAXE.get()) : ItemStack.EMPTY;
-            case GOBLIN_KING -> new ItemStack(Reg.GOBLIN_KING_STAFF.get());
-            case WILD_MAN -> new ItemStack(r.nextBoolean() ? Items.STONE_AXE : Reg.RIDER_SPEAR.get());
-            case DEAD_SOLDIER -> new ItemStack(Reg.RANGER_SWORD.get());
+            case WILD_MAN -> r.nextBoolean() ? new ItemStack(Items.STONE_AXE) : ItemStack.EMPTY;
             default -> ItemStack.EMPTY;
         };
         setItemSlot(EquipmentSlot.MAINHAND, hand);

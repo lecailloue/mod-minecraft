@@ -100,13 +100,7 @@ public class PeopleEntity extends AbstractVillager {
     }
 
     private void equipGuard() {
-        ItemStack w = switch (people()) {
-            case ELF -> new ItemStack(Reg.ELVEN_BLADE.get());
-            case DWARF -> new ItemStack(Reg.DWARVEN_AXE.get());
-            case HALFLING -> new ItemStack(Reg.HALFLING_DAGGER.get());
-            default -> new ItemStack(Reg.RANGER_SWORD.get());
-        };
-        setItemSlot(EquipmentSlot.MAINHAND, w);
+        setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
         setDropChance(EquipmentSlot.MAINHAND, 0.0F);
     }
 
@@ -156,8 +150,6 @@ public class PeopleEntity extends AbstractVillager {
             else if (people() == People.DWARF) sc.setBaseValue((1.3 + level.getRandom().nextFloat() * 0.2) / 1.4);
         }
         if (profession < 0) profession = level.getRandom().nextInt(Trades.professions(this));
-        if (isRanger()) { setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.RANGER_SWORD.get())); setDropChance(EquipmentSlot.MAINHAND, 0.0F); }
-        if (isMage()) { setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.STAFF_LIGHT.get())); setDropChance(EquipmentSlot.MAINHAND, 0.0F); }
         if (role() == GUARD) equipGuard();
         else equipArmored();
         return data;

@@ -1,1 +1,0 @@
-{"parent":"minecraft:item/handheld","textures":{"layer0":"ringsofash:item/orcrist"},"overrides":[{"predicate":{"ringsofash:glow":1},"model":"ringsofash:item/orcrist_glow"}]}

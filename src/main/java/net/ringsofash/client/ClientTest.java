@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"17b", "17c", "12e"};
+    private static final String[] ONLY = {"18", "15c"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -193,7 +193,7 @@ public final class ClientTest {
         clear(ow);
         view(p, ow, SX + 0.5, SY, SZ + 0.5, 0F, 12F);
         p.getAbilities().flying = false; p.onUpdateAbilities();
-        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(net.ringsofash.gen.Reg.VALMOIRE_BLADE.get()));
+        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(net.minecraft.world.item.Items.AIR));
         p.swing(InteractionHand.MAIN_HAND, true);
     }
 
@@ -334,23 +334,23 @@ public final class ClientTest {
             view(p, ow, SX + 0.5, SY + 1.2, SZ, 0F, 0F);
         }));
         Item[][] close = {
-                {Reg.ORC_HELMET.get(), Reg.ORC_CHESTPLATE.get(), Reg.ORC_LEGGINGS.get(), Reg.ORC_BOOTS.get(), Reg.ORC_SCIMITAR.get()},
-                {Reg.DWARVEN_HELMET.get(), Reg.DWARVEN_CHESTPLATE.get(), Reg.DWARVEN_LEGGINGS.get(), Reg.DWARVEN_BOOTS.get(), Reg.DWARVEN_AXE.get()},
-                {Reg.ELVEN_HELMET.get(), Reg.ELVEN_CHESTPLATE.get(), Reg.ELVEN_LEGGINGS.get(), Reg.ELVEN_BOOTS.get(), Reg.ELVEN_BLADE.get()},
-                {Reg.ROHAN_HELMET.get(), Reg.ROHAN_CHESTPLATE.get(), Reg.ROHAN_LEGGINGS.get(), Reg.ROHAN_BOOTS.get(), Reg.RIDER_SPEAR.get()},
-                {Reg.GONDOR_HELMET.get(), Reg.GONDOR_CHESTPLATE.get(), Reg.GONDOR_LEGGINGS.get(), Reg.GONDOR_BOOTS.get(), Reg.RANGER_SWORD.get()},
-                {Reg.ELFKING_HELMET.get(), Reg.ELFKING_CHESTPLATE.get(), Reg.ELFKING_LEGGINGS.get(), Reg.ELFKING_BOOTS.get(), Reg.KINGS_BLADE.get()},
-                {Reg.ORC_RUSTED_HELMET.get(), Reg.ORC_RUSTED_CHESTPLATE.get(), Reg.ORC_RUSTED_LEGGINGS.get(), Reg.ORC_RUSTED_BOOTS.get(), Reg.ORC_SCIMITAR.get()},
-                {Reg.DWARVEN_RUSTED_HELMET.get(), Reg.DWARVEN_RUSTED_CHESTPLATE.get(), Reg.DWARVEN_RUSTED_LEGGINGS.get(), Reg.DWARVEN_RUSTED_BOOTS.get(), Reg.DWARVEN_AXE.get()},
-                {Reg.ELVEN_RUSTED_HELMET.get(), Reg.ELVEN_RUSTED_CHESTPLATE.get(), Reg.ELVEN_RUSTED_LEGGINGS.get(), Reg.ELVEN_RUSTED_BOOTS.get(), Reg.ELVEN_BLADE.get()},
-                {Reg.ROHAN_RUSTED_HELMET.get(), Reg.ROHAN_RUSTED_CHESTPLATE.get(), Reg.ROHAN_RUSTED_LEGGINGS.get(), Reg.ROHAN_RUSTED_BOOTS.get(), Reg.RIDER_SPEAR.get()},
-                {Reg.GONDOR_RUSTED_HELMET.get(), Reg.GONDOR_RUSTED_CHESTPLATE.get(), Reg.GONDOR_RUSTED_LEGGINGS.get(), Reg.GONDOR_RUSTED_BOOTS.get(), Reg.RANGER_SWORD.get()},
-                {Reg.ELFKING_RUSTED_HELMET.get(), Reg.ELFKING_RUSTED_CHESTPLATE.get(), Reg.ELFKING_RUSTED_LEGGINGS.get(), Reg.ELFKING_RUSTED_BOOTS.get(), Reg.KINGS_BLADE.get()},
-                {Reg.DWARFKING_HELMET.get(), Reg.DWARFKING_CHESTPLATE.get(), Reg.DWARFKING_LEGGINGS.get(), Reg.DWARFKING_BOOTS.get(), Reg.DWARVEN_AXE.get()},
-                {Reg.DWARFKING_RUSTED_HELMET.get(), Reg.DWARFKING_RUSTED_CHESTPLATE.get(), Reg.DWARFKING_RUSTED_LEGGINGS.get(), Reg.DWARFKING_RUSTED_BOOTS.get(), Reg.DWARVEN_AXE.get()},
+                {Reg.ORC_HELMET.get(), Reg.ORC_CHESTPLATE.get(), Reg.ORC_LEGGINGS.get(), Reg.ORC_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                {Reg.DWARVEN_HELMET.get(), Reg.DWARVEN_CHESTPLATE.get(), Reg.DWARVEN_LEGGINGS.get(), Reg.DWARVEN_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                {Reg.ELVEN_HELMET.get(), Reg.ELVEN_CHESTPLATE.get(), Reg.ELVEN_LEGGINGS.get(), Reg.ELVEN_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                {Reg.ROHAN_HELMET.get(), Reg.ROHAN_CHESTPLATE.get(), Reg.ROHAN_LEGGINGS.get(), Reg.ROHAN_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                {Reg.GONDOR_HELMET.get(), Reg.GONDOR_CHESTPLATE.get(), Reg.GONDOR_LEGGINGS.get(), Reg.GONDOR_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                {Reg.ELFKING_HELMET.get(), Reg.ELFKING_CHESTPLATE.get(), Reg.ELFKING_LEGGINGS.get(), Reg.ELFKING_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                {Reg.ORC_RUSTED_HELMET.get(), Reg.ORC_RUSTED_CHESTPLATE.get(), Reg.ORC_RUSTED_LEGGINGS.get(), Reg.ORC_RUSTED_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                {Reg.DWARVEN_RUSTED_HELMET.get(), Reg.DWARVEN_RUSTED_CHESTPLATE.get(), Reg.DWARVEN_RUSTED_LEGGINGS.get(), Reg.DWARVEN_RUSTED_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                {Reg.ELVEN_RUSTED_HELMET.get(), Reg.ELVEN_RUSTED_CHESTPLATE.get(), Reg.ELVEN_RUSTED_LEGGINGS.get(), Reg.ELVEN_RUSTED_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                {Reg.ROHAN_RUSTED_HELMET.get(), Reg.ROHAN_RUSTED_CHESTPLATE.get(), Reg.ROHAN_RUSTED_LEGGINGS.get(), Reg.ROHAN_RUSTED_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                {Reg.GONDOR_RUSTED_HELMET.get(), Reg.GONDOR_RUSTED_CHESTPLATE.get(), Reg.GONDOR_RUSTED_LEGGINGS.get(), Reg.GONDOR_RUSTED_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                {Reg.ELFKING_RUSTED_HELMET.get(), Reg.ELFKING_RUSTED_CHESTPLATE.get(), Reg.ELFKING_RUSTED_LEGGINGS.get(), Reg.ELFKING_RUSTED_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                {Reg.DWARFKING_HELMET.get(), Reg.DWARFKING_CHESTPLATE.get(), Reg.DWARFKING_LEGGINGS.get(), Reg.DWARFKING_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                {Reg.DWARFKING_RUSTED_HELMET.get(), Reg.DWARFKING_RUSTED_CHESTPLATE.get(), Reg.DWARFKING_RUSTED_LEGGINGS.get(), Reg.DWARFKING_RUSTED_BOOTS.get(), net.minecraft.world.item.Items.AIR},
                 {Reg.KNIGHT_HELMET.get(), Reg.KNIGHT_CHESTPLATE.get(), Reg.KNIGHT_LEGGINGS.get(), Reg.KNIGHT_BOOTS.get(), net.minecraft.world.item.Items.IRON_SWORD},
-                {Reg.NAZGUL_HELMET.get(), Reg.NAZGUL_CHESTPLATE.get(), Reg.NAZGUL_LEGGINGS.get(), Reg.NAZGUL_BOOTS.get(), Reg.ORC_SCIMITAR.get()},
-                {Reg.MITHRIL_HELMET.get(), Reg.MITHRIL_CHESTPLATE.get(), Reg.MITHRIL_LEGGINGS.get(), Reg.MITHRIL_BOOTS.get(), Reg.KINGS_BLADE.get()},
+                {Reg.NAZGUL_HELMET.get(), Reg.NAZGUL_CHESTPLATE.get(), Reg.NAZGUL_LEGGINGS.get(), Reg.NAZGUL_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                {Reg.MITHRIL_HELMET.get(), Reg.MITHRIL_CHESTPLATE.get(), Reg.MITHRIL_LEGGINGS.get(), Reg.MITHRIL_BOOTS.get(), net.minecraft.world.item.Items.AIR},
                 {Reg.KNIGHT_RUSTED_HELMET.get(), Reg.KNIGHT_RUSTED_CHESTPLATE.get(), Reg.KNIGHT_RUSTED_LEGGINGS.get(), Reg.KNIGHT_RUSTED_BOOTS.get(), net.minecraft.world.item.Items.IRON_SWORD}};
         String[] closeNames = {"07b_orc_3d", "07c_nain_3d", "07d_elfe_3d", "07e_rohan_3d", "07f_gondor_3d", "07g_roi_elfe_3d",
                 "08b_orc_rouille", "08c_nain_rouille", "08d_elfe_rouille", "08e_rohan_rouille", "08f_gondor_rouille", "08g_roi_elfe_rouille", "07h_roi_nain_3d", "08h_roi_nain_rouille", "07i_chevalier_3d", "07j_nazgul_3d", "07k_mithril_3d", "08j_chevalier_rouille"};
@@ -888,7 +888,7 @@ public final class ClientTest {
         SCENES.add(new Scene("04_armes_orques", 90, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
-            net.minecraft.world.item.Item[] it = {Reg.ORC_CLEAVER.get(), Reg.ORC_SCIMITAR.get(), Reg.ORC_MACHETE.get(), Reg.ORC_SPEAR.get(), Reg.ORC_MACE.get(), Reg.GOBLIN_KING_STAFF.get(), Reg.GOBLIN_PICKAXE.get()};
+            net.minecraft.world.item.Item[] it = {net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, Reg.GOBLIN_PICKAXE.get()};
             for (int i = 0; i < it.length; i++) {
                 net.minecraft.world.entity.item.ItemEntity ie = new net.minecraft.world.entity.item.ItemEntity(ow, SX + 2.0 - i * 0.8, SY + 0.1, SZ + 3.0, new net.minecraft.world.item.ItemStack(it[i]));
                 ie.setPickUpDelay(32767);
@@ -957,6 +957,68 @@ public final class ClientTest {
             view(p, ow, SX + 0.5, SY + 6.0, SZ - 8, 0F, 10F);
             hook = () -> log("DRAGON_VOL avance=" + String.format("%.2f", z0 - dr.getZ()) + " dy=" + String.format("%.2f", dr.getY() - y0) + " distCible=" + String.format("%.2f", dr.distanceTo(bait))
                     + " pvCible=" + bait.getHealth() + " vivant=" + dr.isAlive() + " cible=" + dr.getTarget() + " auSol=" + dr.onGround());
+        }));
+        // mobs qui ne se deplacent qu'en volant : poses en vol (profil) puis vrai vol avec IA
+        SCENES.add(new Scene("18a_vol_oiseaux", 70, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            var eg = actor(ow, ModEntities.EAGLE.get(), SX + 2.2, SZ + 9, o -> { });
+            var cr = actor(ow, ModEntities.CROW.get(), SX - 1.4, SZ + 9, o -> { });
+            for (Mob m : new Mob[]{eg, cr}) { m.setNoGravity(true); m.moveTo(m.getX(), SY + 3.0, m.getZ(), 90F, 0F); m.setYBodyRot(90F); m.setYHeadRot(90F); }
+            view(p, ow, SX + 0.5, SY + 3.6, SZ, 0F, 0F);
+        }));
+        SCENES.add(new Scene("18b_ver_vol", 70, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            var w = actor(ow, ModEntities.DRAGON.get(), SX, SZ + 24, o -> { });
+            w.setNoGravity(true); w.moveTo(SX, SY + 4.0, SZ + 24, 90F, 0F); w.setYBodyRot(90F); w.setYHeadRot(90F);
+            view(p, ow, SX + 0.5, SY + 6.0, SZ, 0F, 4F);
+        }));
+        SCENES.add(new Scene("18c_chef_vol", 70, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            var c = actor(ow, ModEntities.SHADOW_CHIEF.get(), SX, SZ + 8, o -> { });
+            Entity dr = c.getVehicle();
+            c.stopRiding();
+            if (dr != null) dr.discard();
+            c.setNoGravity(true); c.moveTo(SX, SY + 2.0, SZ + 8, 90F, 0F); c.setYBodyRot(90F); c.setYHeadRot(90F);
+            view(p, ow, SX + 0.5, SY + 3.0, SZ, 0F, 4F);
+        }));
+        SCENES.add(new Scene("18d_vol_ia", 240, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            List<Mob> fl = new ArrayList<>();
+            double[] xs = {-6, -2, 2, 6};
+            EntityType<?>[] ts = {ModEntities.EAGLE.get(), ModEntities.CROW.get(), ModEntities.DRAGON.get(), ModEntities.SHADOW_CHIEF.get()};
+            for (int i = 0; i < 4; i++) {
+                Mob m = (Mob) ts[i].create(ow);
+                m.moveTo(SX + xs[i], SY + 0.5, SZ + 14, 180F, 0F);
+                m.finalizeSpawn(ow, ow.getCurrentDifficultyAt(m.blockPosition()), MobSpawnType.COMMAND, null);
+                m.setPersistenceRequired();
+                ow.addFreshEntity(m);
+                if (m.getVehicle() != null) { Entity v = m.getVehicle(); m.stopRiding(); v.discard(); }
+                fl.add(m);
+            }
+            net.minecraft.world.entity.monster.Spider bait = EntityType.SPIDER.create(ow);
+            bait.moveTo(SX, SY, SZ + 4, 0F, 0F);
+            bait.setNoAi(true); bait.setPersistenceRequired();
+            ow.addFreshEntity(bait);
+            fl.get(2).setTarget(bait); fl.get(3).setTarget(bait);
+            final double[] y0 = new double[4];
+            for (int i = 0; i < 4; i++) y0[i] = fl.get(i).getY();
+            final int[] ground = new int[4];
+            view(p, ow, SX + 0.5, SY + 7.0, SZ - 6, 0F, 8F);
+            hook = () -> {
+                StringBuilder sb = new StringBuilder("VOL_IA");
+                String[] nm = {"aigle", "corbeau", "ver", "chef"};
+                for (int i = 0; i < 4; i++) {
+                    Mob m = fl.get(i);
+                    if (m.onGround()) ground[i]++;
+                    sb.append(' ').append(nm[i]).append("[vivant=").append(m.isAlive()).append(" dy=").append(String.format("%.1f", m.getY() - y0[i])).append(" auSol=").append(ground[i])
+                            .append(" cible=").append(m.getTarget() != null).append(" dBait=").append(String.format("%.1f", m.distanceTo(bait))).append(']');
+                }
+                log(sb.toString());
+            };
         }));
         // maitre tue : le dragon reste sans cavalier, selle de metal nue
         SCENES.add(new Scene("15a_dragon_libre", 40, p -> {
@@ -1155,13 +1217,13 @@ public final class ClientTest {
             ServerLevel ow = p.server.overworld();
             clear(ow);
             Item[][] sets = {
-                    {Reg.LUNARGENT_HELMET.get(), Reg.LUNARGENT_CHESTPLATE.get(), Reg.LUNARGENT_LEGGINGS.get(), Reg.LUNARGENT_BOOTS.get(), Reg.LUNARGENT_SWORD.get()},
-                    {Reg.ORC_HELMET.get(), Reg.ORC_CHESTPLATE.get(), Reg.ORC_LEGGINGS.get(), Reg.ORC_BOOTS.get(), Reg.ORC_SCIMITAR.get()},
-                    {Reg.ELVEN_HELMET.get(), Reg.ELVEN_CHESTPLATE.get(), Reg.ELVEN_LEGGINGS.get(), Reg.ELVEN_BOOTS.get(), Reg.ELVEN_BLADE.get()},
-                    {Reg.DWARVEN_HELMET.get(), Reg.DWARVEN_CHESTPLATE.get(), Reg.DWARVEN_LEGGINGS.get(), Reg.DWARVEN_BOOTS.get(), Reg.DWARVEN_AXE.get()},
-                    {Reg.ASHLORD_HELMET.get(), Reg.ASHLORD_CHESTPLATE.get(), Reg.ASHLORD_LEGGINGS.get(), Reg.ASHLORD_BOOTS.get(), Reg.ASH_MACE.get()},
-                    {Reg.ELFKING_HELMET.get(), Reg.ELFKING_CHESTPLATE.get(), Reg.ELFKING_LEGGINGS.get(), Reg.ELFKING_BOOTS.get(), Reg.KINGS_BLADE.get()},
-                    {null, Reg.ELVEN_CLOAK.get(), null, null, Reg.STAFF_FIRE.get()}};
+                    {Reg.LUNARGENT_HELMET.get(), Reg.LUNARGENT_CHESTPLATE.get(), Reg.LUNARGENT_LEGGINGS.get(), Reg.LUNARGENT_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                    {Reg.ORC_HELMET.get(), Reg.ORC_CHESTPLATE.get(), Reg.ORC_LEGGINGS.get(), Reg.ORC_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                    {Reg.ELVEN_HELMET.get(), Reg.ELVEN_CHESTPLATE.get(), Reg.ELVEN_LEGGINGS.get(), Reg.ELVEN_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                    {Reg.DWARVEN_HELMET.get(), Reg.DWARVEN_CHESTPLATE.get(), Reg.DWARVEN_LEGGINGS.get(), Reg.DWARVEN_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                    {Reg.ASHLORD_HELMET.get(), Reg.ASHLORD_CHESTPLATE.get(), Reg.ASHLORD_LEGGINGS.get(), Reg.ASHLORD_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                    {Reg.ELFKING_HELMET.get(), Reg.ELFKING_CHESTPLATE.get(), Reg.ELFKING_LEGGINGS.get(), Reg.ELFKING_BOOTS.get(), net.minecraft.world.item.Items.AIR},
+                    {null, Reg.ELVEN_CLOAK.get(), null, null, net.minecraft.world.item.Items.AIR}};
             double x = SX + 6;
             for (Item[] set : sets) {
                 actor(ow, ModEntities.HUMAN.get(), x, SZ + 6, m -> {

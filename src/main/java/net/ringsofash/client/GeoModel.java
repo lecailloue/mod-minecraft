@@ -107,6 +107,13 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
             tint = net.minecraft.util.FastColor.ARGB32.color(255, Math.min(255, r), Math.min(255, g), Math.min(255, b));
         }
         float atk = Mth.sin(this.attackTime * Mth.PI);
+        // mobs qui ne se deplacent qu'en volant : jamais de cycle de marche, ailes toujours battantes, pattes repliees
+        boolean crow = e instanceof net.ringsofash.entity.BeastEntity bc && bc.isCrow();
+        boolean bird = e instanceof EagleEntity || crow;
+        boolean worm = e instanceof net.ringsofash.entity.BossEntity bo && bo.kind() == net.ringsofash.entity.BossEntity.Kind.DRAGON;
+        boolean chief = e instanceof net.ringsofash.entity.ShadowChiefEntity;
+        if (bird || worm || chief) { swing = 0F; amount = 0F; }
+        float vy = (float) e.getDeltaMovement().y;
         ModelPart head = p("head"), neck = p("neck");
         if (head != null) {
             float k = neck != null ? 0.5F : 1.0F;
@@ -124,7 +131,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
         if (al != null) al.zRot -= Mth.cos(age * 0.06F) * 0.03F + 0.03F;
         ModelPart wr = p("wing_r"), wl = p("wing_l");
         if (wr != null && wl != null) {
-            boolean flying = !e.onGround() || (e instanceof EagleEntity ea && ea.isFlying());
+            boolean flying = bird || worm || !e.onGround() || (e instanceof EagleEntity ea && ea.isFlying());
             ModelPart wr2 = p("wing_r2"), wl2 = p("wing_l2");
             if (!flying && wr2 != null && wl2 != null) {          // perche : ailes repliees le long du corps, legere respiration
                 float br = Mth.sin(age * 0.08F) * 0.02F;
@@ -132,10 +139,25 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
                 wr2.yRot += -1.40F; wl2.yRot += 1.40F;
                 wr2.zRot += 0.44F; wl2.zRot -= 0.44F;
             } else {
-                float flap = flying ? Mth.sin(age * 0.45F) * 0.6F : Mth.sin(age * 0.08F) * 0.06F - 0.05F;
+                float rate = worm ? 0.16F : crow ? 0.85F : bird ? 0.34F : 0.45F;
+                float amp = worm ? 0.45F : crow ? 0.75F : bird ? 0.55F : 0.6F;
+                if ((bird || worm) && vy < -0.04F) amp *= 0.35F;                 // plane en descendant
+                float flap = flying ? Mth.sin(age * rate) * amp : Mth.sin(age * 0.08F) * 0.06F - 0.05F;
                 wr.zRot += flap; wl.zRot -= flap;
                 if (wr2 != null && wl2 != null) { wr2.zRot += flap * 0.5F; wl2.zRot -= flap * 0.5F; }
             }
+        }
+        if (bird || worm) {
+            ModelPart bd = p("body");
+            float beat = age * (worm ? 0.16F : crow ? 0.85F : 0.34F);
+            if (bd != null) {
+                bd.y += Mth.cos(beat) * (worm ? 1.6F : 0.5F);
+                bd.xRot += Mth.clamp(-vy * 0.9F, -0.35F, 0.35F);
+            }
+            if (bird) { leg("leg_r", 0.9F); leg("leg_l", 0.9F); }
+            if (worm) { leg("leg_fr", -0.6F); leg("leg_fl", -0.6F); leg("leg_br", 0.55F); leg("leg_bl", 0.55F); }
+            ModelPart tl = p("tail");
+            if (tl != null && bird) tl.xRot += Mth.clamp(vy * 0.8F, -0.3F, 0.3F) + Mth.sin(age * 0.1F) * 0.05F;
         }
         for (int i = 1; i <= 3; i++) {
             ModelPart t = p(i == 1 ? "tail" : "tail" + i);
@@ -215,7 +237,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
         if (e instanceof net.ringsofash.entity.GiantSpiderEntity) spiderPose(swing, amount, age, atk);
         if (!sway.isEmpty()) sylvPose(swing, amount, age);
         if (e instanceof net.ringsofash.entity.ShadowDragonEntity) dragonPose(e, age, atk);
-        if (e instanceof net.ringsofash.entity.ShadowChiefEntity) masterPose(e, age, amount);
+        if (e instanceof net.ringsofash.entity.ShadowChiefEntity) masterPose(e, age, Math.min(1F, (float) e.getDeltaMovement().horizontalDistance() * 3F));
     }
 
     /**
@@ -277,8 +299,17 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
             ModelPart c = p("cape_" + i);
             if (c != null) c.xRot += 0.10F + (ride ? 0.22F : amount * 0.5F) * (1 + i * 0.4F) + Mth.sin(age * 0.25F - i * 0.9F) * (ride ? 0.12F : 0.05F);
         }
-        if (!ride) return;
         ModelPart lr = p("leg_r"), ll = p("leg_l"), ar = p("arm_r"), al = p("arm_l");
+        if (!ride) {                                                  // en vol : jambes trainantes, bras ecartes, le corps ondule
+            float sway = Mth.sin(age * 0.09F);
+            if (lr != null) { lr.xRot += 0.35F + amount * 0.5F + sway * 0.06F; lr.zRot += 0.06F; }
+            if (ll != null) { ll.xRot += 0.35F + amount * 0.5F - sway * 0.06F; ll.zRot -= 0.06F; }
+            if (ar != null) { ar.xRot += -0.35F - amount * 0.5F; ar.zRot += 0.35F; }
+            if (al != null) { al.xRot += -0.35F - amount * 0.5F; al.zRot -= 0.35F; }
+            ModelPart bd = p("body");
+            if (bd != null) { bd.y += Mth.sin(age * 0.09F) * 0.5F; bd.xRot += 0.15F + amount * 0.35F; }
+            return;
+        }
         if (lr != null) { lr.xRot += -0.95F; lr.zRot += 0.32F; }
         if (ll != null) { ll.xRot += -0.95F; ll.zRot -= 0.32F; }
         if (ar != null) ar.xRot += -0.8F;

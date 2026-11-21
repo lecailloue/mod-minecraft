@@ -30,15 +30,15 @@ public final class Guide {
         "§8Bois-Noir§r : araignées géantes.\n§7Landes des Tertres§r : tombes et spectres.\n§3Marais des Morts§r : eaux traîtresses.\n§7Monts de Fer§r : mines naines, lunargent.\n§fPics Blancs§r : aigles géants.",
         "§4Terres de Cendre§r : royaume des orques. Au centre se dresse le §lMont Funeste§r.\n§6Terres Sauvages§r : hommes sauvages et mammouths.\n\nLa nuit est dangereuse partout. Dormez, ou restez près d'un village.",
         "§l4. Les peuples§r\n\n§lSemi-hommes§r : fermiers et aubergistes. Nourriture contre récoltes.\n\n§lHommes§r : un peu de tout contre un peu de tout. Fermier, forgeron, tanneur, érudit.",
-        "§lElfes§r : donnez-leur les dons de la forêt (bûches de doréal, étoiles-d'or, clochelunes, miel, baies). Ils offrent arcs, lames, capes, potions.\n\n§lNains§r : minerais contre armes et armures.",
+        "§lElfes§r : donnez-leur les dons de la forêt (bûches de doréal, étoiles-d'or, clochelunes, miel, baies). Ils offrent arcs, capes, potions.\n\n§lNains§r : minerais contre armes et armures.",
         "§l5. Commerce et réputation§r\n\nChaque échange fait §amonter§r votre réputation chez ce peuple.\n\nTuer un habitant ou piller ses coffres la fait §cchuter§r lourdement.\n\nTouche §lR§r : menu de réputation.",
         "Rangs : Ennemi, Méfiant, Neutre, Ami, Héros.\n\n§lMéfiant§r : on refuse de commercer.\n§lEnnemi§r : les gardes attaquent.\n§lAmi§r : les meilleures offres s'ouvrent (anneaux, armes rares).",
         "§l6. Les anneaux§r\n\nRangez vos anneaux dans l'§longlet Anneaux§r (à gauche de l'inventaire, ou touche G) : 10 emplacements. §lMaintenez Alt§r pour choisir l'anneau actif : un seul agit à la fois, les autres restent inoffensifs.\n\nElfes : §bEaux§r (soin), §bVents§r (vitesse), §bBraises§r (feu).\nNains : §6Forge§r (hâte), §6Trésor§r (chance).",
         "Hommes : §cRois§r (force) et §cOmbres§r (discrétion), trouvés dans les tombes.\n\n§4L'Anneau de Cendre§r rend invisible... mais corrompt, et l'Œil finit par vous trouver.\n\nTout anneau attire les cavaliers blêmes.",
-        "§l7. Armes et armures§r\n\nLunargent : le meilleur métal, au fond des Monts de Fer.\nLames elfiques : luisent près des orques.\nLame des tertres : blesse les spectres.\nHaches et marteaux nains. Cimeterres orques.",
-        "Bâtons : feu, lumière, foudre, soin (mage errant).\n\nArmures : lunargent, elfique, naine, orque.\nPorter l'ensemble complet donne un bonus.\n\n§lForge naine§r : améliore une arme avec du lunargent.",
+        "§l7. Armures et outils§r\n\nLunargent : le meilleur métal, au fond des Monts de Fer.\nPioches de lunargent, naine et de gobelin.",
+        "Armures : lunargent, elfique, naine, orque.\nPorter l'ensemble complet donne un bonus.\n\n§lForge naine§r : améliore un outil avec du lunargent.",
         "§l8. La quête§r\n\nAu plus profond d'une mine naine dort le §4Fléau de Braise§r. Il garde l'§4Anneau de Cendre§r.\n\nPortez l'anneau au §lMont Funeste§r et jetez-le dans la lave du cratère.",
-        "Alors le §4Seigneur de Cendre§r viendra le réclamer. Terrassez-le.\n\nVotre récompense dépend de votre §lréputation générale§r :\n§aBonne§r : armure et épée du roi elfe.\n§cMauvaise§r : armure et masse du Seigneur.",
+        "Alors le §4Seigneur de Cendre§r viendra le réclamer. Terrassez-le.\n\nVotre récompense dépend de votre §lréputation générale§r :\n§aBonne§r : armure du roi elfe.\n§cMauvaise§r : armure du Seigneur de Cendre.",
         "§l9. Objets utiles§r\n\nPain de route : très nourrissant.\nFiole de lumière : les araignées vous fuient.\nCorde elfique : pour descendre.\nCape elfique : accroupi, on vous voit mal.\nCor de guerre : renforce les alliés.",
         "Pierre de vision : montre les lieux proches (mais l'Œil regarde aussi).\nCor des morts : armée de spectres, une seule fois.\nSève vive : vous fait grandir.\n\nBûcher d'alarme : allumez-le pour appeler des soldats.",
     };
@@ -49,27 +49,27 @@ public final class Guide {
         b("war_orc", "Orque noir", "Soldat d'élite en armure. Frappe fort. Visez-le en premier ou fuyez.");
         b("orc_chief", "Chef orque", "Commande les forteresses. Garde le meilleur butin.");
         b("goblin", "Gobelin", "Vermine des cavernes, toujours en nombre. Trois sortes : l'éclaireur (1,2 bloc), le guerrier (1,5) et la brute à la pioche (1,8). Ils craignent le soleil.");
-        b("goblin_king", "Roi des gobelins", "Bossu, massif, la tête énorme et une poche de chair qui lui pend du menton. Lourd et lent, mais ses coups font mal, et il appelle tous les gobelins à lui. Il tient un bâton à crâne de chèvre qu'il laisse parfois tomber.");
+        b("goblin_king", "Roi des gobelins", "Bossu, massif, la tête énorme et une poche de chair qui lui pend du menton. Lourd et lent, mais ses coups font mal, et il appelle tous les gobelins à lui.");
         b("cave_troll", "Troll des cavernes", "Trois blocs de haut, gris et massif. Ses grands coups de poing sont lents mais envoient valser. Il chasse à quatre pattes, comme un gorille : ne comptez pas le distancer.");
         b("stone_troll", "Troll de pierre", "Le soleil le change en statue. Une pioche en vient alors à bout sans risque.");
         b("troll_chief", "Troll chef de meute", "Plus grand, casqué, les yeux rouges. Arrive avec sa meute de trolls et la lance sur vous. Son coup de poing est lent... et terrible.");
         b("warg", "Warg", "Chasse en meute dans les plaines. Parfois monté par un orque.");
         b("wild_man", "Homme sauvage", "Hostile... sauf si votre réputation générale est bonne.");
         b("mammoth", "Mammouth", "Paisible tant qu'on ne le frappe pas. Sinon, courez.");
-        b("shadow_rider", "Être des ombres", "Cavalier noir sous une grande cape, sans rien sous la capuche. Ne craint pas le soleil. Très rapide. Sent un anneau à près de cent blocs, même à travers les murs. Craint le feu et les lames des tertres.");
-        b("shadow_chief", "Chef des ombres", "Le chef des êtres des ombres : armure noire, casque à pointes, épée pâle. Il arrive sur son dragon ; c'est un ennemi à part entière : le tuer laisse le dragon sans cavalier. Bien plus robuste que ses cavaliers.");
-        b("shadow_dragon", "Dragon des ombres", "Monture du Chef des ombres, avec sa selle de métal. Vole sans cesse, cou ondulant, ailes déchirées. Mord, terrifie et empoisonne de ténèbres. Sans cavalier (œuf du dragon, ou chef tué), une pile de 64 os l'apprivoise : clic droit pour le chevaucher comme en vol créatif — ZQSD, Espace monte, C descend, Maj met pied à terre.");
+        b("shadow_rider", "Être des ombres", "Cavalier noir sous une grande cape, sans rien sous la capuche. Ne craint pas le soleil. Très rapide. Sent un anneau à près de cent blocs, même à travers les murs. Craint le feu.");
+        b("shadow_chief", "Chef des ombres", "Le chef des êtres des ombres : armure noire, casque à pointes, épée pâle. Il arrive sur son dragon ; c'est un ennemi à part entière : le tuer laisse le dragon sans cavalier. Il ne marche jamais : il vole en permanence. Bien plus robuste que ses cavaliers.");
+        b("shadow_dragon", "Dragon des ombres", "Monture du Chef des ombres, avec sa selle de métal. Vole sans cesse, cou ondulant, ailes déchirées. Mord, terrifie et empoisonne de ténèbres. Sans cavalier (œuf du dragon, ou chef tué), une pile de 64 os l'apprivoise : clic droit pour le chevaucher : ZQSD (ou WASD) pour avancer, reculer et aller sur les côtés, Espace pour monter, flèche du bas pour descendre, Maj pour mettre pied à terre.");
         b("giant_spider", "Araignée géante", "Reine du Bois-Noir. Venin, toiles qui engluent, crache des fils à distance. Fuit la fiole de lumière.");
         b("lurker", "Guetteur des profondeurs", "Tapi dans les eaux sombres. Ses tentacules vous tirent vers lui. Frappez de loin.");
         b("cave_thief", "Créature blême", "Vole un objet de votre barre et s'enfuit. Rattrapez-la pour le reprendre.");
         b("fire_demon", "Fléau de Braise", "Démon d'ombre et de flamme, un par mine naine. Insensible au feu. Fouet, boules de feu, explosion de braises.");
-        b("dragon", "Vieux Ver", "Dort sur son or sous la montagne. Souffle de feu, coup de queue.");
+        b("dragon", "Vieux Ver", "Dort sur son or sous la montagne, mais ne se pose jamais : il vole en permanence. Souffle de feu, coup de queue.");
         b("sorcerer", "Sorcier corrompu", "Maître d'une tour noire. Foudre, crocs, téléportation. Insensible à la foudre.");
-        b("ash_lord", "Seigneur de Cendre", "Le maître de l'Anneau. Seule la lame du roi elfe le blesse vraiment ; les autres armes sont émoussées contre lui.");
+        b("ash_lord", "Seigneur de Cendre", "Le maître de l'Anneau. Cuirassé, il fait trembler le sol sous ses coups.");
         b("treeman", "Sylvegarde", "Gardien des arbres. Ne coupez pas de bois près de lui. Écrase les orques.");
-        b("eagle", "Aigle géant", "Offrez-lui viande ou poisson cru pour gagner sa confiance, puis volez sur son dos.");
+        b("eagle", "Aigle géant", "Il ne vit que dans les airs. Offrez-lui viande ou poisson cru pour gagner sa confiance, puis volez sur son dos.");
         b("stag", "Cerf blanc", "Présage de bonne fortune. Très craintif.");
-        b("crow", "Corbeau espion", "S'il vous voit porter un anneau, il alerte tous les monstres alentour.");
+        b("crow", "Corbeau espion", "Il ne se pose jamais. S'il vous voit porter un anneau, il alerte tous les monstres alentour.");
     }
     private static void b(String id, String title, String text) { BESTIARY.put(id, new String[]{title, text}); }
 

@@ -21,7 +21,10 @@ import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomFlyingGoal;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
@@ -56,13 +59,27 @@ public class BossEntity extends Monster {
         this.bar = new ServerBossEvent(getDisplayName(), switch (k) { case FIRE_DEMON, DRAGON -> BossEvent.BossBarColor.RED; case ASH_LORD -> BossEvent.BossBarColor.PURPLE; case SORCERER -> BossEvent.BossBarColor.WHITE; },
                 BossEvent.BossBarOverlay.NOTCHED_10);
         this.bar.setDarkenScreen(k == Kind.ASH_LORD || k == Kind.FIRE_DEMON);
+        if (k == Kind.DRAGON) { this.moveControl = new FlyingMoveControl(this, 6, true); setNoGravity(true); }   // le Vieux Ver ne se pose jamais
         setPersistenceRequired();
     }
 
     public Kind kind() { return ModEntities.bossKindOf(getType()); }
 
     @Override
+    protected PathNavigation createNavigation(Level level) { return kind() == Kind.DRAGON ? Flight.navigation(this, level) : super.createNavigation(level); }
+
+    @Override
     protected void registerGoals() {
+        if (kind() == Kind.DRAGON) {
+            goalSelector.addGoal(3, new Flight.AttackGoal(this, 1.0, 3.0));
+            goalSelector.addGoal(6, new WaterAvoidingRandomFlyingGoal(this, 0.8));
+            goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 24.0F));
+            goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+            targetSelector.addGoal(1, new HurtByTargetGoal(this));
+            targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false));
+            targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, PeopleEntity.class, false));
+            return;
+        }
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(3, new MeleeAttackGoal(this, 1.0, true));
         goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.6));
@@ -78,8 +95,6 @@ public class BossEntity extends Monster {
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData data) {
         data = super.finalizeSpawn(level, difficulty, reason, data);
         home = blockPosition();
-        if (kind() == Kind.ASH_LORD) { setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.ASH_MACE.get())); setDropChance(EquipmentSlot.MAINHAND, 0.0F); }
-        if (kind() == Kind.SORCERER) { setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.STAFF_STORM.get())); setDropChance(EquipmentSlot.MAINHAND, 0.0F); }
         return data;
     }
 
@@ -87,6 +102,7 @@ public class BossEntity extends Monster {
     public void aiStep() {
         super.aiStep();
         Kind k = kind();
+        if (k == Kind.DRAGON) setNoGravity(true);
         if (level().isClientSide) {
             if (k == Kind.FIRE_DEMON) {
                 for (int i = 0; i < 3; i++) level().addParticle(random.nextBoolean() ? ParticleTypes.FLAME : ParticleTypes.LARGE_SMOKE, getRandomX(0.8), getRandomY(), getRandomZ(0.8), 0, 0.03, 0);
@@ -232,7 +248,6 @@ public class BossEntity extends Monster {
     public boolean hurt(DamageSource source, float amount) {
         if (source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE) && kind() != Kind.SORCERER) return false;
         if (source.is(net.minecraft.tags.DamageTypeTags.IS_LIGHTNING) && kind() == Kind.SORCERER) return false;
-        if (kind() == Kind.ASH_LORD && source.getEntity() instanceof LivingEntity le && !le.getMainHandItem().is(Reg.KINGS_BLADE.get())) amount = Math.min(amount, 14F);
         return super.hurt(source, amount);
     }
 
@@ -257,6 +272,8 @@ public class BossEntity extends Monster {
     public boolean canChangeDimensions(Level from, Level to) { return false; }
     @Override
     public boolean isPushable() { return kind() == Kind.SORCERER; }
+    @Override
+    public boolean causeFallDamage(float dist, float mult, DamageSource source) { return kind() != Kind.DRAGON && super.causeFallDamage(dist, mult, source); }
 
     @Override
     protected SoundEvent getAmbientSound() {

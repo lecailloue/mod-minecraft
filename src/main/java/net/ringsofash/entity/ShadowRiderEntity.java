@@ -89,8 +89,6 @@ public class ShadowRiderEntity extends Monster {
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData data) {
         data = super.finalizeSpawn(level, difficulty, reason, data);
-        setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.WIGHT_BLADE.get()));
-        setDropChance(EquipmentSlot.MAINHAND, 0.1F);
         entityData.set(VARIANT, level.getRandom().nextInt(2));
         return data;
     }
@@ -137,12 +135,10 @@ public class ShadowRiderEntity extends Monster {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        // craint le feu et les lames des tertres ; le reste le blesse peu
+        // craint le feu ; le reste le blesse peu
         boolean fire = source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE);
-        boolean blade = source.getEntity() instanceof LivingEntity le && (le.getMainHandItem().is(Reg.WIGHT_BLADE.get()) || le.getMainHandItem().is(Reg.ELVEN_BLADE.get())
-                || le.getMainHandItem().is(Reg.KINGS_BLADE.get()));
         if (fire) amount *= 2.0F;
-        else if (!blade && !source.is(DamageTypes.MAGIC) && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) amount *= 0.5F;
+        else if (!source.is(DamageTypes.MAGIC) && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) amount *= 0.5F;
         return super.hurt(source, amount);
     }
 

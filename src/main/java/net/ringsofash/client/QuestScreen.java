@@ -59,14 +59,14 @@ public class QuestScreen extends Screen {
                 List.of(), "Aucune : mais le maître de l'Anneau viendra le réclamer.", new ItemStack(Items.LAVA_BUCKET), "Terminez « L'Anneau de Cendre » pour débloquer cette quête."));
         boolean dark = general() < 0;
         List<ItemStack> rw = dark
-                ? List.of(new ItemStack(Reg.ASHLORD_CHESTPLATE.get()), new ItemStack(Reg.ASH_MACE.get()))
-                : List.of(new ItemStack(Reg.ELFKING_CHESTPLATE.get()), new ItemStack(Reg.KINGS_BLADE.get()));
+                ? List.of(new ItemStack(Reg.ASHLORD_CHESTPLATE.get()))
+                : List.of(new ItemStack(Reg.ELFKING_CHESTPLATE.get()));
         l.add(new Q("Le Seigneur de Cendre",
-                "L'Anneau a fondu et son maître est sorti de l'ombre. Seule la lame du roi elfe le blesse vraiment : descendez l'affronter sur le lac figé.",
+                "L'Anneau a fondu et son maître est sorti de l'ombre. Descendez l'affronter sur le lac figé.",
                 q >= 3 ? 2 : q == 2 ? 1 : 0,
                 List.of(new Obj("Vaincre le Seigneur de Cendre", q >= 3)),
-                rw, dark ? "Voie de l'ombre : armure complète et masse du Seigneur de Cendre." : "Voie de la lumière : armure et épée du roi elfe, +30 de réputation chez chaque peuple.",
-                new ItemStack(Reg.ASH_MACE.get()), "Jetez l'Anneau dans le Mont Funeste pour débloquer cette quête."));
+                rw, dark ? "Voie de l'ombre : armure complète du Seigneur de Cendre." : "Voie de la lumière : armure du roi elfe, +30 de réputation chez chaque peuple.",
+                new ItemStack(Reg.ASHLORD_CHESTPLATE.get()), "Jetez l'Anneau dans le Mont Funeste pour débloquer cette quête."));
         List<Obj> friends = new ArrayList<>();
         boolean all = true;
         for (People p : People.values()) {

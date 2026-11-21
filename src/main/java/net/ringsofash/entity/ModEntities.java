@@ -139,7 +139,8 @@ public final class ModEntities {
         e.put(CAVE_THIEF.get(), mon(16, 2, 0.36, 0, 24, 0));
         e.put(FIRE_DEMON.get(), mon(400, 16, 0.27, 10, 48, 1.0));
         e.put(ASH_LORD.get(), mon(500, 18, 0.27, 14, 64, 1.0));
-        e.put(DRAGON.get(), mon(350, 15, 0.25, 10, 40, 1.0));
+        e.put(DRAGON.get(), Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 350).add(Attributes.ATTACK_DAMAGE, 15).add(Attributes.MOVEMENT_SPEED, 0.25)
+                .add(Attributes.FLYING_SPEED, 0.7).add(Attributes.ARMOR, 10).add(Attributes.FOLLOW_RANGE, 40).add(Attributes.KNOCKBACK_RESISTANCE, 1.0).build());
         e.put(SORCERER.get(), mon(150, 6, 0.28, 2, 40, 0.2));
         for (var t : java.util.List.of(HUMAN, ELF, DWARF, HALFLING, RANGER, MAGE)) e.put(t.get(), mob(t == DWARF ? 30 : t == HALFLING ? 16 : 24, 5, 0.5, 0));
         e.put(TREEMAN.get(), Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 120).add(Attributes.ATTACK_DAMAGE, 14).add(Attributes.MOVEMENT_SPEED, 0.2)

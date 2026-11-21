@@ -36,8 +36,7 @@ public final class SwordAura {
         boolean local = p == Minecraft.getInstance().player;
         if (local) scan(p);
         var it = st.getItem();
-        if (it == net.ringsofash.gen.Reg.ELVEN_BLADE.get() || it == net.ringsofash.gen.Reg.ELVEN_GLAIVE.get())
-            return local && orcs ? new float[]{0.35F, 0.80F, 1.0F} : null;
+        if (s.kind == SpecialSword.Kind.ELVEN) return local && orcs ? new float[]{0.35F, 0.80F, 1.0F} : null;
         if (s.kind == SpecialSword.Kind.SENTINEL) return local && monsters ? new float[]{1.0F, 0.60F, 0.20F} : null;
         if (s.kind == SpecialSword.Kind.SUN) return local && undead ? color(s.kind) : null;
         return color(s.kind);

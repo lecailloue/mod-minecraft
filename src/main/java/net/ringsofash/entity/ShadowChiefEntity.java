@@ -15,10 +15,10 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.control.FlyingMoveControl;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomFlyingGoal;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
 
 /**
  * Chef des ombres : il apparait sur son dragon (un autre mob : on peut le tuer sans toucher au dragon, qui reste alors sans cavalier).
- * Assis sur la selle tant que le dragon vole ; a pied, il se bat a l'epee comme un etre des ombres, en plus robuste.
+ * Assis sur la selle tant que le dragon vole ; sans lui, il ne touche jamais le sol : il vole de lui-meme, en plus robuste que ses cavaliers.
  */
 public class ShadowChiefEntity extends Monster {
     public static final double NORMAL_RANGE = 40.0, RING_RANGE = 96.0;
@@ -42,18 +42,22 @@ public class ShadowChiefEntity extends Monster {
     public ShadowChiefEntity(EntityType<? extends ShadowChiefEntity> type, Level level) {
         super(type, level);
         this.xpReward = 90;
+        this.moveControl = new FlyingMoveControl(this, 20, true);
+        setNoGravity(true);
     }
 
+    @Override
+    protected PathNavigation createNavigation(Level level) { return Flight.navigation(this, level); }
+
     public static AttributeSupplier.Builder attributes() {
-        return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 150).add(Attributes.ATTACK_DAMAGE, 14).add(Attributes.MOVEMENT_SPEED, 0.38)
+        return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 150).add(Attributes.ATTACK_DAMAGE, 14).add(Attributes.MOVEMENT_SPEED, 0.38).add(Attributes.FLYING_SPEED, 0.6)
                 .add(Attributes.ARMOR, 10).add(Attributes.FOLLOW_RANGE, RING_RANGE).add(Attributes.KNOCKBACK_RESISTANCE, 0.6);
     }
 
     @Override
     protected void registerGoals() {
-        goalSelector.addGoal(0, new FloatGoal(this));
-        goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.1, true));
-        goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.7));
+        goalSelector.addGoal(2, new Flight.AttackGoal(this, 1.1, 1.6));
+        goalSelector.addGoal(6, new WaterAvoidingRandomFlyingGoal(this, 0.7));
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 24.0F));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
         targetSelector.addGoal(2, new RingSenseGoal(this));
@@ -75,8 +79,6 @@ public class ShadowChiefEntity extends Monster {
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData data) {
         data = super.finalizeSpawn(level, difficulty, reason, data);
-        setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.WIGHT_BLADE.get()));
-        setDropChance(EquipmentSlot.MAINHAND, 0.15F);
         if (reason != MobSpawnType.JOCKEY && level.getLevel().getEntitiesOfClass(ShadowDragonEntity.class, getBoundingBox().inflate(1.5)).isEmpty()) {
             // il arrive toujours sur son dragon (oeuf, apparition naturelle, commande)
             ShadowDragonEntity d = ModEntities.SHADOW_DRAGON.get().create(level.getLevel());
@@ -106,6 +108,7 @@ public class ShadowChiefEntity extends Monster {
     @Override
     public void aiStep() {
         super.aiStep();
+        setNoGravity(true);
         if (level().isClientSide) {
             if (random.nextInt(4) == 0) level().addParticle(ParticleTypes.SMOKE, getRandomX(0.5), getRandomY(), getRandomZ(0.5), 0, 0.01, 0);
             return;
@@ -138,6 +141,7 @@ public class ShadowChiefEntity extends Monster {
     }
 
     @Override public boolean removeWhenFarAway(double dist) { return true; }
+    @Override public boolean causeFallDamage(float dist, float mult, net.minecraft.world.damagesource.DamageSource source) { return false; }
     @Override protected SoundEvent getAmbientSound() { return SoundEvents.WITHER_SKELETON_AMBIENT; }
     @Override protected SoundEvent getHurtSound(net.minecraft.world.damagesource.DamageSource s) { return SoundEvents.WITHER_SKELETON_HURT; }
     @Override protected SoundEvent getDeathSound() { return SoundEvents.WITHER_SKELETON_DEATH; }

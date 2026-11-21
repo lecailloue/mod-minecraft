@@ -51,7 +51,7 @@ import java.util.UUID;
 
 /**
  * Dragon des ombres : la monture du Chef des ombres, qui est un mob a part assis sur sa selle de metal. Sans cavalier (oeuf du dragon, ou chef tue),
- * contre une pile d'os (64) il se laisse apprivoiser et on peut le chevaucher comme en vol creatif (ZQSD, Espace monte, C descend, Maj = pied a terre).
+ * contre une pile d'os (64) il se laisse apprivoiser et on peut le chevaucher comme en vol creatif (WASD/ZQSD, Espace monte, fleche du bas descend, Maj = pied a terre).
  * Vole en permanence (cou qui ondule, ailes qui battent), sent de tres loin quiconque porte un anneau, mord et jette la terreur autour de lui.
  */
 public class ShadowDragonEntity extends Monster {
@@ -177,12 +177,10 @@ public class ShadowDragonEntity extends Monster {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        // comme les etres des ombres : craint le feu et les lames des tertres / elfiques ; le reste le blesse un peu moins
+        // comme les etres des ombres : craint le feu ; le reste le blesse un peu moins
         boolean fire = source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE);
-        boolean blade = source.getEntity() instanceof LivingEntity le && (le.getMainHandItem().is(Reg.WIGHT_BLADE.get()) || le.getMainHandItem().is(Reg.ELVEN_BLADE.get())
-                || le.getMainHandItem().is(Reg.KINGS_BLADE.get()));
         if (fire) amount *= 1.5F;
-        else if (!blade && !source.is(DamageTypes.MAGIC) && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) amount *= 0.75F;
+        else if (!source.is(DamageTypes.MAGIC) && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) amount *= 0.75F;
         return super.hurt(source, amount);
     }
 
@@ -228,7 +226,7 @@ public class ShadowDragonEntity extends Monster {
                 getNavigation().stop();
                 ((ServerLevel) level()).sendParticles(ParticleTypes.HEART, getX(), getY() + 2.5, getZ(), 12, 1.2, 0.8, 1.2, 0.02);
                 playSound(SoundEvents.ENDER_DRAGON_GROWL, 2.0F, 0.9F);
-                player.displayClientMessage(net.minecraft.network.chat.Component.literal("Le dragon vous obéit. ZQSD pour avancer, Espace monte, C descend, Maj pour mettre pied à terre."), true);
+                player.displayClientMessage(net.minecraft.network.chat.Component.literal("Le dragon vous obéit. WASD pour avancer, reculer et aller sur les côtés, Espace monte, flèche du bas descend, Maj pour mettre pied à terre."), true);
                 player.startRiding(this);
             }
             return InteractionResult.sidedSuccess(level().isClientSide);
@@ -252,10 +250,10 @@ public class ShadowDragonEntity extends Monster {
         this.yRotO = this.yBodyRot = this.yHeadRot = getYRot();
     }
 
-    /** Rempli cote client : +1 Espace (monter), -1 touche C (descendre). */
+    /** Rempli cote client : +1 Espace (monter), -1 fleche du bas (descendre). */
     public static java.util.function.ToIntFunction<Player> VERTICAL = p -> 0;
 
-    /** Comme en vol creatif : ZQSD (avant, arriere, cotes) dans le sens du regard a l'horizontale, Espace monte, C descend ; sans touche, il plane. */
+    /** Comme en vol creatif : WASD/ZQSD (avant, arriere, cotes) dans le sens du regard a l'horizontale, Espace monte, fleche du bas descend ; sans touche, il plane. */
     @Override
     protected Vec3 getRiddenInput(Player player, Vec3 travelVector) {
         return new Vec3(player.xxa * 0.8, VERTICAL.applyAsInt(player) * 0.5, player.zza);

@@ -349,8 +349,8 @@ public final class GameEvents {
         if (boss.kind() != BossEntity.Kind.ASH_LORD) return;
         boolean dark = killer != null && ModData.lore(killer).general() < 0;
         ItemStack[] reward = dark
-                ? new ItemStack[]{new ItemStack(Reg.ASHLORD_HELMET.get()), new ItemStack(Reg.ASHLORD_CHESTPLATE.get()), new ItemStack(Reg.ASHLORD_LEGGINGS.get()), new ItemStack(Reg.ASHLORD_BOOTS.get()), new ItemStack(Reg.ASH_MACE.get())}
-                : new ItemStack[]{new ItemStack(Reg.ELFKING_HELMET.get()), new ItemStack(Reg.ELFKING_CHESTPLATE.get()), new ItemStack(Reg.ELFKING_LEGGINGS.get()), new ItemStack(Reg.ELFKING_BOOTS.get()), new ItemStack(Reg.KINGS_BLADE.get())};
+                ? new ItemStack[]{new ItemStack(Reg.ASHLORD_HELMET.get()), new ItemStack(Reg.ASHLORD_CHESTPLATE.get()), new ItemStack(Reg.ASHLORD_LEGGINGS.get()), new ItemStack(Reg.ASHLORD_BOOTS.get())}
+                : new ItemStack[]{new ItemStack(Reg.ELFKING_HELMET.get()), new ItemStack(Reg.ELFKING_CHESTPLATE.get()), new ItemStack(Reg.ELFKING_LEGGINGS.get()), new ItemStack(Reg.ELFKING_BOOTS.get())};
         for (ItemStack s : reward) {
             ItemEntity it = new ItemEntity(sl, boss.getX(), boss.getY() + 1, boss.getZ(), s);
             it.setUnlimitedLifetime();
