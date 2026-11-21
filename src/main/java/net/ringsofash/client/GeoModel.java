@@ -111,8 +111,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
         boolean crow = e instanceof net.ringsofash.entity.BeastEntity bc && bc.isCrow();
         boolean bird = e instanceof EagleEntity || crow;
         boolean worm = e instanceof net.ringsofash.entity.BossEntity bo && bo.kind() == net.ringsofash.entity.BossEntity.Kind.DRAGON;
-        boolean chief = e instanceof net.ringsofash.entity.ShadowChiefEntity;
-        if (bird || worm || chief) { swing = 0F; amount = 0F; }
+        if (bird || worm) { swing = 0F; amount = 0F; }
         float vy = (float) e.getDeltaMovement().y;
         ModelPart head = p("head"), neck = p("neck");
         if (head != null) {
@@ -237,7 +236,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
         if (e instanceof net.ringsofash.entity.GiantSpiderEntity) spiderPose(swing, amount, age, atk);
         if (!sway.isEmpty()) sylvPose(swing, amount, age);
         if (e instanceof net.ringsofash.entity.ShadowDragonEntity) dragonPose(e, age, atk);
-        if (e instanceof net.ringsofash.entity.ShadowChiefEntity) masterPose(e, age, Math.min(1F, (float) e.getDeltaMovement().horizontalDistance() * 3F));
+        if (e instanceof net.ringsofash.entity.ShadowChiefEntity) masterPose(e, age, amount);
     }
 
     /**
@@ -300,16 +299,7 @@ public class GeoModel<T extends Entity> extends HierarchicalModel<T> {
             if (c != null) c.xRot += 0.10F + (ride ? 0.22F : amount * 0.5F) * (1 + i * 0.4F) + Mth.sin(age * 0.25F - i * 0.9F) * (ride ? 0.12F : 0.05F);
         }
         ModelPart lr = p("leg_r"), ll = p("leg_l"), ar = p("arm_r"), al = p("arm_l");
-        if (!ride) {                                                  // en vol : jambes trainantes, bras ecartes, le corps ondule
-            float sway = Mth.sin(age * 0.09F);
-            if (lr != null) { lr.xRot += 0.35F + amount * 0.5F + sway * 0.06F; lr.zRot += 0.06F; }
-            if (ll != null) { ll.xRot += 0.35F + amount * 0.5F - sway * 0.06F; ll.zRot -= 0.06F; }
-            if (ar != null) { ar.xRot += -0.35F - amount * 0.5F; ar.zRot += 0.35F; }
-            if (al != null) { al.xRot += -0.35F - amount * 0.5F; al.zRot -= 0.35F; }
-            ModelPart bd = p("body");
-            if (bd != null) { bd.y += Mth.sin(age * 0.09F) * 0.5F; bd.xRot += 0.15F + amount * 0.35F; }
-            return;
-        }
+        if (!ride) return;
         if (lr != null) { lr.xRot += -0.95F; lr.zRot += 0.32F; }
         if (ll != null) { ll.xRot += -0.95F; ll.zRot -= 0.32F; }
         if (ar != null) ar.xRot += -0.8F;

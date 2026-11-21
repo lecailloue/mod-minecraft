@@ -57,7 +57,7 @@ public final class Guide {
         b("wild_man", "Homme sauvage", "Hostile... sauf si votre réputation générale est bonne.");
         b("mammoth", "Mammouth", "Paisible tant qu'on ne le frappe pas. Sinon, courez.");
         b("shadow_rider", "Être des ombres", "Cavalier noir sous une grande cape, sans rien sous la capuche. Ne craint pas le soleil. Très rapide. Sent un anneau à près de cent blocs, même à travers les murs. Craint le feu.");
-        b("shadow_chief", "Chef des ombres", "Le chef des êtres des ombres : armure noire, casque à pointes, épée pâle. Il arrive sur son dragon ; c'est un ennemi à part entière : le tuer laisse le dragon sans cavalier. Il ne marche jamais : il vole en permanence. Bien plus robuste que ses cavaliers.");
+        b("shadow_chief", "Chef des ombres", "Le chef des êtres des ombres : armure noire, casque à pointes, épée pâle. Il arrive sur son dragon ; c'est un ennemi à part entière : le tuer laisse le dragon sans cavalier. C'est son dragon qui vole, pas lui. Bien plus robuste que ses cavaliers.");
         b("shadow_dragon", "Dragon des ombres", "Monture du Chef des ombres, avec sa selle de métal. Vole sans cesse, cou ondulant, ailes déchirées. Mord, terrifie et empoisonne de ténèbres. Sans cavalier (œuf du dragon, ou chef tué), une pile de 64 os l'apprivoise : clic droit pour le chevaucher : ZQSD (ou WASD) pour avancer, reculer et aller sur les côtés, Espace pour monter, flèche du bas pour descendre, Maj pour mettre pied à terre.");
         b("giant_spider", "Araignée géante", "Reine du Bois-Noir. Venin, toiles qui engluent, crache des fils à distance. Fuit la fiole de lumière.");
         b("lurker", "Guetteur des profondeurs", "Tapi dans les eaux sombres. Ses tentacules vous tirent vers lui. Frappez de loin.");
