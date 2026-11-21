@@ -61,34 +61,84 @@ public final class EreborPlan {
 
     private static double cl(double a) { return a < 0 ? 0 : a > 1 ? 1 : a; }
 
+    private static final int GU = RX + 45, GV0 = -RZ - 70, GW = 2 * GU + 1, GH = 175 - GV0 + 1;
+    private static volatile short[] COVER;
+
+    /**
+     * Pour chaque colonne du site : l'altitude minimale (plan) que la roche doit atteindre pour recouvrir les salles et la facade,
+     * puis une pente de 1 pour 1 vers l'exterieur. La montagne epouse donc les salles au lieu d'etre un dome pose dessus,
+     * et rejoint la vraie montagne de la carte ou celle-ci est plus haute.
+     */
+    private static short[] cover() {
+        short[] c = COVER;
+        if (c != null) return c;
+        synchronized (EreborPlan.class) {
+            if (COVER != null) return COVER;
+            final short NO = Short.MIN_VALUE;
+            c = new short[GW * GH];
+            for (int iv = 0; iv < GH; iv++) {
+                int v = iv + GV0;
+                for (int iu = 0; iu < GW; iu++) {
+                    int u = iu - GU;
+                    short r = NO;
+                    if (Math.abs(u) <= RX && v >= -RZ && v <= 160) {
+                        for (int y = 300; y >= 56; y -= 2) {
+                            if (air(u, y, v) || air(u, y - 1, v) || (v >= VF - 12 && facade(u, y, v) != KEEP)) { r = (short) (y + 9); break; }
+                        }
+                    }
+                    c[iv * GW + iu] = r;
+                }
+            }
+            // pente : chaque colonne perd 1 bloc de hauteur (1,4 en diagonale) par bloc d'eloignement
+            float[] f = new float[GW * GH];
+            for (int k = 0; k < f.length; k++) f[k] = c[k] == NO ? -9999 : c[k];
+            for (int pass = 0; pass < 2; pass++) {
+                for (int k = 0; k < f.length; k++) {
+                    int idx = pass == 0 ? k : f.length - 1 - k;
+                    int iu = idx % GW, iv = idx / GW;
+                    float best = f[idx];
+                    int du = pass == 0 ? -1 : 1;
+                    int[][] nb = {{du, 0}, {0, du}, {du, du}, {-du, du}};
+                    for (int[] n : nb) {
+                        int ju = iu + n[0], jv = iv + n[1];
+                        if (ju < 0 || ju >= GW || jv < 0 || jv >= GH) continue;
+                        float cand = f[jv * GW + ju] - (n[0] != 0 && n[1] != 0 ? 1.45f : 1f);
+                        if (cand > best) best = cand;
+                    }
+                    f[idx] = best;
+                }
+            }
+            for (int k = 0; k < f.length; k++) c[k] = f[k] < 40 ? NO : (short) f[k];
+            // la pente doit atteindre le niveau de la plaine : on borne par le bas a NO (sans roche)
+            COVER = c;
+            return c;
+        }
+    }
+
     /**
      * Le massif : la vraie montagne de la carte (au nord-est, la zone neigeuse) est conservee ; on ne rajoute de la roche que
-     * la ou elle ne suffit pas a couvrir les salles (au sud, derriere la facade, et au nord), avec des pentes douces.
+     * la ou elle ne suffit pas a couvrir les salles, avec des pentes naturelles et un sommet irregulier.
      */
     private static int top0(int x, int z) {
         int u = x - EX, v = z - EZ;
-        if (Math.abs(u) > RX + 40 || v < -RZ - 70 || v > 175) return Integer.MIN_VALUE;
-        // A : un massif aux pentes naturelles, au contour gauchi
+        if (Math.abs(u) > GU - 1 || v < GV0 || v > 175) return Integer.MIN_VALUE;
+        short[] c = cover();
+        int cv = c[(v - GV0) * GW + u + GU];
+        // un renflement bas et irregulier qui donne une vraie silhouette a la montagne
         double wu = u + 40 * (vn(x * 0.011, z * 0.011, 21) - 0.5), wv = v + 30 + 40 * (vn(x * 0.011, z * 0.011, 22) - 0.5);
         double a = wu / RX, b = wv / RZ;
         double r = Math.sqrt(a * a + b * b);
         double hh = 0;
         if (r < 1) {
-            hh = 150 * Math.pow(1 - Math.pow(r, 2.2), 0.8) * (0.86 + 0.28 * vn(x * 0.02, z * 0.02, 5));
+            hh = 105 * Math.pow(1 - Math.pow(r, 2.2), 0.8) * (0.86 + 0.28 * vn(x * 0.02, z * 0.02, 5));
             double crag = Math.abs(vn(x * 0.045, z * 0.045, 7) - 0.5) * 2;
-            hh += 24 * Math.pow(1 - crag, 2) * (1 - r);
-            hh += 5 * (vn(x * 0.13, z * 0.13, 6) - 0.5);
+            hh += 20 * Math.pow(1 - crag, 2) * (1 - r);
         }
-        // B : la masse derriere la facade
-        int au = Math.abs(u);
-        if (v <= VF + 2) hh = Math.max(hh, 140 * sm(cl((112 - au) / 26.0)) * sm(cl((v + 40) / 80.0)));
-        // C : la masse au dessus des ailes (forges, quartiers, reserves)
-        hh = Math.max(hh, 66 * sm(cl((152 - au) / 22.0)) * sm(cl((v - 5) / 25.0)) * sm(cl((168 - v) / 16.0)));
-        if (hh < 1) return Integer.MIN_VALUE;
-        // la ou le sol naturel est plus bas que la plaine du site, la roche ajoutee rejoint le sol en pente douce
-        double nat = MapData.height(x, z) - D;
-        double drop = Math.max(0, FL0 - nat) * (1 - sm(cl(hh / 45.0)));
-        return FL0 + (int) (hh - drop);
+        double t = FL0 + hh;
+        double rough = 7 * (vn(x * 0.06, z * 0.06, 6) - 0.5) + 3 * (vn(x * 0.19, z * 0.19, 8) - 0.5);
+        if (cv != Short.MIN_VALUE) t = Math.max(t, cv + rough);
+        if (t < FL0 + 2) return Integer.MIN_VALUE;
+        return (int) t;
     }
 
     /** altitude jusqu'a laquelle le plan construit au dessus du sol (MIN_VALUE hors du site) */
