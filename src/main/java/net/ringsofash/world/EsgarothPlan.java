@@ -128,7 +128,7 @@ public final class EsgarothPlan {
             double h;
             if (z0 <= 0) h = land + 1.0 * sm(-z0 / 6.0);
             else {
-                double bed = -Math.min(z0 * 0.45, 2.2) - 12.5 * sm((z0 - 4) / 50.0) + 1.3 * vn(xw / 13.0, zw / 13.0, 76) * sm(z0 / 10.0);
+                double bed = -Math.min(z0 * 0.8, 3.6) - 12.5 * sm((z0 - 4) / 50.0) + 0.7 * vn(xw / 13.0, zw / 13.0, 76) * sm(z0 / 10.0);   // fond toujours sous l'eau : pas d'ilots de terre entre les maisons
                 double k = sm(z0 / 4.0);
                 h = land * (1 - k) + bed * k;
             }

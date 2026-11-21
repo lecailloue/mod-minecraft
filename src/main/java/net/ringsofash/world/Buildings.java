@@ -1766,7 +1766,8 @@ public final class Buildings {
         final int cx = TirithPlan.CX, zA = TirithPlan.CZ + (int) TirithPlan.R[0] + 9, zEnd = TirithPlan.D - 1;
         BlockState PAVE = pal[TirithPlan.PAVE], PAVE2 = pal[TirithPlan.PAVE2], PD = pal[TirithPlan.PD], SBR = pal[TirithPlan.SBR], COBBLE = pal[TirithPlan.COBBLE],
                 GRAVEL = pal[TirithPlan.GRAVEL], MOSSC = pal[TirithPlan.MOSSC], PATHB = pal[TirithPlan.PATH], COARSE = pal[TirithPlan.COARSE], SQ = pal[TirithPlan.SQ];
-        for (int z = zA - 6; z <= zEnd; z++) {
+        final int zFoot = TirithPlan.CZ + (int) TirithPlan.R[0];                              // pied de la grande rampe : le sol rejoint son niveau (plus de gradin devant l'entree)
+        for (int z = zFoot + 1; z <= zEnd; z++) {
             double u = (z - zA) / 14.0;
             double xc = cx + 7.0 * Math.sin((z - zA) * 0.075) * sm(u);
             double hw = 6.0 + 3.2 * (1 - sm((z - zA) / 18.0));
@@ -1785,11 +1786,13 @@ public final class Buildings {
                     if (d <= hw - 3) top = d < 0.7 && (z / 3) % 2 == 0 ? PD : (q < 0.5 ? PAVE : q < 0.6 ? PD : q < 0.78 ? COBBLE : q < 0.9 ? GRAVEL : q < 0.95 ? MOSSC : SBR);
                     else if (d <= hw - 1) top = (x + z) % 2 == 0 ? SBR : PAVE2;
                     else top = q < 0.45 ? PATHB : q < 0.75 ? COARSE : GRAVEL;
-                } else continue;
-                int gy = roadGy(b, x, z);                                                  // sur l'eau : la route est surelevee jusqu'a la surface (plus de trous dans l'eau)
+                } else if (z < zA - 6 && d <= 8) top = (x + z) % 2 == 0 ? PAVE : PAVE2;                 // parvis entre la rampe et l'esplanade
+                else continue;
+                int gyNat = roadGy(b, x, z), gy = gyNat;
+                if (z <= zA + 18) gy = (int) Math.round(0 + (gyNat - 0) * sm((z - zFoot) / 18.0));
+                for (int y = gy + 1; y <= Math.max(gy, gyNat) + 5; y++) if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR);   // on rase ce qui depasse                                                  // sur l'eau : la route est surelevee jusqu'a la surface (plus de trous dans l'eau)
                 b.s(x, gy, z, top);
-                for (int y = gy + 1; y <= gy + 5; y++) if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR);
-                for (int y = gy - 1; y >= gy - 3; y--) {                                   // dessous : pierre, pas d'eau ni de trou
+                for (int y = gy - 1; y >= gy - 12; y--) {                                   // dessous : pierre, pas d'eau ni de trou
                     var cur = b.get(x, y, z);
                     if (!(cur.isAir() || cur.canBeReplaced() || !cur.getFluidState().isEmpty())) break;
                     b.s(x, y, z, Blocks.STONE.defaultBlockState());
