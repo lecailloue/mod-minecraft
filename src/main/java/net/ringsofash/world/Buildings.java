@@ -1318,6 +1318,7 @@ public final class Buildings {
                     byte id = p.raw(x, y, z);
                     if (id != EsgarothPlan.AIR) b.s(lx, y, lz, pal[id & 255]);
                     else if (y <= t) b.s(lx, y, lz, stone);
+                    else if (!b.get(lx, y, lz).isAir()) b.s(lx, y, lz, Build.AIR);                // le sol naturel qui depasse sous les pontons et entre les pilotis disparait
                 }
             }
         }
@@ -1787,9 +1788,10 @@ public final class Buildings {
                     else if (d <= hw - 1) top = (x + z) % 2 == 0 ? SBR : PAVE2;
                     else top = q < 0.45 ? PATHB : q < 0.75 ? COARSE : GRAVEL;
                 } else if (z < zA - 6 && d <= 8) top = (x + z) % 2 == 0 ? PAVE : PAVE2;                 // parvis entre la rampe et l'esplanade
+                else if (z <= zA + 10 && Math.abs(x - cx) <= 30) top = pal[TirithPlan.GRASS];            // les abords du parvis : le terrain naturel est abaisse au niveau du pied de la rampe, en pente douce
                 else continue;
                 int gyNat = roadGy(b, x, z), gy = gyNat;
-                if (z <= zA + 18) gy = (int) Math.round(0 + (gyNat - 0) * sm((z - zFoot) / 18.0));
+                if (z <= zA + 18) gy = (int) Math.round(gyNat * Math.max(sm((z - zFoot) / 18.0), sm((Math.abs(x - cx) - 14) / 14.0)));
                 for (int y = gy + 1; y <= Math.max(gy, gyNat) + 5; y++) if (!b.get(x, y, z).isAir()) b.s(x, y, z, Build.AIR);   // on rase ce qui depasse                                                  // sur l'eau : la route est surelevee jusqu'a la surface (plus de trous dans l'eau)
                 b.s(x, gy, z, top);
                 for (int y = gy - 1; y >= gy - 12; y--) {                                   // dessous : pierre, pas d'eau ni de trou
