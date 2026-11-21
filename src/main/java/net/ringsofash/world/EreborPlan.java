@@ -61,7 +61,7 @@ public final class EreborPlan {
 
     private static double cl(double a) { return a < 0 ? 0 : a > 1 ? 1 : a; }
 
-    private static final int GU = RX + 45, GV0 = -RZ - 70, GW = 2 * GU + 1, GH = 175 - GV0 + 1;
+    private static final int GU = RX + 150, GV0 = -RZ - 120, GW = 2 * GU + 1, GH = 175 - GV0 + 1;
     private static volatile short[] COVER;
 
     /**
@@ -102,7 +102,7 @@ public final class EreborPlan {
                     for (int[] n : nb) {
                         int ju = iu + n[0], jv = iv + n[1];
                         if (ju < 0 || ju >= GW || jv < 0 || jv >= GH) continue;
-                        float cand = f[jv * GW + ju] - (n[0] != 0 && n[1] != 0 ? 1.45f : 1f);
+                        float cand = f[jv * GW + ju] - (n[0] != 0 && n[1] != 0 ? 1.3f : 0.9f);
                         if (cand > best) best = cand;
                     }
                     f[idx] = best;
@@ -121,10 +121,10 @@ public final class EreborPlan {
      */
     private static int top0(int x, int z) {
         int u = x - EX, v = z - EZ;
-        if (Math.abs(u) > GU - 1 || v < GV0 || v > 175) return Integer.MIN_VALUE;
+        if (Math.abs(u) > GU - 2 || v < GV0 || v > 175) return Integer.MIN_VALUE;
         short[] c = cover();
         // contours irreguliers : on lit la carte de couverture en un point legerement decale
-        int su = u + (int) Math.round(12 * (vn(x * 0.035, z * 0.035, 31) - 0.5)), sv = v + (int) Math.round(12 * (vn(x * 0.035, z * 0.035, 32) - 0.5));
+        int su = u + (int) Math.round(16 * (vn(x * 0.03, z * 0.03, 31) - 0.5)), sv = v + (int) Math.round(16 * (vn(x * 0.03, z * 0.03, 32) - 0.5));
         int cv = (su < -GU + 1 || su > GU - 2 || sv < GV0 || sv > 175) ? Short.MIN_VALUE : c[(sv - GV0) * GW + su + GU];
         // un renflement bas et irregulier qui donne une vraie silhouette a la montagne
         double wu = u + 40 * (vn(x * 0.011, z * 0.011, 21) - 0.5), wv = v + 30 + 40 * (vn(x * 0.011, z * 0.011, 22) - 0.5);
@@ -138,8 +138,10 @@ public final class EreborPlan {
         }
         double t = FL0 + hh;
         double rid = 1 - Math.abs(2 * vn(x * 0.05, z * 0.05, 12) - 1);
-        double rough = 16 * (vn(x * 0.04, z * 0.04, 6) - 0.4) + 10 * rid * rid - 5 + 5 * (vn(x * 0.17, z * 0.17, 8) - 0.5);
+        double rough = -4 + 26 * Math.pow(rid, 1.5) * (0.4 + 0.6 * vn(x * 0.035, z * 0.035, 6)) + 6 * (vn(x * 0.17, z * 0.17, 8) - 0.5);
         if (cv != Short.MIN_VALUE) t = Math.max(t, cv + rough);
+        // en avant de la facade, la roche retombe vite vers la plaine (contreforts de part et d'autre de la cour)
+        if (v > VF + 4) t = Math.min(t, FL0 + 130 - (v - VF - 4) * 1.6);
         if (t < FL0 + 2) return Integer.MIN_VALUE;
         return (int) t;
     }
@@ -155,7 +157,7 @@ public final class EreborPlan {
 
     public static boolean inBox(int x, int y, int z) {
         int u = x - EX, v = z - EZ;
-        return Math.abs(u) <= RX + 2 && v >= -RZ - 50 && v <= 242 && y - D >= 56 && y - D <= 460;
+        return Math.abs(u) <= GU - 2 && v >= GV0 && v <= 242 && y - D >= 56 && y - D <= 460;
     }
 
     // ------------------------------------------------------------------ assemblage
