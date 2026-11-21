@@ -81,7 +81,7 @@ public final class EreborPlan {
                 for (int iu = 0; iu < GW; iu++) {
                     int u = iu - GU;
                     short r = NO;
-                    if (Math.abs(u) <= RX && v >= -RZ && v <= 160) {
+                    if (Math.abs(u) <= RX && v >= -RZ && v <= 190) {
                         for (int y = 300; y >= 56; y -= 2) {
                             if (air(u, y, v) || air(u, y - 1, v) || (v >= VF - 12 && facade(u, y, v) != KEEP)) { r = (short) (y + 14); break; }
                         }
@@ -230,6 +230,7 @@ public final class EreborPlan {
     }
 
     private static boolean air(int u, int y, int v) {
+        if (voieAir(u, y, v)) return true;
         if (y < 56 || y > 262 || u < -176 || u > 176 || v < -170 || v > 156) return false;
         int au = Math.abs(u);
         if (y < 100 || au > 100 || v < -130 || v > 144) return air2(u, y, v);
@@ -377,8 +378,33 @@ public final class EreborPlan {
     }
 
     private static boolean nearAir(int u, int y, int v) {
-        if (y < 55 || y > 263 || u < -177 || u > 177 || v < -171 || v > 157) return false;
+        if (y < 55 || y > 263 || u < -177 || u > 177 || v < -171 || v > 191) return false;
         return air(u + 1, y, v) || air(u - 1, y, v) || air(u, y + 1, v) || air(u, y - 1, v) || air(u, y, v + 1) || air(u, y, v - 1);
+    }
+
+    // ------------------------------------------------------------------ la voie des mineurs : de la cour (cote est) jusqu'a la mine
+    /** niveau du sol de la voie a cette colonne (MIN_VALUE hors de la voie) : un couloir plat qui part de la cour, puis un grand escalier qui plonge vers la galerie de la mine */
+    private static int voieFloor(int u, int v) {
+        if (u >= 115 && u <= 119 && v >= 92 && v <= 179) return 61 + (v - 91);
+        if (v >= 180 && v <= 184 && u >= 84 && u <= 119) return 150;
+        return Integer.MIN_VALUE;
+    }
+
+    private static boolean voieAir(int u, int y, int v) {
+        if (u < 84 || u > 119 || v < 92 || v > 184) return false;
+        int f = voieFloor(u, v);
+        return f != Integer.MIN_VALUE && y >= f && y <= f + 6;
+    }
+
+    private static int voie(int u, int y, int v) {
+        int f = voieFloor(u, v);
+        if (v <= 179) {
+            if (y == f) return STS + 2;                                               // les marches montent vers le sud
+            if (y == f + 6 && u == 117 && Math.floorMod(v, 8) == 0) return SLANT;
+            return AIR;
+        }
+        if (y == f + 6 && Math.floorMod(u, 8) == 4 && v == 182) return SLANT;
+        return AIR;
     }
 
     // ------------------------------------------------------------------ materiaux
@@ -460,6 +486,7 @@ public final class EreborPlan {
     // ------------------------------------------------------------------ le decor des volumes creuses
     private static int decor(int u, int y, int v) {
         int au = Math.abs(u), r;
+        if (voieAir(u, y, v)) return voie(u, y, v);
         if (au <= 36 && v >= -126 && v <= 127 && y >= axisFloor(v) && y < axisCeil(u, v)) {
             if ((r = axis(u, y, v)) != KEEP) return r;
         }

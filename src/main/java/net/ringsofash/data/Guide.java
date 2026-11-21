@@ -82,12 +82,14 @@ public final class Guide {
         CompoundTag tag = new CompoundTag();
         tag.putBoolean("roa_guide", true);
         s.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        s.set(DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(7001));
         fill(s, owner);
         return s;
     }
 
     /** (Re)remplit les pages, avec le bestiaire debloque par ce joueur. */
     public static void fill(ItemStack s, Player owner) {
+        s.set(DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(7001));
         PlayerLore lore = owner == null ? null : ModData.lore(owner);
         List<Filterable<Component>> pages = new ArrayList<>();
         for (String p : PAGES) pages.add(Filterable.passThrough(Component.literal(p)));
