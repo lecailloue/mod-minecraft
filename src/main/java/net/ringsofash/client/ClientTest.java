@@ -657,7 +657,7 @@ public final class ClientTest {
         morT("625_erebor_quartiers_rue", 1000.5, 155.5, -1117.5, 1000, 152, -1062, 6000);
         morT("626_erebor_terrasse", 1015.5, 158.5, -1091.5, 1008, 160, -1080, 6000);
         morT("627_erebor_grande_salle_arcades", 858.5, 156.5, -1118.5, 880, 175, -1060, 6000);
-        morT("628_erebor_galerie_niches", 850.5, 190.5, -1180.5, 905, 195, -1240, 6000);
+        morT("628_erebor_galerie_niches", 864.5, 190.5, -1180.5, 895, 196, -1215, 6000);
         morT("476_moria_chambre_lits", -183.5, -17.6, -690.5, -188.5, -19.2, -697.5, 6000);
         morT("477_moria_cuisine_four", -174.5, -17.5, -689.5, -173.5, -19, -697.5, 6000);
         morT("478_moria_etude_table", -221.5, -17.5, -576.5, -218.5, -19, -569, 6000);

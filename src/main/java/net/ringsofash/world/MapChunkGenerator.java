@@ -270,8 +270,8 @@ public final class MapChunkGenerator extends ChunkGenerator {
         p[EreborPlan.CTUFF] = Blocks.CHISELED_DEEPSLATE.defaultBlockState();
         p[EreborPlan.COBBLE] = Reg.DWARVEN_COBBLESTONE.get().defaultBlockState();
         p[EreborPlan.ANDES] = Blocks.COBBLED_DEEPSLATE.defaultBlockState();
-        p[EreborPlan.CUCUT] = Blocks.WAXED_CUT_COPPER.defaultBlockState();
-        p[EreborPlan.CHCU] = Blocks.WAXED_CHISELED_COPPER.defaultBlockState();
+        p[EreborPlan.CUCUT] = Blocks.DEEPSLATE_TILES.defaultBlockState();
+        p[EreborPlan.CHCU] = Reg.DWARVEN_CHISELED.get().defaultBlockState();
         p[EreborPlan.SEAL] = Blocks.SEA_LANTERN.defaultBlockState();
         p[EreborPlan.GLASS] = Blocks.GLASS.defaultBlockState();
         p[EreborPlan.SLANT] = Blocks.LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true);
