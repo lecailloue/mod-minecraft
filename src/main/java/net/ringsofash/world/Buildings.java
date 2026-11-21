@@ -1773,7 +1773,7 @@ public final class Buildings {
             double xc = cx + 7.0 * Math.sin((z - zA) * 0.075) * sm(u);
             double hw = 6.0 + 3.2 * (1 - sm((z - zA) / 18.0));
             for (int x = cx - 34; x <= cx + 34; x++) {
-                if (!b.in(x, 0, z) || p.kindAt(x, z) != 0) continue;
+                if (!b.in(x, 0, z) || (p.kindAt(x, z) != 0 && p.top(x, z) >= 0)) continue;          // (les cases de rampe sans bloc, au sud du pied, sont aussi nivelees)
                 double d = Math.abs(x + 0.5 - xc);
                 double pdx = (x + 0.5 - cx) / 19.0, pdz = (z + 0.5 - (zA + 5)) / 9.5;
                 boolean plaza = pdx * pdx + pdz * pdz <= 1 && z >= zA - 5;
