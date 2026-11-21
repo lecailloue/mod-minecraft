@@ -5,6 +5,7 @@ import net.minecraft.world.item.BedItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -32,6 +33,10 @@ public final class Furniture {
                     .lightLevel(s -> s.getValue(BlockStateProperties.LIT) ? 13 : 0)));
     public static final DeferredBlock<DwarvenCraftingBlock> CRAFTING = BLOCKS.register("dwarven_crafting_table",
             () -> new DwarvenCraftingBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).strength(2.5F).sound(SoundType.DEEPSLATE_BRICKS).noOcclusion()));
+
+    public static final DeferredBlock<ShelfBlock> SPRUCE_SHELF = BLOCKS.register("spruce_shelf",
+            () -> new ShelfBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.BOOKSHELF).noOcclusion()));
+    public static final DeferredItem<BlockItem> SPRUCE_SHELF_ITEM = ITEMS.registerSimpleBlockItem("spruce_shelf", SPRUCE_SHELF);
 
     public static final DeferredItem<BlockItem> CHEST_ITEM = ITEMS.registerSimpleBlockItem("dwarven_chest", CHEST);
     public static final DeferredItem<Item> BED_ITEM = ITEMS.register("dwarven_bed", () -> new BedItem(BED.get(), new Item.Properties()));

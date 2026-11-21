@@ -119,11 +119,10 @@ public final class HobbitonStamp {
             int y = Y0, top = Y0 - 1;
             for (int r = 0; r < runs; r++) {
                 int len = varint(pp), id = varint(pp);
-                if (id != 0) {
-                    BlockState st = pal[id];
-                    for (int k = 0; k < len; k++) b.s(lx, y + k + y0 - b.oy, lz, st);
-                    top = y + len - 1;
-                }
+                // les vides entre deux blocs sont ecrits aussi (sinon le terrain naturel reste sous les arbres et dans les maisons)
+                BlockState st = id != 0 ? pal[id] : Build.AIR;
+                for (int k = 0; k < len; k++) b.s(lx, y + k + y0 - b.oy, lz, st);
+                if (id != 0) top = y + len - 1;
                 y += len;
             }
             // ce que le monde avait au-dessus (herbes, arbres) disparait

@@ -609,15 +609,16 @@ public final class ClientTest {
         morT("483_comte_cuvette_haut", -1105.5, 160, -535.5, -1105, 80, -520, 6000);
         // Hobbiteville : coordonnees du fichier source (x 0..324, z 9..366, y source : le sol du village est vers -38)
         hobT("hoba_hobbiteville_aerien", 180, 40, 330, 180, -40, 150);
-        hobT("hobb_hobbiteville_nord", 180, 40, -20, 180, -40, 180);
-        hobT("hobc_village_sud_ouest", 78, -30, 205, 95, -42, 245);
-        hobT("hobd_village_sud_ouest_pres", 92, -37, 230, 90, -41, 246);
         hobT("hobe_lac", 60, -10, 160, 150, -46, 195);
-        hobT("hobf_centre_village", 186, -28, 175, 186, -37, 130);
-        hobT("hobg_champs_est", 270, -20, 160, 220, -38, 180);
-        hobT("hobh_foret_ouest", 20, -20, 60, 80, -38, 120);
-        hobT("hobi_bord_nord_ouest", 0, -10, 30, 100, -38, 90);
-        hobT("hobj_bord_sud_est", 330, -5, 380, 250, -40, 300);
+        hobT("hobk_porte_verte_dehors", 223, -37.5, 134, 223, -39, 125);
+        hobT("hobl_porte_verte_dedans", 223, -38.5, 118, 223, -39, 125);
+        hobT("hobm_porte_jaune", 216, -28.5, 87, 216, -30, 77);
+        hobT("hobn_porte_jaune_cote", 227, -28.5, 84, 216, -30, 78);
+        hobT("hobo_cheminee", 121, -39, 250, 116, -42, 244);
+        hobT("hobp_toit_chaume", 128, -28, 266, 97, -37, 240);
+        hobT("hobq_toit_chaume2", 122, -30, 205, 102, -38, 187);
+        hobT("hobr_irrigation", 197, -41, 223, 191, -44, 215);
+        hobT("hobs_pilier_lac", 140, -30, 215, 105, -42, 235);
         morT("484_spawn_hautemarche", -700.5, 80, -14.5, -700, 74, 0, 6000);
         morT("485_moria_village_escalier_nord", -150.5, -17.5, -668.5, -148, -8, -682, 6000);
         morT("486_moria_village_falaise_ouest", -215.5, -10.5, -625.5, -246, -14, -630, 6000);

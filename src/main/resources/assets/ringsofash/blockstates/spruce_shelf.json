@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"ringsofash:block/spruce_shelf"},"facing=east":{"model":"ringsofash:block/spruce_shelf","y":90},"facing=south":{"model":"ringsofash:block/spruce_shelf","y":180},"facing=west":{"model":"ringsofash:block/spruce_shelf","y":270}}}
