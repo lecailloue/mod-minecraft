@@ -283,6 +283,14 @@ public final class MapChunkGenerator extends ChunkGenerator {
         p[EreborPlan.PSLB] = Blocks.POLISHED_ANDESITE_SLAB.defaultBlockState();
         p[EreborPlan.PSLT] = Blocks.POLISHED_ANDESITE_SLAB.defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE, net.minecraft.world.level.block.state.properties.SlabType.TOP);
         p[EreborPlan.WALLSTB] = Blocks.STONE_BRICK_WALL.defaultBlockState();
+        p[EreborPlan.COALO] = Blocks.COAL_ORE.defaultBlockState();
+        p[EreborPlan.IRONO] = Blocks.IRON_ORE.defaultBlockState();
+        p[EreborPlan.COPPERO] = Blocks.COPPER_ORE.defaultBlockState();
+        p[EreborPlan.GOLDO] = Blocks.GOLD_ORE.defaultBlockState();
+        p[EreborPlan.DIAMO] = Blocks.DIAMOND_ORE.defaultBlockState();
+        p[EreborPlan.IRONBARS] = Blocks.IRON_BARS.defaultBlockState();
+        p[EreborPlan.COALB] = Blocks.COAL_BLOCK.defaultBlockState();
+        p[EreborPlan.RAWIRON] = Blocks.RAW_IRON_BLOCK.defaultBlockState();
         for (int i = 0; i < 4; i++) {
             p[EreborPlan.STS + i] = Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, ds[i]);
             p[EreborPlan.STST + i] = p[EreborPlan.STS + i].setValue(net.minecraft.world.level.block.StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP);
@@ -457,28 +465,34 @@ public final class MapChunkGenerator extends ChunkGenerator {
         moriaDwarves(region, cp);
     }
 
-    /** sols praticables a l'interieur de la Moria : de la pierre (ou la roche naturelle) sous deux blocs d'air creuses par le plan */
+    private static int planAt(int x, int y, int z, int h) { return EreborPlan.inBox(x, y, z) ? EreborPlan.at(x, y, z, h) : MoriaPlan.at(x, y, z, h); }
+
+    /** sols praticables a l'interieur de la Moria ou d'Erebor : de la pierre (ou la roche naturelle) sous deux blocs d'air creuses par le plan */
     private static boolean moriaFloor(int x, int y, int z, int h) {
-        int below = MoriaPlan.at(x, y - 1, z, h);
+        int below = planAt(x, y - 1, z, h);
         boolean solid = below == MoriaPlan.KEEP ? y - 1 <= h : switch (below) {
             case MoriaPlan.DSTONE, MoriaPlan.DCOBBLE, MoriaPlan.DBRICKS, MoriaPlan.DPILLAR, MoriaPlan.DCHISEL, MoriaPlan.DEEPSLATE, MoriaPlan.BLACKSTONE,
-                 MoriaPlan.OAKP, MoriaPlan.DTILES, MoriaPlan.CRDEEP, MoriaPlan.CRACKB, MoriaPlan.POLDEEP, MoriaPlan.COBDEEP, MoriaPlan.DEEPBR -> true;
+                 MoriaPlan.OAKP, MoriaPlan.DTILES, MoriaPlan.CRDEEP, MoriaPlan.CRACKB, MoriaPlan.POLDEEP, MoriaPlan.COBDEEP, MoriaPlan.DEEPBR,
+                 EreborPlan.STB, EreborPlan.MSTB, EreborPlan.CSTB, EreborPlan.PANDES, EreborPlan.SMST, EreborPlan.TUFFB, EreborPlan.COBBLE, EreborPlan.ANDES, EreborPlan.POLBK,
+                 MoriaPlan.GRAVEL, MoriaPlan.GOLD, MoriaPlan.RAWGOLD -> true;
             default -> false;
         };
-        return solid && MoriaPlan.at(x, y, z, h) == MoriaPlan.AIR && MoriaPlan.at(x, y + 1, z, h) == MoriaPlan.AIR && MoriaPlan.at(x, y + 2, z, h) == MoriaPlan.AIR;
+        return solid && planAt(x, y, z, h) == MoriaPlan.AIR && planAt(x, y + 1, z, h) == MoriaPlan.AIR && planAt(x, y + 2, z, h) == MoriaPlan.AIR;
     }
 
     /** des nains au travail dans les galeries, les salles et la mine : de petits groupes, mineurs pour la plupart, quelques gardes */
     private void moriaDwarves(WorldGenRegion region, ChunkPos cp) {
         int x0 = cp.getMinBlockX(), z0 = cp.getMinBlockZ();
-        if (!MoriaPlan.inBox(x0 + 8, 0, z0 + 8) && !MoriaPlan.inBox(x0, 0, z0)) return;
+        boolean ere = EreborPlan.inBox(x0 + 8, 150, z0 + 8) || EreborPlan.inBox(x0, 150, z0);
+        if (!ere && !MoriaPlan.inBox(x0 + 8, 0, z0 + 8) && !MoriaPlan.inBox(x0, 0, z0)) return;
         java.util.Random r = new java.util.Random(region.getSeed() ^ (x0 * 341873128712L) ^ (z0 * 132897987541L));
-        if (r.nextInt(100) >= 45) return;
+        if (r.nextInt(100) >= (ere ? 70 : 45)) return;
         for (int attempt = 0; attempt < 10; attempt++) {
             int x = x0 + r.nextInt(16), z = z0 + r.nextInt(16);
             int h = MapData.height(x, z);
             java.util.List<Integer> ys = new java.util.ArrayList<>();
-            for (int y = -40; y <= Math.min(h - 3, 40); y++) if (moriaFloor(x, y, z, h)) ys.add(y);
+            if (ere) { for (int y = 60; y <= 260; y++) if (moriaFloor(x, y, z, h)) ys.add(y); }
+            else for (int y = -40; y <= Math.min(h - 3, 40); y++) if (moriaFloor(x, y, z, h)) ys.add(y);
             if (ys.isEmpty()) continue;
             int y = ys.get(r.nextInt(ys.size()));
             int n = 1 + r.nextInt(3);
