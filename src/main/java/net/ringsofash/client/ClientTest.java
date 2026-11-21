@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"444", "454", "469", "436", "488"};
+    private static final String[] ONLY = {"600", "601", "602", "603", "604", "605", "606", "607", "608", "609"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -629,6 +629,16 @@ public final class ClientTest {
         morT("503_portes_seuil", 196.5, 82.5, -360.5, 166, 92, -360, 6000);
         morT("504_portes_nain_face", 212.5, 104.5, -346.5, 174, 104, -333, 6000);
         morT("505_portes_nain_profil", 200.5, 92.5, -352.5, 176, 100, -334, 6000);
+        morT("600_erebor_loin", 878.5, 190.5, -902.5, 878, 235, -1012, 6000);
+        morT("601_erebor_facade", 878.5, 165.5, -960.5, 878, 215, -1012, 6000);
+        morT("602_erebor_porte", 878.5, 153.5, -975.5, 878, 172, -1010, 6000);
+        morT("603_erebor_grande_salle", 878.5, 156.5, -1030.5, 878, 172, -1110, 6000);
+        morT("604_erebor_escalier", 878.5, 153.5, -1112.5, 878, 178, -1170, 6000);
+        morT("605_erebor_galerie", 878.5, 188.5, -1164.5, 878, 200, -1270, 6000);
+        morT("606_erebor_trone", 878.5, 194.5, -1250.5, 878, 205, -1272, 6000);
+        morT("607_erebor_tresor", 816.5, 110.5, -1172.5, 878, 135, -1224, 6000);
+        morT("608_erebor_arkenstone", 878.5, 140.5, -1190.5, 878, 148, -1224, 6000);
+        morT("609_erebor_montagne", 878.5, 330.5, -860.5, 878, 250, -1152, 6000);
         morT("476_moria_chambre_lits", -183.5, -17.6, -690.5, -188.5, -19.2, -697.5, 6000);
         morT("477_moria_cuisine_four", -174.5, -17.5, -689.5, -173.5, -19, -697.5, 6000);
         morT("478_moria_etude_table", -221.5, -17.5, -576.5, -218.5, -19, -569, 6000);

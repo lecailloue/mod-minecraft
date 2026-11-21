@@ -236,7 +236,7 @@ public final class MoriaPlan {
     }
 
     /** nain geant debout, de face vers +x, appuye sur une immense hache : l = decalage lateral, dx = distance a la falaise, v = hauteur (54 de haut) */
-    private static int dwarf(int l, int dx, int v) {
+    static int dwarf(int l, int dx, int v) {
         int al = Math.abs(l);
         if (v < 0 || v > 54 || dx < 0 || dx > 11 || al > 9) return KEEP;
         if (v <= 4) {                                                                              // le socle a gradins

@@ -173,7 +173,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
 
     private static synchronized BlockState[] moriaPal() {
         if (moriaPal != null) return moriaPal;
-        BlockState[] p = new BlockState[MoriaPlan.NIDS];
+        BlockState[] p = new BlockState[EreborPlan.NIDS];
         java.util.Arrays.fill(p, STONE);
         net.minecraft.core.Direction[] dirs = {net.minecraft.core.Direction.NORTH, net.minecraft.core.Direction.EAST, net.minecraft.core.Direction.SOUTH, net.minecraft.core.Direction.WEST};
         p[MoriaPlan.AIR] = AIR;
@@ -258,16 +258,54 @@ public final class MapChunkGenerator extends ChunkGenerator {
             p[MoriaPlan.DSTAIR + i] = Reg.DWARVEN_STONE_STAIRS.get().defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, dirs[i]);
             p[MoriaPlan.BSTAIR_TOP + i] = Reg.DWARVEN_BRICKS_STAIRS.get().defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, dirs[i]).setValue(net.minecraft.world.level.block.StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP);
         }
+        net.minecraft.core.Direction[] ds = dirs;
+        p[EreborPlan.SNOWB] = Blocks.SNOW_BLOCK.defaultBlockState();
+        p[EreborPlan.STB] = Blocks.STONE_BRICKS.defaultBlockState();
+        p[EreborPlan.MSTB] = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
+        p[EreborPlan.CSTB] = Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
+        p[EreborPlan.PANDES] = Blocks.POLISHED_ANDESITE.defaultBlockState();
+        p[EreborPlan.SMST] = Blocks.SMOOTH_STONE.defaultBlockState();
+        p[EreborPlan.TUFFB] = Blocks.TUFF_BRICKS.defaultBlockState();
+        p[EreborPlan.PTUFF] = Blocks.POLISHED_TUFF.defaultBlockState();
+        p[EreborPlan.CTUFF] = Blocks.CHISELED_TUFF.defaultBlockState();
+        p[EreborPlan.COBBLE] = Blocks.COBBLESTONE.defaultBlockState();
+        p[EreborPlan.ANDES] = Blocks.ANDESITE.defaultBlockState();
+        p[EreborPlan.CUCUT] = Blocks.WAXED_CUT_COPPER.defaultBlockState();
+        p[EreborPlan.CHCU] = Blocks.WAXED_CHISELED_COPPER.defaultBlockState();
+        p[EreborPlan.SEAL] = Blocks.SEA_LANTERN.defaultBlockState();
+        p[EreborPlan.GLASS] = Blocks.GLASS.defaultBlockState();
+        p[EreborPlan.SLANT] = Blocks.LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true);
+        p[EreborPlan.GLOW] = Blocks.GLOWSTONE.defaultBlockState();
+        p[EreborPlan.CALC] = Blocks.CALCITE.defaultBlockState();
+        p[EreborPlan.POLBK] = Blocks.POLISHED_BLACKSTONE.defaultBlockState();
+        p[EreborPlan.SLB] = Blocks.STONE_BRICK_SLAB.defaultBlockState();
+        p[EreborPlan.SLT] = Blocks.STONE_BRICK_SLAB.defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE, net.minecraft.world.level.block.state.properties.SlabType.TOP);
+        p[EreborPlan.PSLB] = Blocks.POLISHED_ANDESITE_SLAB.defaultBlockState();
+        p[EreborPlan.PSLT] = Blocks.POLISHED_ANDESITE_SLAB.defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE, net.minecraft.world.level.block.state.properties.SlabType.TOP);
+        p[EreborPlan.WALLSTB] = Blocks.STONE_BRICK_WALL.defaultBlockState();
+        for (int i = 0; i < 4; i++) {
+            p[EreborPlan.STS + i] = Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, ds[i]);
+            p[EreborPlan.STST + i] = p[EreborPlan.STS + i].setValue(net.minecraft.world.level.block.StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP);
+            p[EreborPlan.PAS + i] = Blocks.POLISHED_ANDESITE_STAIRS.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, ds[i]);
+            p[EreborPlan.TFS + i] = Blocks.TUFF_BRICK_STAIRS.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, ds[i]);
+        }
         return moriaPal = p;
     }
 
     static BlockState moria(int id) { return moriaPal()[id]; }
+
+    /** bloc d'un identifiant de plan (Moria ou Erebor) ; la roche du massif d'Erebor prend la texture de roche de la carte */
+    static BlockState plan(int id, int x, int y, int z) { return id == EreborPlan.ROCK ? rock(x, y, z) : moriaPal()[id]; }
 
     static BlockState block(int x, int y, int z, int h, int wt, int b, int slope) {
         if (y > h) {
             if (y <= MoriaPlan.aboveTop(x, z)) {                                      // la facade des Portes : statues, parapets, braziers au dessus du sol
                 int m = MoriaPlan.at(x, y, z, h);
                 if (m != MoriaPlan.KEEP) return moria(m);
+            }
+            if (y <= EreborPlan.aboveTop(x, z)) {                                     // Erebor : le massif, la facade et la cour
+                int m = EreborPlan.at(x, y, z, h);
+                if (m != MoriaPlan.KEEP) return plan(m, x, y, z);
             }
             return y <= wt ? (wt > MapData.SEA && !MoriaPlan.inLake(x, z) || b == MapData.B_LAVE ? LAVA : WATER) : AIR;
         }
@@ -276,6 +314,10 @@ public final class MapChunkGenerator extends ChunkGenerator {
         if (MoriaPlan.inBox(x, y, z)) {                                          // les mines de la Moria, creusees sous la carte
             int m = MoriaPlan.at(x, y, z, h);
             if (m != MoriaPlan.KEEP) return moria(m);
+        }
+        if (EreborPlan.inBox(x, y, z)) {                                         // Erebor, creusee sous la montagne
+            int m = EreborPlan.at(x, y, z, h);
+            if (m != MoriaPlan.KEEP) return plan(m, x, y, z);
         }
         int depth = h - y;
         boolean under = wt > h;                       // sous l'eau
@@ -377,7 +419,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
                 int top = Math.max(h, wt);
                 int snow = wt > h ? 0 : snowLayers(x, z, h, b);
                 BlockState topState = AIR, floor = AIR;
-                int yEnd = Math.max(top, MoriaPlan.aboveTop(x, z)), hi = top;
+                int yEnd = Math.max(Math.max(top, MoriaPlan.aboveTop(x, z)), EreborPlan.aboveTop(x, z)), hi = top;
                 BlockState hiState = AIR;
                 for (int y = minY; y <= yEnd; y++) {
                     BlockState s = block(x, y, z, h, wt, b, slope);
