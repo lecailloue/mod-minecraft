@@ -65,6 +65,7 @@ public final class Buildings {
             case RIVEND -> rivendell(b, aux);
             case ESGA -> esgaroth(b, aux);
             case HELM -> helm(b);
+            case SHIRE -> ShireBuild.build(b);
         }
     }
 

@@ -67,7 +67,7 @@ public final class Guide {
         b("sorcerer", "Sorcier corrompu", "Maître d'une tour noire. Foudre, crocs, téléportation. Insensible à la foudre.");
         b("ash_lord", "Seigneur de Cendre", "Le maître de l'Anneau. Cuirassé, il fait trembler le sol sous ses coups.");
         b("treeman", "Sylvegarde", "Gardien des arbres. Ne coupez pas de bois près de lui. Écrase les orques.");
-        b("eagle", "Aigle géant", "Il ne vit que dans les airs. Offrez-lui viande ou poisson cru pour gagner sa confiance, puis volez sur son dos.");
+        b("eagle", "Aigle géant", "Il ne vit que dans les airs. Clic droit pour le monter, sans rien lui donner : ZQSD (ou WASD) pour voler, Espace monte, flèche du bas descend, Maj met pied à terre. De la viande ou du poisson cru le soigne.");
         b("stag", "Cerf blanc", "Présage de bonne fortune. Très craintif.");
         b("crow", "Corbeau espion", "Il ne se pose jamais. S'il vous voit porter un anneau, il alerte tous les monstres alentour.");
     }

@@ -145,7 +145,8 @@ public final class ModEntities {
         for (var t : java.util.List.of(HUMAN, ELF, DWARF, HALFLING, RANGER, MAGE)) e.put(t.get(), mob(t == DWARF ? 30 : t == HALFLING ? 16 : 24, 5, 0.5, 0));
         e.put(TREEMAN.get(), Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 120).add(Attributes.ATTACK_DAMAGE, 14).add(Attributes.MOVEMENT_SPEED, 0.2)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0).add(Attributes.FOLLOW_RANGE, 24).add(Attributes.STEP_HEIGHT, 1.5).build());
-        e.put(EAGLE.get(), mob(40, 6, 0.25, 0.3));
+        e.put(EAGLE.get(), Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 40).add(Attributes.ATTACK_DAMAGE, 6).add(Attributes.MOVEMENT_SPEED, 0.25)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.3).add(Attributes.FOLLOW_RANGE, 24).add(Attributes.FLYING_SPEED, 0.75).build());
         e.put(STAG.get(), mount(36, 2, 0.3, 0, 1.25));
         e.put(CROW.get(), mob(4, 1, 0.25, 0));
         e.put(EYE_OF_SAURON.get(), Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 20).build());

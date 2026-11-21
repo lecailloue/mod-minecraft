@@ -29,10 +29,8 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
-/** Aigle geant : il ne se pose jamais, il vole en permanence. On gagne sa confiance avec de la viande ou du poisson cru, puis on peut voler sur son dos. */
+/** Aigle geant : il ne se pose jamais, il vole en permanence. Tout joueur peut le monter (clic droit), sans rien lui donner ; meme vol que le dragon des ombres. */
 public class EagleEntity extends PathfinderMob {
-    private static final EntityDataAccessor<Boolean> TAMED = SynchedEntityData.defineId(EagleEntity.class, EntityDataSerializers.BOOLEAN);
-
     public EagleEntity(EntityType<? extends EagleEntity> type, Level level) {
         super(type, level);
         this.moveControl = new FlyingMoveControl(this, 10, true);
@@ -41,11 +39,6 @@ public class EagleEntity extends PathfinderMob {
 
     @Override
     protected PathNavigation createNavigation(Level level) { return Flight.navigation(this, level); }
-
-    public boolean isTamed() { return entityData.get(TAMED); }
-
-    @Override
-    protected void defineSynchedData(SynchedEntityData.Builder b) { super.defineSynchedData(b); b.define(TAMED, false); }
 
     @Override
     protected void registerGoals() {
@@ -61,44 +54,42 @@ public class EagleEntity extends PathfinderMob {
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         boolean food = stack.is(Items.RABBIT) || stack.is(Items.SALMON) || stack.is(Items.COD) || stack.is(Items.MUTTON) || stack.is(Items.BEEF) || stack.is(Items.CHICKEN);
-        if (food) {
+        if (food && getHealth() < getMaxHealth()) {                         // la viande le soigne ; il n'en faut pas pour monter
             if (!level().isClientSide) {
                 if (!player.getAbilities().instabuild) stack.shrink(1);
                 heal(6);
-                if (!isTamed()) {
-                    boolean ok = random.nextInt(3) == 0;
-                    if (ok) { entityData.set(TAMED, true); setPersistenceRequired(); }
-                    ((ServerLevel) level()).sendParticles(ok ? ParticleTypes.HEART : ParticleTypes.SMOKE, getX(), getY() + 1.5, getZ(), 7, 0.6, 0.5, 0.6, 0.02);
-                    if (ok) player.displayClientMessage(net.minecraft.network.chat.Component.literal("L'aigle vous accorde sa confiance. Clic droit pour monter, Maj pour descendre."), true);
-                }
+                ((ServerLevel) level()).sendParticles(ParticleTypes.HEART, getX(), getY() + 1.5, getZ(), 7, 0.6, 0.5, 0.6, 0.02);
             }
             return InteractionResult.sidedSuccess(level().isClientSide);
         }
-        if (isTamed() && !isVehicle() && !player.isSecondaryUseActive()) {
-            if (!level().isClientSide) player.startRiding(this);
+        if (!isVehicle() && !player.isSecondaryUseActive()) {
+            if (!level().isClientSide) {
+                player.startRiding(this);
+                player.displayClientMessage(net.minecraft.network.chat.Component.literal("WASD pour voler, Espace monte, flèche du bas descend, Maj pour mettre pied à terre."), true);
+            }
             return InteractionResult.sidedSuccess(level().isClientSide);
         }
         return super.mobInteract(player, hand);
     }
 
+    /** n'importe quel joueur peut le monter, sans rien lui donner */
     @Nullable
     @Override
     public LivingEntity getControllingPassenger() {
-        return isTamed() && getFirstPassenger() instanceof Player p ? p : super.getControllingPassenger();
+        return getFirstPassenger() instanceof Player p ? p : null;
     }
 
     @Override
     protected void tickRidden(Player player, Vec3 travelVector) {
         super.tickRidden(player, travelVector);
-        setRot(player.getYRot(), player.getXRot() * 0.4F);
+        setRot(player.getYRot(), 0F);
         this.yRotO = this.yBodyRot = this.yHeadRot = getYRot();
     }
 
+    /** Meme vol que le dragon des ombres : WASD/ZQSD (avant, arriere, cotes), Espace monte, fleche du bas descend ; sans touche, il plane. */
     @Override
     protected Vec3 getRiddenInput(Player player, Vec3 travelVector) {
-        float fwd = player.zza;
-        double up = -Math.sin(Math.toRadians(player.getXRot())) * Math.max(0, fwd);
-        return new Vec3(player.xxa * 0.4, up, fwd > 0 ? fwd : fwd * 0.3);
+        return new Vec3(player.xxa * 0.8, ShadowDragonEntity.VERTICAL.applyAsInt(player) * 0.5, player.zza);
     }
 
     @Override
@@ -107,7 +98,7 @@ public class EagleEntity extends PathfinderMob {
     @Override
     public void travel(Vec3 input) {
         if (isVehicle() && getControllingPassenger() != null) {
-            moveRelative(getSpeed() * 0.35F, input);
+            moveRelative(getSpeed() * 0.16F, input);
             move(MoverType.SELF, getDeltaMovement());
             setDeltaMovement(getDeltaMovement().scale(0.9));
             calculateEntityAnimation(false);
@@ -128,7 +119,7 @@ public class EagleEntity extends PathfinderMob {
     @Override
     public boolean causeFallDamage(float dist, float mult, DamageSource source) { return false; }
     @Override
-    public boolean removeWhenFarAway(double dist) { return !isTamed(); }
+    public boolean removeWhenFarAway(double dist) { return !isVehicle(); }
     @Override
     protected SoundEvent getAmbientSound() { return SoundEvents.PARROT_AMBIENT; }
     @Override
@@ -138,8 +129,4 @@ public class EagleEntity extends PathfinderMob {
     @Override
     public float getVoicePitch() { return 0.35F; }
 
-    @Override
-    public void addAdditionalSaveData(CompoundTag tag) { super.addAdditionalSaveData(tag); tag.putBoolean("Tamed", isTamed()); }
-    @Override
-    public void readAdditionalSaveData(CompoundTag tag) { super.readAdditionalSaveData(tag); entityData.set(TAMED, tag.getBoolean("Tamed")); }
 }

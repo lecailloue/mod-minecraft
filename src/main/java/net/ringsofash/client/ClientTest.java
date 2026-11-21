@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"03f", "18a", "18b"};
+    private static final String[] ONLY = {"15d", "70"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -607,6 +607,20 @@ public final class ClientTest {
         morT("481_moria_table_nain", -218.5, -17.6, -573.5, -218.5, -18.4, -569.5, 6000);
         morT("482_comte_ancienne_cuvette", -1105.5, 125, -455.5, -1105, 85, -540, 6000);
         morT("483_comte_cuvette_haut", -1105.5, 160, -535.5, -1105, 80, -520, 6000);
+        // la Comte (Hobbiteville) : coordonnees du plan 240 x 240 (centre en 120, 120), y = niveau du sol (premier bloc d air)
+        shiT("70a_comte_vue_sud", 120, 70, 290, 120, 10, 100, 6000);
+        shiT("70b_comte_vue_ouest", -50, 60, 100, 120, 5, 100, 6000);
+        shiT("70c_cul_de_sac", 128, 3, 100, 128, 6, 70, 6000);
+        shiT("70d_rangee_terriers", 44, 4, 104, 44, 4, 80, 6000);
+        shiT("70e_arbre_fete", 128, 32, 104, 124, 28, 38, 6000);
+        shiT("70f_pont_auberge", 150, 14, 168, 185, 2, 192, 6000);
+        shiT("70g_moulin_lac", 120, 12, 150, 205, 2, 175, 6000);
+        shiT("70h_interieur_cul_de_sac", 128, 1, 67, 128, 2, 48, 6000);
+        shiT("70i_interieur_terrier", 22, 1, 77, 22, 1, 70, 6000);
+        shiT("70j_auberge_dedans", 186, 1, 197, 180, 1, 199, 6000);
+        shiT("70k_champs_sud", 120, 40, 250, 60, 0, 210, 6000);
+        shiT("70l_pont_proche", 163, 4, 172, 172, 3, 186, 6000);
+        shiT("70m_chemin", 40, 3, 99, 120, 3, 97, 6000);
         morT("484_spawn_hautemarche", -700.5, 80, -14.5, -700, 74, 0, 6000);
         morT("485_moria_village_escalier_nord", -150.5, -17.5, -668.5, -148, -8, -682, 6000);
         morT("486_moria_village_falaise_ouest", -215.5, -10.5, -625.5, -246, -14, -630, 6000);
@@ -1064,6 +1078,21 @@ public final class ClientTest {
             final double y0 = dr.getY();
             hook = () -> log("DRAGON_MONTE_VOL monte=" + (p.getVehicle() == dr) + " dy=" + String.format("%.2f", dr.getY() - y0) + " ctrl=" + (dr.getControllingPassenger() == p));
         }));
+        // aigle geant : on monte dessus les mains vides, puis Espace maintenu : il doit prendre de l altitude
+        SCENES.add(new Scene("15d_aigle_monte_vol", 80, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            var ea = actor(ow, ModEntities.EAGLE.get(), SX, SZ + 14, o -> { });
+            ea.moveTo(SX, SY + 3.0, SZ + 14, 180F, 0F);
+            view(p, ow, SX + 0.5, SY + 3.0, SZ + 8, 180F, 15F);
+            p.getAbilities().flying = false; p.onUpdateAbilities();
+            p.getInventory().selected = 0;
+            p.getInventory().setItem(0, ItemStack.EMPTY);
+            ea.interact(p, InteractionHand.MAIN_HAND);
+            net.ringsofash.entity.ShadowDragonEntity.VERTICAL = pl -> 1;
+            final double y0 = ea.getY();
+            hook = () -> log("AIGLE_MONTE_VOL monte=" + (p.getVehicle() == ea) + " dy=" + String.format("%.2f", ea.getY() - y0) + " ctrl=" + (ea.getControllingPassenger() == p));
+        }));
         // coup d'epee : vue subjective puis troisieme personne de face, a quelques ticks du debut du geste
         for (int n : new int[]{3, 4, 5, 6}) SCENES.add(new Scene("16a_coup_1p_" + n, n, p -> swingScene(p)));
         for (int n : new int[]{3, 4, 5, 6, 7}) SCENES.add(new Scene("16b_coup_face_" + n, n, p -> swingScene(p)));
@@ -1455,6 +1484,21 @@ public final class ClientTest {
             float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
             lands.setDayTime(time);
             view(p, lands, pl[0] + fx - 176 + 0.5, py + fy, pl[1] + fz - 176 + 0.5, yaw, pitch);
+        }));
+    }
+
+    /** vue sur la Comte, en coordonnees du plan (240 x 240) : de (fx, fy, fz) vers (tx, ty, tz) ; y relatif au premier bloc d air du centre */
+    private static void shiT(String name, double fx, double fy, double fz, double tx, double ty, double tz, int time) {
+        SCENES.add(new Scene(name, 420, p -> {
+            ServerLevel lands = p.server.getLevel(ModWorldgen.LANDS);
+            int[] pl = net.ringsofash.world.MapData.place("comte");
+            if (pl == null) return;
+            for (int dx = -9; dx <= 9; dx++) for (int dz = -9; dz <= 9; dz++) lands.getChunk((pl[0] >> 4) + dx, (pl[1] >> 4) + dz);
+            int py = net.ringsofash.world.SiteHeight.py(lands, pl[0], pl[1]);
+            double ddx = tx - fx, ddy = ty - fy, ddz = tz - fz;
+            float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz)), pitch = (float) -Math.toDegrees(Math.atan2(ddy, Math.sqrt(ddx * ddx + ddz * ddz)));
+            lands.setDayTime(time);
+            view(p, lands, pl[0] + fx - 120 + 0.5, py + fy, pl[1] + fz - 120 + 0.5, yaw, pitch);
         }));
     }
 

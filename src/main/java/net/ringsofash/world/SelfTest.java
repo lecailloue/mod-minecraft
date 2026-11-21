@@ -140,7 +140,7 @@ public final class SelfTest {
             for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) lands.getChunk((px >> 4) + dx, (pz >> 4) + dz);
             for (int x = px - 24; x <= px + 24; x += 6) {
                 for (int z = pz - 24; z <= pz + 24; z += 6) {
-                    if (e.getKey().equals("barad_dur") || e.getKey().equals("edoras") || e.getKey().equals("minas_terith") || e.getKey().equals("orthanc") || e.getKey().equals("argonath") || e.getKey().equals("fondcombe") || e.getKey().equals("esgaroth") || e.getKey().equals("gouffre_de_helm")) continue;                // site nivele et creuse (douve) expres
+                    if (e.getKey().equals("barad_dur") || e.getKey().equals("edoras") || e.getKey().equals("minas_terith") || e.getKey().equals("orthanc") || e.getKey().equals("argonath") || e.getKey().equals("fondcombe") || e.getKey().equals("esgaroth") || e.getKey().equals("gouffre_de_helm") || e.getKey().equals("comte")) continue;                // site nivele et creuse (douve) expres
                     n++;
                     BlockPos at = new BlockPos(x, MapData.height(x, z), z);
                     var st = lands.getBlockState(at);
