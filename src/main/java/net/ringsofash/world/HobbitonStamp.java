@@ -106,6 +106,7 @@ public final class HobbitonStamp {
             int fx = tx * TW + (wx - b.ox), fz = tz * TD + (wz - b.oz);
             if (fx >= W || fz >= D) continue;
             int ix = fz * W + fx;
+            if (ground[ix] < -900) continue;                       // colonne vide dans la source : on laisse le monde
             int tg = MapData.height(wx, wz);
             int edge = Math.min(Math.min(fx, W - 1 - fx), Math.min(fz, D - 1 - fz));
             double t = Math.max(0, 1 - edge / BLEND);
