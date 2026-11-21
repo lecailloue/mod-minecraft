@@ -61,7 +61,7 @@ public final class EreborPlan {
 
     private static double cl(double a) { return a < 0 ? 0 : a > 1 ? 1 : a; }
 
-    private static final int GU = RX + 150, GV0 = -RZ - 120, GW = 2 * GU + 1, GH = 175 - GV0 + 1;
+    private static final int GU = RX + 150, GV0 = -RZ - 120, GW = 2 * GU + 1, GV1 = 300, GH = GV1 - GV0 + 1;
     private static volatile short[] COVER;
 
     /**
@@ -121,11 +121,11 @@ public final class EreborPlan {
      */
     private static int top0(int x, int z) {
         int u = x - EX, v = z - EZ;
-        if (Math.abs(u) > GU - 2 || v < GV0 || v > 175) return Integer.MIN_VALUE;
+        if (Math.abs(u) > GU - 2 || v < GV0 || v > GV1 - 1) return Integer.MIN_VALUE;
         short[] c = cover();
         // contours irreguliers : on lit la carte de couverture en un point legerement decale
         int su = u + (int) Math.round(16 * (vn(x * 0.03, z * 0.03, 31) - 0.5)), sv = v + (int) Math.round(16 * (vn(x * 0.03, z * 0.03, 32) - 0.5));
-        int cv = (su < -GU + 1 || su > GU - 2 || sv < GV0 || sv > 175) ? Short.MIN_VALUE : c[(sv - GV0) * GW + su + GU];
+        int cv = (su < -GU + 1 || su > GU - 2 || sv < GV0 || sv > GV1 - 1) ? Short.MIN_VALUE : c[(sv - GV0) * GW + su + GU];
         // un renflement bas et irregulier qui donne une vraie silhouette a la montagne
         double wu = u + 40 * (vn(x * 0.011, z * 0.011, 21) - 0.5), wv = v + 30 + 40 * (vn(x * 0.011, z * 0.011, 22) - 0.5);
         double a = wu / RX, b = wv / RZ;
@@ -143,7 +143,7 @@ public final class EreborPlan {
         // en avant de la facade, la roche retombe vite vers la plaine (contreforts de part et d'autre de la cour)
         if (v > VF + 4) {
             double e = courtE(u, v, x, z);
-            t = Math.min(t, Math.min(FL0 + 130 - (v - VF - 4) * 1.6, FL0 + 1.2 * Math.max(0, -e) + 3 * (v - VF - 4)));
+            t = Math.min(t, FL0 + 20 + 1.6 * Math.max(0, -e));
         }
         if (t < FL0 + 2) return Integer.MIN_VALUE;
         return (int) t;
@@ -160,7 +160,7 @@ public final class EreborPlan {
 
     public static boolean inBox(int x, int y, int z) {
         int u = x - EX, v = z - EZ;
-        return Math.abs(u) <= GU - 2 && v >= GV0 && v <= 242 && y - D >= 56 && y - D <= 460;
+        return Math.abs(u) <= GU - 2 && v >= GV0 && v <= GV1 && y - D >= 56 && y - D <= 460;
     }
 
     // ------------------------------------------------------------------ assemblage
