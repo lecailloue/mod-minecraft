@@ -1,0 +1,33 @@
+[21Nov2026 17:24:06.835] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, location] and [teleport, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[21Nov2026 17:24:06.837] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, location] and [teleport, targets] with inputs: [0.1 -0.5 .9, 0 0 0]
+[21Nov2026 17:24:06.840] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, destination] and [teleport, targets] with inputs: [Player, 0123, @e, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[21Nov2026 17:24:06.842] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, targets] and [teleport, destination] with inputs: [Player, 0123, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[21Nov2026 17:24:06.843] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, targets, location] and [teleport, targets, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[21Nov2026 17:24:06.965] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/home/runner/work/mod-minecraft/mod-minecraft/build/moddev/artifacts/neoforge-21.1.243.jar%23177!/assets/.mcassetsroot' uses unexpected schema
+[21Nov2026 17:24:06.965] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/home/runner/work/mod-minecraft/mod-minecraft/build/moddev/artifacts/neoforge-21.1.243.jar%23177!/data/.mcassetsroot' uses unexpected schema
+[21Nov2026 17:24:08.662] [Render thread/ERROR] [com.mojang.text2speech.Narrator/]: Error while loading the narrator
+[21Nov2026 17:24:10.996] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:item.goat_horn.play
+[21Nov2026 17:24:10.996] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:entity.goat.screaming.horn_break
+[21Nov2026 17:24:11.007] [Render thread/ERROR] [net.minecraft.client.sounds.SoundEngine/SOUNDS]: Error starting SoundSystem. Turning off sounds & music
+[21Nov2026 17:24:11.465] [Render thread/WARN] [net.minecraft.client.renderer.ShaderInstance/]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
+[21Nov2026 17:24:16.627] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] creation du monde
+[21Nov2026 17:24:35.108] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] monde pret
+[21Nov2026 17:24:35.181] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene 419_fondcombe_pilier_haut
+[21Nov2026 17:24:56.193] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene 433_helm_burg
+[21Nov2026 17:24:56.305] [Server thread/WARN] [net.minecraft.server.MinecraftServer/]: Can't keep up! Is the server overloaded? Running 21116ms or 422 ticks behind
+[21Nov2026 17:25:15.168] [Server thread/WARN] [net.minecraft.server.MinecraftServer/]: Can't keep up! Is the server overloaded? Running 3878ms or 77 ticks behind
+[21Nov2026 17:25:17.249] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene 419_esgaroth_chargement
+[21Nov2026 17:25:36.333] [Server thread/WARN] [net.minecraft.server.MinecraftServer/]: Can't keep up! Is the server overloaded? Running 6194ms or 123 ticks behind
+[21Nov2026 17:28:17.373] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene 421_esgaroth_vue_sud
+[21Nov2026 17:28:38.373] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene 424_esgaroth_canal
+[21Nov2026 17:28:59.453] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene 425_esgaroth_chaussee
+[21Nov2026 17:29:20.443] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene 426_esgaroth_ponton
+[21Nov2026 17:29:41.526] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene 428_esgaroth_rive
+[21Nov2026 17:30:02.605] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene 433_esgaroth_peche
+[21Nov2026 17:30:23.619] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene 199_tirith_chargement
+[21Nov2026 17:30:28.650] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene 202_tirith_porte
+[21Nov2026 17:30:35.254] [Server thread/WARN] [net.minecraft.server.MinecraftServer/]: Can't keep up! Is the server overloaded? Running 11614ms or 232 ticks behind
+[21Nov2026 17:30:49.745] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene 203_tirith_route
+[21Nov2026 17:31:10.778] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene 433_moria_grande_salle
+[21Nov2026 17:31:19.432] [Server thread/WARN] [net.minecraft.server.MinecraftServer/]: Can't keep up! Is the server overloaded? Running 8643ms or 172 ticks behind
+[21Nov2026 17:31:42.841] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] TERMINE
