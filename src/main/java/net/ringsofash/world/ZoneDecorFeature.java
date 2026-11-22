@@ -406,17 +406,17 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 boolean shore = level.getFluidState(p.set(x + 1, gy + 1, z)).is(net.minecraft.tags.FluidTags.WATER) || level.getFluidState(p.set(x - 1, gy + 1, z)).is(net.minecraft.tags.FluidTags.WATER)
                         || level.getFluidState(p.set(x, gy + 1, z + 1)).is(net.minecraft.tags.FluidTags.WATER) || level.getFluidState(p.set(x, gy + 1, z - 1)).is(net.minecraft.tags.FluidTags.WATER);
                 int h = (hash(x, z, 21) >>> 8) % 100;
-                if (shore && h < 38) {
+                if (shore && h < 50) {
                     int n = 1 + (hash(x, z, 22) >>> 8) % 3;
                     for (int k = 1; k <= n; k++) set(x, gy + k, z, Blocks.SUGAR_CANE.defaultBlockState());
                     any = true;
                 } else if (h < 3) { set(x, gy + 1, z, Blocks.MOSS_CARPET.defaultBlockState()); any = true; }
             }
             // arbres morts, dans l'eau comme sur les buttes
-            for (int k = 0; k < 7; k++) {
-                if (r.nextFloat() > 0.55f) continue;
+            for (int k = 0; k < 4; k++) {
+                if (r.nextFloat() > 0.4f) continue;
                 int x = x0 + 3 + r.nextInt(10), z = z0 + 3 + r.nextInt(10);
-                if (!mine(x, z) || !far(x, z, 7)) continue;
+                if (!mine(x, z) || !far(x, z, 11)) continue;
                 int gy = groundY(x, z);
                 if (!soil(level.getBlockState(p.set(x, gy, z)))) continue;
                 int wy = 0;
@@ -424,12 +424,12 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 if (wy >= 4) continue;
                 deadTree(x, gy + 1, z);
                 flush();
-                done.add(new int[] {x, z, 6});
+                done.add(new int[] {x, z, 9});
                 any = true;
             }
             // flammes bleues des Marais : une pierre moussue, du sable des ames, la flamme
-            if (r.nextFloat() < 0.5f) {
-                int n = 1 + r.nextInt(3);
+            if (r.nextFloat() < 0.2f) {
+                int n = 1 + r.nextInt(2);
                 for (int i = 0; i < n; i++) {
                     int x = x0 + 2 + r.nextInt(12), z = z0 + 2 + r.nextInt(12);
                     if (!mine(x, z)) continue;
@@ -442,14 +442,14 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                     any = true;
                 }
             }
-            if (r.nextFloat() < 0.18f) any |= ruin(true);
-            if (r.nextFloat() < 0.08f) any |= jetty();
+            if (r.nextFloat() < 0.05f) any |= ruin(true);
+            if (r.nextFloat() < 0.04f) any |= jetty();
             return any;
         }
 
         void deadTree(int x, int y0, int z) {
             BlockState wl = log(Reg.WEATHERED_LOG.get(), Direction.Axis.Y);
-            int h = 7 + r.nextInt(8);
+            int h = 6 + r.nextInt(7);
             double cx = x, cz = z;
             int tx = x, tz = z;
             for (int y = 0; y < h; y++) {
@@ -458,11 +458,11 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 putLog(tx, y0 + y, tz, wl);
                 if (y < 3) { if (r.nextFloat() < 0.7f) putLog(tx + 1, y0 + y, tz, wl); if (r.nextFloat() < 0.7f) putLog(tx, y0 + y, tz + 1, wl); }
             }
-            int nb = 3 + r.nextInt(3);
+            int nb = 2 + r.nextInt(2);
             for (int i = 0; i <= nb; i++) {
                 double a = r.nextDouble() * Math.PI * 2;
-                int sy = i == nb ? h - 1 : (int) (h * (0.35 + 0.55 * r.nextDouble()));
-                branch(tx, y0 + sy, tz, a, 4 + r.nextInt(5), true);
+                int sy = i == nb ? h - 1 : (int) (h * (0.45 + 0.45 * r.nextDouble()));
+                branch(tx, y0 + sy, tz, a, 3 + r.nextInt(4), true);
             }
         }
 
@@ -476,9 +476,9 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 int ix = (int) Math.round(bx), iz = (int) Math.round(bz);
                 putLog(ix, by, iz, logAxis(Reg.WEATHERED_LOG.get(), Math.cos(a), Math.sin(a)));
                 if (fork && k == len / 2 && r.nextFloat() < 0.6f) branch(ix, by, iz, a + (r.nextBoolean() ? 1.0 : -1.0), 2 + r.nextInt(3), false);
-                if (r.nextFloat() < 0.16f) hangMoss(ix, by - 1, iz, 2 + r.nextInt(7));
+                if (r.nextFloat() < 0.05f) hangMoss(ix, by - 1, iz, 2 + r.nextInt(4));
             }
-            hangMoss((int) Math.round(bx), by - 1, (int) Math.round(bz), 3 + r.nextInt(6));
+            if (r.nextFloat() < 0.5f) hangMoss((int) Math.round(bx), by - 1, (int) Math.round(bz), 2 + r.nextInt(4));
         }
 
         /** mousse pendante : lianes, retenues par la branche au dessus */

@@ -621,10 +621,10 @@ public final class ClientTest {
         // Hobbiteville : coordonnees du fichier source (x 0..324, z 9..366, y source : le sol du village est vers -38)
         hobT("hoba_hobbiteville_aerien", 180, 40, 330, 180, -40, 150);
         morT("zon1_elfe_a", -1550.5, 108, -75.5, -1520, 95, -75, 6000);
-        morT("zon2_elfe_b", -1440.5, 114, -240.5, -1405, 99, -240, 6000);
-        morT("zon3_fangorn_a", 735.5, 90, 5.5, 765, 76, 5, 6000);
+        morT("zon2_elfe_b", -1460.5, 128, -240.5, -1405, 96, -240, 6000);
+        morT("zon3_fangorn_a", 715.5, 108, 5.5, 765, 78, 5, 6000);
         morT("zon4_fangorn_b", 685.5, 100, -1105.5, 715, 86, -1105, 6000);
-        morT("zon5_marais_a", 1175.5, 86, 740.5, 1205, 66, 740, 6000);
+        morT("zon5_marais_a", 1165.5, 92, 740.5, 1205, 66, 740, 6000);
         morT("zon6_marais_b", 1205.5, 112, 700.5, 1205, 64, 760, 6000);
         morT("zon7_marais_nuit", 1340.5, 84, 860.5, 1340, 66, 890, 18000);
         morT("zon8_comte_prairie", -590.5, 96, 740.5, -560, 82, 740, 6000);
