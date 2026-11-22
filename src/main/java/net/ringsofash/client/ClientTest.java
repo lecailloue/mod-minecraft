@@ -627,6 +627,8 @@ public final class ClientTest {
         morT("comz5_ouest_ancienne_foret", -1050.5, 120, 120.5, -1100, 70, 200, 6000);
         morT("comz6_aerien_nord", -880.5, 190, -290.5, -925, 70, -180, 6000);
         morT("comz7_aerien_est", -570.5, 190, 10.5, -650, 70, 65, 6000);
+        morT("comz8_nord_loin", -910.5, 110, -200.5, -910, 100, -300, 6000);
+        morT("comz9_nord_bas", -910.5, 130, -215.5, -910, 60, -250, 6000);
         spot("comta_chemin", -913, 352, 10, 225F, 22F);
         spot("comtb_chemin_sud", -1125, 650, 14, 180F, 20F);
         spot("comtc_aerien", -1000, 600, 70, 200F, 38F);

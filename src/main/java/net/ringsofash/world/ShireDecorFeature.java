@@ -288,7 +288,7 @@ public class ShireDecorFeature extends Feature<NoneFeatureConfiguration> {
         List<int[]> done = new ArrayList<>();
         for (int k = 0; k < 12; k++) {
             boolean tree = k < 3 || (k >= 6 && k < 9);
-            if (r.nextFloat() > (tree ? 0.55f : 0.65f)) continue;
+            if (r.nextFloat() > (k >= 6 ? 0.4f : tree ? 0.55f : 0.65f)) continue;
             int x = x0 + 3 + r.nextInt(10), z = z0 + 3 + r.nextInt(10);
             if (inStamp(x, z) || !inZone(x, z) || nearField(x, z, 9)) continue;
             int nb = MapData.biome(x, z);
