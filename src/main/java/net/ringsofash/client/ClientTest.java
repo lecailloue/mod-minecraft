@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"tird", "tire", "tirg"};
+    private static final String[] ONLY = {"hob"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -613,13 +613,6 @@ public final class ClientTest {
         spot("comtb_chemin_sud", -1125, 650, 14, 180F, 20F);
         spot("comtc_aerien", -1000, 600, 70, 200F, 38F);
         spot("comtd_arbres", -700, 420, 14, 90F, 18F);
-        spot("tira_aerien", 480, 2130, 90, 180F, 18F);
-        spot("tirb_porte", 440, 2080, 45, 180F, 8F);
-        spot("tirc_ouest", 150, 1850, 130, 270F, 22F);
-        spot("tird_rempart", 560, 1980, 60, 200F, 18F);
-        spot("tire_cour", 480, 1830, 30, 180F, 10F);
-        spot("tirf_tour", 540, 1740, 70, 200F, 15F);
-        spot("tirg_rue", 430, 1960, 12, 160F, 5F);
         hobT("hobz1_arbre_a", 116, -28, 178, 98, -32, 162);
         hobT("hobz2_arbre_b", 190, -24, 190, 178, -30, 154);
         hobT("hobz3_arbres_ouest", 40, -20, 122, 20, -32, 108);
