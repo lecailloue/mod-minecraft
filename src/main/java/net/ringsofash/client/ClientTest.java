@@ -620,13 +620,13 @@ public final class ClientTest {
         morT("483_comte_cuvette_haut", -1105.5, 160, -535.5, -1105, 80, -520, 6000);
         // Hobbiteville : coordonnees du fichier source (x 0..324, z 9..366, y source : le sol du village est vers -38)
         hobT("hoba_hobbiteville_aerien", 180, 40, 330, 180, -40, 150);
-        morT("comz1_champ_nord", -830.5, 105, -40.5, -830, 70, -125, 6000);
-        morT("comz2_champ_est", -655.5, 105, 125.5, -575, 66, 125, 6000);
-        morT("comz3_chemin_sud", -640.5, 95, 300.5, -700, 70, 345, 6000);
-        morT("comz4_chemin_est", -520.5, 95, -30.5, -585, 68, -30, 6000);
+        morT("comz1_champ_nord", -910.5, 105, -100.5, -910, 72, -185, 6000);
+        morT("comz2_champ_est", -595.5, 100, 65.5, -655, 72, 65, 6000);
+        morT("comz3_chemin_sud", -690.5, 105, 170.5, -750, 70, 235, 6000);
+        morT("comz4_chemin_est", -610.5, 100, -40.5, -665, 72, -45, 6000);
         morT("comz5_ouest_ancienne_foret", -1050.5, 120, 120.5, -1100, 70, 200, 6000);
-        morT("comz6_aerien_nord", -750.5, 190, -230.5, -800, 70, -110, 6000);
-        morT("comz7_aerien_est", -520.5, 190, 60.5, -590, 70, 125, 6000);
+        morT("comz6_aerien_nord", -880.5, 190, -290.5, -925, 70, -180, 6000);
+        morT("comz7_aerien_est", -570.5, 190, 10.5, -650, 70, 65, 6000);
         spot("comta_chemin", -913, 352, 10, 225F, 22F);
         spot("comtb_chemin_sud", -1125, 650, 14, 180F, 20F);
         spot("comtc_aerien", -1000, 600, 70, 200F, 38F);
