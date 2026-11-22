@@ -142,7 +142,10 @@ public class ShireDecorFeature extends Feature<NoneFeatureConfiguration> {
     }
 
     /** vrai dans le contour rouge de la Comte (grille precalculee : appele pour chaque colonne de terrain) */
-    public static boolean inZone(int x, int z) {
+    public static boolean inZone(int x, int z) { return Zones.inShire(x, z); }
+
+    /** l'ancien contour rouge (grille precalculee) */
+    public static boolean inPoly(int x, int z) {
         if (x < ZX0 || x > ZX1 || z < ZZ0 || z > ZZ1) return false;
         if (zoneGrid == null) buildGrid();
         return zoneGrid[(z - ZZ0) * (ZX1 - ZX0 + 1) + (x - ZX0)] != 0;
@@ -237,7 +240,6 @@ public class ShireDecorFeature extends Feature<NoneFeatureConfiguration> {
         WorldGenLevel level = ctx.level();
         RandomSource r = ctx.random();
         int x0 = ctx.origin().getX() & ~15, z0 = ctx.origin().getZ() & ~15;
-        if (x0 > -464 || x0 + 15 < -1363 || z0 > 924 || z0 + 15 < -408) return false;
         if (x0 >= stampX0 && x0 + 15 < stampX1 && z0 >= stampZ0 && z0 + 15 < stampZ1) return false;
         BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
         boolean any = false;

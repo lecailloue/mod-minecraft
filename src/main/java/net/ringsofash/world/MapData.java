@@ -115,7 +115,7 @@ public final class MapData {
                 g += (float) (amp * (0.5 * (rid2 - 0.5f) + 0.5 * n3));
             }
         }
-        return MoriaPlan.surface(x, z, Math.round(g));
+        return MoriaPlan.surface(x, z, Zones.marshHeight(x, z, Math.round(g), rawBiome(x, z)));
     }
 
     /** Altitude de la surface du liquide : eau (mer, rivieres) ou lave dans le cratere du volcan ; MIN_VALUE s'il n'y en a pas. */
@@ -130,6 +130,13 @@ public final class MapData {
         int lt = MoriaPlan.lakeTop(x, z, h);
         if (lt != Integer.MIN_VALUE) return lt;
         return h < SEA ? SEA : Integer.MIN_VALUE;
+    }
+
+    /** biome lu tel quel dans la grille, sans decalage ni zones peintes */
+    static int rawBiome(int x, int z) {
+        if (!loaded) load();
+        if (!inside(x, z)) return B_MER;
+        return biome[cell((int) Math.floor((x + HALF) / SCALE), (int) Math.floor((z + HALF) / SCALE))];
     }
 
     public static int biome(int x, int z) {

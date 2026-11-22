@@ -35,6 +35,9 @@ public final class ModWorldgen {
     public static final DeferredHolder<Feature<?>, CraterSmokeFeature> CRATER_SMOKE = FEATURES.register("crater_smoke", CraterSmokeFeature::new);
     public static final DeferredHolder<Feature<?>, FallenLogFeature> FALLEN_LOG = FEATURES.register("fallen_log", FallenLogFeature::new);
     public static final DeferredHolder<Feature<?>, ShireDecorFeature> SHIRE_DECOR = FEATURES.register("shire_decor", ShireDecorFeature::new);
+    public static final DeferredHolder<Feature<?>, ZoneDecorFeature> ELVEN_DECOR = FEATURES.register("elven_forest_decor", () -> new ZoneDecorFeature(ZoneDecorFeature.ELVEN));
+    public static final DeferredHolder<Feature<?>, ZoneDecorFeature> FANGORN_DECOR = FEATURES.register("fangorn_decor", () -> new ZoneDecorFeature(ZoneDecorFeature.FANGORN));
+    public static final DeferredHolder<Feature<?>, ZoneDecorFeature> MARSH_DECOR = FEATURES.register("marsh_decor", () -> new ZoneDecorFeature(ZoneDecorFeature.MARSH));
     public static final DeferredHolder<Feature<?>, BigTreeFeature> BIG_TREE = FEATURES.register("big_tree", BigTreeFeature::new);
 
     public static final DeferredHolder<StructureType<?>, StructureType<VolcanoStructure>> VOLCANO =

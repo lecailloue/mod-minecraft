@@ -45,6 +45,8 @@ public final class MapChunkGenerator extends ChunkGenerator {
     private static final BlockState PATH = Blocks.DIRT_PATH.defaultBlockState();
     private static final BlockState SAND = Blocks.SAND.defaultBlockState();
     private static final BlockState GRAVEL = Blocks.GRAVEL.defaultBlockState();
+    private static final BlockState MOSS = Blocks.MOSS_BLOCK.defaultBlockState();
+    private static final BlockState MUD = Blocks.MUD.defaultBlockState();
     private static final BlockState CLAY = Blocks.CLAY.defaultBlockState();
     private static final BlockState SNOW = Blocks.SNOW_BLOCK.defaultBlockState();
     private static final BlockState ANDESITE = Blocks.ANDESITE.defaultBlockState();
@@ -154,7 +156,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
     /** biome de surface : dans la zone rouge, toutes les terres de plaine et de bois prennent le sol de la Comte (13) */
     static int surfBiome(int x, int z) {
         int b = MapData.biome(x, z);
-        return ShireDecorFeature.shireLand(b) && ShireDecorFeature.inZone(x, z) ? 13 : b;
+        return Zones.biomeFor(b, x, z);
     }
 
     private static boolean landBiome(int b) { return b != MapData.B_MER && b != MapData.B_RIVAGE && b != MapData.B_RIVIERE && b != MapData.B_LAVE; }
@@ -338,7 +340,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
         if (!under && depth <= 1 && h > MapData.SEA + 1 && onWhiteRoad(x, z)) return Reg.WHITE_STONE.get().defaultBlockState();
         BlockState top = null;
         int layers = 3;
-        if (landBiome(b) && b != 2 && b != MapData.B_MONTS_CENDRE && h <= MapData.SEA + 1) {
+        if (landBiome(b) && b != 2 && b != MapData.B_MONTS_CENDRE && b != Zones.B_MARSH && h <= MapData.SEA + 1) {
             // berges et plages : sable et gravier, en pente douce
             top = hash(x, 6, z) < 0.25f ? GRAVEL : SAND; layers = 3;
         } else switch (b) {
@@ -358,6 +360,26 @@ public final class MapChunkGenerator extends ChunkGenerator {
                     else if (gp == 1) top = COARSE;
                     else if (fbm(x * 0.05, z * 0.05, 23) > 0.66f && fbm(x * 0.2, z * 0.2, 24) > 0.5f) top = DIRT;
                 }
+            }
+            case 14 -> {                                   // foret elfique : herbe, grandes plaques de mousse, un peu de terre brune
+                if (slope >= 4 && h >= 78) { top = rock(x, h, z); layers = 1; }
+                else {
+                    float m = fbm(x * 0.06, z * 0.06, 31);
+                    top = m > 0.62f ? MOSS : m < 0.22f && hash(x, 5, z) < 0.6f ? PODZOL : GRASS; layers = 3;
+                }
+            }
+            case 15 -> {                                   // Fangorn : sous-bois sombre, mousse et humus
+                if (slope >= 5 && h >= 78) { top = rock(x, h, z); layers = 1; }
+                else {
+                    float m = fbm(x * 0.07, z * 0.07, 32);
+                    top = m > 0.56f ? MOSS : m < 0.32f ? PODZOL : hash(x, 8, z) < 0.07f ? COARSE : GRASS; layers = 3;
+                }
+            }
+            case 16 -> {                                   // marais des morts : vase, mousse, herbe pourrie
+                float m = fbm(x * 0.08, z * 0.08, 33);
+                if (under || h <= MapData.SEA + 1) top = MUD;
+                else top = m > 0.64f ? MOSS : m < 0.3f ? PODZOL : m < 0.52f && hash(x, 6, z) < 0.55f ? MUD : GRASS;
+                layers = 3;
             }
             case 13 -> {                                   // la Comte : herbe verte, rares plaques de terre (mousse et chemins sont poses par le decor)
                 if (slope >= 4 && h >= 78) { top = rock(x, h, z); layers = 1; }
@@ -418,7 +440,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
         }
         if (top != null && depth < layers) {
             if (depth == 0) return top;
-            if (top == GRASS || top == PODZOL || top == COARSE || top == PATH) return DIRT;
+            if (top == GRASS || top == PODZOL || top == COARSE || top == PATH || top == MOSS || top == MUD) return DIRT;
             return top;
         }
         if (y < 0) return DEEPSLATE;
