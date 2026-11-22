@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"comz"};
+    private static final String[] ONLY = {"zon"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -620,6 +620,15 @@ public final class ClientTest {
         morT("483_comte_cuvette_haut", -1105.5, 160, -535.5, -1105, 80, -520, 6000);
         // Hobbiteville : coordonnees du fichier source (x 0..324, z 9..366, y source : le sol du village est vers -38)
         hobT("hoba_hobbiteville_aerien", 180, 40, 330, 180, -40, 150);
+        morT("zon1_elfe_a", -1550.5, 108, -75.5, -1520, 95, -75, 6000);
+        morT("zon2_elfe_b", -1440.5, 114, -240.5, -1405, 99, -240, 6000);
+        morT("zon3_fangorn_a", 735.5, 90, 5.5, 765, 76, 5, 6000);
+        morT("zon4_fangorn_b", 685.5, 100, -1105.5, 715, 86, -1105, 6000);
+        morT("zon5_marais_a", 1175.5, 86, 740.5, 1205, 66, 740, 6000);
+        morT("zon6_marais_b", 1205.5, 112, 700.5, 1205, 64, 760, 6000);
+        morT("zon7_marais_nuit", 1340.5, 84, 860.5, 1340, 66, 890, 18000);
+        morT("zon8_comte_prairie", -590.5, 96, 740.5, -560, 82, 740, 6000);
+        morT("zon9_comte_nord", 165.5, 96, -2060.5, 195, 83, -2060, 6000);
         morT("comz1_champ_nord", -910.5, 105, -100.5, -910, 72, -185, 6000);
         morT("comz2_champ_est", -595.5, 100, 65.5, -655, 72, 65, 6000);
         morT("comz3_chemin_sud", -690.5, 105, 170.5, -750, 70, 235, 6000);
