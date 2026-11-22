@@ -27,7 +27,9 @@ public final class MapBiomeSource extends BiomeSource {
 
     @Override
     public Holder<Biome> getNoiseBiome(int x, int y, int z, Climate.Sampler sampler) {
-        int i = MapData.biome((x << 2) + 2, (z << 2) + 2);
+        int bx = (x << 2) + 2, bz = (z << 2) + 2;
+        int i = MapData.biome(bx, bz);
+        if (i == 0 && biomes.size() > 13 && ShireDecorFeature.inZone(bx, bz)) i = 13;   // la Comte : plaines sans arbres naturels
         return biomes.get(Math.min(i, biomes.size() - 1));
     }
 }

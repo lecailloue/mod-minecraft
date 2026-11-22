@@ -34,6 +34,7 @@ public final class ModWorldgen {
     public static final DeferredHolder<Feature<?>, RockFeature> ROCK = FEATURES.register("rock", RockFeature::new);
     public static final DeferredHolder<Feature<?>, CraterSmokeFeature> CRATER_SMOKE = FEATURES.register("crater_smoke", CraterSmokeFeature::new);
     public static final DeferredHolder<Feature<?>, FallenLogFeature> FALLEN_LOG = FEATURES.register("fallen_log", FallenLogFeature::new);
+    public static final DeferredHolder<Feature<?>, ShireDecorFeature> SHIRE_DECOR = FEATURES.register("shire_decor", ShireDecorFeature::new);
     public static final DeferredHolder<Feature<?>, BigTreeFeature> BIG_TREE = FEATURES.register("big_tree", BigTreeFeature::new);
 
     public static final DeferredHolder<StructureType<?>, StructureType<VolcanoStructure>> VOLCANO =

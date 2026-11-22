@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"rivs"};
+    private static final String[] ONLY = {"comt", "hobz"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -614,6 +614,13 @@ public final class ClientTest {
         morT("483_comte_cuvette_haut", -1105.5, 160, -535.5, -1105, 80, -520, 6000);
         // Hobbiteville : coordonnees du fichier source (x 0..324, z 9..366, y source : le sol du village est vers -38)
         hobT("hoba_hobbiteville_aerien", 180, 40, 330, 180, -40, 150);
+        spot("comta_chemin", -913, 352, 10, 225F, 22F);
+        spot("comtb_chemin_sud", -1125, 650, 14, 180F, 20F);
+        spot("comtc_aerien", -1000, 600, 70, 200F, 38F);
+        spot("comtd_arbres", -700, 420, 14, 90F, 18F);
+        hobT("hobz1_arbre_a", 116, -28, 178, 98, -32, 162);
+        hobT("hobz2_arbre_b", 190, -24, 190, 178, -30, 154);
+        hobT("hobz3_arbres_ouest", 40, -20, 122, 20, -32, 108);
         hobT("hobm_porte_jaune", 216, -28.5, 87, 216, -30, 77);
         hobT("hobr_irrigation", 197, -41, 223, 191, -44, 215);
         hobT("hobt_ble_nord", 120, -14, 79, 120, -38, -2);
