@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"hob"};
+    private static final String[] ONLY = {"semi"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -230,6 +230,17 @@ public final class ClientTest {
             double x = SX + (types.size() - 1) * spacing / 2.0;
             for (EntityType<? extends Mob> t : types) { actor(ow, t, x, SZ + dist, null); x -= spacing; }
             view(p, ow, SX + 0.5, SY + 1.2, SZ, 0F, pitch);
+        }));
+    }
+
+    /** une rangee de semi-hommes (hobbits) : variantes imposees (0 a 29), de face */
+    private static void halflingLine(String name, double dist, float pitch, double spacing, int[] vs) {
+        SCENES.add(new Scene(name, 70, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            double x = SX + (vs.length - 1) * spacing / 2.0;
+            for (int v : vs) { actor(ow, ModEntities.HALFLING.get(), x, SZ + dist, h -> h.testVariant(v)); x -= spacing; }
+            view(p, ow, SX + 0.5, SY + 0.9, SZ, 0F, pitch);
         }));
     }
 
@@ -1148,6 +1159,11 @@ public final class ClientTest {
         orcLine("01d_chef_proche", 4.5, 6F, 3.0, new int[]{0}, true);
         lineup("02_peuples", 8.5, 2F, 1.9, List.of(ModEntities.HUMAN.get(), ModEntities.HUMAN.get(), ModEntities.ELF.get(), ModEntities.ELF.get(), ModEntities.DWARF.get(), ModEntities.DWARF.get(),
                 ModEntities.HALFLING.get(), ModEntities.HALFLING.get(), ModEntities.RANGER.get(), ModEntities.MAGE.get()));
+        halflingLine("semi_a_hobbits_01_10", 9.0, 2F, 1.5, new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+        halflingLine("semi_b_hobbits_11_20", 9.0, 2F, 1.5, new int[]{10, 11, 12, 13, 14, 15, 16, 17, 18, 19});
+        halflingLine("semi_c_hobbits_21_30", 9.0, 2F, 1.5, new int[]{20, 21, 22, 23, 24, 25, 26, 27, 28, 29});
+        halflingLine("semi_d_proches_a", 4.2, 4F, 1.3, new int[]{0, 4, 9, 12});
+        halflingLine("semi_e_proches_b", 4.2, 4F, 1.3, new int[]{17, 21, 22, 27});
         lineup("03_divers", 7.0, 2F, 2.2, List.of(ModEntities.CAVE_THIEF.get(), ModEntities.SORCERER.get(), ModEntities.DEAD_SOLDIER.get(), ModEntities.CROW.get(), ModEntities.STAG.get(), ModEntities.WARG.get()));
         lineup("04_betes", 12.0, -4F, 5.5, List.of(ModEntities.CAVE_TROLL.get(), ModEntities.TROLL_CHIEF.get(), ModEntities.STONE_TROLL.get(), ModEntities.GIANT_SPIDER.get(), ModEntities.EAGLE.get(), ModEntities.LURKER.get()));
         // poses des trolls (profil + trois quarts) : course a quatre pattes, poings leves, poings abattus

@@ -65,6 +65,7 @@ public class PeopleEntity extends AbstractVillager {
     }
 
     public int variant() { return entityData.get(VARIANT); }
+    public void testVariant(int v) { entityData.set(VARIANT, v); }
     public int role() { return entityData.get(ROLE); }
     public boolean isRanger() { return getType() == ModEntities.RANGER.get(); }
     public boolean isMage() { return getType() == ModEntities.MAGE.get(); }

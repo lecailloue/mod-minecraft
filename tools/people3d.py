@@ -11,9 +11,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 JAVA = os.path.join(ROOT, 'src/main/java/net/ringsofash/client/PeopleParts.java')
 SIZE = 256
+TEXW = {'halfling': 256}   # largeur de texture par race (128 par defaut)
 
-PARTS = {'dwarf': [], 'elf': []}
-PAIRED = {'dwarf': set(), 'elf': set()}
+PARTS = {'dwarf': [], 'elf': [], 'halfling': []}
+PAIRED = {'dwarf': set(), 'elf': set(), 'halfling': set()}
 MIRROR_PARENT = {'right_arm': 'left_arm', 'right_leg': 'right_leg'}
 
 
@@ -418,11 +419,264 @@ P(E, 'bshort', 'bsh_cuff', 'right_leg', 'trim', (4, 1, 4), (-2.0, 8.6, -2.0), g=
 P(E, 'bshort', 'bsh_toe', 'right_leg', 'leather', (3, 2, 2), (-1.5, 10.0, -3.4), g=-0.1, pair=True, style='leather')
 
 
+# =====================================================================================================  SEMI-HOMMES (hobbits, hommes)
+H = 'halfling'
+# --- visage : oreilles en pointe, nez rond, sourcils, joues
+P(H, 'face', 'ear', 'head', 'skin', (1, 3, 2), (-5.0, -5.0, -1.0), pair=True, style='skin')
+P(H, 'face', 'ear_tip', 'head', 'skin', (1, 2, 1), (-5.0, -6.7, -0.5), g=-0.1, pair=True, style='skin')
+P(H, 'face', 'nose', 'head', 'skinD', (2, 2, 2), (-1.0, -3.4, -5.3), style='skin')
+P(H, 'face', 'brow', 'head', 'hairD', (3, 1, 1), (-3.7, -6.1, -4.5), g=0.05, pair=True, style='hair')
+P(H, 'nosebig', 'nose_big', 'head', 'skinD', (3, 3, 2), (-1.5, -3.8, -5.6), g=0.05, style='skin')
+P(H, 'cheeks', 'cheek', 'head', 'rosy', (2, 1, 1), (-3.8, -3.0, -4.4), g=0.05, pair=True, style='skin')
+P(H, 'brows2', 'brow_thick', 'head', 'hairD', (4, 2, 1), (-4.1, -6.4, -4.7), g=0.1, pair=True, style='hair')
+P(H, 'sideb', 'sideb', 'head', 'hair', (1, 4, 2), (-4.3, -5.2, -3.7), g=0.1, pair=True, style='hair')
+P(H, 'mutton', 'mutton', 'head', 'hair', (1, 7, 3), (-4.4, -5.0, -3.8), g=0.15, pair=True, style='hair')
+P(H, 'mutton', 'mutton_end', 'head', 'hairD', (2, 1, 3), (-4.9, 2.0, -3.8), g=0.05, pair=True, style='hair')
+P(H, 'pipe', 'pipe_stem', 'head', 'wood', (1, 1, 4), (0.8, -1.9, -8.0), style='wood')
+P(H, 'pipe', 'pipe_bowl', 'head', 'woodD', (2, 2, 2), (0.3, -3.6, -8.6), g=0.05, style='wood')
+P(H, 'pipe', 'pipe_ember', 'head', 'ember', (1, 1, 1), (0.8, -3.9, -8.2), g=-0.05, style='gem')
+# --- pieds de hobbit : larges, orteils, touffes de poils sur le cou-de-pied et les chevilles
+P(H, 'feet', 'foot', 'right_leg', 'skin', (4, 2, 5), (-2.0, 10.0, -3.6), g=0.15, pair=True, style='skin')
+P(H, 'feet', 'toe_a', 'right_leg', 'skinD', (1, 1, 1), (-2.0, 11.0, -4.8), g=-0.02, pair=True, style='skin')
+P(H, 'feet', 'toe_b', 'right_leg', 'skinD', (1, 1, 1), (-1.0, 11.0, -4.9), g=-0.02, pair=True, style='skin')
+P(H, 'feet', 'toe_c', 'right_leg', 'skinD', (1, 1, 1), (0.0, 11.0, -4.8), g=-0.02, pair=True, style='skin')
+P(H, 'feet', 'toe_d', 'right_leg', 'skinD', (1, 1, 1), (1.0, 11.0, -4.6), g=-0.02, pair=True, style='skin')
+P(H, 'feet', 'foot_hair', 'right_leg', 'hairD', (4, 1, 3), (-2.0, 9.5, -3.2), g=0.08, pair=True, style='hair')
+P(H, 'feet', 'ankle_hair', 'right_leg', 'hair', (4, 1, 4), (-2.0, 8.4, -2.0), g=0.38, pair=True, style='hair')
+P(H, 'feet', 'toe_hair', 'right_leg', 'hair', (4, 1, 1), (-2.0, 10.3, -4.5), g=0.05, pair=True, style='hair')
+P(H, 'feet', 'side_hair', 'right_leg', 'hairD', (1, 2, 3), (-2.6, 9.7, -2.8), g=0.05, pair=True, style='hair')
+# --- coiffures : boucles, ondulee, courte, au bol, tonsure, clairsemee, en pointes, longue, lissee, basse
+P(H, 'hc_mop', 'mop_cap', 'head', 'hair', (8, 1, 8), (-4.0, -9.2, -4.0), g=0.15, style='hair')
+P(H, 'hc_mop', 'mop_back', 'head', 'hair', (8, 6, 2), (-4.0, -8.2, 3.7), style='hair')
+P(H, 'hc_mop', 'mop_side', 'head', 'hair', (2, 4, 5), (-5.3, -8.2, -2.2), pair=True, style='hair')
+P(H, 'hc_mop', 'mop_f1', 'head', 'hair', (3, 2, 1), (-4.0, -8.5, -4.7), style='hair')
+P(H, 'hc_mop', 'mop_f2', 'head', 'hairD', (2, 2, 1), (-0.5, -8.7, -4.8), style='hair')
+P(H, 'hc_mop', 'mop_f3', 'head', 'hair', (3, 2, 1), (1.0, -8.5, -4.7), style='hair')
+P(H, 'hc_mop', 'mop_c1', 'head', 'hairL', (2, 2, 2), (-3.4, -10.7, -3.0), g=0.1, style='hair')
+P(H, 'hc_mop', 'mop_c2', 'head', 'hair', (2, 2, 2), (1.0, -10.8, -2.6), g=0.1, style='hair')
+P(H, 'hc_mop', 'mop_c3', 'head', 'hairL', (2, 2, 2), (-1.0, -11.2, -0.2), g=0.1, style='hair')
+P(H, 'hc_mop', 'mop_c4', 'head', 'hair', (2, 2, 2), (-3.5, -10.5, 1.2), g=0.1, style='hair')
+P(H, 'hc_mop', 'mop_c5', 'head', 'hairL', (2, 2, 2), (1.5, -10.5, 1.0), g=0.1, style='hair')
+P(H, 'hc_mop', 'mop_c6', 'head', 'hair', (2, 2, 2), (-1.0, -10.6, -3.2), g=0.1, style='hair')
+P(H, 'hc_mop', 'mop_nape', 'head', 'hairD', (6, 2, 2), (-3.0, -2.4, 3.8), style='hair')
+P(H, 'hc_mop', 'mop_sc', 'head', 'hairL', (2, 2, 2), (-5.4, -5.2, 0.5), g=0.1, pair=True, style='hair')
+P(H, 'hc_wavy', 'wv_cap', 'head', 'hair', (8, 1, 8), (-4.0, -9.2, -4.0), g=0.15, style='hair')
+P(H, 'hc_wavy', 'wv_back', 'head', 'hair', (8, 9, 2), (-4.0, -8.2, 3.7), style='hair')
+P(H, 'hc_wavy', 'wv_side', 'head', 'hair', (2, 6, 5), (-5.3, -8.0, -2.2), pair=True, style='hair')
+P(H, 'hc_wavy', 'wv_fringe', 'head', 'hair', (8, 2, 1), (-4.0, -8.6, -4.7), g=0.1, style='hair')
+P(H, 'hc_wavy', 'wv_end', 'head', 'hairL', (3, 2, 2), (-3.5, 0.2, 4.0), g=0.05, style='hair')
+P(H, 'hc_wavy', 'wv_curl', 'head', 'hairL', (2, 2, 2), (-5.5, -2.3, 0.0), pair=True, g=0.05, style='hair')
+P(H, 'hc_wavy', 'wv_top', 'head', 'hairL', (3, 1, 3), (-1.5, -10.3, -2.0), g=0.1, style='hair')
+P(H, 'hc_crop', 'cr_cap', 'head', 'hair', (8, 1, 8), (-4.0, -9.1, -4.0), g=0.12, style='hair')
+P(H, 'hc_crop', 'cr_back', 'head', 'hair', (8, 3, 2), (-4.0, -8.1, 3.7), style='hair')
+P(H, 'hc_crop', 'cr_side', 'head', 'hair', (1, 3, 3), (-4.7, -8.1, -1.9), pair=True, style='hair')
+P(H, 'hc_bowl', 'bw_cap', 'head', 'hair', (8, 1, 8), (-4.0, -9.2, -4.0), g=0.15, style='hair')
+P(H, 'hc_bowl', 'bw_f', 'head', 'hair', (8, 2, 1), (-4.0, -8.5, -4.8), g=0.05, style='hair')
+P(H, 'hc_bowl', 'bw_b', 'head', 'hairD', (8, 4, 2), (-4.0, -8.2, 3.7), style='hair')
+P(H, 'hc_bowl', 'bw_s', 'head', 'hair', (2, 3, 7), (-5.2, -8.1, -3.5), pair=True, style='hair')
+P(H, 'hc_bald', 'bd_back', 'head', 'hairL', (8, 3, 2), (-4.0, -4.6, 3.7), style='hair')
+P(H, 'hc_bald', 'bd_side', 'head', 'hairL', (2, 3, 4), (-5.1, -5.8, -0.2), pair=True, style='hair')
+P(H, 'hc_bald', 'bd_tuft', 'head', 'hairL', (1, 2, 2), (-4.6, -7.0, 0.6), pair=True, style='hair')
+P(H, 'hc_wispy', 'ws_cap', 'head', 'hairL', (8, 1, 8), (-4.0, -8.5, -4.0), g=0.03, style='hair')
+P(H, 'hc_wispy', 'ws_back', 'head', 'hairL', (8, 5, 2), (-4.0, -7.6, 3.7), style='hair')
+P(H, 'hc_wispy', 'ws_side', 'head', 'hairL', (1, 4, 4), (-4.7, -7.6, -1.6), pair=True, style='hair')
+P(H, 'hc_wispy', 'ws_str1', 'head', 'hair', (1, 1, 6), (-3.0, -9.0, -3.0), style='hair')
+P(H, 'hc_wispy', 'ws_str2', 'head', 'hairL', (1, 1, 7), (-0.5, -9.1, -3.5), style='hair')
+P(H, 'hc_wispy', 'ws_str3', 'head', 'hair', (1, 1, 6), (2.0, -9.0, -3.0), style='hair')
+P(H, 'hc_spiky', 'sp_cap', 'head', 'hair', (8, 1, 8), (-4.0, -9.2, -4.0), g=0.15, style='hair')
+P(H, 'hc_spiky', 'sp_back', 'head', 'hair', (8, 4, 2), (-4.0, -8.2, 3.7), style='hair')
+P(H, 'hc_spiky', 'sp_a', 'head', 'hairL', (2, 3, 2), (-1.0, -4.0, -1.0), off=(-2.8, -9.5, -3.0), rot=(-0.55, 0.0, 0.4), pair=True, style='hair')
+P(H, 'hc_spiky', 'sp_b', 'head', 'hair', (2, 3, 2), (-1.0, -4.0, -1.0), off=(-3.0, -9.5, 0.0), rot=(0.0, 0.0, 0.6), pair=True, style='hair')
+P(H, 'hc_spiky', 'sp_c', 'head', 'hairL', (2, 3, 2), (-1.0, -4.0, -1.0), off=(-2.4, -9.5, 2.6), rot=(0.55, 0.0, 0.4), pair=True, style='hair')
+P(H, 'hc_spiky', 'sp_d', 'head', 'hair', (2, 5, 2), (-1.0, -5.0, -1.0), off=(0.0, -9.5, 0.0), rot=(-0.25, 0.0, 0.0), style='hair')
+P(H, 'hc_long', 'lg_cap', 'head', 'hair', (8, 1, 8), (-4.0, -9.2, -4.0), g=0.15, style='hair')
+P(H, 'hc_long', 'lg_back', 'head', 'hair', (8, 12, 2), (-4.0, -8.2, 3.7), style='hair')
+P(H, 'hc_long', 'lg_side', 'head', 'hair', (2, 8, 3), (-5.2, -7.0, -1.2), pair=True, style='hair')
+P(H, 'hc_long', 'lg_fr', 'head', 'hair', (8, 2, 1), (-4.0, -8.5, -4.7), g=0.08, style='hair')
+P(H, 'hc_long', 'lg_end', 'head', 'hairL', (6, 2, 2), (-3.0, 3.6, 3.9), style='hair')
+P(H, 'hc_slick', 'sl_cap', 'head', 'hairD', (8, 1, 8), (-4.0, -9.1, -4.0), g=0.12, style='hair')
+P(H, 'hc_slick', 'sl_back', 'head', 'hairD', (8, 4, 2), (-4.0, -8.1, 3.7), style='hair')
+P(H, 'hc_slick', 'sl_side', 'head', 'hairD', (1, 3, 3), (-4.7, -8.1, -1.9), pair=True, style='hair')
+P(H, 'hc_slick', 'sl_wave', 'head', 'hair', (6, 1, 2), (-3.0, -9.9, -3.0), g=0.05, style='hair')
+P(H, 'hc_low', 'lw_cap', 'head', 'hair', (8, 1, 8), (-4.0, -9.0, -4.0), g=0.12, style='hair')
+P(H, 'hc_low', 'lw_back', 'head', 'hair', (8, 6, 2), (-4.0, -8.0, 3.7), style='hair')
+P(H, 'hc_low', 'lw_side', 'head', 'hair', (2, 4, 4), (-5.3, -7.2, -1.6), pair=True, style='hair')
+P(H, 'hc_low', 'lw_c1', 'head', 'hairL', (3, 2, 2), (-5.5, -3.4, 0.5), pair=True, g=0.05, style='hair')
+P(H, 'hc_low', 'lw_c2', 'head', 'hairL', (3, 2, 2), (-3.5, -1.6, 3.9), g=0.05, style='hair')
+# --- chapeaux, casques, capuches, couronne de feuilles
+P(H, 'hat_felt', 'hf_brim', 'head', 'hatc', (10, 1, 10), (-5.0, -8.6, -5.0), g=0.1, style='cloth')
+P(H, 'hat_felt', 'hf_crown', 'head', 'hatc', (6, 4, 6), (-3.0, -12.4, -3.0), g=0.15, style='cloth')
+P(H, 'hat_felt', 'hf_band', 'head', 'hatband', (6, 1, 6), (-3.0, -9.9, -3.0), g=0.3, style='cloth')
+P(H, 'hat_straw', 'hs_brim', 'head', 'straw', (13, 1, 13), (-6.5, -8.8, -6.5), g=0.05, style='hair')
+P(H, 'hat_straw', 'hs_crown', 'head', 'straw', (7, 3, 7), (-3.5, -11.7, -3.5), g=0.1, style='hair')
+P(H, 'hat_straw', 'hs_band', 'head', 'hatband', (7, 1, 7), (-3.5, -9.8, -3.5), g=0.25, style='cloth')
+P(H, 'hat_cap', 'hc_top', 'head', 'hatc', (9, 2, 9), (-4.5, -10.0, -4.5), g=0.1, style='cloth')
+P(H, 'hat_cap', 'hc_visor', 'head', 'hatcD', (8, 1, 3), (-4.0, -8.5, -6.9), g=0.0, style='leather')
+P(H, 'hat_cap', 'hc_btn', 'head', 'hatband', (1, 1, 1), (-0.5, -10.8, -0.5), style='cloth')
+P(H, 'hat_bonnet', 'bn_ring', 'head', 'white', (8, 2, 8), (-4.0, -9.6, -4.0), g=0.3, style='cloth')
+P(H, 'hat_bonnet', 'bn_puff', 'head', 'white', (6, 3, 6), (-3.0, -12.2, -3.0), g=0.3, style='cloth')
+P(H, 'hat_top', 'ht_brim', 'head', 'hatc', (10, 1, 10), (-5.0, -8.6, -5.0), g=0.1, style='cloth')
+P(H, 'hat_top', 'ht_tall', 'head', 'hatc', (6, 6, 6), (-3.0, -14.6, -3.0), g=0.12, style='cloth')
+P(H, 'hat_top', 'ht_band', 'head', 'hatband', (6, 1, 6), (-3.0, -9.9, -3.0), g=0.3, style='cloth')
+P(H, 'feather', 'ft_a', 'head', 'fletch', (1, 5, 1), (-0.5, -5.0, -0.5), off=(-4.2, -10.5, 0.5), rot=(0.3, 0.0, 0.5), style='cloth')
+P(H, 'feather', 'ft_b', 'head', 'fletch2', (1, 3, 1), (-0.5, -3.0, -0.5), off=(-4.4, -10.6, -0.2), rot=(0.2, 0.0, 0.7), style='cloth')
+P(H, 'rhelm', 'rh_dome', 'head', 'metal', (8, 3, 8), (-4.0, -9.7, -4.0), g=0.55, style='metal')
+P(H, 'rhelm', 'rh_rim', 'head', 'leatherD', (8, 1, 8), (-4.0, -7.5, -4.0), g=0.6, style='leather')
+P(H, 'rhelm', 'rh_nose', 'head', 'metal', (1, 4, 1), (-0.5, -8.0, -5.2), style='metal')
+P(H, 'rhelm', 'rh_cheek', 'head', 'metal', (1, 4, 3), (-5.1, -6.3, -2.2), pair=True, style='metal')
+P(H, 'rhelm', 'rh_plume', 'head', 'leaf', (1, 3, 6), (-0.5, -12.8, -3.0), style='hair')
+P(H, 'ghelm', 'gh_dome', 'head', 'silver', (8, 3, 8), (-4.0, -9.7, -4.0), g=0.55, style='metal')
+P(H, 'ghelm', 'gh_rim', 'head', 'silverD', (8, 1, 8), (-4.0, -7.5, -4.0), g=0.62, style='metal')
+P(H, 'ghelm', 'gh_nasal', 'head', 'silver', (1, 5, 1), (-0.5, -8.0, -5.2), style='metal')
+P(H, 'ghelm', 'gh_cheek', 'head', 'silver', (1, 5, 3), (-5.1, -6.3, -2.2), pair=True, style='metal')
+P(H, 'ghelm', 'gh_crest', 'head', 'silverD', (1, 2, 8), (-0.5, -12.0, -4.0), style='metal')
+P(H, 'ghelm', 'gh_wing', 'head', 'silver', (1, 3, 4), (-0.5, -3.0, -2.0), off=(-5.2, -8.4, 0.5), rot=(0.0, 0.0, 0.55), pair=True, style='metal')
+P(H, 'hood', 'hood', 'body', 'cloakc', (8, 4, 3), (-4.0, -3.4, 2.0), g=0.15, style='cloth')
+P(H, 'hood', 'hood_fold', 'body', 'cloakD', (6, 2, 2), (-3.0, -4.6, 3.0), g=0.1, style='cloth')
+P(H, 'hood_up', 'hu_top', 'head', 'cloakc', (10, 1, 10), (-5.0, -9.7, -5.0), g=0.1, style='cloth')
+P(H, 'hood_up', 'hu_back', 'head', 'cloakc', (10, 10, 2), (-5.0, -9.2, 4.2), style='cloth')
+P(H, 'hood_up', 'hu_side', 'head', 'cloakc', (1, 9, 9), (-5.6, -9.0, -4.5), pair=True, style='cloth')
+P(H, 'hood_up', 'hu_front', 'head', 'cloakD', (10, 1, 1), (-5.0, -9.2, -5.4), g=0.1, style='cloth')
+P(H, 'wreath', 'wr_ring', 'head', 'leaf', (8, 1, 8), (-4.0, -8.4, -4.0), g=0.4, style='cloth')
+P(H, 'wreath', 'wr_l1', 'head', 'leaf2', (2, 1, 1), (-3.0, -9.6, -4.8), pair=True, style='cloth')
+P(H, 'wreath', 'wr_l2', 'head', 'leaf2', (1, 2, 2), (-5.0, -9.0, -2.0), pair=True, style='cloth')
+P(H, 'wreath', 'wr_fl', 'head', 'flower', (1, 1, 1), (-0.5, -9.2, -5.0), g=0.2, style='gem')
+# --- gilets, vestes, capes, tabliers, mailles
+P(H, 'vest', 'vest_f', 'body', 'vestc', (8, 9, 1), (-4.0, 1.0, -2.8), g=0.05, style='cloth')
+P(H, 'vest', 'vest_b', 'body', 'vestc', (8, 9, 1), (-4.0, 1.0, 1.8), g=0.05, style='cloth')
+P(H, 'vest', 'vest_btn1', 'body', 'brass', (1, 1, 1), (-0.5, 2.2, -3.3), g=0.05, style='metal')
+P(H, 'vest', 'vest_btn2', 'body', 'brass', (1, 1, 1), (-0.5, 4.8, -3.3), g=0.05, style='metal')
+P(H, 'vest', 'vest_btn3', 'body', 'brass', (1, 1, 1), (-0.5, 7.4, -3.3), g=0.05, style='metal')
+P(H, 'vest', 'vest_edge', 'body', 'vestD', (8, 1, 1), (-4.0, 9.8, -2.9), g=0.05, style='cloth')
+P(H, 'vestb', 'vb_top', 'body', 'vestc', (8, 5, 1), (-4.0, 0.8, -2.8), g=0.05, style='cloth')
+P(H, 'vestb', 'vb_belly', 'body', 'vestc', (9, 6, 1), (-4.5, 5.2, -4.9), g=0.05, style='cloth')
+P(H, 'vestb', 'vb_b', 'body', 'vestc', (8, 9, 1), (-4.0, 1.0, 1.8), g=0.05, style='cloth')
+P(H, 'vestb', 'vb_btn1', 'body', 'brass', (1, 1, 1), (-0.5, 2.0, -3.3), g=0.05, style='metal')
+P(H, 'vestb', 'vb_btn2', 'body', 'brass', (1, 1, 1), (-0.5, 6.0, -5.5), g=0.05, style='metal')
+P(H, 'vestb', 'vb_btn3', 'body', 'brass', (1, 1, 1), (-0.5, 8.4, -5.5), g=0.05, style='metal')
+P(H, 'belly', 'belly', 'body', 'shirt', (9, 6, 3), (-4.5, 5.0, -4.6), g=0.05, style='cloth')
+P(H, 'vopen', 'vo_center', 'body', 'vestc', (4, 9, 1), (-2.0, 1.0, -2.8), g=0.05, style='cloth')
+P(H, 'vopen', 'vo_collar', 'body', 'white', (4, 2, 1), (-2.0, -0.3, -2.8), g=0.1, style='cloth')
+P(H, 'vopen', 'vo_btn', 'body', 'brass', (1, 1, 1), (-0.5, 3.0, -3.3), g=0.05, style='metal')
+P(H, 'vopen', 'vo_btn2', 'body', 'brass', (1, 1, 1), (-0.5, 6.0, -3.3), g=0.05, style='metal')
+P(H, 'coat', 'coat_fl', 'body', 'coatc', (3, 8, 1), (-4.0, 11.0, -2.8), g=0.05, pair=True, style='cloth')
+P(H, 'coat', 'coat_b', 'body', 'coatc', (8, 9, 1), (-4.0, 11.0, 1.8), g=0.05, style='cloth')
+P(H, 'coat', 'coat_s', 'body', 'coatD', (1, 8, 3), (-4.9, 11.0, -1.5), pair=True, style='cloth')
+P(H, 'coat', 'coat_hem', 'body', 'coattrim', (8, 1, 1), (-4.0, 19.4, 1.8), g=0.05, style='cloth')
+P(H, 'coat', 'coat_cuff', 'right_arm', 'coattrim', (4, 1, 4), (-3.0, 8.0, -2.0), g=0.32, pair=True, style='cloth')
+P(H, 'coat', 'coat_lapel', 'body', 'coattrim', (1, 8, 1), (-3.0, 1.0, -2.9), g=0.05, pair=True, style='cloth')
+P(H, 'jerkin', 'jk_f', 'body', 'leatherH', (8, 8, 1), (-4.0, 0.8, -2.8), g=0.05, style='leather')
+P(H, 'jerkin', 'jk_lace', 'body', 'trim', (1, 7, 1), (-0.5, 1.2, -3.3), style='cloth')
+P(H, 'jerkin', 'jk_b', 'body', 'leatherH', (8, 8, 1), (-4.0, 0.8, 1.8), g=0.05, style='leather')
+P(H, 'brace', 'brace', 'body', 'leatherH', (1, 11, 1), (-2.8, 0.0, -2.7), g=0.1, pair=True, style='leather')
+P(H, 'brace', 'brace_b', 'body', 'leatherH', (1, 11, 1), (-2.8, 0.0, 1.7), g=0.1, pair=True, style='leather')
+P(H, 'brace', 'brace_btn', 'body', 'brass', (1, 1, 1), (-2.8, 10.6, -3.1), g=0.05, pair=True, style='metal')
+P(H, 'apron', 'ap_f', 'body', 'apronc', (7, 11, 1), (-3.5, 3.0, -2.9), g=0.05, style='cloth')
+P(H, 'apron', 'ap_pocket', 'body', 'apronD', (3, 2, 1), (-1.5, 8.0, -3.3), g=0.05, style='cloth')
+P(H, 'apron', 'ap_strap', 'body', 'apronc', (1, 4, 1), (-2.6, -0.2, -2.8), g=0.12, pair=True, style='cloth')
+P(H, 'apron', 'ap_hem', 'body', 'apronD', (7, 1, 1), (-3.5, 13.0, -2.9), g=0.05, style='cloth')
+P(H, 'cloak', 'cl_back', 'body', 'cloakc', (8, 17, 1), (-4.0, 0.6, 2.2), g=0.25, style='cloth')
+P(H, 'cloak', 'cl_hem', 'body', 'cloakD', (8, 1, 1), (-4.0, 17.6, 2.2), g=0.25, style='cloth')
+P(H, 'cloak', 'cl_collar', 'body', 'cloakD', (10, 2, 6), (-5.0, -1.3, -3.0), g=0.25, style='cloth')
+P(H, 'cloak', 'cl_side', 'body', 'cloakc', (1, 12, 5), (-5.4, 0.8, -2.4), g=0.1, pair=True, style='cloth')
+P(H, 'cloak', 'cl_clasp', 'body', 'brass', (2, 2, 1), (-1.0, -0.6, -3.3), g=0.1, style='metal')
+P(H, 'leafbrooch', 'lb_leaf', 'body', 'leaf2', (2, 2, 1), (-1.0, -0.6, -3.4), g=0.1, style='metal')
+P(H, 'leafbrooch', 'lb_vein', 'body', 'leaf', (1, 2, 1), (-0.5, -0.1, -3.7), g=0.05, style='metal')
+P(H, 'mail', 'ml_f', 'body', 'silver', (8, 9, 1), (-4.0, 0.9, -2.7), g=0.1, style='metal')
+P(H, 'mail', 'ml_b', 'body', 'silver', (8, 9, 1), (-4.0, 0.9, 1.7), g=0.1, style='metal')
+P(H, 'mail', 'ml_hem', 'body', 'silverD', (8, 1, 1), (-4.0, 9.8, -2.8), g=0.1, style='metal')
+P(H, 'mail', 'ml_sleeve', 'right_arm', 'silver', (4, 3, 4), (-3.0, -2.0, -2.0), g=0.3, pair=True, style='metal')
+P(H, 'mail', 'ml_collar', 'body', 'silverD', (6, 1, 3), (-3.0, -0.5, -2.5), g=0.2, style='metal')
+P(H, 'tabard', 'tb_f', 'body', 'tabc', (8, 13, 1), (-4.0, 1.0, -2.9), g=0.05, style='cloth')
+P(H, 'tabard', 'tb_b', 'body', 'tabc', (8, 13, 1), (-4.0, 1.0, 1.9), g=0.05, style='cloth')
+P(H, 'tabard', 'tb_hem', 'body', 'silver', (8, 1, 1), (-4.0, 13.2, -2.9), g=0.05, style='cloth')
+P(H, 'tabard', 'tb_trunk', 'body', 'white', (1, 5, 1), (-0.5, 5.0, -3.3), g=0.05, style='cloth')
+P(H, 'tabard', 'tb_crown', 'body', 'white', (5, 2, 1), (-2.5, 3.2, -3.3), g=0.05, style='cloth')
+P(H, 'tabard', 'tb_crown2', 'body', 'white', (3, 1, 1), (-1.5, 2.2, -3.3), g=0.05, style='cloth')
+P(H, 'tabard', 'tb_star', 'body', 'silver', (1, 1, 1), (-0.5, 1.2, -3.3), g=0.05, style='metal')
+P(H, 'shorts', 'sh_leg', 'right_leg', 'pantsc', (4, 5, 4), (-2.0, 0.0, -2.0), g=0.3, pair=True, style='cloth')
+P(H, 'shorts', 'sh_band', 'right_leg', 'pantsD', (4, 1, 4), (-2.0, 4.4, -2.0), g=0.38, pair=True, style='cloth')
+P(H, 'shorts', 'sh_btn', 'right_leg', 'brass', (1, 1, 1), (-1.0, 4.4, -2.7), g=0.05, pair=True, style='metal')
+P(H, 'cuffp', 'cp_cuff', 'right_leg', 'pantsD', (4, 2, 4), (-2.0, 8.6, -2.0), g=0.32, pair=True, style='cloth')
+P(H, 'patch', 'pt_knee', 'right_leg', 'patchc', (2, 2, 1), (-1.5, 3.0, -2.5), g=0.1, pair=True, style='cloth')
+P(H, 'scarf', 'sc_neck', 'body', 'scarfc', (9, 2, 5), (-4.5, -1.5, -2.5), g=0.2, style='cloth')
+P(H, 'scarf', 'sc_end', 'body', 'scarfD', (2, 5, 1), (-1.0, 0.4, -3.0), g=0.12, style='cloth')
+P(H, 'cravat', 'cv_knot', 'body', 'scarfc', (4, 2, 1), (-2.0, -0.3, -2.9), g=0.12, style='cloth')
+P(H, 'cravat', 'cv_tie', 'body', 'scarfD', (2, 4, 1), (-1.0, 1.6, -3.1), g=0.08, style='cloth')
+P(H, 'rollsl', 'rs_roll', 'right_arm', 'shirtD', (4, 2, 4), (-3.0, 3.6, -2.0), g=0.3, pair=True, style='cloth')
+P(H, 'rollsl', 'rs_skin', 'right_arm', 'skin', (4, 3, 4), (-3.0, 5.4, -2.0), g=0.12, pair=True, style='skin')
+P(H, 'apronb', 'apb_f', 'body', 'apronc', (9, 7, 1), (-4.5, 5.6, -5.0), g=0.05, style='cloth')
+P(H, 'apronb', 'apb_hem', 'body', 'apronD', (9, 1, 1), (-4.5, 12.4, -5.0), g=0.05, style='cloth')
+P(H, 'apronb', 'apb_pocket', 'body', 'apronD', (3, 2, 1), (-1.5, 9.0, -5.4), g=0.05, style='cloth')
+P(H, 'apronb', 'apb_strap', 'body', 'apronc', (1, 5, 1), (-2.6, -0.2, -2.8), g=0.12, pair=True, style='cloth')
+# --- ceinture, bourse, sacs, armes, outils
+P(H, 'belt', 'belt', 'body', 'leatherH', (8, 2, 4), (-4.0, 9.2, -2.0), g=0.4, style='leather')
+P(H, 'belt', 'buckle', 'body', 'brass', (2, 2, 1), (-1.0, 9.2, -2.9), g=0.15, style='metal')
+P(H, 'belt', 'pouch', 'body', 'leatherH', (2, 3, 3), (-5.6, 9.6, -1.5), style='leather')
+P(H, 'sting', 'st_sheath', 'body', 'leatherD', (1, 8, 2), (4.6, 9.8, -1.0), g=0.05, style='leather')
+P(H, 'sting', 'st_tip', 'body', 'silver', (1, 1, 2), (4.6, 17.8, -1.0), g=0.05, style='metal')
+P(H, 'sting', 'st_guard', 'body', 'silver', (3, 1, 1), (3.8, 9.0, -0.5), g=0.05, style='metal')
+P(H, 'sting', 'st_hilt', 'body', 'leatherH', (1, 3, 1), (4.6, 6.2, -0.5), g=0.05, style='leather')
+P(H, 'sting', 'st_pommel', 'body', 'brass', (1, 1, 1), (4.6, 5.4, -0.5), g=0.05, style='metal')
+P(H, 'dagger', 'dg_sheath', 'body', 'leatherD', (1, 5, 1), (-6.0, 9.6, 1.2), g=0.05, style='leather')
+P(H, 'dagger', 'dg_hilt', 'body', 'wood', (1, 2, 1), (-6.0, 7.8, 1.2), g=0.05, style='wood')
+P(H, 'pack', 'pk_body', 'body', 'leatherH', (8, 9, 3), (-4.0, 1.0, 2.0), style='leather')
+P(H, 'pack', 'pk_flap', 'body', 'leatherD', (8, 2, 3), (-4.0, 0.6, 2.2), g=0.3, style='leather')
+P(H, 'pack', 'pk_roll', 'body', 'rollc', (9, 3, 3), (-4.5, -2.0, 2.2), g=0.1, style='cloth')
+P(H, 'pack', 'pk_strap', 'body', 'leatherD', (1, 8, 1), (-2.8, 0.2, -2.5), g=0.15, pair=True, style='leather')
+P(H, 'pack', 'pk_pot', 'body', 'metalD', (3, 3, 3), (3.8, 5.6, 2.4), g=0.1, style='metal')
+P(H, 'pack', 'pk_potlid', 'body', 'metal', (3, 1, 3), (3.8, 5.0, 2.4), g=0.3, style='metal')
+P(H, 'pack', 'pk_pan', 'body', 'metalD', (4, 1, 4), (-7.4, 5.0, 3.0), g=0.05, style='metal')
+P(H, 'pack', 'pk_panh', 'body', 'wood', (1, 1, 3), (-3.4, 5.1, 3.4), style='wood')
+P(H, 'pack', 'pk_rope', 'body', 'ropec', (3, 4, 2), (-6.4, 1.6, 2.6), g=0.15, style='cloth')
+P(H, 'satchel', 'sa_bag', 'body', 'leatherH', (4, 5, 4), (4.4, 8.4, -2.0), g=0.05, style='leather')
+P(H, 'satchel', 'sa_flap', 'body', 'leatherD', (4, 1, 4), (4.4, 8.0, -2.0), g=0.12, style='leather')
+P(H, 'satchel', 'sa_strap', 'body', 'leatherH', (1, 16, 1), (-0.5, -8.0, 0.0), off=(0.0, 6.0, -2.8), rot=(0, 0, -0.52), g=0.05, style='leather')
+P(H, 'satchel', 'sa_buckle', 'body', 'brass', (1, 1, 1), (5.9, 8.6, -1.5), g=0.12, style='metal')
+P(H, 'basket', 'bk_body', 'body', 'wickerc', (5, 4, 4), (4.6, 8.6, -2.0), g=0.1, style='hair')
+P(H, 'basket', 'bk_handle', 'body', 'wickerc', (5, 1, 1), (4.6, 7.0, -0.5), style='hair')
+P(H, 'basket', 'bk_mush1', 'body', 'mushc', (2, 2, 2), (5.0, 7.4, -1.8), g=0.05, style='gem')
+P(H, 'basket', 'bk_mush2', 'body', 'cream', (2, 2, 2), (7.0, 7.6, -1.2), g=0.0, style='gem')
+P(H, 'rabbit', 'rb_body', 'body', 'furc', (2, 5, 2), (-6.0, 9.8, -0.5), g=0.05, style='hair')
+P(H, 'rabbit', 'rb_head', 'body', 'furc', (2, 2, 2), (-6.0, 14.6, -0.5), g=0.05, style='hair')
+P(H, 'rabbit', 'rb_ears', 'body', 'furD', (1, 2, 1), (-5.5, 16.4, -0.2), g=0.05, style='hair')
+P(H, 'rabbit', 'rb_cord', 'body', 'leatherD', (1, 1, 1), (-5.5, 9.0, 0.0), g=0.0, style='leather')
+P(H, 'fiddle', 'fd_body', 'body', 'woodD', (4, 6, 2), (-2.0, 4.6, 4.2), g=0.05, style='wood')
+P(H, 'fiddle', 'fd_neck', 'body', 'wood', (1, 4, 1), (-0.5, 0.8, 4.7), style='wood')
+P(H, 'fiddle', 'fd_head', 'body', 'brass', (2, 1, 1), (-1.0, 0.2, 4.7), style='metal')
+P(H, 'fiddle', 'fd_strap', 'body', 'leatherD', (1, 1, 4), (-3.0, 0.4, -0.5), g=0.05, style='leather')
+P(H, 'staff', 'sf_shaft', 'right_arm', 'wood', (1, 26, 1), (-1.5, -2.0, -0.5), style='wood')
+P(H, 'staff', 'sf_knob', 'right_arm', 'woodD', (2, 2, 2), (-2.0, -3.4, -1.0), g=0.05, style='wood')
+P(H, 'staff', 'sf_knot', 'right_arm', 'woodD', (2, 1, 2), (-2.0, 7.0, -1.0), g=0.05, style='wood')
+P(H, 'spear', 'sp_shaft', 'right_arm', 'wood', (1, 32, 1), (-1.5, -9.0, -0.5), style='wood')
+P(H, 'spear', 'sp_tip', 'right_arm', 'metal', (2, 4, 1), (-2.0, -13.0, -0.5), g=0.05, style='metal')
+P(H, 'spear', 'sp_bind', 'right_arm', 'leatherD', (2, 1, 2), (-2.0, -9.2, -1.0), g=0.05, style='leather')
+P(H, 'pitchfork', 'pf_shaft', 'right_arm', 'wood', (1, 24, 1), (-1.5, -1.0, -0.5), style='wood')
+P(H, 'pitchfork', 'pf_bar', 'right_arm', 'metal', (5, 1, 1), (-3.5, -2.2, -0.5), g=0.05, style='metal')
+P(H, 'pitchfork', 'pf_p1', 'right_arm', 'metal', (1, 3, 1), (-3.5, -5.0, -0.5), style='metal')
+P(H, 'pitchfork', 'pf_p2', 'right_arm', 'metal', (1, 3, 1), (-1.5, -5.4, -0.5), style='metal')
+P(H, 'pitchfork', 'pf_p3', 'right_arm', 'metal', (1, 3, 1), (0.5, -5.0, -0.5), style='metal')
+P(H, 'chain', 'ch_watch', 'body', 'brass', (4, 1, 1), (-2.0, 6.6, -3.2), g=0.05, style='metal')
+P(H, 'chain', 'ch_fob', 'body', 'gem', (1, 1, 1), (-0.5, 7.6, -3.3), g=0.1, style='gem')
+P(H, 'office', 'of_chain', 'body', 'brass', (6, 1, 1), (-3.0, 0.2, -3.0), g=0.12, style='metal')
+P(H, 'office', 'of_medal', 'body', 'brass', (2, 2, 1), (-1.0, 1.4, -3.3), g=0.1, style='metal')
+P(H, 'office', 'of_gem', 'body', 'gem', (1, 1, 1), (-0.5, 1.9, -3.7), g=0.08, style='gem')
+P(H, 'ringc', 'rg_chain', 'body', 'brass', (1, 4, 1), (-0.5, -0.2, -2.7), g=-0.1, style='metal')
+P(H, 'ringc', 'rg_ring', 'body', 'brass', (1, 1, 1), (-0.5, 3.8, -2.9), g=0.1, style='metal')
+P(H, 'sandal', 'sd_sole', 'right_leg', 'leatherD', (4, 1, 6), (-2.0, 11.4, -4.0), g=0.12, pair=True, style='leather')
+P(H, 'sandal', 'sd_s1', 'right_leg', 'leatherH', (4, 1, 4), (-2.0, 9.6, -2.8), g=0.25, pair=True, style='leather')
+P(H, 'sandal', 'sd_s2', 'right_leg', 'leatherH', (4, 1, 4), (-2.0, 8.0, -2.0), g=0.38, pair=True, style='leather')
+P(H, 'boots', 'bt_boot', 'right_leg', 'leatherD', (4, 5, 4), (-2.0, 7.0, -2.0), g=0.3, pair=True, style='leather')
+P(H, 'boots', 'bt_cuff', 'right_leg', 'leatherH', (4, 1, 4), (-2.0, 6.6, -2.0), g=0.42, pair=True, style='leather')
+P(H, 'boots', 'bt_toe', 'right_leg', 'leatherD', (4, 2, 3), (-2.0, 10.0, -4.0), g=0.15, pair=True, style='leather')
+
 # =====================================================================================================  groupes actifs et couleurs par variante
 DW_BASE = {'face', 'brows', 'belt', 'cuff', 'bracer', 'strapb'}
+HF_BASE = {'face', 'feet'}
 EL_BASE = {'ears', 'face', 'locks', 'belt', 'bracer', 'boots'}
-ALIAS = {'dwarf': {'hair': ['dh_big'], 'beard': ['beard', 'mous']}, 'elf': {'hair': ['hcap', 'hback', 'hside', 'hfringe'], 'cape': ['mantle', 'cape_l']}}
-HIDE = {'dwarf': {'dh_big', 'dh_short', 'dh_mohawk', 'dh_long', 'topknot'}, 'elf': {'hcap', 'hback', 'hside', 'hfringe', 'hback_s', 'hbob', 'hbun', 'hcrown', 'hwild'}}
+ALIAS = {'dwarf': {'hair': ['dh_big'], 'beard': ['beard', 'mous']}, 'elf': {'hair': ['hcap', 'hback', 'hside', 'hfringe'], 'cape': ['mantle', 'cape_l']}, 'halfling': {}}
+HIDE = {'dwarf': {'dh_big', 'dh_short', 'dh_mohawk', 'dh_long', 'topknot'}, 'elf': {'hcap', 'hback', 'hside', 'hfringe', 'hback_s', 'hbob', 'hbun', 'hcrown', 'hwild'},
+        'halfling': {'hc_mop', 'hc_wavy', 'hc_crop', 'hc_bowl', 'hc_bald', 'hc_wispy', 'hc_spiky', 'hc_long', 'hc_slick', 'hc_low'}}
 
 
 def groups(kind, name, p):
@@ -435,7 +689,9 @@ def groups(kind, name, p):
 def _groups(kind, name, p):
     if p.get('xg') is not None:
         xg = set(p['xg'].split()) if isinstance(p['xg'], str) else set(p['xg'])
-        if kind == 'dwarf':
+        if kind == 'halfling':
+            xg |= HF_BASE
+        elif kind == 'dwarf':
             xg |= DW_BASE
             if 'apron' not in xg: xg.add('tabard')
             if 'beard_l' in xg or 'beard_tip' in xg: xg.add('beard')
@@ -476,7 +732,8 @@ def _groups(kind, name, p):
     return g
 
 
-def palette(kind, p):
+def palette(kind, p, name=None):
+    if kind == 'halfling': return palette_half(p, HX.get(name, {}))
     sk = rgb(p['skin']); hr = rgb(p['hair']); bd = rgb(p['beard']) if p.get('beard') else hr
     tp = rgb(p['top']); tr = rgb(p['trim']) if p.get('trim') else shade(tp, 0.7)
     belt = rgb(p.get('belt') or '#3a2a1a')
@@ -489,6 +746,64 @@ def palette(kind, p):
                 fletch=(236, 232, 220), fletch2=(180, 60, 50), bone=(226, 214, 184), leaf=(62, 104, 58), leaf2=(98, 140, 70), flower=(244, 230, 238), dark=(26, 22, 24), leatherD=shade(belt, 0.9),
                 string=(214, 206, 184), lampglow=(255, 226, 130))
 
+
+
+def palette_half(p, X):
+    sk = rgb(p['skin']); hr = rgb(p['hair']); tp = rgb(p['top'])
+    def c(k, d):
+        v = X.get(k, d)
+        return rgb(v) if isinstance(v, str) else v
+    shirt = c('shirt', p['top']); belt = c('belt', '#4a3220')
+    vest = c('vest', shade(tp, 0.8)); coat = c('coat', p['top']); cloak = c('cloak', '#5a6a46'); hat = c('hat', '#6a5a40')
+    apron = c('apron', (226, 222, 208)); scarf = c('scarf', '#a8403a'); legs = c('legs', '#5a4a38')
+    return dict(trim=c('trim', p.get('trim') or shade(tp, 0.7)), skin=sk, skinD=shade(sk, 0.82), rosy=mix(sk, (228, 110, 100), 0.28), hair=hr, hairD=shade(hr, 0.8), hairL=shade(hr, 1.28),
+                shirt=shirt, shirtD=shade(shirt, 0.8), vestc=vest, vestD=shade(vest, 0.78), coatc=coat, coatD=shade(coat, 0.82), coattrim=c('coattrim', shade(coat, 1.45)),
+                cloakc=cloak, cloakD=shade(cloak, 0.78), hatc=hat, hatcD=shade(hat, 0.72), hatband=c('hatband', shade(hat, 0.55)),
+                apronc=apron, apronD=shade(apron, 0.84), scarfc=scarf, scarfD=shade(scarf, 0.8), pantsc=legs, pantsD=shade(legs, 0.74), patchc=c('patch', shade(legs, 1.4)),
+                tabc=(22, 22, 30), straw=(214, 184, 100), wickerc=(160, 120, 60), mushc=(190, 70, 50), cream=(230, 218, 190), furc=(140, 110, 80), furD=(104, 80, 56),
+                rollc=c('roll', (122, 98, 70)), ropec=(176, 154, 104), leatherH=shade(belt, 1.15), leatherD=shade(belt, 0.8), brass=(205, 166, 60),
+                silver=(196, 202, 214), silverD=(136, 142, 156), metal=(140, 144, 152), metalD=(92, 94, 104), white=(234, 230, 220),
+                wood=(118, 84, 50), woodD=(80, 56, 34), ember=(255, 120, 40), leaf=(62, 104, 58), leaf2=(98, 140, 70), flower=(244, 230, 238),
+                fletch=(236, 232, 220), fletch2=(180, 60, 50), gem=(200, 60, 50))
+
+
+# =====================================================================================================  30 semi-hommes (hobbits) d'apres les films
+# (nom, peau, cheveux, yeux, chemise, galon, jambes, groupes) + couleurs : vest, coat, cloak, hat, ...
+S1, S2, S3, S4, S5, S6 = '#d8b090', '#d8a888', '#d0a080', '#c89070', '#e4bc9c', '#c98a68'
+HALF = [
+    ('frodo_comte', S5, '#4a3020', '#4a7aaa', '#e6dcc4', '#8a7a5a', '#6a5238', 'hc_mop vest shorts cheeks', dict(vest='#6a2a28', belt='#4a3220')),
+    ('frodo_voyage', S5, '#4a3020', '#4a7aaa', '#cfc6a8', '#8a7a5a', '#5a4a38', 'hc_mop cloak hood leafbrooch satchel sting vest cheeks', dict(vest='#4a4a3a', cloak='#6e7a62', belt='#3a2a1c')),
+    ('frodo_mithril', S5, '#4a3020', '#4a7aaa', '#cfc6a8', '#8a7a5a', '#4a4034', 'hc_mop mail sting belt ringc cheeks', dict(belt='#3a2a1c')),
+    ('sam_jardinier', S6, '#a8743a', '#5a4020', '#d8d0b0', '#8a7a5a', '#6a5a3a', 'hc_mop vest apron shorts cheeks basket', dict(vest='#8a6a3a', apron='#8a6a40', belt='#5a3a22')),
+    ('sam_voyage', S6, '#a8743a', '#5a4020', '#d8d0b0', '#8a7a5a', '#5a4a30', 'hc_mop cloak hood vest pack belt cheeks', dict(vest='#5a6a3a', cloak='#6a5a40', belt='#4a3220', roll='#7a6a4a')),
+    ('merry', S3, '#8a5a2a', '#5a4020', '#e0d4b4', '#8a7a5a', '#3a3028', 'hc_wavy vest pipe satchel belt', dict(vest='#a8742a', belt='#4a3220')),
+    ('merry_rohan', S3, '#8a5a2a', '#5a4020', '#4a5a34', '#2a3424', '#3a3a30', 'hc_low rhelm jerkin belt dagger boots', dict(belt='#4a3220')),
+    ('pippin', S2, '#b8864a', '#6a8a4a', '#e6dcc4', '#8a7a5a', '#4a4a50', 'hc_wavy vest belt cheeks', dict(vest='#2a4a3a', belt='#4a3220')),
+    ('pippin_gondor', S2, '#b8864a', '#6a8a4a', '#2a2a30', '#8a8f98', '#2a2a30', 'hc_low ghelm tabard mail boots sting', dict(belt='#2a2018')),
+    ('bilbo', S3, '#8a6a3a', '#4a7aaa', '#5a1a2a', '#c8b070', '#6a4a2a', 'hc_wavy coat vopen cuffp staff cheeks', dict(coat='#5a1a2a', vest='#5a5a32', shirt='#e8e0cc', belt='#4a3220')),
+    ('bilbo_vieux', S1, '#e0e0dc', '#5a7a9a', '#e0dcd0', '#8a7a5a', '#6a5038', 'hc_wispy vest cravat pipe sideb brows2 belt', dict(vest='#2a4a32', scarf='#b8a050', belt='#4a3220')),
+    ('gaffer', S6, '#d8d4cc', '#5a4020', '#a8a090', '#6a5a3a', '#6a5a3a', 'hc_bald hat_straw vest mutton brows2 pipe nosebig', dict(vest='#6a5030', hat='#d6b864', hatband='#6a4a2a')),
+    ('maggot', S6, '#6a4a2a', '#5a4020', '#b8a888', '#6a5a3a', '#5a4a30', 'hc_low hat_felt belly vestb staff brows2 nosebig cheeks', dict(vest='#5a6a3a', hat='#6a5a40', belt='#4a3220')),
+    ('meunier', S2, '#b8a888', '#6a8aa0', '#e8e4dc', '#8a7a5a', '#8a7a60', 'hc_crop hat_cap apron shorts rollsl sideb cheeks', dict(hat='#a8a090', apron='#ece8e0', belt='#6a5a3a')),
+    ('marchand', S2, '#4a3220', '#5a4020', '#d0c8b0', '#8a7a5a', '#4a4034', 'hc_low hat_felt belly vestb chain cravat cheeks', dict(vest='#7a4a2a', hat='#3a3030', scarf='#8a2a2a')),
+    ('boulanger', S2, '#8a6a3a', '#5a4020', '#ece8e0', '#8a7a5a', '#8a7a60', 'hc_low hat_bonnet apron rollsl shorts cheeks', dict(apron='#f0ece4', belt='#6a5a3a')),
+    ('aubergiste', S6, '#5a3a22', '#5a4020', '#d8d0b8', '#6a5a3a', '#4a4034', 'hc_bowl belly apronb rollsl cheeks brows2 nosebig', dict(apron='#6a4a30', belt='#4a3220')),
+    ('fatty', S5, '#a8743a', '#6a8a4a', '#e0d8bc', '#8a7a5a', '#4a4034', 'hc_mop belly vestb cravat cheeks', dict(vest='#b8962a', scarf='#7a2a2a')),
+    ('shirriff', S3, '#5a3a22', '#5a4020', '#4a6a3a', '#2a3a24', '#5a4a30', 'hc_low hat_cap feather jerkin belt staff', dict(hat='#4a6a3a', belt='#4a3220')),
+    ('fermier', S6, '#a8743a', '#6a8aa0', '#c8bca0', '#8a7a5a', '#6a5a3a', 'hc_low hat_straw brace rollsl pitchfork scarf pouch', dict(hat='#d6b864', hatband='#8a4a2a', scarf='#a8403a', belt='#5a3a22')),
+    ('pecheur', S4, '#3a2a1a', '#3a2a20', '#7a8a8a', '#5a6a6a', '#4a5a5a', 'hc_low hat_felt cloak scarf basket cuffp', dict(hat='#a8884a', cloak='#5a6a6a', scarf='#c8c0a0', belt='#4a3220')),
+    ('stoor', S6, '#9a5a2a', '#5a4020', '#4a8a6a', '#2a5a40', '#8a4a1a', 'hc_mop sideb vest shorts belt pipe sandal nosebig', dict(vest='#7a5aa0', belt='#4a2a14')),
+    ('fallohide', S3, '#c8602a', '#6a8a4a', '#5a8a3a', '#3a5a28', '#6a8a5a', 'hc_spiky coat belt pouch spear patch brows2', dict(coat='#5a8a3a', belt='#5a3a22', patch='#a8884a')),
+    ('harfoot', S5, '#b87a4a', '#5a4020', '#e8e0b8', '#8a8a6a', '#9aa8b8', 'hc_mop vest belt pouch dagger', dict(vest='#d8d0a0', belt='#8a6a3a')),
+    ('colporteur', S4, '#3a2a1a', '#3a2a20', '#b0a080', '#5a4a3a', '#5a4a30', 'hc_low hat_felt cloak pack staff vest belt', dict(vest='#5a3a2a', hat='#4a3a2a', cloak='#6a5a3a', belt='#3a2a1c', roll='#8a4a3a')),
+    ('menestrel', S2, '#8a3a1a', '#6a8a5a', '#e8e0c0', '#8a7a5a', '#5a3a3a', 'hc_low hat_cap feather vest scarf fiddle shorts', dict(vest='#3a6a5a', hat='#7a2a2a', scarf='#c8a040', belt='#4a3220')),
+    ('cuisinier', S2, '#6a4a2a', '#5a4020', '#e0d8c0', '#8a7a5a', '#5a4a30', 'hc_mop vest apron rabbit belt rollsl cheeks', dict(vest='#7a5a3a', apron='#4a3a2a', belt='#3a2a1c')),
+    ('maire', S1, '#d0cabc', '#6a8aa0', '#2a3a5a', '#c8b070', '#4a4034', 'hc_crop hat_top coat vopen office cravat staff cheeks sideb', dict(coat='#2a3a5a', vest='#c8a84a', shirt='#e8e4dc', hat='#2a2a30', hatband='#c8a84a', scarf='#e8e4dc')),
+    ('eclaireur', S3, '#4a3220', '#5a4020', '#5a6a40', '#3a4a2a', '#4a4030', 'hood_up cloak belt dagger satchel', dict(cloak='#4a5a3a', belt='#3a2a1c')),
+    ('lotho', S1, '#2a2018', '#4a4a3a', '#3a2a30', '#8a6a2a', '#2a2428', 'hc_slick coat vopen cravat cuffp nosebig brows2 chain', dict(coat='#3a2a30', vest='#8a6a2a', shirt='#e0d8c8', scarf='#6a2a2a', coattrim='#8a6a2a')),
+]
+HX = {'halfling_%d' % (i + 1): h[8] for i, h in enumerate(HALF)}
+HX['halfling_elder'] = HX['halfling_12']; HX['halfling_guard'] = HX['halfling_19']
 
 # =====================================================================================================  20 nains et 10 elfes
 # (nom, peau, cheveux, coiffure, barbe, longueur de barbe, tunique, galon, jambes, bottes, armure, epaulieres, extras)
@@ -558,7 +873,19 @@ def all_skins():
     for i, (lbl, sk, hr, hs, eyes, top, trim, legs, boots, skirt, xg) in enumerate(ELVES + ael):
         out.append(('elf_%d' % (i + 1), 'elf', dict(skin=sk, hair=hr, hair_style=hs, eyes=eyes, top=top, trim=trim, legs=legs, boots=boots, skirt=skirt, seed=300 + i, xg=xg,
                                                    pauldrons=None)))
+    for i, row in enumerate(HALF):
+        out.append(('halfling_%d' % (i + 1), 'halfling', half_args(row, 400 + i)))
+    out.append(('halfling_elder', 'halfling', half_args(HALF[11], 440)))
+    out.append(('halfling_guard', 'halfling', half_args(HALF[18], 441)))
     return out
+
+
+def half_args(row, seed):
+    nm, sk, hr, eyes, top, trim, legs, xg, X = row
+    hs = 'bald' if 'hc_bald' in xg.split() else 'short'
+    base_legs = sk if ('shorts' in xg.split() or 'sandal' in xg.split() and False) else legs
+    X.setdefault('legs', legs)
+    return dict(skin=sk, hair=hr, hair_style=hs, eyes=eyes, top=top, trim=trim, legs=base_legs, boots=sk, belt=X.get('belt', '#3a2a1a'), skirt=False, seed=seed, xg=xg)
 
 
 # =====================================================================================================  UV : rangement automatique dans la moitie libre de la texture 128x128
@@ -567,7 +894,7 @@ def layout():
     res = {}
     for kind in PARTS:
         boxes = sorted(((s['dims'], s['name']) for s in PARTS[kind]), key=lambda t: (-(t[0][1] + t[0][2]), t[1]))
-        regions = [[64, 0, 128, 256], [0, 64, 64, 256]]
+        regions = [[64, 0, TEXW.get(kind, 128), 256], [0, 64, 64, 256]]
         ri, x, y, rowh = 0, regions[0][0], regions[0][1], 0
         for (w, h, d), name in boxes:
             bw, bh = 2 * d + 2 * w, d + h
@@ -584,7 +911,7 @@ LAYOUT = layout()
 
 def paint(s, kind, name, p):
     """peint les pieces supplementaires dans l'image du skin ; les groupes inactifs restent transparents (donc invisibles)"""
-    pal = palette(kind, p); act = groups(kind, name, p)
+    pal = palette(kind, p, name); act = groups(kind, name, p)
     for sp in PARTS[kind]:
         if sp['grp'] not in act: continue
         u, v = LAYOUT[(kind, sp['name'])]
@@ -628,11 +955,20 @@ def gen_java():
          '/** GENERE par tools/people3d.py : pieces 3D supplementaires des nains et des elfes (squelette de joueur + barbes, cheveux, ceintures, capes...). */',
          'final class PeopleParts {', '    private PeopleParts() {}', '']
     hair = {k: [] for k in PARTS}
+    BONES = ('head', 'body', 'right_arm', 'left_arm', 'right_leg', 'left_leg')
     for kind in PARTS:
         L.append('    static void %s(PartDefinition root) {' % kind)
-        for b in ('head', 'body', 'right_arm', 'left_arm', 'right_leg', 'left_leg'):
+        for b in BONES:
             L.append('        PartDefinition %s = root.getChild("%s");' % (b, b))
-        for sp in expand(kind):
+        for ci, sp in enumerate(expand(kind)):
+            if kind == 'halfling' and ci and ci % 110 == 0:          # une methode JVM ne depasse pas 64 Ko : on coupe (toutes les pieces des semi-hommes ont un os pour parent)
+                assert sp['parent'] in BONES
+                L.append('        halfling%d(root);' % (ci // 110))
+                L.append('    }')
+                L.append('')
+                L.append('    private static void halfling%d(PartDefinition root) {' % (ci // 110))
+                for b in BONES:
+                    L.append('        PartDefinition %s = root.getChild("%s");' % (b, b))
             full = 'x_%s_%s' % (sp['grp'], sp['full'])
             u, v = LAYOUT[(kind, sp['name'].rsplit('_', 1)[0] if sp['mirror'] or (sp['name'].endswith('_r') and sp['name'][:-2] in PAIRED[kind]) else sp['name'])]
             w, h, d = sp['dims']; x, y, z = sp['at']; ox, oy, oz = sp['off']; rx, ry, rz = sp['rot']
@@ -648,6 +984,7 @@ def gen_java():
     L.append('    static void add(String kind, PartDefinition root) {')
     L.append('        if (kind.equals("dwarf")) dwarf(root);')
     L.append('        else if (kind.equals("elf")) elf(root);')
+    L.append('        else if (kind.equals("halfling")) halfling(root);')
     L.append('    }')
     L.append('')
     L.append('    /** les cheveux disparaissent sous un casque */')
@@ -683,7 +1020,7 @@ def geo_of(kind, active=None):
 
 def preview(name, out=None, views=((20, 8), (200, 8), (90, 4)), pose=None, scale=6):
     import render3d, models
-    kind = 'dwarf' if name.startswith('dwarf') else 'elf'
+    kind = 'dwarf' if name.startswith('dwarf') else 'halfling' if name.startswith('halfling') else 'elf'
     tex = Image.open(os.path.join(render3d.A, 'textures/entity/people', name + '.png')).convert('RGBA')
     geo = geo_of(kind)
     ims = [render3d.render(None, y, p, scale, pose, geo=geo, texim=tex) for y, p in views]

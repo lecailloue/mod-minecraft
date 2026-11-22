@@ -37,7 +37,7 @@ public final class ClientSetup {
     public static final KeyMapping SPECIAL_KEY = new KeyMapping("key.ringsofash.special", InputConstants.KEY_V, "key.categories.ringsofash");
     public static final KeyMapping MAP_KEY = new KeyMapping("key.ringsofash.map", InputConstants.KEY_M, "key.categories.ringsofash");
     private static final String[] GEO = {"troll", "troll_chief", "warg", "stag", "demon", "lurker", "treeman", "eagle", "crow", "war_boar", "giant_arrow", "dragon", "mammoth", "ash_lord", "orc_1_nu", "orc_2_fourrure", "orc_3_mailles", "orc_4_casque", "orc_noir_1_main", "orc_noir_2_fer", "orc_chef", "spectre_epee", "spectre_lance", "spectre_hache", "spectre_dague", "spectre_roi", "ombre_1", "ombre_2", "arme_orc_cleaver", "arme_orc_scimitar", "arme_orc_machete", "arme_orc_spear", "arme_orc_mace", "gobelin_1", "gobelin_2", "gobelin_3", "gobelin_roi", "arme_goblin_king_staff", "arme_goblin_pickaxe", "giant_spider", "sylvestre_ancien", "sylvestre_saule", "shadow_dragon", "shadow_chief", "arme_lunargent_sword", "arme_elven_blade", "arme_elven_glaive", "arme_frost_blade", "arme_blood_blade", "arme_viper_dagger", "arme_storm_blade", "arme_sentinel_blade", "arme_sun_blade", "arme_halfling_dagger", "arme_ranger_sword", "arme_wight_blade", "arme_kings_blade", "arme_valmoire_blade", "arme_dwarven_axe", "arme_dwarven_hammer", "arme_ash_mace", "arme_rider_spear", "arme_troll_club", "arme_lunargent_pickaxe", "arme_elven_bow", "arme_staff_fire", "arme_staff_light", "arme_staff_storm", "arme_staff_healing"};
-    private static final String[] HUMAN = {"plain", "elf", "orc", "goblin", "dwarf"};
+    private static final String[] HUMAN = {"plain", "elf", "orc", "goblin", "dwarf", "halfling"};
 
     public static ModelLayerLocation layer(String name) { return new ModelLayerLocation(RingsOfAsh.id(name), "main"); }
 
@@ -295,6 +295,10 @@ public final class ClientSetup {
                 PeopleParts.add(kind, mesh.getRoot());
                 return LayerDefinition.create(mesh, 128, 256);
             }
+            case "halfling" -> {
+                PeopleParts.add(kind, mesh.getRoot());
+                return LayerDefinition.create(mesh, 256, 256);
+            }
             case "orc" -> {
                 head.addOrReplaceChild("roa_ear_r", CubeListBuilder.create().texOffs(64, 16).addBox(-1.0F, -2.0F, -1.0F, 1.0F, 3.0F, 2.0F), PartPose.offsetAndRotation(-4.0F, -4.0F, 0.5F, 0.3F, 0.0F, -0.5F));
                 head.addOrReplaceChild("roa_ear_l", CubeListBuilder.create().texOffs(64, 16).mirror().addBox(0.0F, -2.0F, -1.0F, 1.0F, 3.0F, 2.0F), PartPose.offsetAndRotation(4.0F, -4.0F, 0.5F, 0.3F, 0.0F, 0.5F));
@@ -391,7 +395,7 @@ public final class ClientSetup {
         e.registerEntityRenderer(ModEntities.EYE_OF_SAURON.get(), EyeOfSauronRenderer::new);
         e.registerEntityRenderer(ModEntities.GIANT_ARROW.get(), GiantArrowRenderer::new);
         e.registerEntityRenderer(ModEntities.INVISIBLE_STAND.get(), net.minecraft.client.renderer.entity.ArmorStandRenderer::new);
-        ModelLayerLocation plain = layer("human_plain"), elf = layer("human_elf"), orc = layer("human_orc"), goblin = layer("human_goblin"), dwarf = layer("human_dwarf");
+        ModelLayerLocation plain = layer("human_plain"), elf = layer("human_elf"), orc = layer("human_orc"), goblin = layer("human_goblin"), dwarf = layer("human_dwarf"), halfling = layer("human_halfling");
         e.registerEntityRenderer(ModEntities.ORC.get(), c -> new Renderers.Orc(c, 0, 4, 0.5F));
         e.registerEntityRenderer(ModEntities.WAR_ORC.get(), c -> new Renderers.Orc(c, 4, 2, 0.6F));
         e.registerEntityRenderer(ModEntities.ORC_CHIEF.get(), c -> new Renderers.Orc(c, 6, 1, 0.8F));
@@ -419,7 +423,7 @@ public final class ClientSetup {
         e.registerEntityRenderer(ModEntities.HUMAN.get(), c -> new Renderers.Human<PeopleEntity>(c, plain, 0.9375F, 0.9375F, f -> peopleTex(f, "human", 4), false));
         e.registerEntityRenderer(ModEntities.ELF.get(), c -> new Renderers.Human<PeopleEntity>(c, elf, 0.94F, 1.14F, f -> peopleTex(f, "elf", 20), false));
         e.registerEntityRenderer(ModEntities.DWARF.get(), c -> new Renderers.Human<PeopleEntity>(c, dwarf, 1.1F, 0.78F, f -> peopleTex(f, "dwarf", 40), false));
-        e.registerEntityRenderer(ModEntities.HALFLING.get(), c -> new Renderers.Human<PeopleEntity>(c, plain, 0.66F, 0.6F, f -> peopleTex(f, "halfling", 3), false));
+        e.registerEntityRenderer(ModEntities.HALFLING.get(), c -> new Renderers.Human<PeopleEntity>(c, halfling, 0.66F, 0.6F, f -> peopleTex(f, "halfling", 30), false));
         e.registerEntityRenderer(ModEntities.RANGER.get(), c -> new Renderers.Human<PeopleEntity>(c, plain, 0.9375F, 0.9375F, f -> "ranger", false));
         e.registerEntityRenderer(ModEntities.MAGE.get(), c -> new Renderers.Human<PeopleEntity>(c, plain, 0.9375F, 0.97F, f -> "mage", false));
         e.registerEntityRenderer(ModEntities.TREEMAN.get(), SylvanRender.TreemanRenderer::new);

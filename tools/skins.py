@@ -7,11 +7,11 @@ from genlib import A, save
 def _c(c): return rgb(c) if isinstance(c, str) else c
 
 class Skin:
-    def __init__(self, seed=0, h=64):
-        self.im = Image.new('RGBA', (128, h), (0, 0, 0, 0))
+    def __init__(self, seed=0, h=64, w=128):
+        self.im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
         self.rnd = random.Random(seed)
     def px(self, x, y, c, a=255):
-        if 0 <= x < 128 and 0 <= y < self.im.height: self.im.putpixel((x, y), _c(c)[:3] + (a,))
+        if 0 <= x < self.im.width and 0 <= y < self.im.height: self.im.putpixel((x, y), _c(c)[:3] + (a,))
     def rect(self, x, y, w, h, c, noise=0.08, grad=0.0, a=255):
         c = _c(c)
         for yy in range(h):
@@ -33,6 +33,7 @@ FACES = {
     'human': ['........', '........', '........', '.bb..bb.', '.we..ew.', '...nn...', '..mmmm..', '........'],
     'elf':   ['........', '........', '........', '.b....b.', '.we..ew.', '...n....', '..mmm...', '........'],
     'dwarf': ['........', '........', '.bb..bb.', '.we..ew.', '..nnnn..', '..nnnn..', '........', '........'],
+    'halfling': ['........', '........', '........', '.b....b.', '.we..ew.', '...nn...', '.rmmmmr.', '........'],
     'half':  ['........', '........', '........', '.b....b.', '.we..ew.', '...nn...', '.rmmmmr.', '........'],
     'orc':   ['........', '........', 'dddddddd', '.ee..ee.', '.dd..dd.', '..nnnn..', '.tmmmmt.', '.t....t.'],
     'goblin': ['........', '........', '........', 'eee..eee', 'eke..eke', '...nn...', '.mtmmtm.', '........'],
@@ -44,8 +45,8 @@ FACES = {
 def skin(name, race='human', skin='#c69a7a', hair='#4a3020', hair_style='short', eyes='#3a2a1a', top='#7a5a3a', trim=None, legs='#4a3a2a',
          boots='#2a2018', belt='#3a2a1a', beard=None, beard_len=0, sleeves=True, armor=None, hood=None, seed=0, face=None, ears=None,
          tusks=False, gloves=None, alpha=255, emblem=None, crown=None, pauldrons=None, skirt=False, xg=None):
-    big = race in ('elf', 'dwarf')
-    s = Skin(seed, 256 if big else 64)
+    big = race in ('elf', 'dwarf', 'halfling')
+    s = Skin(seed, 256 if big else 64, 256 if race == 'halfling' else 128)
     sk = _c(skin); hr = _c(hair); tp = _c(top); tr = _c(trim) if trim else shade(tp, 0.7); lg = _c(legs); bt = _c(boots)
     a = alpha
     # --- tete

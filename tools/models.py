@@ -719,11 +719,7 @@ def skins():
     skin('elf_guard', 'elf', skin='#ecd8c4', hair='#e8d890', hair_style='long', eyes='#4a8ac0', top='#2f5a40', trim='#e0c060', legs='#4a4a3a', boots='#3a3028', armor='plate', pauldrons='#d8c070', crown='#e0c060', seed=23)
     # --- nains
     skin('dwarf_guard', 'dwarf', skin='#c89070', hair='#7a7f88', hair_style='helmet', top='#3a3a44', trim='#c9a23a', legs='#2e2e34', boots='#22201e', beard='#6a3a1a', beard_len=7, armor='plate', pauldrons='#7a7f88', seed=33)
-    # --- semi-hommes
-    skin('halfling_1', 'half', skin='#d8a888', hair='#6a4424', hair_style='mid', top='#5a7a3a', trim='#c9b070', legs='#6a5034', boots='#d8a888', seed=40)
-    skin('halfling_2', 'half', skin='#e0b494', hair='#a86a2a', hair_style='long', top='#b8943a', trim='#7a3a2a', legs='#5a4a3a', boots='#e0b494', skirt=True, seed=41)
-    skin('halfling_3', 'half', skin='#d0a080', hair='#3a2818', hair_style='mid', top='#7a3a34', trim='#e0d0a0', legs='#4a4034', boots='#d0a080', seed=42)
-    skin('halfling_elder', 'half', skin='#d8ac90', hair='#d0d0d0', hair_style='mid', top='#4a5a7a', trim='#c9a23a', legs='#5a5044', boots='#d8ac90', seed=43)
+    # --- semi-hommes : voir people3d.py (30 hobbits en 3D)
     # --- spectres et seigneurs
     skin('sorcerer', 'human', skin='#b8b0a8', hair='#e8e8e8', hair_style='long', eyes='#ff3020', top='#e8e4dc', trim='#1c1c20', legs='#d8d4cc', boots='#2a2a2e', beard='#e8e8e8', beard_len=8, skirt=True, seed=53)
     skin('ash_lord', 'lord', skin='#141216', hair='#1c1a20', hair_style='helmet', eyes='#ff5010', top='#1a181c', trim='#c02a10', legs='#141216', boots='#0c0a0e', armor='plate', pauldrons='#24222a', crown='#2a2830', gloves='#1c1a20',
