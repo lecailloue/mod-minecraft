@@ -36,13 +36,28 @@ public class ShireDecorFeature extends Feature<NoneFeatureConfiguration> {
             {{-765, -94}, {-745, -164}, {-746, -274}, {-754, -348}, {-790, -382}, {-828, -399}},
             {{-1112, 516}, {-1141, 508}, {-1181, 486}, {-1211, 486}},
             {{-1138, 903}, {-1132, 646}, {-1110, 517}},
-            {{-955, 565}, {-980, 534}, {-994, 483}}};
+            {{-955, 565}, {-980, 534}, {-994, 483}},
+            // chemins rouges de la carte : la suite des chemins de Hobbiteville vers la campagne
+            {{-620, 251}, {-627, 263}, {-637, 270}, {-648, 275}, {-660, 280}, {-671, 292}, {-682, 307}, {-694, 324}, {-701, 342}, {-708, 360}, {-716, 378}, {-729, 399}, {-743, 421}, {-747, 426}},
+            {{-594, 37}, {-585, 37}, {-578, 29}, {-575, 20}, {-576, 10}, {-579, 1}, {-581, -9}, {-584, -18}, {-586, -27}, {-588, -37}, {-589, -46}, {-589, -55}, {-590, -63}, {-592, -73}, {-596, -82}, {-604, -92}, {-612, -99}, {-621, -105}, {-630, -110}, {-639, -114}, {-648, -119}, {-657, -123}, {-667, -128}, {-675, -139}, {-677, -148}, {-677, -156}},
+            {{-603, -19}, {-600, -20}, {-597, -24}, {-594, -27}, {-592, -31}, {-591, -34}, {-589, -38}}};
+    /** champs de ble arrondis (violet) : la suite des deux champs que la source coupe tout droit au bord de Hobbiteville */
+    static final int[][][] FIELDS = new int[][][] {
+            {{-867, -100}, {-860, -97}, {-834, -99}, {-796, -96}, {-792, -98}, {-792, -102}, {-800, -115}, {-807, -123}, {-817, -129}, {-826, -130}, {-834, -121}, {-854, -114}},
+            {{-584, 160}, {-573, 153}, {-566, 145}, {-562, 133}, {-560, 122}, {-562, 111}, {-568, 100}, {-574, 94}, {-583, 90}, {-591, 92}, {-592, 98}, {-586, 144}, {-588, 157}}};
 
     private record Tpl(boolean tree, int[] dx, int[] dy, int[] dz, BlockState[] st, int leaves, int reach) {}
 
     private static boolean loaded;
     private static final List<Tpl> TREES = new ArrayList<>(), BUSHES = new ArrayList<>();
-    private static int stampX0, stampZ0, stampX1, stampZ1;
+    private static int stampX0, stampZ0, stampX1, stampZ1, ox, oz;
+    private static final BlockState FARM = Blocks.FARMLAND.defaultBlockState().setValue(net.minecraft.world.level.block.FarmBlock.MOISTURE, 7);
+    private static final BlockState WHEAT = Blocks.WHEAT.defaultBlockState().setValue(net.minecraft.world.level.block.CropBlock.AGE, 7);
+    private static final BlockState WELL = Blocks.SPRUCE_TRAPDOOR.defaultBlockState()
+            .setValue(net.minecraft.world.level.block.TrapDoorBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP)
+            .setValue(net.minecraft.world.level.block.TrapDoorBlock.WATERLOGGED, true);
+    private static final int ZX0 = -1363, ZX1 = -464, ZZ0 = -408, ZZ1 = 924;
+    private static byte[] zoneGrid;
 
     public ShireDecorFeature() { super(NoneFeatureConfiguration.CODEC); }
 
@@ -71,10 +86,13 @@ public class ShireDecorFeature extends Feature<NoneFeatureConfiguration> {
         loaded = true;
         int[] pl = MapData.place("comte");
         if (pl != null) {
-            stampX0 = HobbitonStamp.originX(pl[0]) - HobbitonStamp.PADX - 10;
-            stampZ0 = HobbitonStamp.originZ(pl[1]) - HobbitonStamp.PADZ - 10;
-            stampX1 = stampX0 + HobbitonStamp.TILES_X * HobbitonStamp.TW + 20;
-            stampZ1 = stampZ0 + HobbitonStamp.TILES_Z * HobbitonStamp.TD + 20;
+            ox = HobbitonStamp.originX(pl[0]);
+            oz = HobbitonStamp.originZ(pl[1]);
+            // le rectangle du fichier source (325 x 358), lui seul est recopie par Hobbiteville
+            stampX0 = ox + HobbitonStamp.PADX;
+            stampZ0 = oz + HobbitonStamp.PADZ;
+            stampX1 = stampX0 + 325;
+            stampZ1 = stampZ0 + 358;
         }
         try (InputStream raw = ShireDecorFeature.class.getResourceAsStream("/data/ringsofash/map/shire_trees.bin")) {
             if (raw == null) throw new IllegalStateException("shire_trees.bin introuvable");
@@ -106,13 +124,66 @@ public class ShireDecorFeature extends Feature<NoneFeatureConfiguration> {
         }
     }
 
-    public static boolean inZone(int x, int z) {
+    private static boolean inPoly(int[][] poly, int x, int z) {
         boolean in = false;
-        for (int i = 0, j = POLY.length - 1; i < POLY.length; j = i++) {
-            int xi = POLY[i][0], zi = POLY[i][1], xj = POLY[j][0], zj = POLY[j][1];
+        for (int i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+            int xi = poly[i][0], zi = poly[i][1], xj = poly[j][0], zj = poly[j][1];
             if ((zi > z) != (zj > z) && x < (double) (xj - xi) * (z - zi) / (zj - zi) + xi) in = !in;
         }
         return in;
+    }
+
+    private static synchronized void buildGrid() {
+        if (zoneGrid != null) return;
+        int w = ZX1 - ZX0 + 1, d = ZZ1 - ZZ0 + 1;
+        byte[] g = new byte[w * d];
+        for (int z = 0; z < d; z++) for (int x = 0; x < w; x++) g[z * w + x] = (byte) (inPoly(POLY, ZX0 + x, ZZ0 + z) ? 1 : 0);
+        zoneGrid = g;
+    }
+
+    /** vrai dans le contour rouge de la Comte (grille precalculee : appele pour chaque colonne de terrain) */
+    public static boolean inZone(int x, int z) {
+        if (x < ZX0 || x > ZX1 || z < ZZ0 || z > ZZ1) return false;
+        if (zoneGrid == null) buildGrid();
+        return zoneGrid[(z - ZZ0) * (ZX1 - ZX0 + 1) + (x - ZX0)] != 0;
+    }
+
+    /** biomes naturels que la Comte remplace : toutes les terres de plaine, de bois et de bosquets */
+    public static boolean shireLand(int b) { return b == 0 || b == 1 || b == 3 || b == 10 || b == 11; }
+
+    /** numero du champ de ble qui contient la colonne, ou -1 */
+    private static int fieldAt(int x, int z) {
+        for (int i = 0; i < FIELDS.length; i++) if (inPoly(FIELDS[i], x, z)) return i;
+        return -1;
+    }
+
+    public static boolean nearField(int x, int z, int m) {
+        for (int[][] f : FIELDS) {
+            int a = 1 << 30, b = -(1 << 30), c = 1 << 30, d = -(1 << 30);
+            for (int[] q : f) { a = Math.min(a, q[0]); b = Math.max(b, q[0]); c = Math.min(c, q[1]); d = Math.max(d, q[1]); }
+            if (x >= a - m && x <= b + m && z >= c - m && z <= d + m) return true;
+        }
+        return false;
+    }
+
+    /** une colonne de champ de ble : terre labouree a l'altitude de sa case de 9 x 9 (comme Hobbiteville), eau enterree au centre ; le lit de riviere est comble */
+    private static void fieldColumn(WorldGenLevel level, BlockPos.MutableBlockPos p, int x, int z) {
+        int vx = x - ox, vz = z - oz;
+        int cvx = Math.floorDiv(vx, 9) * 9 + 4, cvz = Math.floorDiv(vz, 9) * 9 + 4;
+        int L = Math.max(MapData.height(ox + cvx, oz + cvz), MapData.SEA + 3);
+        int tg = level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, x, z) - 1;
+        BlockState dirt = Blocks.DIRT.defaultBlockState();
+        for (int y = Math.min(tg, L) - 2; y < L; y++) level.setBlock(p.set(x, y, z), dirt, 2);
+        level.setBlock(p.set(x, L, z), FARM, 2);
+        level.setBlock(p.set(x, L + 1, z), WHEAT, 2);
+        if (vx == cvx && vz == cvz) {
+            level.setBlock(p.set(x, L - 2, z), Blocks.GLOWSTONE.defaultBlockState(), 2);
+            level.setBlock(p.set(x, L - 1, z), WELL, 2);
+        }
+        for (int y = L + 2; y <= Math.max(tg, L) + 16; y++) {
+            p.set(x, y, z);
+            if (!level.getBlockState(p).isAir()) level.setBlock(p, Blocks.AIR.defaultBlockState(), 2);
+        }
     }
 
     private static boolean inStamp(int x, int z) { return x >= stampX0 && x < stampX1 && z >= stampZ0 && z < stampZ1; }
@@ -173,7 +244,9 @@ public class ShireDecorFeature extends Feature<NoneFeatureConfiguration> {
         // sol : chemins, mousse, azalees
         for (int dz = 0; dz < 16; dz++) for (int dx = 0; dx < 16; dx++) {
             int x = x0 + dx, z = z0 + dz;
-            if (inStamp(x, z) || !inZone(x, z) || MapData.biome(x, z) != 0) continue;
+            if (inStamp(x, z)) continue;
+            if (fieldAt(x, z) >= 0) { fieldColumn(level, p, x, z); any = true; continue; }
+            if (!inZone(x, z) || !shireLand(MapData.biome(x, z))) continue;
             int gy = level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, x, z) - 1;
             p.set(x, gy, z);
             BlockState g = level.getBlockState(p);
@@ -213,11 +286,13 @@ public class ShireDecorFeature extends Feature<NoneFeatureConfiguration> {
         // arbres puis buissons
         if (TREES.isEmpty()) return any;
         List<int[]> done = new ArrayList<>();
-        for (int k = 0; k < 6; k++) {
-            boolean tree = k < 3;
+        for (int k = 0; k < 12; k++) {
+            boolean tree = k < 3 || (k >= 6 && k < 9);
             if (r.nextFloat() > (tree ? 0.55f : 0.65f)) continue;
             int x = x0 + 3 + r.nextInt(10), z = z0 + 3 + r.nextInt(10);
-            if (inStamp(x, z) || !inZone(x, z) || MapData.biome(x, z) != 0) continue;
+            if (inStamp(x, z) || !inZone(x, z) || nearField(x, z, 9)) continue;
+            int nb = MapData.biome(x, z);
+            if (!shireLand(nb) || (k >= 6 && nb != 3 && nb != 10 && nb != 11)) continue;   // les anciens bois gardent un peu plus d'arbres
             boolean near = false;
             for (int[] d : done) if (Math.abs(d[0] - x) < 6 && Math.abs(d[1] - z) < 6) near = true;
             if (near || pathDist(x, z) < 5.5) continue;

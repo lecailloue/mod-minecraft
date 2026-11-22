@@ -29,7 +29,8 @@ public final class MapBiomeSource extends BiomeSource {
     public Holder<Biome> getNoiseBiome(int x, int y, int z, Climate.Sampler sampler) {
         int bx = (x << 2) + 2, bz = (z << 2) + 2;
         int i = MapData.biome(bx, bz);
-        if (i == 0 && biomes.size() > 13 && ShireDecorFeature.inZone(bx, bz)) i = 13;   // la Comte : plaines sans arbres naturels
+        if (ShireDecorFeature.shireLand(i) && biomes.size() > 13 && ShireDecorFeature.inZone(bx, bz)) i = 13;   // la Comte : toute la zone rouge, sans arbres naturels
+        if ((i == 7 || i == 8) && biomes.size() > 13 && ShireDecorFeature.nearField(bx, bz, 16)) i = 13;   // les champs mordent sur la berge : la Comte y pose son decor
         return biomes.get(Math.min(i, biomes.size() - 1));
     }
 }

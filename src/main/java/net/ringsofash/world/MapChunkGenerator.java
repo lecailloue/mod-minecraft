@@ -151,6 +151,12 @@ public final class MapChunkGenerator extends ChunkGenerator {
 
     private static boolean rocky(int b, int slope) { return b == MapData.B_MONTS || b == MapData.B_CIMES || b == MapData.B_MONTS_CENDRE || slope >= 4; }
 
+    /** biome de surface : dans la zone rouge, toutes les terres de plaine et de bois prennent le sol de la Comte (13) */
+    static int surfBiome(int x, int z) {
+        int b = MapData.biome(x, z);
+        return ShireDecorFeature.shireLand(b) && ShireDecorFeature.inZone(x, z) ? 13 : b;
+    }
+
     private static boolean landBiome(int b) { return b != MapData.B_MER && b != MapData.B_RIVAGE && b != MapData.B_RIVIERE && b != MapData.B_LAVE; }
 
     /** Bloc a l'altitude y pour la colonne decrite (h = dernier bloc solide, wt = surface de l'eau). */
@@ -353,6 +359,13 @@ public final class MapChunkGenerator extends ChunkGenerator {
                     else if (fbm(x * 0.05, z * 0.05, 23) > 0.66f && fbm(x * 0.2, z * 0.2, 24) > 0.5f) top = DIRT;
                 }
             }
+            case 13 -> {                                   // la Comte : herbe verte, rares plaques de terre (mousse et chemins sont poses par le decor)
+                if (slope >= 4 && h >= 78) { top = rock(x, h, z); layers = 1; }
+                else {
+                    top = GRASS; layers = 3;
+                    if (!under && fbm(x * 0.05, z * 0.05, 23) > 0.7f && fbm(x * 0.2, z * 0.2, 24) > 0.55f) top = COARSE;
+                }
+            }
             case 1 -> {
                 if (slope >= 4 && h >= 78) { top = rock(x, h, z); layers = 1; }
                 else {
@@ -423,7 +436,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
         for (int lz = 0; lz < 16; lz++) {
             for (int lx = 0; lx < 16; lx++) {
                 int x = cp.getMinBlockX() + lx, z = cp.getMinBlockZ() + lz;
-                int h = MapData.height(x, z), wt = MapData.waterTop(x, z), b = MapData.biome(x, z), slope = MapData.slope(x, z);
+                int h = MapData.height(x, z), wt = MapData.waterTop(x, z), b = surfBiome(x, z), slope = MapData.slope(x, z);
                 int top = Math.max(h, wt);
                 int snow = wt > h ? 0 : snowLayers(x, z, h, b);
                 BlockState topState = AIR, floor = AIR;
@@ -526,7 +539,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
 
     @Override
     public NoiseColumn getBaseColumn(int x, int z, LevelHeightAccessor level, RandomState random) {
-        int h = MapData.height(x, z), wt = MapData.waterTop(x, z), b = MapData.biome(x, z), slope = MapData.slope(x, z);
+        int h = MapData.height(x, z), wt = MapData.waterTop(x, z), b = surfBiome(x, z), slope = MapData.slope(x, z);
         BlockState[] column = new BlockState[level.getHeight()];
         for (int i = 0; i < column.length; i++) column[i] = block(x, level.getMinBuildHeight() + i, z, h, wt, b, slope);
         return new NoiseColumn(level.getMinBuildHeight(), column);
