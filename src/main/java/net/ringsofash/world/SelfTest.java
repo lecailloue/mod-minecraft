@@ -247,16 +247,19 @@ public final class SelfTest {
             if (crest < 40) fail("argonath : pas de montagne autour de la riviere (" + crest + ")");
         }
         int[] fc = spots.get("fondcombe");
-        if (fc != null) {                                                    // Fondcombe : la vallee de la schematique, recopiee par morceaux, doit avoir des toits de tuiles elfiques
-            for (int dx = -12; dx <= 12; dx++) for (int dz = -14; dz <= 14; dz++) lands.getChunk((fc[0] >> 4) + dx, (fc[1] >> 4) + dz);
-            topDown(lands, fc[0] - 130, fc[1] - 190, fc[0] + 129, fc[1] + 189, new File(OUT, "fondcombe_dessus.png"), 2);
-            int tiles = 0;
-            for (int x = fc[0] - 130; x < fc[0] + 130; x++) for (int z = fc[1] - 190; z < fc[1] + 190; z++) {
-                int hy = lands.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1;
-                for (int dy = 0; dy < 4; dy++) if (net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(lands.getBlockState(new BlockPos(x, hy - dy, z)).getBlock()).getPath().startsWith("elven_tiles")) { tiles++; break; }
+        if (fc != null) {                                                    // Fondcombe : quatre quartiers qui doivent se raccorder sans trou
+            for (int dx = -12; dx <= 12; dx++) for (int dz = -12; dz <= 12; dz++) lands.getChunk((fc[0] >> 4) + dx, (fc[1] >> 4) + dz);
+            RivendellPlan rp = RivendellPlan.get();
+            int py = SiteHeight.py(lands, fc[0], fc[1]);
+            topDown(lands, fc[0] - 176, fc[1] - 176, fc[0] + 175, fc[1] + 175, new File(OUT, "fondcombe_dessus.png"), 2);
+            int ox = fc[0] - RivendellPlan.CX, oz = fc[1] - RivendellPlan.CZ, miss = 0, tot = 0;
+            for (int x = RivendellPlan.BAND + 2; x < RivendellPlan.W - RivendellPlan.BAND - 2; x += 5) for (int z = RivendellPlan.BAND + 2; z < RivendellPlan.D - RivendellPlan.BAND - 2; z += 5) {
+                tot++;
+                int hw = lands.getHeight(Heightmap.Types.WORLD_SURFACE, ox + x, oz + z) - 1 - py;
+                if (hw < rp.top(x, z) - 1) { miss++; if (miss < 6) log("fondcombe : trou en plan " + x + "," + z + " : monde " + hw + " < plan " + rp.top(x, z)); }
             }
-            log("fondcombe : colonnes dont le toit est en tuiles elfiques " + tiles);
-            if (tiles < 500) fail("fondcombe : pas de toits de tuiles elfiques (" + tiles + ")");
+            log("fondcombe : sol " + py + " ; colonnes manquantes " + miss + " / " + tot);
+            if (miss * 50 > tot) fail("fondcombe : trop de colonnes manquantes (" + miss + " / " + tot + ")");
         }
         int[] es = spots.get("esgaroth");
         if (es != null) {                                                    // Esgaroth : quatre quartiers qui doivent se raccorder sans trou, et un lac plein d'eau

@@ -66,10 +66,6 @@ public final class Buildings {
             case ESGA -> esgaroth(b, aux);
             case HELM -> helm(b);
             case SHIRE -> HobbitonStamp.stamp(b, aux % HobbitonStamp.TILES_X, aux / HobbitonStamp.TILES_X);
-            case RIVSTAMP -> {
-                int[] pl = MapData.place("fondcombe");
-                if (pl != null) RivendellStamp.stamp(b, aux % RivendellStamp.TILES_X, aux / RivendellStamp.TILES_X, RivendellStamp.offset(pl[0], pl[1]));
-            }
         }
     }
 

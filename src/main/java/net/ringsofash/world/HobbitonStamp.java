@@ -154,8 +154,7 @@ public final class HobbitonStamp {
             int vx = tx * TW + (wx - b.ox), vz = tz * TD + (wz - b.oz);
             int fx = vx - PADX, fz = vz - PADZ;
             boolean in = fx >= 0 && fx < W && fz >= 0 && fz < D && ground[fz * W + fx] > -900;   // colonne vide dans la source : on laisse le monde
-            int crop = HobbitonFields.crop(fx, fz);
-            if (crop != 0 && field(b, vx, vz, fx, fz, wx, wz, crop, surf(fx, fz, wx, wz))) continue;
+            // champs agrandis retires (demande) : on garde ceux de la source tels quels
             if (!in) continue;
             int ix = fz * W + fx;
             int tg = MapData.height(wx, wz);
