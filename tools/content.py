@@ -242,7 +242,7 @@ def blocks():
                      ('red_leaf_litter', 'Tas de feuilles rousses'), ('deep_leaf_litter', 'Épais tas de feuilles'),
                      ('brown_leaf_litter', 'Feuilles mortes éparses')):
         btex(_id, autumn.LITTERS[_id]())
-        block(_id, _fr, 'carpet', copy='MOSS_CARPET', tool='hoe')
+        block(_id, _fr, 'carpet', copy='MOSS_CARPET', extra='.noOcclusion()', tool='hoe')
 
     # --- fleurs d'automne de Fondcombe
     _FX = {'flame_rose': 'MobEffects.REGENERATION, 5.0F', 'gold_bell': 'MobEffects.SATURATION, 4.0F',

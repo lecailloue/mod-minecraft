@@ -113,11 +113,11 @@ public final class Reg {
     public static final DeferredBlock<Block> GOLDEN_LEAVES = BLOCKS.register("golden_leaves", () -> new LeavesBlock(copy(Blocks.OAK_LEAVES)));
     public static final DeferredBlock<Block> AUTUMN_ORANGE_LEAVES = BLOCKS.register("autumn_orange_leaves", () -> new LeavesBlock(copy(Blocks.OAK_LEAVES)));
     public static final DeferredBlock<Block> AUTUMN_RED_LEAVES = BLOCKS.register("autumn_red_leaves", () -> new LeavesBlock(copy(Blocks.OAK_LEAVES)));
-    public static final DeferredBlock<Block> GOLDEN_LEAF_LITTER = BLOCKS.register("golden_leaf_litter", () -> new CarpetBlock(copy(Blocks.MOSS_CARPET)));
-    public static final DeferredBlock<Block> ORANGE_LEAF_LITTER = BLOCKS.register("orange_leaf_litter", () -> new CarpetBlock(copy(Blocks.MOSS_CARPET)));
-    public static final DeferredBlock<Block> RED_LEAF_LITTER = BLOCKS.register("red_leaf_litter", () -> new CarpetBlock(copy(Blocks.MOSS_CARPET)));
-    public static final DeferredBlock<Block> DEEP_LEAF_LITTER = BLOCKS.register("deep_leaf_litter", () -> new CarpetBlock(copy(Blocks.MOSS_CARPET)));
-    public static final DeferredBlock<Block> BROWN_LEAF_LITTER = BLOCKS.register("brown_leaf_litter", () -> new CarpetBlock(copy(Blocks.MOSS_CARPET)));
+    public static final DeferredBlock<Block> GOLDEN_LEAF_LITTER = BLOCKS.register("golden_leaf_litter", () -> new CarpetBlock(copy(Blocks.MOSS_CARPET).noOcclusion()));
+    public static final DeferredBlock<Block> ORANGE_LEAF_LITTER = BLOCKS.register("orange_leaf_litter", () -> new CarpetBlock(copy(Blocks.MOSS_CARPET).noOcclusion()));
+    public static final DeferredBlock<Block> RED_LEAF_LITTER = BLOCKS.register("red_leaf_litter", () -> new CarpetBlock(copy(Blocks.MOSS_CARPET).noOcclusion()));
+    public static final DeferredBlock<Block> DEEP_LEAF_LITTER = BLOCKS.register("deep_leaf_litter", () -> new CarpetBlock(copy(Blocks.MOSS_CARPET).noOcclusion()));
+    public static final DeferredBlock<Block> BROWN_LEAF_LITTER = BLOCKS.register("brown_leaf_litter", () -> new CarpetBlock(copy(Blocks.MOSS_CARPET).noOcclusion()));
     public static final DeferredBlock<Block> FLAME_ROSE = BLOCKS.register("flame_rose", () -> new FlowerBlock(MobEffects.REGENERATION, 5.0F, copy(Blocks.DANDELION)));
     public static final DeferredBlock<Block> GOLD_BELL = BLOCKS.register("gold_bell", () -> new FlowerBlock(MobEffects.SATURATION, 4.0F, copy(Blocks.DANDELION)));
     public static final DeferredBlock<Block> EMBER_BLOOM = BLOCKS.register("ember_bloom", () -> new FlowerBlock(MobEffects.FIRE_RESISTANCE, 4.0F, copy(Blocks.DANDELION)));
