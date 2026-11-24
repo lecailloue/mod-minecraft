@@ -383,12 +383,12 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 boolean giant = r.nextFloat() < 0.08f;
                 if (r.nextFloat() > (giant ? 0.45f : 0.6f)) continue;
                 int x = x0 + 2 + r.nextInt(12), z = z0 + 2 + r.nextInt(12);
-                if (!mine(x, z) || !far(x, z, giant ? 13 : 5)) continue;
+                if (!mine(x, z) || !far(x, z, giant ? 13 : 7)) continue;
                 int gy = groundY(x, z);
                 if (!soil(level.getBlockState(p.set(x, gy, z))) || !level.getFluidState(p.set(x, gy + 1, z)).isEmpty()) continue;
                 if (slope(x, z, gy, 3) > (giant ? 3 : 5)) continue;
                 if (giant) redwoodTree(x, gy + 1, z);
-                else cypressTree(x, gy + 1, z, 13 + r.nextInt(14), 2.6 + r.nextDouble() * 1.7);
+                else cypressTree(x, gy + 1, z, 13 + r.nextInt(15), 2.3 + r.nextDouble() * 1.4);
                 flush();
                 done.add(new int[] {x, z, giant ? 11 : 4});
                 any = true;
@@ -416,7 +416,7 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
             for (int y = -1; y < h; y++) putLog(x, y0 + y, z, lg);
             if (h > 12) for (int[] o : new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}})   // empattement
                 if (r.nextFloat() < 0.6f) putLog(x + o[0], y0 - 1, z + o[1], lg);
-            int base = Math.max(1, (int) (h * (h > 10 ? 0.34 : 0.15)));
+            int base = Math.max(1, (int) (h * (h > 10 ? 0.44 : 0.15)));
             for (int y = base; y <= h + 1; y++) {
                 double t = (y - base) / (double) Math.max(1, h + 1 - base);
                 double rr = rad * Math.pow(1 - t, 0.8) + 0.45;
