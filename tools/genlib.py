@@ -190,6 +190,10 @@ def gen_block_assets(b):
         bmodel(id, 'minecraft:block/cube_all', {'all': T(tx)}, 'minecraft:cutout_mipped')
         bstate(id, {'variants': {'': {'model': T(id)}}})
         imodel(id, {'parent': T(id)})
+    elif kind == 'carpet':
+        bmodel(id, 'minecraft:block/carpet', {'wool': T(tx)}, 'minecraft:cutout')
+        bstate(id, {'variants': {'': {'model': T(id)}}})
+        imodel(id, {'parent': 'minecraft:item/generated', 'textures': {'layer0': T(tx)}})
     elif kind == 'stairs':
         t = {'bottom': T(tx), 'top': T(tx), 'side': T(tx)}
         bmodel(id, 'minecraft:block/stairs', t)
@@ -298,6 +302,7 @@ JAVA_KIND = {
     'custom_cube': None,
     'pillar': 'new RotatedPillarBlock(copy(Blocks.{copy}){extra})',
     'leaves': 'new LeavesBlock(copy(Blocks.OAK_LEAVES){extra})',
+    'carpet': 'new CarpetBlock(copy(Blocks.MOSS_CARPET){extra})',
     'stairs': 'new StairBlock({BASE}.get().defaultBlockState(), copy({BASE}.get()))',
     'slab': 'new SlabBlock(copy({BASE}.get()))',
     'wall': 'new WallBlock(copy({BASE}.get()).forceSolidOn())',

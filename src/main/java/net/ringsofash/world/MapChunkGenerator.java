@@ -46,6 +46,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
     private static final BlockState SAND = Blocks.SAND.defaultBlockState();
     private static final BlockState GRAVEL = Blocks.GRAVEL.defaultBlockState();
     private static final BlockState MOSS = Blocks.MOSS_BLOCK.defaultBlockState();
+    private static final BlockState ROOTED = Blocks.ROOTED_DIRT.defaultBlockState();
     private static final BlockState MUD = Blocks.MUD.defaultBlockState();
     private static final BlockState CLAY = Blocks.CLAY.defaultBlockState();
     private static final BlockState SNOW = Blocks.SNOW_BLOCK.defaultBlockState();
@@ -364,8 +365,15 @@ public final class MapChunkGenerator extends ChunkGenerator {
             case 14 -> {                                   // foret elfique : herbe, grandes plaques de mousse, un peu de terre brune
                 if (slope >= 4 && h >= 78) { top = rock(x, h, z); layers = 1; }
                 else {
-                    float m = fbm(x * 0.06, z * 0.06, 31);
-                    top = m > 0.62f ? MOSS : m < 0.22f && hash(x, 5, z) < 0.6f ? PODZOL : GRASS; layers = 3;
+                    float m = fbm(x * 0.06, z * 0.06, 31), d = fbm(x * 0.17, z * 0.17, 34);
+                    float q = hash(x, 5, z);
+                    if (m > 0.62f) top = MOSS;                       // grandes plaques de mousse
+                    else if (m < 0.22f && q < 0.6f) top = PODZOL;     // aiguilles et humus
+                    else if (d > 0.70f) top = q < 0.45f ? COARSE : DIRT;   // terre nue entre les racines
+                    else if (d < 0.17f && q < 0.35f) top = ROOTED;    // terre fouillee par les racines
+                    else if (d > 0.64f && q < 0.12f) top = GRAVEL;    // cailloutis
+                    else top = GRASS;
+                    layers = 3;
                 }
             }
             case 15 -> {                                   // Fangorn : sous-bois sombre, mousse et humus
@@ -440,7 +448,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
         }
         if (top != null && depth < layers) {
             if (depth == 0) return top;
-            if (top == GRASS || top == PODZOL || top == COARSE || top == PATH || top == MOSS || top == MUD) return DIRT;
+            if (top == GRASS || top == PODZOL || top == COARSE || top == PATH || top == MOSS || top == MUD || top == ROOTED) return DIRT;
             return top;
         }
         if (y < 0) return DEEPSLATE;

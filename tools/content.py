@@ -235,6 +235,14 @@ def blocks():
     block('autumn_orange_leaves', "Feuilles d'automne orangées", 'leaves')
     btex('autumn_red_leaves', leaves('#a9391c', 46, accent='#d9601f'))
     block('autumn_red_leaves', "Feuilles d'automne rousses", 'leaves')
+
+    # --- feuilles tombees : un tapis clairseme, de la couleur des arbres au dessus
+    for _id, _fr, _col, _sd, _ac in (('golden_leaf_litter', 'Tapis de feuilles dorées', '#c9a132', 47, '#eadc8c'),
+                                     ('orange_leaf_litter', 'Tapis de feuilles orangées', '#c4661a', 48, '#e59a38'),
+                                     ('red_leaf_litter', 'Tapis de feuilles rousses', '#97331a', 49, '#c8551d'),
+                                     ('brown_leaf_litter', 'Tapis de feuilles mortes', '#6f4b26', 50, '#8f6a39')):
+        btex(_id, leaves(_col, _sd, holes=0.55, accent=_ac))
+        block(_id, _fr, 'carpet', copy='MOSS_CARPET', tool='hoe')
     btex('golden_sapling', sprite([
         '................', '.......bb.......', '......bcab......', '.....babbab.....', '....bbacbaab....', '.....abbabb.....',
         '......babb......', '.......ss.......', '..bb...ss..ab...', '.baab..ss.bbab..', '..bab..ssabb....', '...ba.ssss......',

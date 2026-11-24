@@ -75,6 +75,7 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
         final List<int[]> done = new ArrayList<>();
         final Map<Long, BlockState> logs = new HashMap<>(), leaves = new HashMap<>();
         final List<int[]> post = new ArrayList<>();
+        final List<int[]> trees = new ArrayList<>();   // x, z, rayon du houppier, teinte dominante
 
         Gen(WorldGenLevel level, RandomSource r, int x0, int z0, int target) {
             this.level = level; this.r = r; this.x0 = x0; this.z0 = z0; this.target = target;
@@ -183,12 +184,128 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 if (slope(x, z, gy, 3) > (big ? 2 : 4)) continue;
                 double q = r.nextDouble();
                 int main = q < 0.4 ? 0 : q < 0.75 ? 1 : q < 0.9 ? 2 : 3;
-                if (big) elvenBig(x, gy + 1, z, main); else elvenTree(x, gy + 1, z, 8 + r.nextInt(8), 3.4 + r.nextDouble() * 2.2, main);
+                double rad = 3.4 + r.nextDouble() * 2.2;
+                if (big) elvenBig(x, gy + 1, z, main); else elvenTree(x, gy + 1, z, 8 + r.nextInt(8), rad, main);
                 flush();
                 done.add(new int[] {x, z, big ? 12 : 6});
+                trees.add(new int[] {x, z, big ? 11 : (int) Math.round(rad) + 2, main});
                 any = true;
             }
+            if (r.nextFloat() < 0.32f) any |= boulder();
+            if (r.nextFloat() < 0.28f) any |= fallenLog();
+            any |= elvenGround();
             return any;
+        }
+
+        /** la couleur des feuilles tombees suit celle de l'arbre au dessus */
+        net.minecraft.world.level.block.Block litterOf(int main, int h) {
+            if (h % 7 == 0) return Reg.BROWN_LEAF_LITTER.get();
+            return switch (main) {
+                case 0 -> Reg.ORANGE_LEAF_LITTER.get();
+                case 1 -> Reg.GOLDEN_LEAF_LITTER.get();
+                case 2 -> Reg.RED_LEAF_LITTER.get();
+                default -> Reg.BROWN_LEAF_LITTER.get();
+            };
+        }
+
+        BlockState elvenFlower(int h) {
+            return switch (h % 10) {
+                case 0, 1 -> Reg.SUNSTAR.get().defaultBlockState();
+                case 2 -> Reg.MOONBELL.get().defaultBlockState();
+                case 3 -> Blocks.ORANGE_TULIP.defaultBlockState();
+                case 4 -> Blocks.RED_TULIP.defaultBlockState();
+                case 5 -> Blocks.WHITE_TULIP.defaultBlockState();
+                case 6 -> Blocks.OXEYE_DAISY.defaultBlockState();
+                case 7 -> Blocks.CORNFLOWER.defaultBlockState();
+                case 8 -> Blocks.LILY_OF_THE_VALLEY.defaultBlockState();
+                default -> Blocks.DANDELION.defaultBlockState();
+            };
+        }
+
+        /** le sol de Fondcombe : feuilles tombees sous les arbres, fleurs, fougeres et buissons dans les clairieres */
+        boolean elvenGround() {
+            boolean any = false;
+            for (int dz = 0; dz < 16; dz++) for (int dx = 0; dx < 16; dx++) {
+                int x = x0 + dx, z = z0 + dz;
+                if (!mine(x, z)) continue;
+                int gy = groundY(x, z);
+                BlockState g = level.getBlockState(p.set(x, gy, z));
+                if (!soil(g) || g.is(Blocks.MUD)) continue;
+                if (!level.getFluidState(p.set(x, gy + 1, z)).isEmpty()) continue;
+                BlockState up = level.getBlockState(p.set(x, gy + 1, z));
+                if (!up.isAir() && !up.is(Blocks.SHORT_GRASS) && !up.is(Blocks.FERN)) continue;
+                double near = 1e9;
+                int main = -1;
+                for (int[] t : trees) {
+                    double d = Math.hypot(t[0] - x, t[1] - z) - t[2];
+                    if (d < near) { near = d; main = t[3]; }
+                }
+                int h = (hash(x, z, 72) >>> 8) & 0xFFFF;
+                double n = (vn(x * 0.13, z * 0.13, 71) + 1) * 0.5;
+                double dens = main < 0 || near > 9 ? 0.10 : near <= 0 ? 0.78 : near < 5 ? 0.45 : 0.20;
+                if (n * 0.55 + (h % 100) / 220.0 < dens) {
+                    set(x, gy + 1, z, litterOf(main, h >> 4).defaultBlockState());
+                    any = true;
+                } else if (h % 97 < 5 && near > 1) {
+                    set(x, gy + 1, z, elvenFlower(h >> 7));
+                    any = true;
+                } else if (h % 89 < 4 && near > 2) {               // grandes fleurs
+                    BlockState tall = switch ((h >> 9) % 3) {
+                        case 0 -> Blocks.PEONY.defaultBlockState();
+                        case 1 -> Blocks.LILAC.defaultBlockState();
+                        default -> Blocks.ROSE_BUSH.defaultBlockState();
+                    };
+                    if (soft(level.getBlockState(p.set(x, gy + 2, z)))) {
+                        set(x, gy + 1, z, tall);
+                        set(x, gy + 2, z, tall.setValue(net.minecraft.world.level.block.DoublePlantBlock.HALF,
+                                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
+                        any = true;
+                    }
+                } else if (h % 71 < 6) {
+                    set(x, gy + 1, z, (h & 1) == 0 ? Blocks.FERN.defaultBlockState() : Blocks.SHORT_GRASS.defaultBlockState());
+                    any = true;
+                } else if (h % 211 < 3 && g.is(Blocks.MOSS_BLOCK)) {
+                    set(x, gy + 1, z, Blocks.MOSS_CARPET.defaultBlockState());
+                    any = true;
+                }
+            }
+            return any;
+        }
+
+        /** un rocher moussu pose dans le sous bois */
+        boolean boulder() {
+            int x = x0 + 4 + r.nextInt(8), z = z0 + 4 + r.nextInt(8);
+            if (!mine(x, z)) return false;
+            int gy = groundY(x, z);
+            if (!soil(level.getBlockState(p.set(x, gy, z)))) return false;
+            int rr = 1 + r.nextInt(2);
+            for (int dx = -rr; dx <= rr; dx++) for (int dz = -rr; dz <= rr; dz++) for (int dy = -1; dy <= rr; dy++) {
+                if (dx * dx + dz * dz + dy * dy > rr * rr + 1) continue;
+                int bx = x + dx, bz = z + dz, by = gy + dy;
+                int q = (hash(bx, bz, 73) >>> 8) % 10;
+                set(bx, by, bz, q < 4 ? Blocks.MOSSY_COBBLESTONE.defaultBlockState()
+                        : q < 7 ? Blocks.COBBLESTONE.defaultBlockState() : Blocks.STONE.defaultBlockState());
+            }
+            return true;
+        }
+
+        /** un tronc couche, mange par la mousse */
+        boolean fallenLog() {
+            int x = x0 + 3 + r.nextInt(9), z = z0 + 3 + r.nextInt(9);
+            if (!mine(x, z)) return false;
+            boolean alongX = r.nextBoolean();
+            int len = 3 + r.nextInt(4);
+            BlockState wl = log(Reg.GOLDEN_LOG.get(), alongX ? Direction.Axis.X : Direction.Axis.Z);
+            for (int i = 0; i < len; i++) {
+                int bx = alongX ? x + i : x, bz = alongX ? z : z + i;
+                int gy = groundY(bx, bz);
+                if (!soil(level.getBlockState(p.set(bx, gy, bz)))) return i > 1;
+                if (!soft(level.getBlockState(p.set(bx, gy + 1, bz)))) continue;
+                set(bx, gy + 1, bz, wl);
+                if ((hash(bx, bz, 74) >>> 8) % 3 == 0 && soft(level.getBlockState(p.set(bx, gy + 2, bz))))
+                    set(bx, gy + 2, bz, Blocks.MOSS_CARPET.defaultBlockState());
+            }
+            return true;
         }
 
         void elvenTree(int x, int y0, int z, int h, double rad, int main) {
