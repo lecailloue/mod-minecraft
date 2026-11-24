@@ -466,6 +466,7 @@ public final class GameEvents {
 
     private static void onCommands(RegisterCommandsEvent e) {
         e.getDispatcher().register(Commands.literal("anneaux")
+                .then(net.ringsofash.world.Croquis.command())
                 .then(Commands.literal("reputation").executes(ctx -> {
                     ServerPlayer p = ctx.getSource().getPlayerOrException();
                     PlayerLore l = ModData.lore(p);
