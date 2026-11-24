@@ -56,6 +56,9 @@ public final class SelfTest {
             if (lands != null) {
                 step("carte biomes", () -> biomeMap(lands));
                 step("biomes", () -> eachBiome(lands));
+                step("sol des scenes", () -> {
+                    for (int[] c : new int[][] {{-1520, -75}, {-1510, -78}, {-1450, -244}, {-768, -704}}) census(lands, c[0], c[1]);
+                });
                 step("arrivee", () -> log("arrivee: " + Travel.arrival(server, lands)));
                 step("carte", () -> mapCheck(lands));
             }
@@ -349,6 +352,25 @@ public final class SelfTest {
         StringBuilder sb = new StringBuilder("repartition des biomes (12 km x 12 km): ");
         for (Map.Entry<String, Integer> e : counts.entrySet()) sb.append(e.getKey()).append('=').append(e.getValue() * 100 / (size * size)).append("% ");
         log(sb.toString());
+    }
+
+    /** ce qu'il y a au sol autour d'un point : utile pour comprendre une capture d'ecran */
+    private static void census(ServerLevel lands, int cx, int cz) throws Exception {
+        Map<String, Integer> top = new TreeMap<>(), sol = new TreeMap<>();
+        for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++) lands.getChunk((cx >> 4) + dx, (cz >> 4) + dz);
+        for (int x = cx - 24; x <= cx + 24; x++) for (int z = cz - 24; z <= cz + 24; z++) {
+            int y = lands.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1;
+            top.merge(lands.getBlockState(new BlockPos(x, y, z)).getBlock().builtInRegistryHolder().key().location().getPath(), 1, Integer::sum);
+            int yy = y;
+            for (int k = 0; k < 6; k++) {
+                BlockPos q = new BlockPos(x, yy, z);
+                if (lands.getBlockState(q).isCollisionShapeFullBlock(lands, q)) break;
+                yy--;
+            }
+            sol.merge(lands.getBlockState(new BlockPos(x, yy, z)).getBlock().builtInRegistryHolder().key().location().getPath(), 1, Integer::sum);
+        }
+        log("scene " + cx + "," + cz + " biome " + lands.getBiome(new BlockPos(cx, 90, cz)).unwrapKey().map(k -> k.location().getPath()).orElse("?")
+                + " dessus " + top + " sol " + sol);
     }
 
     private static void eachBiome(ServerLevel lands) throws Exception {
