@@ -1203,16 +1203,16 @@ public final class ClientTest {
         lineup("03_divers", 7.0, 2F, 2.2, List.of(ModEntities.CAVE_THIEF.get(), ModEntities.SORCERER.get(), ModEntities.DEAD_SOLDIER.get(), ModEntities.CROW.get(), ModEntities.STAG.get(), ModEntities.WARG.get()));
         lineup("04_betes", 12.0, -4F, 5.5, List.of(ModEntities.CAVE_TROLL.get(), ModEntities.TROLL_CHIEF.get(), ModEntities.STONE_TROLL.get(), ModEntities.GIANT_SPIDER.get(), ModEntities.EAGLE.get(), ModEntities.LURKER.get()));
         // faune des bois et des rivieres
-        lineup("fau_01_foret", 9.0, -2F, 2.8, List.of(ModEntities.DEER.get(), ModEntities.ROE_DEER.get(), ModEntities.FOX.get(), ModEntities.SQUIRREL.get()));
-        lineup("fau_02_riviere", 8.0, -2F, 2.6, List.of(ModEntities.DUCK.get(), ModEntities.HERON.get(), ModEntities.BEAVER.get()));
-        lineup("fau_03_cerf", 4.6, 1F, 3.0, List.of(ModEntities.DEER.get()));
-        lineup("fau_04_chevreuil", 3.8, 2F, 3.0, List.of(ModEntities.ROE_DEER.get()));
-        lineup("fau_05_renard", 3.0, 6F, 3.0, List.of(ModEntities.FOX.get()));
-        lineup("fau_06_ecureuil", 2.4, 8F, 3.0, List.of(ModEntities.SQUIRREL.get()));
-        lineup("fau_07_canard", 2.6, 8F, 3.0, List.of(ModEntities.DUCK.get()));
-        lineup("fau_08_heron", 4.0, 2F, 3.0, List.of(ModEntities.HERON.get()));
-        lineup("fau_09_castor", 2.8, 8F, 3.0, List.of(ModEntities.BEAVER.get()));
-        lineup("fau_10_cote", 4.5, 0F, 2.6, List.of(ModEntities.DEER.get(), ModEntities.STAG.get()));
+        lineup("fau_01_foret", 7.0, 4F, 2.8, List.of(ModEntities.DEER.get(), ModEntities.ROE_DEER.get(), ModEntities.FOX.get(), ModEntities.SQUIRREL.get()));
+        lineup("fau_02_riviere", 5.0, 10F, 2.6, List.of(ModEntities.DUCK.get(), ModEntities.HERON.get(), ModEntities.BEAVER.get()));
+        lineup("fau_03_cerf", 4.6, 3F, 3.0, List.of(ModEntities.DEER.get()));
+        lineup("fau_04_chevreuil", 3.8, 8F, 3.0, List.of(ModEntities.ROE_DEER.get()));
+        lineup("fau_05_renard", 3.0, 14F, 3.0, List.of(ModEntities.FOX.get()));
+        lineup("fau_06_ecureuil", 2.4, 21F, 3.0, List.of(ModEntities.SQUIRREL.get()));
+        lineup("fau_07_canard", 2.6, 18F, 3.0, List.of(ModEntities.DUCK.get()));
+        lineup("fau_08_heron", 4.0, 6F, 3.0, List.of(ModEntities.HERON.get()));
+        lineup("fau_09_castor", 2.8, 16F, 3.0, List.of(ModEntities.BEAVER.get()));
+        lineup("fau_10_cote", 5.0, 2F, 2.6, List.of(ModEntities.DEER.get(), ModEntities.STAG.get()));
         // poses des trolls (profil + trois quarts) : course a quatre pattes, poings leves, poings abattus
         {
             Object[][] poses = {{"04b_troll_course", true, 0, 90F}, {"04c_troll_leve", false, 17, 90F}, {"04d_troll_frappe", false, 22, 90F}, {"04e_troll_face", true, 0, 20F}, {"04f_troll_leve_face", false, 17, 35F}};
