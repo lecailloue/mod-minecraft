@@ -181,6 +181,14 @@ public final class MapChunkGenerator extends ChunkGenerator {
 
     private static BlockState[] moriaPal;
 
+    private static BlockState peat;
+
+    /** la tourbe est un bloc du mod : on ne la lit qu'une fois l'enregistrement termine */
+    private static BlockState peat() {
+        if (peat == null) peat = Reg.PEAT.get().defaultBlockState();
+        return peat;
+    }
+
     private static synchronized BlockState[] moriaPal() {
         if (moriaPal != null) return moriaPal;
         BlockState[] p = new BlockState[EreborPlan.NIDS];
@@ -384,9 +392,10 @@ public final class MapChunkGenerator extends ChunkGenerator {
                     top = m > 0.56f ? MOSS : m < 0.32f ? PODZOL : hash(x, 8, z) < 0.07f ? COARSE : GRASS; layers = 3;
                 }
             }
-            case 16 -> {                                   // marais des morts : vase, mousse, herbe pourrie
-                float m = fbm(x * 0.08, z * 0.08, 33);
-                if (under || h <= MapData.SEA + 1) top = MUD;
+            case 16 -> {                                   // marais des morts : vase, tourbe, mousse, herbe pourrie
+                float m = fbm(x * 0.08, z * 0.08, 33), t = fbm(x * 0.045, z * 0.045, 37);
+                if (under || h <= MapData.SEA + 1) top = t > 0.66f ? peat() : MUD;
+                else if (t > 0.70f && hash(x, 7, z) < 0.8f) top = peat();   // bancs de tourbe
                 else top = m > 0.64f ? MOSS : m < 0.3f ? PODZOL : m < 0.52f && hash(x, 6, z) < 0.55f ? MUD : GRASS;
                 layers = 3;
             }
@@ -463,7 +472,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
         }
         if (top != null && depth < layers) {
             if (depth == 0) return top;
-            if (top == GRASS || top == PODZOL || top == COARSE || top == PATH || top == MOSS || top == MUD || top == ROOTED) return DIRT;
+            if (top == GRASS || top == PODZOL || top == COARSE || top == PATH || top == MOSS || top == MUD || top == ROOTED || top == peat()) return DIRT;
             return top;
         }
         if (y < 0) return DEEPSLATE;

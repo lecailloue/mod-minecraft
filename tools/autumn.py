@@ -215,9 +215,139 @@ CONIFER = {
 }
 
 
+# ------------------------------------------------------------------ details du sol et sous-bois des cinq biomes
+def scatter(items, seed, n=26):
+    """petits motifs semes au hasard, vus de dessus (tapis d'aiguilles, cailloux, brindilles)"""
+    rnd = random.Random(seed)
+    im = new(S)
+    for _ in range(n):
+        art, pal = items[rnd.randrange(len(items))]
+        stamp(im, art, pal, rnd.randrange(-1, S), rnd.randrange(-1, S))
+    return im
+
+
+def needles(base, light, dark, seed):
+    a, b, c = {'l': C(base)}, {'l': C(light)}, {'l': C(dark)}
+    arts = [(['ll.', '..l'], a), (['.l', 'l.'], b), (['lll'], c), (['l', 'l', 'l'], a), (['l.', '.l'], c), (['ll'], b)]
+    return scatter(arts, seed, 34)
+
+
+def pebbles(seed):
+    pal = lambda h: {'l': rgb(h), 'L': shade(rgb(h), 1.25), 'o': shade(rgb(h), 0.7)}
+    arts = [(['.ll.', 'lLLo', '.oo.'], pal('#8a8a84')), (['ll', 'Lo'], pal('#9b9890')), (['.l.', 'lLo'], pal('#787873')),
+            (['ll', 'lo'], pal('#a09d94')), (['l'], pal('#6f6f6b'))]
+    return scatter(arts, seed, 22)
+
+
+def twigs(seed):
+    pal = lambda h: {'l': rgb(h), 'o': shade(rgb(h), 0.72)}
+    arts = [(['ll..', '..lo'], pal('#6b5236')), (['l...', '.ll.', '...o'], pal('#5a452e')), (['lll'], pal('#7a5f3e')),
+            (['l', 'l', 'o'], pal('#604a30')), (['.l.', 'l.o'], pal('#72573a'))]
+    return scatter(arts, seed, 13)
+
+
+def mushrooms(cap, light, stem, seed, n=4, tall=False):
+    """une touffe de champignons : chapeaux ronds sur de courts pieds"""
+    rnd = random.Random(seed)
+    im = new(S)
+    pc, lc, sc = C(cap), C(light), C(stem)
+    spots = [(2, 12), (7, 10), (12, 13), (5, 15), (13, 7)][:n]
+    for (x, y) in spots:
+        hh = (3 + rnd.randrange(0, 3)) if tall else (1 + rnd.randrange(0, 2))
+        for k in range(hh):
+            P(im, x, 15 - k, sc); P(im, x + 1, 15 - k, shade(sc, 0.8))
+        top = 15 - hh
+        art = ['.ll.', 'lLLl', '.oo.'] if rnd.random() < 0.5 else ['.l.', 'lLl', '.o.']
+        stamp(im, art, {'l': pc, 'L': lc, 'o': shade(pc, 0.65)}, x - 1, top - 2)
+    return im
+
+
+def reeds(base, light, dark, seed, head=None):
+    """roseaux : de longues tiges droites, parfois un epi brun au bout"""
+    rnd = random.Random(seed)
+    im = new(S)
+    cols = [C(dark), C(base), C(light)]
+    for b in range(7):
+        x = 1 + b * 2 + rnd.randrange(0, 2)
+        h = 10 + rnd.randrange(0, 6)
+        bend = rnd.choice((-0.25, 0, 0, 0.25))
+        xx = x
+        for k in range(h):
+            t = k / max(1, h - 1)
+            xx = int(round(x + bend * t * t * 4))
+            P(im, xx, 15 - k, cols[min(2, int(t * 2.5))])
+        if head and rnd.random() < 0.6:
+            for k in range(3):
+                P(im, xx, 15 - h + 1 - k, C(head)); P(im, xx + 1, 15 - h + 1 - k, shade(C(head), 0.78))
+        else:
+            P(im, xx, 15 - h, cols[2])
+    return im
+
+
+def berry_bush(leaf, light, berry, seed):
+    rnd = random.Random(seed)
+    im = new(S)
+    for b in range(7):
+        a = -1.1 + b * 0.37
+        x, y = 7.5, 15.0
+        for k in range(4 + rnd.randrange(0, 3)):
+            x += math.sin(a) * 1.15; y -= math.cos(a) * 1.1
+            stamp(im, rnd.choice((['ll', 'll'], ['.l', 'll'], ['l'])), {'l': C(leaf) if rnd.random() < 0.6 else C(light)}, int(x) - 1, int(y) - 1)
+    for _ in range(7):
+        x, y = rnd.randrange(2, 14), rnd.randrange(4, 14)
+        stamp(im, ['ll', 'lo'], {'l': C(berry), 'o': shade(C(berry), 0.7)}, x, y)
+    return im
+
+
+def clover(seed):
+    rnd = random.Random(seed)
+    im = new(S)
+    g, g2 = rgb('#3f7a2a'), rgb('#5d9c38')
+    for _ in range(14):
+        x, y = rnd.randrange(1, 14), rnd.randrange(5, 14)
+        for k in range(1 + rnd.randrange(0, 3)): P(im, x, 15 - k, g)
+        stamp(im, ['.l.', 'lLl'], {'l': g2, 'L': g}, x - 1, y - 1)
+        if rnd.random() < 0.3: P(im, x, y - 2, rgb('#f0f0e6'))
+    return im
+
+
+def wild_wheat(seed):
+    rnd = random.Random(seed)
+    im = new(S)
+    stem, grain, pale = rgb('#8a8a3e'), rgb('#d9b53c'), rgb('#efd673')
+    for b in range(6):
+        x = 2 + b * 2 + rnd.randrange(0, 2)
+        h = 9 + rnd.randrange(0, 5)
+        for k in range(h): P(im, x, 15 - k, stem)
+        for k in range(3 + rnd.randrange(0, 3)):
+            y = 15 - h + k
+            P(im, x, y, grain if k % 2 else pale)
+            if rnd.random() < 0.6: P(im, x + (1 if k % 2 else -1), y, shade(grain, 0.85))
+    return im
+
+
+DETAILS = {
+    'needle_litter':  lambda: needles('#2f4a24', '#486b31', '#5a4a2a', 51),
+    'pebbles':        lambda: pebbles(52),
+    'twigs':          lambda: twigs(53),
+    'bog_moss':       lambda: scatter([(['.ll.', 'lLLl', '.ll.'], {'l': rgb('#4a5a2e'), 'L': rgb('#61753a')}),
+                                       (['ll', 'll'], {'l': rgb('#55663a')}), (['l'], {'l': rgb('#6d7c48')})], 54, 30),
+    'amber_mushroom': lambda: mushrooms('#c9711c', '#e8a03c', '#e0d2b0', 55, 5),
+    'pale_mushroom':  lambda: mushrooms('#d8d6c4', '#f2f0e2', '#cfcab4', 56, 4, True),
+    'swamp_mushroom': lambda: mushrooms('#6a5b78', '#8b7b9a', '#9a9486', 57, 4),
+    'reed_tuft':      lambda: reeds('#5e7a30', '#88a845', '#3d5420', 58),
+    'cattail':        lambda: reeds('#4e6b2c', '#7a9a3c', '#36491c', 59, head='#6b4a26'),
+    'dead_tuft':      lambda: tuft('#8a7a56', '#a99a74', '#5e5238', 60),
+    'clover':         lambda: clover(61),
+    'field_daisies':  lambda: flower_cluster('#f2f2e8', '#ffffff', '#e8c84a', 62, 6),
+    'wild_wheat':     lambda: wild_wheat(63),
+    'blueberry_bush': lambda: berry_bush('#2f5a2a', '#447a38', '#49608f', 64),
+}
+
+
 def all_textures():
     out = {}
-    for d in (FLOWERS, TUFTS, LITTERS, CONIFER):
+    for d in (FLOWERS, TUFTS, LITTERS, CONIFER, DETAILS):
         for k, f in d.items():
             out[k] = f()
     return out

@@ -100,7 +100,7 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
 
         boolean soil(BlockState s) {
             return s.is(Blocks.GRASS_BLOCK) || s.is(Blocks.DIRT) || s.is(Blocks.PODZOL) || s.is(Blocks.COARSE_DIRT) || s.is(Blocks.MOSS_BLOCK)
-                    || s.is(Blocks.MUD) || s.is(Blocks.ROOTED_DIRT);
+                    || s.is(Blocks.MUD) || s.is(Blocks.ROOTED_DIRT) || s.is(Reg.PEAT.get());
         }
 
         boolean soft(BlockState s) { return s.isAir() || s.canBeReplaced(); }
@@ -280,6 +280,12 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 } else if (h % 211 < 3 && g.is(Blocks.MOSS_BLOCK)) {
                     set(x, gy + 1, z, Blocks.MOSS_CARPET.defaultBlockState());
                     any = true;
+                } else if (h % 149 < 3 && (g.is(Blocks.PODZOL) || g.is(Blocks.MOSS_BLOCK)) && near < 6) {
+                    set(x, gy + 1, z, Reg.AMBER_MUSHROOM.get().defaultBlockState());
+                    any = true;
+                } else if (h % 127 < 4) {
+                    set(x, gy + 1, z, (h & 8) == 0 ? Reg.TWIGS.get().defaultBlockState() : Reg.PEBBLES.get().defaultBlockState());
+                    any = true;
                 }
             }
             return any;
@@ -391,6 +397,7 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 else cypressTree(x, gy + 1, z, 13 + r.nextInt(15), 2.3 + r.nextDouble() * 1.4);
                 flush();
                 done.add(new int[] {x, z, giant ? 11 : 4});
+                trees.add(new int[] {x, z, giant ? 9 : 4, 0});
                 any = true;
             }
             for (int k = 0; k < 5; k++) {                                     // jeunes pousses
@@ -530,7 +537,21 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 if (!up.isAir() && !up.is(Blocks.SHORT_GRASS) && !up.is(Blocks.FERN)) continue;
                 int h = (hash(x, z, 85) >>> 8) & 0xFFFF;
                 double n = (vn(x * 0.09, z * 0.09, 86) + 1) * 0.5;             // clairieres plus fournies
-                if (h % 100 < (n > 0.55 ? 46 : 22)) {
+                double near = 1e9;
+                for (int[] t : trees) near = Math.min(near, Math.hypot(t[0] - x, t[1] - z) - t[2]);
+                if (near < 3 && h % 100 < 58) {                                // tapis d'aiguilles sous les arbres
+                    set(x, gy + 1, z, Reg.NEEDLE_LITTER.get().defaultBlockState());
+                    any = true;
+                } else if (h % 173 < 3 && near < 7) {
+                    set(x, gy + 1, z, (h & 16) == 0 ? Reg.AMBER_MUSHROOM.get().defaultBlockState() : Reg.PALE_MUSHROOM.get().defaultBlockState());
+                    any = true;
+                } else if (h % 181 < 3 && near > 3) {
+                    set(x, gy + 1, z, Reg.BLUEBERRY_BUSH.get().defaultBlockState());
+                    any = true;
+                } else if (h % 131 < 4) {
+                    set(x, gy + 1, z, (h & 8) == 0 ? Reg.TWIGS.get().defaultBlockState() : Reg.PEBBLES.get().defaultBlockState());
+                    any = true;
+                } else if (h % 100 < (n > 0.55 ? 46 : 22)) {
                     BlockState u = switch ((h >> 6) % 7) {
                         case 0, 1 -> Reg.GREEN_TUFT.get().defaultBlockState();
                         case 2 -> Reg.PALE_GREEN_TUFT.get().defaultBlockState();
@@ -587,7 +608,8 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 if (g.is(Blocks.MOSS_BLOCK) && h < 55) { set(x, gy + 1, z, Blocks.MOSS_CARPET.defaultBlockState()); any = true; }
                 else if (h < 3) { set(x, gy + 1, z, Blocks.LARGE_FERN.defaultBlockState().setValue(net.minecraft.world.level.block.DoublePlantBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER)); set(x, gy + 2, z, Blocks.LARGE_FERN.defaultBlockState().setValue(net.minecraft.world.level.block.DoublePlantBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER)); any = true; }
                 else if (h < 5) { set(x, gy + 1, z, Blocks.AZALEA.defaultBlockState()); any = true; }
-                else if (h < 7) { set(x, gy + 1, z, Blocks.DANDELION.defaultBlockState()); any = true; }
+                else if (h < 8) { set(x, gy + 1, z, Reg.PALE_MUSHROOM.get().defaultBlockState()); any = true; }
+                else if (h < 12) { set(x, gy + 1, z, (h & 1) == 0 ? Reg.TWIGS.get().defaultBlockState() : Reg.PEBBLES.get().defaultBlockState()); any = true; }
             }
             if (r.nextFloat() < 0.07f) any |= ruin(false);
             return any;
@@ -717,11 +739,19 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 boolean shore = level.getFluidState(p.set(x + 1, gy + 1, z)).is(net.minecraft.tags.FluidTags.WATER) || level.getFluidState(p.set(x - 1, gy + 1, z)).is(net.minecraft.tags.FluidTags.WATER)
                         || level.getFluidState(p.set(x, gy + 1, z + 1)).is(net.minecraft.tags.FluidTags.WATER) || level.getFluidState(p.set(x, gy + 1, z - 1)).is(net.minecraft.tags.FluidTags.WATER);
                 int h = (hash(x, z, 21) >>> 8) % 100;
-                if (shore && h < 50) {
-                    int n = 1 + (hash(x, z, 22) >>> 8) % 3;
-                    for (int k = 1; k <= n; k++) set(x, gy + k, z, Blocks.SUGAR_CANE.defaultBlockState());
+                if (shore && h < 58) {
+                    int q = (hash(x, z, 22) >>> 8) % 10;
+                    if (q < 4) {
+                        int n = 1 + (hash(x, z, 24) >>> 8) % 3;
+                        for (int k = 1; k <= n; k++) set(x, gy + k, z, Blocks.SUGAR_CANE.defaultBlockState());
+                    } else {
+                        set(x, gy + 1, z, q < 7 ? Reg.REED_TUFT.get().defaultBlockState() : Reg.CATTAIL.get().defaultBlockState());
+                    }
                     any = true;
-                } else if (h < 3) { set(x, gy + 1, z, Blocks.MOSS_CARPET.defaultBlockState()); any = true; }
+                } else if (h < 10) { set(x, gy + 1, z, Reg.DEAD_TUFT.get().defaultBlockState()); any = true; }
+                else if (h < 13) { set(x, gy + 1, z, Reg.BOG_MOSS.get().defaultBlockState()); any = true; }
+                else if (h < 15) { set(x, gy + 1, z, Reg.SWAMP_MUSHROOM.get().defaultBlockState()); any = true; }
+                else if (h < 17) { set(x, gy + 1, z, Blocks.MOSS_CARPET.defaultBlockState()); any = true; }
             }
             // arbres morts, dans l'eau comme sur les buttes
             for (int k = 0; k < 4; k++) {

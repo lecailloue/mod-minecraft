@@ -285,6 +285,25 @@ def blocks():
     for _id, _fr in (('green_tuft', 'Herbe des sous-bois'), ('pale_green_tuft', 'Herbe claire'), ('fern_bush', 'Buisson de fougères')):
         btex(_id, autumn.CONIFER[_id]())
         block(_id, _fr, 'cross', java='new TallGrassBlock(copy(Blocks.SHORT_GRASS))')
+
+    # --- details du sol : litieres, cailloux, brindilles (tapis)
+    for _id, _fr in (('needle_litter', "Tapis d'aiguilles"), ('pebbles', 'Cailloutis'),
+                     ('twigs', 'Brindilles'), ('bog_moss', 'Mousse de tourbière')):
+        btex(_id, autumn.DETAILS[_id]())
+        block(_id, _fr, 'carpet', copy='MOSS_CARPET', extra='.noOcclusion()', tool='hoe')
+
+    # --- champignons et plantes des cinq biomes
+    for _id, _fr in (('amber_mushroom', "Champignons d'ambre"), ('pale_mushroom', 'Champignons blafards'),
+                     ('swamp_mushroom', 'Champignons des marais'), ('reed_tuft', 'Roseaux'), ('cattail', 'Massettes'),
+                     ('dead_tuft', 'Herbe morte'), ('clover', 'Trèfle'), ('wild_wheat', 'Blé sauvage'),
+                     ('blueberry_bush', 'Buisson de myrtilles')):
+        btex(_id, autumn.DETAILS[_id]())
+        block(_id, _fr, 'cross', java='new TallGrassBlock(copy(Blocks.SHORT_GRASS))')
+    btex('field_daisies', autumn.DETAILS['field_daisies']())
+    block('field_daisies', 'Marguerites des champs', 'cross',
+          java='new FlowerBlock(MobEffects.SATURATION, 5.0F, copy(Blocks.DANDELION))', tags=['small_flowers'], itags=['small_flowers'])
+    btex('peat', stone('#473321', 65, var=0.7, cell=3, speck=0.8))
+    block('peat', 'Tourbe', copy='DIRT', tool='shovel', tags=['dirt'])
     btex('golden_sapling', sprite([
         '................', '.......bb.......', '......bcab......', '.....babbab.....', '....bbacbaab....', '.....abbabb.....',
         '......babb......', '.......ss.......', '..bb...ss..ab...', '.baab..ss.bbab..', '..bab..ssabb....', '...ba.ssss......',

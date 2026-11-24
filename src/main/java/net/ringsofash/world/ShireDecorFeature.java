@@ -15,6 +15,7 @@ import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.ringsofash.RingsOfAsh;
+import net.ringsofash.gen.Reg;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -283,7 +284,15 @@ public class ShireDecorFeature extends Feature<NoneFeatureConfiguration> {
                 if (h < 40) level.setBlock(up, Blocks.MOSS_CARPET.defaultBlockState(), 2);
                 else if (h < 44) level.setBlock(up, Blocks.FLOWERING_AZALEA.defaultBlockState(), 2);
                 any = true;
+                continue;
             }
+            // la prairie : trefle en plaques, marguerites, ble sauvage pres des champs
+            int hp = (hash(x, z, 23) >>> 8) % 1000;
+            float cl = MapChunkGenerator.fbm(x * 0.06, z * 0.06, 92);
+            if (cl > 0.62f && hp % 100 < 42) { level.setBlock(up, Reg.CLOVER.get().defaultBlockState(), 2); any = true; }
+            else if (hp < 22) { level.setBlock(up, Reg.FIELD_DAISIES.get().defaultBlockState(), 2); any = true; }
+            else if (hp < 34 && nearField(x, z, 14)) { level.setBlock(up, Reg.WILD_WHEAT.get().defaultBlockState(), 2); any = true; }
+            else if (hp < 40) { level.setBlock(up, Reg.TWIGS.get().defaultBlockState(), 2); any = true; }
         }
         // arbres puis buissons
         if (TREES.isEmpty()) return any;
