@@ -124,33 +124,51 @@ def antlers(B, G, s, key, y, z, size=1.0):
 # ================================================================== cerf
 @model
 def cerf():
-    """silhouette massive : un corps d'une piece, une grosse tete carree, des bois fins"""
-    B, G = mkT(1.0)
+    """meme charpente que le cerf blanc, en robe brune et sans le harnais elfique"""
+    B, G = mkT(0.94)
     legs = []
-    for nm, sgn, z in (('leg_fr', 1, -6), ('leg_fl', -1, -6), ('leg_br', 1, 7), ('leg_bl', -1, 7)):
-        x = 3.2 * sgn
-        legs.append(G(nm, (x, 17, z), children=[
-            B(f'{nm}_up', x - 1.8, 6, z - 1.8, 3.6, 11, 3.6, 'deer', key='c_legu'),
-            B(f'{nm}_lo', x - 1.6, 1.6, z - 1.6, 3.2, 5, 3.2, 'deer', key='c_legl'),
-            B(f'{nm}_hoof', x - 1.7, 0, z - 1.8, 3.4, 2, 3.6, 'hoofd', key='c_hoof')]))
-    body = [
-        B('torso', -4.5, 17, -9, 9, 11, 19, 'deer', key='c_torso'),
-        B('belly', -3.6, 16.2, -7, 7.2, 1.6, 15, 'deer_pale', key='c_belly'),
-        B('tail', -1.4, 25, 9.8, 2.8, 4, 2, 'deer_pale', key='c_tail'),
+
+    def leg(nm, s, z, hind):
+        x = 4 * s
+        if hind:
+            kids = [B(f'{nm}_thigh', x - 3, 15, z - 3.5, 6, 11, 7, 'deer', key='c_thigh'),
+                    B(f'{nm}_hockb', x - 1.5, 11, z + 1.2, 3, 5, 2.4, 'deer', key='c_hockb'),
+                    B(f'{nm}_shin', x - 1.6, 3, z - 1.6, 3.2, 12, 3.2, 'deer', key='c_shin'),
+                    B(f'{nm}_hoof', x - 2, 0, z - 2.6, 4, 3.5, 5, 'hoofd', key='c_hoof')]
+        else:
+            kids = [B(f'{nm}_arm', x - 2.4, 15, z - 2.8, 4.8, 11, 5.6, 'deer', key='c_arm'),
+                    B(f'{nm}_shin', x - 1.6, 3, z - 1.6, 3.2, 13, 3.2, 'deer', key='c_fshin'),
+                    B(f'{nm}_hoof', x - 2, 0, z - 2.6, 4, 3.5, 5, 'hoofd', key='c_fhoof')]
+        return G(nm, (x, 26, z), children=kids)
+    legs += [leg('leg_fr', 1, -9, False), leg('leg_fl', -1, -9, False), leg('leg_br', 1, 10, True), leg('leg_bl', -1, 10, True)]
+
+    body_kids = [
+        B('chest', -5, 21, -14, 10, 14, 10, 'deer', key='c_chest'),
+        B('torso', -4.6, 22, -5, 9.2, 12, 20, 'deer', key='c_torso'),
+        B('rump', -4.8, 23, 12, 9.6, 11, 5, 'deer', key='c_rump'),
+        B('belly', -3.6, 20.5, -8, 7.2, 2, 22, 'deer_pale', key='c_belly'),
+        B('ruff', -4.2, 26, -17, 8.4, 11, 5, 'deer_pale', key='c_ruff'),
+        B('tail', -1.6, 29, 16, 3.2, 6, 3, 'deer_pale', key='c_tail'),
     ]
-    head = G('head', (0, 31, -8), rot=(-12, 0, 0), children=[
-        B('skull', -3.4, 29, -15.5, 6.8, 6.5, 8, 'deer', key='c_skull', fx=fx_eye(1, 2, col=(22, 16, 12))),
-        B('muzzle', -2.6, 28.4, -18.6, 5.2, 4.4, 3.4, 'deer_pale', key='c_muzzle'),
-        B('nose', -2.4, 30.6, -18.9, 4.8, 2, 1.2, 'hoofd', key='c_nose'),
-        B('ear_r', 3.2, 33.5, -12.4, 2.6, 3.6, 1.4, 'deer', key='c_ear'),
-        B('ear_l', -5.8, 33.5, -12.4, 2.6, 3.6, 1.4, 'deer', key='c_ear'),
-        antlers(B, G, 1, 'c_ant', 35, -12), antlers(B, G, -1, 'c_ant', 35, -12),
+    neck = G('neck', (0, 31, -12), rot=(-40, 0, 0), children=[
+        B('neck_base', -3.9, 31, -15.6, 7.8, 8, 7.6, 'deer', key='c_nbase'),
+        B('neck_a', -3.2, 38, -15.2, 6.4, 11.5, 6.4, 'deer', key='c_neck'),
+        B('neck_ruff', -3.8, 33, -16.6, 7.6, 12, 2.2, 'deer_pale', key='c_nruff'),
+        B('neck_mane', -2, 33.4, -9.8, 4, 14, 1.8, 'deer_pale', key='c_nmane'),
     ])
-    neck = G('neck', (0, 23, -7), rot=(10, 0, 0), children=[
-        B('neck_a', -3.2, 22, -12, 6.4, 11, 6.4, 'deer', key='c_neck'),
-        head,
+    head = G('head', (0, 49, -12), rot=(26, 0, 0), children=[
+        B('skull', -3.4, 45.5, -19, 6.8, 7, 9, 'deer', key='c_skull', fx=fx_eye(1, 2, col=(30, 20, 16), glint=(250, 250, 255))),
+        B('muzzle', -2.4, 43.9, -25, 4.8, 5, 7, 'deer', key='c_muzzle'),
+        B('nose', -2.5, 43.5, -26.5, 5, 3, 2, 'dnose', key='c_nose'),
+        B('jaw_s', -2, 42.5, -24, 4, 1.8, 6, 'deer', key='c_jaw'),
+        beasts.antler(B, G, 1, 'c_antr'), beasts.antler(B, G, -1, 'c_antl'),
+        # oreilles : feuille large ouverte vers l'avant (face interieure rose devant), ecartee de cote et penchee en avant
+        G('ear_r', (3.2, 49.5, -12), rot=(24, 0, -62), children=[B('ear_r_o', 3.0, 49.5, -12.7, 3.8, 9, 1.4, 'deer', key='c_ear'), B('ear_r_i', 3.7, 50.3, -13.3, 2.4, 7.2, .6, 'earin', key='c_earin')]),
+        G('ear_l', (-3.2, 49.5, -12), rot=(24, 0, 62), children=[B('ear_l_o', -6.8, 49.5, -12.7, 3.8, 9, 1.4, 'deer', key='c_ear'), B('ear_l_i', -6.1, 50.3, -13.3, 2.4, 7.2, .6, 'earin', key='c_earin')]),
     ])
-    return [G('body', (0, 0, 0), children=body + legs + [neck])]
+    neck.children.append(head)
+    body = G('body', (0, 28, 0), children=body_kids + [neck])
+    return legs + [body]
 
 
 # ================================================================== chevreuil
