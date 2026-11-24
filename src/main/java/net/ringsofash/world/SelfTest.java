@@ -59,6 +59,11 @@ public final class SelfTest {
                 step("croquis", () -> {
                     for (String l : CroquisOverlay.verify(lands).split("\n")) log("croquis " + l);
                 });
+                step("ponts", () -> {
+                    java.util.List<String> l = new java.util.ArrayList<>(BridgeFeature.PLACED);
+                    log("ponts poses : " + l.size());
+                    for (int i = 0; i < Math.min(12, l.size()); i++) log("  " + l.get(i));
+                });
                 step("petites structures", () -> {
                     java.util.List<String> l = new java.util.ArrayList<>(MiniStructFeature.PLACED);
                     log("petites structures posees : " + l.size());
