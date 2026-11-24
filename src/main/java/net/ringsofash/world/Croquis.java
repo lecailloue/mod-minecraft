@@ -1,6 +1,7 @@
 package net.ringsofash.world;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -35,15 +36,19 @@ public final class Croquis {
 
     public static LiteralArgumentBuilder<CommandSourceStack> command() {
         return Commands.literal("croquis")
-                .then(Commands.literal("coin1").executes(c -> mark(c.getSource().getPlayerOrException(), 0)))
-                .then(Commands.literal("coin2").executes(c -> mark(c.getSource().getPlayerOrException(), 1)))
+                .then(Commands.literal("coin1").executes(c -> mark(c.getSource().getPlayerOrException(), 0, null))
+                        .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                                .executes(c -> mark(c.getSource().getPlayerOrException(), 0, BlockPosArgument.getLoadedBlockPos(c, "pos")))))
+                .then(Commands.literal("coin2").executes(c -> mark(c.getSource().getPlayerOrException(), 1, null))
+                        .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                                .executes(c -> mark(c.getSource().getPlayerOrException(), 1, BlockPosArgument.getLoadedBlockPos(c, "pos")))))
                 .then(Commands.literal("sauver").then(Commands.argument("nom", StringArgumentType.word())
                         .executes(c -> save(c.getSource().getPlayerOrException(), StringArgumentType.getString(c, "nom")))));
     }
 
-    private static int mark(ServerPlayer p, int i) {
+    private static int mark(ServerPlayer p, int i, BlockPos at) {
         BlockPos[] s = SEL.computeIfAbsent(p.getUUID(), k -> new BlockPos[2]);
-        s[i] = p.blockPosition();
+        s[i] = at != null ? at : p.blockPosition();
         msg(p, "Coin " + (i + 1) + " : " + s[i].getX() + " " + s[i].getY() + " " + s[i].getZ(), ChatFormatting.GREEN);
         if (s[0] != null && s[1] != null) {
             int dx = Math.abs(s[0].getX() - s[1].getX()) + 1, dy = Math.abs(s[0].getY() - s[1].getY()) + 1, dz = Math.abs(s[0].getZ() - s[1].getZ()) + 1;
@@ -75,7 +80,8 @@ public final class Croquis {
         int x0 = Math.min(s[0].getX(), s[1].getX()), x1 = Math.max(s[0].getX(), s[1].getX());
         int y0 = Math.min(s[0].getY(), s[1].getY()), y1 = Math.max(s[0].getY(), s[1].getY());
         int z0 = Math.min(s[0].getZ(), s[1].getZ()), z1 = Math.max(s[0].getZ(), s[1].getZ());
-        if ((long) (x1 - x0 + 1) * (y1 - y0 + 1) * (z1 - z0 + 1) > 200000) { msg(p, "Zone trop grande.", ChatFormatting.RED); return 0; }
+        long vol = (long) (x1 - x0 + 1) * (y1 - y0 + 1) * (z1 - z0 + 1);
+        if (vol > 2000000) { msg(p, "Zone trop grande (" + vol + " blocs, maximum deux millions).", ChatFormatting.RED); return 0; }
         StringBuilder sb = new StringBuilder();
         sb.append("{\n  \"nom\": \"").append(nom).append("\",\n");
         sb.append("  \"origine\": [").append(x0).append(", ").append(y0).append(", ").append(z0).append("],\n");
@@ -99,8 +105,16 @@ public final class Croquis {
         try {
             Path dir = FMLPaths.GAMEDIR.get().resolve("roa_croquis");
             Files.createDirectories(dir);
-            Path f = dir.resolve(nom.replaceAll("[^A-Za-z0-9_-]", "_") + ".json");
-            Files.writeString(f, sb.toString());
+            String base = nom.replaceAll("[^A-Za-z0-9_-]", "_");
+            byte[] data = sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            Path f;
+            if (n > 4000) {                                     // les gros croquis sont compresses
+                f = dir.resolve(base + ".json.gz");
+                try (java.util.zip.GZIPOutputStream out = new java.util.zip.GZIPOutputStream(Files.newOutputStream(f))) { out.write(data); }
+            } else {
+                f = dir.resolve(base + ".json");
+                Files.write(f, data);
+            }
             msg(p, n + " blocs enregistres dans roa_croquis/" + f.getFileName(), ChatFormatting.GOLD);
             RingsOfAsh.LOGGER.info("[CROQUIS] " + f + " (" + n + " blocs)");
         } catch (Exception ex) {
