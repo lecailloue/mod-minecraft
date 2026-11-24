@@ -62,7 +62,8 @@ public class MiniStructFeature extends Feature<NoneFeatureConfiguration> {
         int x0 = ctx.origin().getX() & ~15, z0 = ctx.origin().getZ() & ~15;
         int hh = hash(x0 >> 4, z0 >> 4, 701);
         if (((hh >>> 8) & 0x3FF) >= 32) return false;              // environ un chunk sur trente
-        int x = x0 + 5 + ((hh >>> 19) & 5), z = z0 + 5 + ((hh >>> 23) & 5);
+        int h2 = hash(x0 >> 4, z0 >> 4, 703);                      // tirages independants du filtre ci-dessus
+        int x = x0 + 5 + ((h2 >>> 3) & 5), z = z0 + 5 + ((h2 >>> 9) & 5);
         int raw = MapData.biome(x, z);
         int biome = Zones.biomeFor(raw, x, z);
         if (!landBiome(biome)) return false;
@@ -83,9 +84,9 @@ public class MiniStructFeature extends Feature<NoneFeatureConfiguration> {
 
         RandomSource r = ctx.random();
         BoundingBox clip = new BoundingBox(x0 - 16, level.getMinBuildHeight(), z0 - 16, x0 + 31, level.getMaxBuildHeight(), z0 + 31);
-        Build b = new Build(level, clip, x, lo, z, (hh >>> 5) & 3, hash(x, z, 702));
+        Build b = new Build(level, clip, x, lo, z, (h2 >>> 15) & 3, hash(x, z, 702));
         Pal pal = palette(biome);
-        int kind = ((hh >>> 11) & 0xFF) % 100;
+        int kind = ((h2 >>> 17) & 0x7FFF) % 100;
         String name;
         if (kind < 24) { well(b, pal, r); name = "puits"; }
         else if (kind < 56) { camp(b, pal, r); name = "campement"; }
