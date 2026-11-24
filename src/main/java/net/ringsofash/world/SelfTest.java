@@ -42,6 +42,7 @@ public final class SelfTest {
         BIOME_COLORS.put("plaines_vertes", 0xBEEB9E); BIOME_COLORS.put("plaines_jaunes", 0xFFEB9E); BIOME_COLORS.put("plaines_cendre", 0x96938E);
         BIOME_COLORS.put("grande_foret", 0x1F6A2A); BIOME_COLORS.put("monts_rocheux", 0x808080); BIOME_COLORS.put("cimes_neigeuses", 0xFFFFFF);
         BIOME_COLORS.put("mer_grise", 0x2040A0); BIOME_COLORS.put("rivage", 0xF0E0A0); BIOME_COLORS.put("riviere", 0x40A0F0); BIOME_COLORS.put("monts_de_cendre", 0x604038); BIOME_COLORS.put("foret_clairsemee", 0x5FA040); BIOME_COLORS.put("bosquets", 0x8FD070); BIOME_COLORS.put("rivieres_de_lave", 0xFF6A14);
+        BIOME_COLORS.put("comte", 0x9BD24B); BIOME_COLORS.put("foret_elfique", 0xE08A2A); BIOME_COLORS.put("fangorn", 0x14452A); BIOME_COLORS.put("marais_des_morts", 0x6B4A82);
     }
 
     public static void run(MinecraftServer server) {
@@ -360,14 +361,22 @@ public final class SelfTest {
             for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) lands.getChunk(cx + dx, cz + dz);
             int x0 = (cx - 2) << 4, z0 = (cz - 2) << 4;
             topDown(lands, x0, z0, x0 + 79, z0 + 79, new File(OUT, "biome_" + id + ".png"), 4);
-            Map<String, Integer> blocks = new TreeMap<>();
+            Map<String, Integer> blocks = new TreeMap<>(), sols = new TreeMap<>();
             int hMin = 999, hMax = -999;
             for (int x = x0; x < x0 + 80; x += 2) for (int z = z0; z < z0 + 80; z += 2) {
                 int y = lands.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1;
                 hMin = Math.min(hMin, y); hMax = Math.max(hMax, y);
                 blocks.merge(lands.getBlockState(new BlockPos(x, y, z)).getBlock().builtInRegistryHolder().key().location().getPath(), 1, Integer::sum);
+                int yy = y;                                                   // le vrai sol : on descend sous les plantes, tapis et feuilles
+                for (int k = 0; k < 6; k++) {
+                    BlockState s = lands.getBlockState(new BlockPos(x, yy, z));
+                    if (s.isCollisionShapeFullBlock(lands, new BlockPos(x, yy, z))) break;
+                    yy--;
+                }
+                sols.merge(lands.getBlockState(new BlockPos(x, yy, z)).getBlock().builtInRegistryHolder().key().location().getPath(), 1, Integer::sum);
             }
             log("biome " + id + " en " + p.getX() + "," + p.getZ() + " hauteur " + hMin + ".." + hMax + " surface " + blocks);
+            log("biome " + id + " sol " + sols);
         }
     }
 
