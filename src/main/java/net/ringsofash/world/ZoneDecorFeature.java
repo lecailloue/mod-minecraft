@@ -199,8 +199,11 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
 
         /** la couleur des feuilles tombees suit celle de l'arbre au dessus */
         net.minecraft.world.level.block.Block litterOf(int main, int h, boolean thick) {
-            if (thick && h % 3 != 0) return Reg.DEEP_LEAF_LITTER.get();
-            if (h % 7 == 0) return Reg.BROWN_LEAF_LITTER.get();
+            int q = h % 10;
+            if (thick && q < 5) return Reg.DEEP_LEAF_LITTER.get();
+            if (q == 9) return Reg.BROWN_LEAF_LITTER.get();
+            if (q == 8) return Reg.DEEP_LEAF_LITTER.get();
+            if (q == 7) return main == 1 ? Reg.ORANGE_LEAF_LITTER.get() : Reg.GOLDEN_LEAF_LITTER.get();
             return switch (main) {
                 case 0 -> Reg.ORANGE_LEAF_LITTER.get();
                 case 1 -> Reg.GOLDEN_LEAF_LITTER.get();

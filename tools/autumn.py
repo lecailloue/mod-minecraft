@@ -153,16 +153,16 @@ def bush(base, light, dark, seed, leafy=True):
 
 
 # ------------------------------------------------------------------ tas de feuilles (tapis)
-LEAF = ['.l.', 'lLl', '.l.']
-LEAF2 = ['ll.', 'lLl', '.ll']
-LEAF3 = ['.l', 'll']
+LEAF = ['.l.', 'lLo', '.o.']
+LEAF2 = ['ll.', 'lLo', '.oo']
+LEAF3 = ['.l', 'lo']
 
 
 def litter(cols, seed, density=0.55, specks=0.25):
     """vu de dessus : des feuilles posees les unes sur les autres, le sol apparait entre elles"""
     rnd = random.Random(seed)
     im = new(S)
-    pals = [{'l': rgb(c), 'L': mix(rgb(c), (255, 255, 255), 0.22)} for c in cols]
+    pals = [{'l': rgb(c), 'L': mix(rgb(c), (255, 255, 255), 0.10), 'o': shade(rgb(c), 0.62)} for c in cols]
     n = int(60 * density)
     for _ in range(n):
         x, y = rnd.randrange(-1, S), rnd.randrange(-1, S)
@@ -195,11 +195,11 @@ TUFTS = {
 }
 
 LITTERS = {
-    'golden_leaf_litter': lambda: litter(['#d8a62c', '#e9c04a', '#c07f20'], 31, 0.5),
-    'red_leaf_litter':    lambda: litter(['#a6301b', '#c4471f', '#7d2414'], 32, 0.5),
-    'orange_leaf_litter': lambda: litter(['#cb6a1b', '#e08f2a', '#a04d16'], 33, 0.5),
-    'deep_leaf_litter':   lambda: litter(['#cf7c1e', '#e6b23c', '#a8341a', '#b55f18'], 34, 0.95, 0.4),
-    'brown_leaf_litter':  lambda: litter(['#8a5a26', '#a8702f', '#6d4420'], 35, 0.28, 0.3),
+    'golden_leaf_litter': lambda: litter(['#b4861f', '#caa032', '#8e6318', '#7a5a2a'], 31, 0.45),
+    'red_leaf_litter':    lambda: litter(['#8c2616', '#a73a1a', '#64200f', '#7a4a22'], 32, 0.45),
+    'orange_leaf_litter': lambda: litter(['#a85516', '#bd7322', '#833c11', '#7a5a2a'], 33, 0.45),
+    'deep_leaf_litter':   lambda: litter(['#a9631a', '#c2942f', '#8c2a15', '#954c14', '#6d4a22'], 34, 0.85, 0.45),
+    'brown_leaf_litter':  lambda: litter(['#6f4820', '#8a5c28', '#54371a'], 35, 0.26, 0.3),
 }
 
 
