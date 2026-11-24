@@ -38,7 +38,6 @@ public final class ModWorldgen {
     public static final DeferredHolder<Feature<?>, ZoneDecorFeature> ELVEN_DECOR = FEATURES.register("elven_forest_decor", () -> new ZoneDecorFeature(ZoneDecorFeature.ELVEN));
     public static final DeferredHolder<Feature<?>, ZoneDecorFeature> FANGORN_DECOR = FEATURES.register("fangorn_decor", () -> new ZoneDecorFeature(ZoneDecorFeature.FANGORN));
     public static final DeferredHolder<Feature<?>, ZoneDecorFeature> MARSH_DECOR = FEATURES.register("marsh_decor", () -> new ZoneDecorFeature(ZoneDecorFeature.MARSH));
-    public static final DeferredHolder<Feature<?>, BridgeFeature> BRIDGE = FEATURES.register("bridge", BridgeFeature::new);
     public static final DeferredHolder<Feature<?>, RiverDecorFeature> RIVER_DECOR = FEATURES.register("river_decor", RiverDecorFeature::new);
     public static final DeferredHolder<Feature<?>, CroquisOverlay> CROQUIS = FEATURES.register("croquis", CroquisOverlay::new);
     public static final DeferredHolder<Feature<?>, MiniStructFeature> MINI_STRUCT = FEATURES.register("mini_struct", MiniStructFeature::new);
