@@ -203,9 +203,21 @@ LITTERS = {
 }
 
 
+# ------------------------------------------------------------------ foret de cypres (vert, humide)
+CONIFER = {
+    'forest_poppy':   lambda: flower_cluster('#b02018', '#d8422a', '#e8c84a', 41, 5),
+    'forest_gold':    lambda: flower_cluster('#d9a81c', '#f3d24e', '#a8740f', 42, 4),
+    'snow_bell':      lambda: flower_cluster('#eef0ea', '#ffffff', '#d8c24a', 43, 4),
+    'crimson_spire':  lambda: flower_spike('#a81c14', '#cf3a1e', '#e0b030', 44),
+    'green_tuft':     lambda: tuft('#4f7a2a', '#7fae44', '#31511b', 45),
+    'pale_green_tuft':lambda: tuft('#6d9a35', '#9ec85a', '#43661f', 46),
+    'fern_bush':      lambda: bush('#3f6b24', '#6a9a38', '#2b4718', 47),
+}
+
+
 def all_textures():
     out = {}
-    for d in (FLOWERS, TUFTS, LITTERS):
+    for d in (FLOWERS, TUFTS, LITTERS, CONIFER):
         for k, f in d.items():
             out[k] = f()
     return out
@@ -214,7 +226,7 @@ def all_textures():
 if __name__ == '__main__':
     tex = all_textures()
     names = list(tex)
-    cols, zoom = 7, 8
+    cols, zoom = 7, 7
     rows = (len(names) + cols - 1) // cols
     sheet = Image.new('RGBA', (cols * S * zoom, rows * S * zoom), (26, 24, 22, 255))
     for i, n in enumerate(names):

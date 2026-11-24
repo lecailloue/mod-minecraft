@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"zon"};
+    private static final String[] ONLY = {"zon", "cyp"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -632,6 +632,11 @@ public final class ClientTest {
         morT("zona_elfe_sol", -1524.5, 100, -64.5, -1510, 95, -78, 6000);
         morT("zonb_elfe_sol2", -1437.5, 102, -228.5, -1450, 97, -244, 6000);
         morT("zonc_elfe_sol3", -1546.5, 102, -88.5, -1532, 96, -74, 6000);
+        morT("cyp1_cypres_vue", 2005.5, 154, -1140.5, 2045, 142, -1140, 6000);
+        morT("cyp2_cypres_sol", 1978.5, 150, -950.5, 2005, 147, -950, 6000);
+        morT("cyp3_sequoia", 2080.5, 150, -796.5, 2086, 168, -790, 6000);
+        morT("cyp4_cypres_aerien", 2270.5, 196, -630.5, 2330, 140, -630, 6000);
+        morT("cyp5_cypres_matin", 1885.5, 150, -306.5, 1915, 141, -300, 23000);
         morT("comz1_champ_nord", -910.5, 105, -100.5, -910, 72, -185, 6000);
         morT("comz2_champ_est", -595.5, 100, 65.5, -655, 72, 65, 6000);
         morT("comz3_chemin_sud", -690.5, 105, 170.5, -750, 70, 235, 6000);

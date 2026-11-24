@@ -261,6 +261,30 @@ def blocks():
                      ('gold_bush', 'Buisson doré'), ('red_bush', 'Buisson écarlate')):
         btex(_id, autumn.TUFTS[_id]())
         block(_id, _fr, 'cross', java='new TallGrassBlock(copy(Blocks.SHORT_GRASS))')
+
+    # --- cypres et sequoias (foret de cypres)
+    btex('cypress_log', log_side('#4a3b2c', 71)); btex('cypress_log_top', log_top('#4a3b2c', '#8a6a46', 72))
+    block('cypress_log', 'Bûche de cyprès', 'pillar', copy='SPRUCE_LOG', tool='axe', tags=['logs', 'logs_that_burn'], itags=['logs', 'logs_that_burn'])
+    btex('cypress_planks', planks('#7a6042', 73))
+    block('cypress_planks', 'Planches de cyprès', copy='SPRUCE_PLANKS', tool='axe', tags=['planks'], itags=['planks'])
+    family('cypress_planks', 'cypress', 'cyprès', ('stairs', 'slab', 'fence'), tool='axe')
+    btex('cypress_leaves', leaves('#2d5126', 74, holes=0.14, accent='#49773a'))
+    block('cypress_leaves', 'Feuilles de cyprès', 'leaves')
+    btex('redwood_log', log_side('#79422a', 75)); btex('redwood_log_top', log_top('#79422a', '#b4815a', 76))
+    block('redwood_log', 'Bûche de séquoia', 'pillar', copy='SPRUCE_LOG', tool='axe', tags=['logs', 'logs_that_burn'], itags=['logs', 'logs_that_burn'])
+    btex('redwood_leaves', leaves('#27432a', 77, holes=0.12, accent='#3d6236'))
+    block('redwood_leaves', 'Feuilles de séquoia', 'leaves')
+
+    # --- flore de la foret de cypres
+    for _id, _fr, _j in (('forest_poppy', 'Coquelicot des bois', 'new FlowerBlock(MobEffects.HEALTH_BOOST, 4.0F, copy(Blocks.DANDELION))'),
+                         ('forest_gold', 'Bouton d\'or sylvestre', 'new FlowerBlock(MobEffects.ABSORPTION, 5.0F, copy(Blocks.DANDELION))'),
+                         ('snow_bell', 'Clochette des neiges', 'new FlowerBlock(MobEffects.NIGHT_VISION, 6.0F, copy(Blocks.DANDELION))'),
+                         ('crimson_spire', 'Épi pourpre', 'new FlowerBlock(MobEffects.DIG_SPEED, 5.0F, copy(Blocks.DANDELION))')):
+        btex(_id, autumn.CONIFER[_id]())
+        block(_id, _fr, 'cross', java=_j, tags=['small_flowers'], itags=['small_flowers'])
+    for _id, _fr in (('green_tuft', 'Herbe des sous-bois'), ('pale_green_tuft', 'Herbe claire'), ('fern_bush', 'Buisson de fougères')):
+        btex(_id, autumn.CONIFER[_id]())
+        block(_id, _fr, 'cross', java='new TallGrassBlock(copy(Blocks.SHORT_GRASS))')
     btex('golden_sapling', sprite([
         '................', '.......bb.......', '......bcab......', '.....babbab.....', '....bbacbaab....', '.....abbabb.....',
         '......babb......', '.......ss.......', '..bb...ss..ab...', '.baab..ss.bbab..', '..bab..ssabb....', '...ba.ssss......',

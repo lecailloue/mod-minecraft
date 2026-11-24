@@ -12,9 +12,9 @@ import java.util.zip.InflaterInputStream;
  * avec des bords irreguliers (le trace a la main est trop lisse pour une frontiere naturelle).
  */
 public final class Zones {
-    public static final int NONE = 0, SHIRE = 1, ELVEN = 2, FANGORN = 3, MARSH = 4;
+    public static final int NONE = 0, SHIRE = 1, ELVEN = 2, FANGORN = 3, MARSH = 4, CYPRESS = 5;
     /** numeros de biome (dans la liste de la dimension) de chaque zone */
-    public static final int B_SHIRE = 13, B_ELVEN = 14, B_FANGORN = 15, B_MARSH = 16;
+    public static final int B_SHIRE = 13, B_ELVEN = 14, B_FANGORN = 15, B_MARSH = 16, B_CYPRESS = 17;
 
     private static final int RES = 4, HALF = 2500, M = 2 * HALF / RES;   // 1250 cases de 4 blocs
     private static byte[] grid;
@@ -39,7 +39,7 @@ public final class Zones {
         }
         byte[] g = new byte[M * M];
         if (src.length >= n * n) {
-            float[] w = new float[5];
+            float[] w = new float[6];
             double cs = 2500.0 * 2 / n;
             for (int j = 0; j < M; j++) for (int i = 0; i < M; i++) {
                 double x = -HALF + i * RES + RES / 2.0, z = -HALF + j * RES + RES / 2.0;
@@ -56,7 +56,7 @@ public final class Zones {
                 }
                 int best = 0;
                 float bw = 0.5f;
-                for (int c = 1; c < 5; c++) if (w[c] > bw) { bw = w[c]; best = c; }
+                for (int c = 1; c < 6; c++) if (w[c] > bw) { bw = w[c]; best = c; }
                 g[j * M + i] = (byte) best;
             }
         }

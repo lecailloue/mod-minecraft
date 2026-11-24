@@ -42,7 +42,7 @@ public final class SelfTest {
         BIOME_COLORS.put("plaines_vertes", 0xBEEB9E); BIOME_COLORS.put("plaines_jaunes", 0xFFEB9E); BIOME_COLORS.put("plaines_cendre", 0x96938E);
         BIOME_COLORS.put("grande_foret", 0x1F6A2A); BIOME_COLORS.put("monts_rocheux", 0x808080); BIOME_COLORS.put("cimes_neigeuses", 0xFFFFFF);
         BIOME_COLORS.put("mer_grise", 0x2040A0); BIOME_COLORS.put("rivage", 0xF0E0A0); BIOME_COLORS.put("riviere", 0x40A0F0); BIOME_COLORS.put("monts_de_cendre", 0x604038); BIOME_COLORS.put("foret_clairsemee", 0x5FA040); BIOME_COLORS.put("bosquets", 0x8FD070); BIOME_COLORS.put("rivieres_de_lave", 0xFF6A14);
-        BIOME_COLORS.put("comte", 0x9BD24B); BIOME_COLORS.put("foret_elfique", 0xE08A2A); BIOME_COLORS.put("fangorn", 0x14452A); BIOME_COLORS.put("marais_des_morts", 0x6B4A82);
+        BIOME_COLORS.put("comte", 0x9BD24B); BIOME_COLORS.put("foret_elfique", 0xE08A2A); BIOME_COLORS.put("fangorn", 0x14452A); BIOME_COLORS.put("marais_des_morts", 0x6B4A82); BIOME_COLORS.put("foret_de_cypres", 0x2E6B3A);
     }
 
     public static void run(MinecraftServer server) {

@@ -47,6 +47,7 @@ public final class MapChunkGenerator extends ChunkGenerator {
     private static final BlockState GRAVEL = Blocks.GRAVEL.defaultBlockState();
     private static final BlockState MOSS = Blocks.MOSS_BLOCK.defaultBlockState();
     private static final BlockState ROOTED = Blocks.ROOTED_DIRT.defaultBlockState();
+    private static final BlockState MOSSY_COBBLE = Blocks.MOSSY_COBBLESTONE.defaultBlockState();
     private static final BlockState MUD = Blocks.MUD.defaultBlockState();
     private static final BlockState CLAY = Blocks.CLAY.defaultBlockState();
     private static final BlockState SNOW = Blocks.SNOW_BLOCK.defaultBlockState();
@@ -388,6 +389,20 @@ public final class MapChunkGenerator extends ChunkGenerator {
                 if (under || h <= MapData.SEA + 1) top = MUD;
                 else top = m > 0.64f ? MOSS : m < 0.3f ? PODZOL : m < 0.52f && hash(x, 6, z) < 0.55f ? MUD : GRASS;
                 layers = 3;
+            }
+            case 17 -> {                                   // foret de cypres : humus d'aiguilles, mousse humide, dalles de pierre moussue
+                float m = fbm(x * 0.055, z * 0.055, 35), d = fbm(x * 0.16, z * 0.16, 36);
+                float q = hash(x, 9, z);
+                if (slope >= 5 && h >= 76) { top = q < 0.45f ? MOSSY_COBBLE : rock(x, h, z); layers = 1; }
+                else {
+                    if (m > 0.58f) top = MOSS;                       // tapis de mousse entre les troncs
+                    else if (m < 0.30f) top = PODZOL;                // aiguilles tombees
+                    else if (d > 0.72f) top = q < 0.5f ? COARSE : PODZOL;
+                    else if (d < 0.15f && q < 0.3f) top = ROOTED;
+                    else if (d > 0.66f && q < 0.18f) top = GRAVEL;   // lit de cailloux des ruisseaux
+                    else top = GRASS;
+                    layers = 3;
+                }
             }
             case 13 -> {                                   // la Comte : herbe verte, rares plaques de terre (mousse et chemins sont poses par le decor)
                 if (slope >= 4 && h >= 78) { top = rock(x, h, z); layers = 1; }

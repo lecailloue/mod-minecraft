@@ -26,7 +26,7 @@ import java.util.Map;
  * marais des morts (arbres morts, flammes bleues, ruines). Comme ShireDecorFeature, il est place sans filtre et ecrit chaque colonne de son chunk.
  */
 public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
-    public static final int ELVEN = 0, FANGORN = 1, MARSH = 2;
+    public static final int ELVEN = 0, FANGORN = 1, MARSH = 2, CYPRESS = 3;
     private final int mode;
 
     public ZoneDecorFeature(int mode) {
@@ -61,8 +61,19 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
     @Override
     public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> ctx) {
         int x0 = ctx.origin().getX() & ~15, z0 = ctx.origin().getZ() & ~15;
-        int target = mode == ELVEN ? Zones.B_ELVEN : mode == FANGORN ? Zones.B_FANGORN : Zones.B_MARSH;
-        if (!Zones.touches(x0, z0, mode == ELVEN ? Zones.ELVEN : mode == FANGORN ? Zones.FANGORN : Zones.MARSH)) return false;
+        int target = switch (mode) {
+            case ELVEN -> Zones.B_ELVEN;
+            case FANGORN -> Zones.B_FANGORN;
+            case MARSH -> Zones.B_MARSH;
+            default -> Zones.B_CYPRESS;
+        };
+        int zn = switch (mode) {
+            case ELVEN -> Zones.ELVEN;
+            case FANGORN -> Zones.FANGORN;
+            case MARSH -> Zones.MARSH;
+            default -> Zones.CYPRESS;
+        };
+        if (!Zones.touches(x0, z0, zn)) return false;
         Gen g = new Gen(ctx.level(), ctx.random(), x0, z0, target);
         return g.run();
     }
@@ -158,7 +169,8 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
             switch (mode) {
                 case ELVEN -> any = elven();
                 case FANGORN -> any = fangorn();
-                default -> any = marsh();
+                case MARSH -> any = marsh();
+                default -> any = cypress();
             }
             return any;
         }
@@ -362,6 +374,187 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 int m = ((int) (t[0] * 3 + t[2]) & 3) < 2 ? main : (main + 1) & 3;
                 blob(t[0], t[1], t[2], t[3], 0.62, hh -> elvenLeaf(m, hh));
             }
+        }
+
+        // ------------------------------------------------------------------ foret de cypres : conif res en fleche, sequoias, sous bois vert
+        boolean cypress() {
+            boolean any = false;
+            for (int k = 0; k < 14; k++) {
+                boolean giant = r.nextFloat() < 0.07f;
+                if (r.nextFloat() > (giant ? 0.45f : 0.78f)) continue;
+                int x = x0 + 2 + r.nextInt(12), z = z0 + 2 + r.nextInt(12);
+                if (!mine(x, z) || !far(x, z, giant ? 13 : 5)) continue;
+                int gy = groundY(x, z);
+                if (!soil(level.getBlockState(p.set(x, gy, z))) || !level.getFluidState(p.set(x, gy + 1, z)).isEmpty()) continue;
+                if (slope(x, z, gy, 3) > (giant ? 3 : 5)) continue;
+                if (giant) redwoodTree(x, gy + 1, z);
+                else cypressTree(x, gy + 1, z, 13 + r.nextInt(14), 2.6 + r.nextDouble() * 1.7);
+                flush();
+                done.add(new int[] {x, z, giant ? 11 : 4});
+                any = true;
+            }
+            for (int k = 0; k < 5; k++) {                                     // jeunes pousses
+                if (r.nextFloat() > 0.5f) continue;
+                int x = x0 + 1 + r.nextInt(14), z = z0 + 1 + r.nextInt(14);
+                if (!mine(x, z) || !far(x, z, 3)) continue;
+                int gy = groundY(x, z);
+                if (!soil(level.getBlockState(p.set(x, gy, z))) || !soft(level.getBlockState(p.set(x, gy + 1, z)))) continue;
+                cypressTree(x, gy + 1, z, 3 + r.nextInt(4), 1.1 + r.nextDouble() * 0.8);
+                flush();
+                any = true;
+            }
+            if (r.nextFloat() < 0.55f) any |= mossyBoulder();
+            if (r.nextFloat() < 0.30f) any |= cypressFallenLog();
+            any |= cypressGround();
+            return any;
+        }
+
+        /** cypres : un fut droit et un houppier en fleche, etage */
+        void cypressTree(int x, int y0, int z, int h, double rad) {
+            BlockState lg = log(Reg.CYPRESS_LOG.get(), Direction.Axis.Y);
+            BlockState lf = leaf(Reg.CYPRESS_LEAVES.get());
+            for (int y = -1; y < h; y++) putLog(x, y0 + y, z, lg);
+            if (h > 12) for (int[] o : new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}})   // empattement
+                if (r.nextFloat() < 0.6f) putLog(x + o[0], y0 - 1, z + o[1], lg);
+            int base = Math.max(1, (int) (h * (h > 10 ? 0.34 : 0.15)));
+            for (int y = base; y <= h + 1; y++) {
+                double t = (y - base) / (double) Math.max(1, h + 1 - base);
+                double rr = rad * Math.pow(1 - t, 0.8) + 0.45;
+                if ((y - base) % 3 == 0) rr += 0.55;                           // etages de branches
+                int ri = (int) Math.ceil(rr);
+                for (int dx = -ri; dx <= ri; dx++) for (int dz = -ri; dz <= ri; dz++) {
+                    double d = Math.sqrt(dx * dx + dz * dz);
+                    if (d <= rr + 0.45 * vn(x * 0.5 + dx, z * 0.5 + dz + y * 0.3, 81)) putLeaf(x + dx, y0 + y, z + dz, lf);
+                }
+            }
+            putLeaf(x, y0 + h + 2, z, lf);
+        }
+
+        /** sequoia : un tronc roux de deux blocs de cote, nu sur la moitie basse, couronne sombre tout en haut */
+        void redwoodTree(int x, int y0, int z) {
+            int h = 28 + r.nextInt(14);
+            BlockState lg = log(Reg.REDWOOD_LOG.get(), Direction.Axis.Y);
+            BlockState lf = leaf(Reg.REDWOOD_LEAVES.get());
+            for (int y = -2; y < h; y++) {
+                double t = y / (double) h;
+                int w = y < 3 ? 2 : 1;                                         // base evasee
+                for (int dx = -w + 1; dx <= w; dx++) for (int dz = -w + 1; dz <= w; dz++) {
+                    if (w == 2 && Math.abs(dx) + Math.abs(dz) > 2 && r.nextFloat() < 0.5f) continue;
+                    putLog(x + dx, y0 + y, z + dz, lg);
+                }
+                if (t > 0.55 && y % 4 == 0) {                                  // branches de la couronne
+                    double a = r.nextDouble() * Math.PI * 2;
+                    double bx = x, bz = z, by = y0 + y;
+                    int len = 2 + r.nextInt(3);
+                    for (int k = 0; k < len; k++) {
+                        bx += Math.cos(a); bz += Math.sin(a); by += 0.4;
+                        putLog((int) Math.round(bx), (int) Math.round(by), (int) Math.round(bz), logAxis(Reg.REDWOOD_LOG.get(), Math.cos(a), Math.sin(a)));
+                    }
+                    blob(bx, by, bz, 2.2 + r.nextDouble(), 0.7, hh -> lf);
+                }
+            }
+            int base = (int) (h * 0.6);
+            for (int y = base; y <= h + 3; y++) {
+                double t = (y - base) / (double) (h + 3 - base);
+                double rr = (3.6 + r.nextDouble() * 0.6) * Math.pow(1 - t, 0.7) + 0.6;
+                int ri = (int) Math.ceil(rr);
+                for (int dx = -ri; dx <= ri; dx++) for (int dz = -ri; dz <= ri; dz++) {
+                    double d = Math.sqrt(dx * dx + dz * dz);
+                    if (d <= rr + 0.5 * vn(x * 0.4 + dx, z * 0.4 + dz + y * 0.25, 82)) putLeaf(x + dx, y0 + y, z + dz, lf);
+                }
+            }
+        }
+
+        /** rocher couvert de mousse, comme au bord du ruisseau */
+        boolean mossyBoulder() {
+            int x = x0 + 4 + r.nextInt(8), z = z0 + 4 + r.nextInt(8);
+            if (!mine(x, z)) return false;
+            int gy = groundY(x, z);
+            if (!soil(level.getBlockState(p.set(x, gy, z))) && !level.getBlockState(p.set(x, gy, z)).is(Blocks.STONE)) return false;
+            int rr = 1 + r.nextInt(3);
+            for (int dx = -rr; dx <= rr; dx++) for (int dz = -rr; dz <= rr; dz++) for (int dy = -2; dy <= rr; dy++) {
+                if (dx * dx + dz * dz + Math.max(0, dy) * Math.max(0, dy) > rr * rr + 1) continue;
+                int bx = x + dx, bz = z + dz, by = gy + dy;
+                int q = (hash(bx, by, bz) >>> 8) % 10;
+                set(bx, by, bz, q < 5 ? Blocks.MOSSY_COBBLESTONE.defaultBlockState()
+                        : q < 8 ? Blocks.COBBLESTONE.defaultBlockState() : Blocks.STONE.defaultBlockState());
+            }
+            for (int dx = -rr; dx <= rr; dx++) for (int dz = -rr; dz <= rr; dz++) {     // mousse sur le dessus
+                int bx = x + dx, bz = z + dz;
+                int top = groundY(bx, bz);
+                if ((hash(bx, bz, 83) >>> 8) % 10 < 5 && soft(level.getBlockState(p.set(bx, top + 1, bz))))
+                    set(bx, top + 1, bz, Blocks.MOSS_CARPET.defaultBlockState());
+            }
+            return true;
+        }
+
+        boolean cypressFallenLog() {
+            int x = x0 + 3 + r.nextInt(9), z = z0 + 3 + r.nextInt(9);
+            if (!mine(x, z)) return false;
+            boolean alongX = r.nextBoolean();
+            int len = 3 + r.nextInt(5);
+            BlockState wl = log(Reg.CYPRESS_LOG.get(), alongX ? Direction.Axis.X : Direction.Axis.Z);
+            for (int i = 0; i < len; i++) {
+                int bx = alongX ? x + i : x, bz = alongX ? z : z + i;
+                int gy = groundY(bx, bz);
+                if (!soil(level.getBlockState(p.set(bx, gy, bz)))) return i > 1;
+                if (!soft(level.getBlockState(p.set(bx, gy + 1, bz)))) continue;
+                set(bx, gy + 1, bz, wl);
+                if ((hash(bx, bz, 84) >>> 8) % 3 == 0 && soft(level.getBlockState(p.set(bx, gy + 2, bz))))
+                    set(bx, gy + 2, bz, Blocks.MOSS_CARPET.defaultBlockState());
+            }
+            return true;
+        }
+
+        BlockState cypressFlower(int h) {
+            return switch (h % 7) {
+                case 0, 1 -> Reg.FOREST_POPPY.get().defaultBlockState();
+                case 2, 3 -> Reg.FOREST_GOLD.get().defaultBlockState();
+                case 4 -> Reg.SNOW_BELL.get().defaultBlockState();
+                case 5 -> Reg.CRIMSON_SPIRE.get().defaultBlockState();
+                default -> Reg.MOONBELL.get().defaultBlockState();
+            };
+        }
+
+        /** sous bois : herbes hautes, fougeres, mousse et fleurs rouges et jaunes */
+        boolean cypressGround() {
+            boolean any = false;
+            for (int dz = 0; dz < 16; dz++) for (int dx = 0; dx < 16; dx++) {
+                int x = x0 + dx, z = z0 + dz;
+                if (!mine(x, z)) continue;
+                int gy = groundY(x, z);
+                BlockState g = level.getBlockState(p.set(x, gy, z));
+                if (!soil(g) || g.is(Blocks.MUD)) continue;
+                if (!level.getFluidState(p.set(x, gy + 1, z)).isEmpty()) continue;
+                BlockState up = level.getBlockState(p.set(x, gy + 1, z));
+                if (!up.isAir() && !up.is(Blocks.SHORT_GRASS) && !up.is(Blocks.FERN)) continue;
+                int h = (hash(x, z, 85) >>> 8) & 0xFFFF;
+                double n = (vn(x * 0.09, z * 0.09, 86) + 1) * 0.5;             // clairieres plus fournies
+                if (h % 100 < (n > 0.55 ? 46 : 22)) {
+                    BlockState u = switch ((h >> 6) % 7) {
+                        case 0, 1 -> Reg.GREEN_TUFT.get().defaultBlockState();
+                        case 2 -> Reg.PALE_GREEN_TUFT.get().defaultBlockState();
+                        case 3 -> Reg.FERN_BUSH.get().defaultBlockState();
+                        case 4 -> Blocks.FERN.defaultBlockState();
+                        default -> Blocks.SHORT_GRASS.defaultBlockState();
+                    };
+                    set(x, gy + 1, z, u);
+                    any = true;
+                } else if (h % 101 < (vn(x * 0.05, z * 0.05, 87) > 0.25 ? 14 : 3)) {
+                    set(x, gy + 1, z, cypressFlower(h >> 7));
+                    any = true;
+                } else if (h % 53 < 4 && g.is(Blocks.MOSS_BLOCK)) {
+                    set(x, gy + 1, z, Blocks.MOSS_CARPET.defaultBlockState());
+                    any = true;
+                } else if (h % 211 < 2 && soft(level.getBlockState(p.set(x, gy + 2, z)))) {
+                    BlockState tall = Blocks.LARGE_FERN.defaultBlockState();
+                    set(x, gy + 1, z, tall);
+                    set(x, gy + 2, z, tall.setValue(net.minecraft.world.level.block.DoublePlantBlock.HALF,
+                            net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
+                    any = true;
+                }
+            }
+            return any;
         }
 
         // ------------------------------------------------------------------ Fangorn : vieux arbres noueux

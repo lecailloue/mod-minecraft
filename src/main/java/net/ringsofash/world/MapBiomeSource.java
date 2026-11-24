@@ -29,7 +29,7 @@ public final class MapBiomeSource extends BiomeSource {
     public Holder<Biome> getNoiseBiome(int x, int y, int z, Climate.Sampler sampler) {
         int bx = (x << 2) + 2, bz = (z << 2) + 2;
         int i = MapData.biome(bx, bz);
-        if (biomes.size() > 16) i = Zones.biomeFor(i, bx, bz);   // zones peintes : Comte, foret elfique, Fangorn, marais des morts
+        if (biomes.size() > 17) i = Zones.biomeFor(i, bx, bz);   // zones peintes : Comte, foret elfique, Fangorn, marais des morts, foret de cypres
         return biomes.get(Math.min(i, biomes.size() - 1));
     }
 }
