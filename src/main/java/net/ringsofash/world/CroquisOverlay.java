@@ -91,6 +91,33 @@ public class CroquisOverlay extends Feature<NoneFeatureConfiguration> {
         return st;
     }
 
+    /** verification de l'autotest : le monde doit contenir exactement ce que le croquis decrit */
+    public static String verify(net.minecraft.server.level.ServerLevel level) {
+        load();
+        StringBuilder sb = new StringBuilder();
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        for (Region r : regions) {
+            for (int cx = (r.x >> 4) - 1; cx <= ((r.x + r.dx) >> 4) + 1; cx++)
+                for (int cz = (r.z >> 4) - 1; cz <= ((r.z + r.dz) >> 4) + 1; cz++) level.getChunk(cx, cz);
+            int same = 0, tot = 0;
+            String ex = null;
+            for (int y = 0; y < r.dy; y++) for (int z = 0; z < r.dz; z++) for (int x = 0; x < r.dx; x++) {
+                int id = r.at(x, y, z);
+                BlockState want = id == 0 ? Blocks.AIR.defaultBlockState() : r.pal[id];
+                BlockState got = level.getBlockState(p.set(r.x + x, r.y + y, r.z + z));
+                tot++;
+                if (got.getBlock() == want.getBlock()) same++;
+                else if (ex == null) ex = "en " + (r.x + x) + "," + (r.y + y) + "," + (r.z + z) + " attendu "
+                        + BuiltInRegistries.BLOCK.getKey(want.getBlock()) + " trouve " + BuiltInRegistries.BLOCK.getKey(got.getBlock());
+            }
+            sb.append(r.nom).append(" : ").append(same).append('/').append(tot)
+                    .append(" (").append(tot == 0 ? 0 : 100 * same / tot).append(" %)");
+            if (ex != null) sb.append(" ; premier ecart ").append(ex);
+            sb.append('\n');
+        }
+        return sb.toString().trim();
+    }
+
     @Override
     public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> ctx) {
         load();

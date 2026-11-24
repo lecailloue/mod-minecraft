@@ -294,11 +294,14 @@ def blocks():
 
     # --- champignons et plantes des cinq biomes
     for _id, _fr in (('amber_mushroom', "Champignons d'ambre"), ('pale_mushroom', 'Champignons blafards'),
-                     ('swamp_mushroom', 'Champignons des marais'), ('reed_tuft', 'Roseaux'), ('cattail', 'Massettes'),
-                     ('dead_tuft', 'Herbe morte'), ('clover', 'Trèfle'), ('wild_wheat', 'Blé sauvage'),
+                     ('swamp_mushroom', 'Champignons des marais'), ('clover', 'Trèfle'), ('wild_wheat', 'Blé sauvage'),
                      ('blueberry_bush', 'Buisson de myrtilles')):
         btex(_id, autumn.DETAILS[_id]())
         block(_id, _fr, 'cross', java='new TallGrassBlock(copy(Blocks.SHORT_GRASS))')
+    # les plantes de rive tiennent aussi sur le sable, le gravier et la vase
+    for _id, _fr in (('reed_tuft', 'Roseaux'), ('cattail', 'Massettes'), ('dead_tuft', 'Herbe morte')):
+        btex(_id, autumn.DETAILS[_id]())
+        block(_id, _fr, 'cross', java='new MarshPlantBlock(copy(Blocks.SHORT_GRASS))')
     btex('field_daisies', autumn.DETAILS['field_daisies']())
     block('field_daisies', 'Marguerites des champs', 'cross',
           java='new FlowerBlock(MobEffects.SATURATION, 5.0F, copy(Blocks.DANDELION))', tags=['small_flowers'], itags=['small_flowers'])

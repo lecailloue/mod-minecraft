@@ -56,6 +56,9 @@ public final class SelfTest {
             if (lands != null) {
                 step("carte biomes", () -> biomeMap(lands));
                 step("biomes", () -> eachBiome(lands));
+                step("croquis", () -> {
+                    for (String l : CroquisOverlay.verify(lands).split("\n")) log("croquis " + l);
+                });
                 step("petites structures", () -> {
                     java.util.List<String> l = new java.util.ArrayList<>(MiniStructFeature.PLACED);
                     log("petites structures posees : " + l.size());
