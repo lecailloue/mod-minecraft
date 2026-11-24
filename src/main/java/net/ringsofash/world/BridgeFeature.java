@@ -67,7 +67,7 @@ public class BridgeFeature extends Feature<NoneFeatureConfiguration> {
 
         int cx = cx0 + 6 + ((gate >>> 3) & 3), cz = cz0 + 6 + ((gate >>> 6) & 3);
         int biome = Zones.biomeFor(MapData.biome(cx, cz), cx, cz);
-        if (biome == MapData.B_MER || biome == 12) return false;
+        if (biome == MapData.B_MER || biome == 12 || biome == Zones.B_MARSH) return false;
         for (int[] pl : MapData.places().values())
             if (Math.abs(pl[0] - cx) < 200 && Math.abs(pl[1] - cz) < 200) return false;
         if (ShireDecorFeature.inStamp(cx, cz)) return false;
@@ -94,6 +94,11 @@ public class BridgeFeature extends Feature<NoneFeatureConfiguration> {
         int sx = cx - dirX * bestA, sz = cz - dirZ * bestA;      // premiere case d'eau
         int n = bestLen;
 
+        // de la vraie terre de part et d'autre : pas de pont au milieu d'un lac ou d'un marecage
+        for (int e = 1; e <= 5; e++) {
+            if (water(sx - dirX * e, sz - dirZ * e, floor(sx - dirX * e, sz - dirZ * e) + 1)) return false;
+            if (water(sx + dirX * (n - 1 + e), sz + dirZ * (n - 1 + e), floor(sx + dirX * (n - 1 + e), sz + dirZ * (n - 1 + e)) + 1)) return false;
+        }
         // les deux berges doivent se ressembler et ne pas surplomber
         int bank0 = floor(sx - dirX, sz - dirZ), bank1 = floor(sx + dirX * n, sz + dirZ * n);
         if (Math.abs(bank0 - bank1) > 2) return false;
