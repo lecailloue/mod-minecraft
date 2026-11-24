@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.TallGrassBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -19,7 +18,7 @@ public class MarshPlantBlock extends TallGrassBlock {
     public MarshPlantBlock(Properties p) { super(p); }
 
     @Override
-    protected MapCodec<? extends BushBlock> codec() { return CODEC; }
+    protected MapCodec<? extends TallGrassBlock> codec() { return CODEC; }
 
     @Override
     protected boolean mayPlaceOn(BlockState state, BlockGetter level, BlockPos pos) {
