@@ -44,18 +44,25 @@ tc.MATS.update({
     'tooth':     dict(base=(224, 206, 140), n1=2, n2=2, tint=(1, .99, .84)),
 })
 
-def flat(dark, density=22, a=.42, grad=.94):
-    """texture a la maniere de vanilla : fond uni, quelques pixels plus sombres, un leger degrade"""
+def flat(dark, density=22, a=.42, grad=.985):
+    """texture a la maniere de vanilla : aplat, quelques pixels plus sombres, et surtout pas de
+    liseré sur les bords ni d'ecart de lumiere d'une face a l'autre (sinon on voit les cubes)"""
     import numpy as _np
     def f(arr, face, rng):
         h, w, _ = arr.shape
+        if w >= 3 and h >= 3:                      # on annule l'assombrissement des bords de base_face
+            arr[0, :] /= .9
+            arr[-1, :] /= .88
+            arr[:, 0] /= .92
+            arr[:, -1] /= .9
+        arr /= SHADE[face] ** .72                  # presque plus d'ecart entre les faces
         for _ in range(max(1, int(h * w / density))):
             x = int(rng.integers(0, w)); y = int(rng.integers(0, h))
             put(arr, x, y, dark, a)
             if rng.random() < .35: put(arr, x + 1, y, dark, a * .8)
             if rng.random() < .2: put(arr, x, y + 1, dark, a * .7)
-        if face not in ('up', 'down') and h > 4:
-            arr *= _np.linspace(1.04, grad, h)[:, None, None]
+        if face not in ('up', 'down') and h > 5:
+            arr *= _np.linspace(1.01, grad, h)[:, None, None]
     return f
 
 
@@ -289,31 +296,35 @@ def canard():
 # ================================================================== heron
 @model
 def heron():
-    B, G = mkT(0.95)
+    B, G = mkT(1.0)
     legs = []
     for nm, s in (('leg_r', 1), ('leg_l', -1)):
-        x = 1.8 * s
-        legs.append(G(nm, (x, 14, 1), children=[
-            B(f'{nm}_th', x - 1, 7, .2, 2, 7.4, 2, 'heron_bill', key='h_th'),
-            B(f'{nm}_sh', x - .7, 0, .4, 1.4, 7.4, 1.4, 'heron_bill', key='h_sh'),
-            B(f'{nm}_ft', x - 1.2, 0, -2.6, 2.4, 1, 5, 'heron_bill', key='h_ft')]))
+        x = 1.6 * s
+        legs.append(G(nm, (x, 15, 2), children=[
+            B(f'{nm}_th', x - .7, 8, 1.4, 1.4, 7.4, 1.4, 'heron_bill', key='h_th'),
+            B(f'{nm}_sh', x - .6, 0, 1.6, 1.2, 8.2, 1.2, 'heron_bill', key='h_sh'),
+            B(f'{nm}_ft', x - 1, 0, -2, 2, .9, 4.6, 'heron_bill', key='h_ft')]))
     body = [
-        B('hull', -3, 14, -4, 6, 7.4, 10, 'heron', key='h_hull'),
-        B('breast', -2.6, 14.6, -6.6, 5.2, 6.4, 3, 'heron_pale', key='h_breast'),
-        B('wing_r', 2.8, 15, -3.6, 1.2, 5.6, 9.4, 'heron', key='h_wing'),
-        B('wing_l', -4, 15, -3.6, 1.2, 5.6, 9.4, 'heron', key='h_wing'),
-        B('tail', -1.8, 15.6, 5.6, 3.6, 2.4, 4.4, 'heron_dark', key='h_tail'),
+        B('hull', -2.6, 15, -4.5, 5.2, 6.4, 10, 'heron', key='h_hull'),
+        B('breast', -2.3, 15.4, -7, 4.6, 5.6, 3, 'heron_pale', key='h_breast'),
+        B('back', -2.5, 20.8, -4, 5, 1.0, 9, 'heron', key='h_back'),
+        B('throat', -1.4, 19.6, -7.2, 2.8, 2.4, 2.6, 'heron_pale', key='h_throat'),
+        B('wing_r', 2.55, 15.6, -3.8, .9, 4.8, 9, 'heron', key='h_wing'),
+        B('wing_l', -3.45, 15.6, -3.8, .9, 4.8, 9, 'heron', key='h_wing'),
+        B('shoulder_r', 2.5, 19.4, -4.2, 1.0, 1.6, 4, 'heron_dark', key='h_shldr'),
+        B('shoulder_l', -3.5, 19.4, -4.2, 1.0, 1.6, 4, 'heron_dark', key='h_shldr'),
+        B('tail', -1.6, 16.4, 5.2, 3.2, 1.8, 5, 'heron', key='h_tail'),
     ]
+    # cou en S : il remonte en arriere, puis la tete repart vers l'avant
     neck = [
-        B('neck_a', -1.6, 20, -2.6, 3.2, 6, 3.2, 'heron_pale', key='h_neck1'),
-        B('neck_b', -1.5, 25.6, -4, 3, 5.2, 3, 'heron_pale', key='h_neck2'),
+        B('neck_a', -1.3, 20.5, -2.2, 2.6, 6.5, 2.6, 'heron_pale', key='h_neck1'),
+        B('neck_b', -1.2, 26.6, -3.6, 2.4, 6.2, 2.4, 'heron_pale', key='h_neck2'),
     ]
     head = [
-        B('skull', -1.7, 30.4, -7.4, 3.4, 3.6, 5, 'heron_pale', key='h_skull', fx=fx_eye(1, 1, col=(18, 16, 14), glint=(250, 230, 120))),
-        B('crest', -.8, 33.4, -4.4, 1.6, 1.2, 5.4, 'heron_dark', key='h_crest'),
-        B('stripe_r', 1.2, 32.6, -7, 1.0, 1.2, 4.2, 'heron_dark', key='h_stripe'),
-        B('stripe_l', -2.2, 32.6, -7, 1.0, 1.2, 4.2, 'heron_dark', key='h_stripe'),
-        B('bill', -.9, 30.9, -14, 1.8, 1.8, 7, 'heron_bill', key='h_bill'),
+        B('skull', -1.3, 32.2, -7.6, 2.6, 2.8, 4.6, 'heron_pale', key='h_skull', fx=fx_eye(1, 1, col=(20, 18, 14), glint=(250, 226, 110))),
+        B('crown', -1.3, 34.6, -7.2, 2.6, .9, 3.2, 'heron_dark', key='h_crown'),
+        B('plume', -.6, 34.2, -4.4, 1.2, .8, 4.6, 'heron_dark', key='h_plume'),
+        B('bill', -.6, 32.9, -13.4, 1.2, 1.3, 6, 'heron_bill', key='h_bill'),
     ]
     return [G('body', (0, 0, 0), children=body + legs + neck + head)]
 
