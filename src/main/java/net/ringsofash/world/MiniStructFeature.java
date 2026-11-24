@@ -141,9 +141,12 @@ public class MiniStructFeature extends Feature<NoneFeatureConfiguration> {
                         alongX ? Direction.Axis.X : Direction.Axis.Z));
             }
         }
-        if (r.nextInt(3) == 0) {                                     // un piquet et une corde
+        for (int k = 0; k < 2 + r.nextInt(2); k++)                   // le tas de bois
+            b.s(-2, 1 + k, 2, Blocks.OAK_LOG.defaultBlockState().setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS, Direction.Axis.X));
+        if (r.nextInt(2) == 0) {                                     // un piquet et sa lanterne
             b.s(2, 1, 2, pal.fence());
             b.s(2, 2, 2, pal.fence());
+            b.s(2, 3, 2, Blocks.LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, false));
         }
         if (r.nextInt(4) == 0) b.chest(-2, 1, 0, Direction.SOUTH, "human_house");
     }
