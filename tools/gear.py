@@ -188,71 +188,7 @@ def build():
                           ('smoke_powder', ['minecraft:gunpowder', 'minecraft:charcoal'], 2),
                           ('haste_rune', ['raw_orrune', 'minecraft:redstone', 'minecraft:glowstone_dust'], 1)):
         shapeless(rid, parts, rid, n)
-    # ---- armes
-    sw = lambda kind, tier, dmg, spd, reach=0, p=P: f'ModGear.special(SpecialSword.Kind.{kind}, ModGear.{tier}, {dmg}, {spd}F, {reach}, {p})'
-    def weapon(id, fr, java, tex_im, tags=('swords',)):
-        item(id, fr, java=java, model='handheld', tex=tex_im, tags=list(tags))
-    weapon('lunargent_sword', 'Épée de lunargent', sw('NONE', 'T_LUNARGENT', 3, -2.4), sword('#cfe6f2', '#8fa8b8', gem='#58b0e0'))
-    eb = sword('#dfe8ee', '#d8c070', grip='#3a5a3a', length=11)
-    weapon('elven_blade', 'Lame elfique', sw('ELVEN', 'T_ELVEN', 3, -2.2), eb)
-    itex('elven_blade_glow', sword('#8fd0ff', '#d8c070', grip='#3a5a3a', length=11, gem='#ffffff'))
-    eg = sword('#dfe8ee', '#d8c070', grip='#6b4a2a', length=10, curved=True, wide=True)
-    weapon('elven_glaive', 'Glaive elfique', sw('ELVEN', 'T_ELVEN', 5, -2.8, 1.0), eg)
-    itex('elven_glaive_glow', sword('#8fd0ff', '#d8c070', grip='#6b4a2a', length=10, curved=True, wide=True))
-    for wid in ('elven_blade', 'elven_glaive'):
-        imodel(wid, {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/{wid}'},
-                     'overrides': [{'predicate': {f'{MOD}:glow': 1}, 'model': f'{MOD}:item/{wid}_glow'}]})
-        imodel(wid + '_glow', {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/{wid}_glow'}})
-    # ---- armes a effet : givre, sang, vipere, soleil, sentinelle, tempete
-    weapon('frost_blade', 'Lame de givre', sw('FROST', 'T_STEEL', 3, -2.4), sword('#bfeaff', '#6a9ac0', grip='#2a3a5a', length=11, gem='#ffffff'))
-    weapon('blood_blade', 'Lame sanguine', sw('BLOOD', 'T_STEEL', 3, -2.4), sword('#a01820', '#3a1015', grip='#2a1015', length=11, gem='#ff4040'))
-    weapon('viper_dagger', 'Dague de vipère', sw('VIPER', 'T_STEEL', 1, -1.6), sword('#7ad04a', '#3a5a20', grip='#2a3a1a', length=6, gem='#d8ff60'))
-    weapon('storm_blade', 'Lame de tempête', sw('STORM', 'T_LEGEND', 5, -2.4, 0, 'props().rarity(Rarity.RARE)'), sword('#8a9ab8', '#d8d040', grip='#2a2a3a', length=11, curved=True, gem='#f8f060'))
-    for wid, blade, guard, grip, glowc in (('sentinel_blade', '#8a8f98', '#c9a23a', '#3a2a1a', '#ffb040'), ('sun_blade', '#f2d070', '#c98a20', '#5a3a1a', '#fff8c0')):
-        weapon(wid, {'sentinel_blade': 'Lame sentinelle', 'sun_blade': 'Lame solaire'}[wid], sw('SENTINEL' if wid == 'sentinel_blade' else 'SUN', 'T_STEEL', 3, -2.4), sword(blade, guard, grip=grip, length=11))
-        itex(wid + '_glow', sword(glowc, guard, grip=grip, length=11, gem='#ffffff'))
-        imodel(wid, {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/{wid}'},
-                     'overrides': [{'predicate': {f'{MOD}:glow': 1}, 'model': f'{MOD}:item/{wid}_glow'}]})
-        imodel(wid + '_glow', {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/{wid}_glow'}})
-    for rid, parts in (('frost_blade', ['lunargent_ingot', 'minecraft:blue_ice', 'minecraft:iron_sword']),
-                       ('blood_blade', ['minecraft:iron_sword', 'minecraft:redstone_block', 'braisite']),
-                       ('viper_dagger', ['minecraft:iron_sword', 'minecraft:spider_eye', 'spider_silk']),
-                       ('sentinel_blade', ['minecraft:iron_sword', 'brumecristal', 'minecraft:glowstone_dust']),
-                       ('sun_blade', ['minecraft:iron_sword', 'minecraft:glowstone', 'raw_orrune']),
-                       ('storm_blade', ['lunargent_sword', 'minecraft:lightning_rod', 'brumecristal'])):
-        shapeless(rid, parts, rid)
-    weapon('dwarven_axe', 'Hache de guerre naine', 'ModGear.axe(ModGear.T_DWARVEN, 6.0F, -3.0F, props())', axe_icon('#8a8f98', double=True), tags=('axes',))
-    weapon('dwarven_hammer', 'Marteau de guerre nain', sw('HAMMER', 'T_DWARVEN', 7, -3.3), hammer_icon('#7a7f88'))
-    weapon('orc_scimitar', 'Cimeterre orque', sw('NONE', 'T_ORC', 3, -2.4), sword('#4a474e', '#2a2428', grip='#3a2a20', length=10, curved=True))
-    weapon('orc_cleaver', 'Fendoir orque', sw('NONE', 'T_ORC', 5, -3.0), sword('#55525a', '#2a2428', grip='#3a2a20', length=8, wide=True))
-    weapon('orc_machete', 'Machette ébréchée', sw('NONE', 'T_ORC', 4, -2.6), sword('#5a5860', '#2a2428', grip='#4a3424', length=9, wide=True))
-    weapon('orc_spear', 'Lance orque', sw('SPEAR', 'T_ORC', 4, -2.7, 1.5), spear_icon('#6a6870', '#4a3424'))
-    weapon('orc_mace', 'Masse du chef orque', sw('CLUB', 'T_ORC', 8, -3.3), mace_icon('#7a7f88', '#a8b0b0'))
-    weapon('goblin_king_staff', 'Bâton du Roi des gobelins', sw('CLUB', 'T_ORC', 8, -3.2), mace_icon('#6b4a2a', '#d8cba0'))
-    weapon('rider_spear', 'Lance des cavaliers', sw('SPEAR', 'T_STEEL', 3, -2.6, 1.5), spear_icon('#b8bcc4'))
-    weapon('halfling_dagger', 'Dague de semi-homme', sw('DAGGER', 'T_STEEL', 1, -1.6), sword('#c8ccd4', '#c9a23a', length=6))
-    weapon('ranger_sword', 'Épée de rôdeur', sw('NONE', 'T_STEEL', 3, -2.4), sword('#b8bcc4', '#5a5a60', length=11))
-    weapon('wight_blade', 'Lame des tertres', sw('WIGHT', 'T_STEEL', 3, -2.3), sword('#bfe8dc', '#7a9a8c', grip='#2a3a34', length=10, gem='#70ffd8'))
-    weapon('troll_club', 'Massue de troll', sw('CLUB', 'T_ORC', 7, -3.4), hammer_icon('#6b4a2a', '#5a3e24'))
-    weapon('ash_mace', 'Masse du Seigneur de Cendre', sw('MACE', 'T_LEGEND', 9, -3.2, 0, 'props().fireResistant().rarity(Rarity.EPIC)'), mace_icon('#2a2630', '#ff5a18'))
-    weapon('kings_blade', 'Épée du roi elfe', sw('KING', 'T_LEGEND', 6, -2.2, 0, 'props().fireResistant().rarity(Rarity.EPIC)'), sword('#9fe0ff', '#e8c860', grip='#2a5a4a', length=11, gem='#40e080'))
-    item('lunargent_pickaxe', 'Pioche de lunargent', java='ModGear.pickaxe(ModGear.T_LUNARGENT, props())', model='handheld', tags=['pickaxes'],
-         tex=polearm(['.ooooooo', 'obbbbbcco', '.oo..oaao', '......oao', '.......o.'], matpal('#cfe6f2'), ox=6, oy=1, shaft_from=(2, 14), shaft_to=(10, 6)))
-    item('goblin_pickaxe', 'Pioche de gobelin', java='ModGear.pickaxe(ModGear.T_ORC, props())', model='handheld', tags=['pickaxes'],
-         tex=polearm(['.ooooooo', 'obbbbbcco', '.oo..oaao', '......oao', '.......o.'], matpal('#6a6a62'), ox=6, oy=1, shaft_from=(2, 14), shaft_to=(10, 6)))
-    bows = bow_icons('#d8c070')
-    item('elven_bow', 'Arc elfique', java='new MiscItems.ElvenBow(props().durability(640))', tex=bows[0], model={
-        'parent': 'minecraft:item/bow', 'textures': {'layer0': f'{MOD}:item/elven_bow'},
-        'overrides': [{'predicate': {f'{MOD}:pulling': 1}, 'model': f'{MOD}:item/elven_bow_pulling_0'},
-                      {'predicate': {f'{MOD}:pulling': 1, f'{MOD}:pull': 0.65}, 'model': f'{MOD}:item/elven_bow_pulling_1'},
-                      {'predicate': {f'{MOD}:pulling': 1, f'{MOD}:pull': 0.9}, 'model': f'{MOD}:item/elven_bow_pulling_2'}]})
-    for i in range(3):
-        itex(f'elven_bow_pulling_{i}', bows[i + 1])
-        imodel(f'elven_bow_pulling_{i}', {'parent': f'{MOD}:item/elven_bow', 'textures': {'layer0': f'{MOD}:item/elven_bow_pulling_{i}'}})
-    # ---- batons
-    for id, fr, kind, col in (('staff_fire', 'Bâton de feu', 'FIRE', '#ff6a18'), ('staff_light', 'Bâton de lumière', 'LIGHT', '#fff2a0'),
-                              ('staff_storm', 'Bâton de foudre', 'STORM', '#9a7aff'), ('staff_healing', 'Bâton de soin', 'HEALING', '#60e090')):
-        item(id, fr, java=f'new StaffItem(StaffItem.Kind.{kind}, props().durability(200).rarity(Rarity.RARE))', model='handheld', tex=staff_icon(col))
+    # ---- armes, arcs et batons : retires, a refaire (voir git : tools/gear.py avant ce commit)
     # ---- armures
     armor_set('lunargent', 'de lunargent', 'LUNARGENT', 35, '#cfe6f2', '#8fb0c8', '#58b0e0')
     armor_set('orc', 'orque', 'ORC', 14, '#3d3a42', '#6a2018', '#c03020')
@@ -340,13 +276,6 @@ def build():
                 for y in range(0, 8):
                     if k in (8, 15): im.putpixel((k, y), gold + (255,))
         save(im, f'{A}/textures/models/armor/royal_layer_{lay}.png')
-    weapon('valmoire_blade', 'Aubelame', sw('ROYAL', 'T_LEGEND', 6, -2.2, 0, 'props().rarity(Rarity.EPIC)'), sword('#eef2f8', '#e0c050', grip='#2a3a6a', length=11, gem='#4aa0ff'))
-    # Aubelame : texture animee (pulsation bleue le long de la lame)
-    frames = [sword(bl, '#e0c050', grip='#2a3a6a', length=11, gem=gm) for bl, gm in (('#eef2f8', '#4aa0ff'), ('#d8e8ff', '#7ac0ff'), ('#bcd8ff', '#b0e0ff'), ('#d8e8ff', '#7ac0ff'))]
-    strip = Image.new('RGBA', (16, 16 * len(frames)))
-    for i, fr in enumerate(frames): strip.paste(fr, (0, 16 * i))
-    save(strip, f'{A}/textures/item/valmoire_blade.png')
-    wjson(f'{A}/textures/item/valmoire_blade.png.mcmeta', {'animation': {'frametime': 6, 'interpolate': True}})
     # ---- coeur de Sylvgarde (5 % sur un Sylvgarde tue)
     item('sylvan_heart', 'Cœur de Sylvgarde', java='new SylvanHeart(props().stacksTo(16).rarity(Rarity.RARE))', tex=sprite(GEM, matpal('#6a8a3a', trim='#4b3b2b', gem='#a8e070')))
     LANG['effect.ringsofash.sylvan_form'] = 'Forme de Sylvgarde'

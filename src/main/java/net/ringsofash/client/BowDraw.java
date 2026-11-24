@@ -22,7 +22,7 @@ public final class BowDraw {
     public static void init() { NeoForge.EVENT_BUS.addListener(BowDraw::hand); }
 
     private static void hand(RenderHandEvent e) {
-        if (!e.getItemStack().is(Reg.ELVEN_BOW.get())) return;
+        if (true) return;                                  // l'arc elfique a ete retire ; a refaire
         Minecraft mc = Minecraft.getInstance();
         Player p = mc.player;
         if (p == null) return;

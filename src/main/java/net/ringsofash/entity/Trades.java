@@ -84,7 +84,7 @@ public final class Trades {
                         premium = l.size(); l.add(o2(Reg.SUNSTAR.get(), 16, Reg.MOONBELL.get(), 16, Reg.RING_WINDS.get(), 1, 1));
                     }
                     case 1 -> {
-                        l.add(o(Reg.GOLDEN_SAPLING.get(), 3, Reg.ELVEN_BOW.get(), 1, 2));
+                        l.add(o(Reg.GOLDEN_SAPLING.get(), 3, net.minecraft.world.item.Items.BOW, 1, 2));
                         l.add(o(Reg.SUNSTAR.get(), 10, Reg.ELVEN_HELMET.get(), 1, 2)); l.add(o(Reg.MOONBELL.get(), 12, Reg.ELVEN_CHESTPLATE.get(), 1, 2));
                         l.add(o(Reg.GOLDEN_LOG.get(), 20, Reg.ELVEN_LEGGINGS.get(), 1, 2)); l.add(o(Reg.SUNSTAR.get(), 8, Reg.ELVEN_BOOTS.get(), 1, 2));
                         premium = l.size(); l.add(o2(Reg.LUNARGENT_INGOT.get(), 6, Reg.SUNSTAR.get(), 12, Reg.MIRUVOR.get(), 4, 2));
@@ -104,7 +104,7 @@ public final class Trades {
                     case 0 -> {
                         l.add(o(Items.IRON_INGOT, 6, Reg.DWARVEN_HELMET.get(), 1, 2)); l.add(o(Items.DIAMOND, 3, Reg.DWARVEN_CHESTPLATE.get(), 1, 2));
                         l.add(o(Items.DIAMOND, 2, Reg.DWARVEN_LEGGINGS.get(), 1, 2)); l.add(o(Items.IRON_INGOT, 5, Reg.DWARVEN_BOOTS.get(), 1, 2));
-                        premium = l.size(); l.add(o(Reg.LUNARGENT_INGOT.get(), 4, Reg.LUNARGENT_PICKAXE.get(), 1, 1));
+                        premium = l.size(); l.add(o(Reg.LUNARGENT_INGOT.get(), 4, net.minecraft.world.item.Items.DIAMOND_PICKAXE, 1, 1));
                     }
                     case 1 -> {
                         l.add(o(Items.COAL, 24, Reg.DWARF_ALE.get(), 2, 8)); l.add(o(Items.RAW_IRON, 12, coin, 3, 12)); l.add(o(Items.RAW_GOLD, 8, coin, 4, 12));

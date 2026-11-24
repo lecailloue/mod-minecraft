@@ -38,7 +38,7 @@ final class RingTabs {
     /** Colonne d'onglets a gauche d'un cadre dont le coin haut-gauche est (left, top). */
     static void drawAt(GuiGraphics g, int left, int top, int tab, int mx, int my) {
         Minecraft mc = Minecraft.getInstance();
-        ItemStack[] icons = {new ItemStack(Items.IRON_CHESTPLATE), new ItemStack(Reg.RING_HOARD.get()), new ItemStack(Reg.ARTIFACT_CHAIN_1.get()), new ItemStack(Reg.LUNARGENT_PICKAXE.get()), new ItemStack(Items.FURNACE)};
+        ItemStack[] icons = {new ItemStack(Items.IRON_CHESTPLATE), new ItemStack(Reg.RING_HOARD.get()), new ItemStack(Reg.ARTIFACT_CHAIN_1.get()), new ItemStack(Items.IRON_PICKAXE), new ItemStack(Items.FURNACE)};
         String[] names = {"Inventaire", "Anneaux", "Artefacts", "Compétences", "Four portable"};
         for (int i = 0; i < count(); i++) {
             int x = left - W + 2, y = top + 6 + i * (H + 3);

@@ -952,7 +952,7 @@ public final class ClientTest {
         SCENES.add(new Scene("04_armes_orques", 90, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
-            net.minecraft.world.item.Item[] it = {net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, Reg.GOBLIN_PICKAXE.get()};
+            net.minecraft.world.item.Item[] it = {net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.IRON_PICKAXE};
             for (int i = 0; i < it.length; i++) {
                 net.minecraft.world.entity.item.ItemEntity ie = new net.minecraft.world.entity.item.ItemEntity(ow, SX + 2.0 - i * 0.8, SY + 0.1, SZ + 3.0, new net.minecraft.world.item.ItemStack(it[i]));
                 ie.setPickUpDelay(32767);

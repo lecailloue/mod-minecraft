@@ -240,7 +240,6 @@ public final class ClientSetup {
         e.registerItem(armorExt("rohan", "chest"), Reg.ROHAN_CHESTPLATE.get());
         e.registerItem(armorExt("rohan", "legs"), Reg.ROHAN_LEGGINGS.get());
         e.registerItem(armorExt("rohan", "boots"), Reg.ROHAN_BOOTS.get());
-        e.registerItem(ext, Reg.GOBLIN_PICKAXE.get(), Reg.LUNARGENT_PICKAXE.get(), Reg.ELVEN_BOW.get());
     }
 
     private static void setup(FMLClientSetupEvent e) {
@@ -251,10 +250,6 @@ public final class ClientSetup {
                 if (pl != mc.player || mc.screen != null) return 0;
                 return (mc.options.keyJump.isDown() ? 1 : 0) - (DESCEND_KEY.isDown() ? 1 : 0);
             };
-            ItemProperties.register(Reg.ELVEN_BOW.get(), RingsOfAsh.id("pull"), (stack, level, entity, seed) ->
-                    entity == null || entity.getUseItem() != stack ? 0.0F : (stack.getUseDuration(entity) - entity.getUseItemRemainingTicks()) / 20.0F);
-            ItemProperties.register(Reg.ELVEN_BOW.get(), RingsOfAsh.id("pulling"), (stack, level, entity, seed) ->
-                    entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F);
         });
     }
 
