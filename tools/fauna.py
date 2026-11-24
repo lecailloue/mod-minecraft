@@ -17,48 +17,63 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 # ------------------------------------------------------------------ materiaux (base, grain, teinte)
 tc.MATS.update({
-    'deer':      dict(base=(132, 96, 62), n1=5, n2=7, tint=(1, .96, .88)),
-    'deer_pale': dict(base=(196, 170, 136), n1=5, n2=6, tint=(1, .98, .92)),
-    'roe':       dict(base=(158, 108, 62), n1=5, n2=7, tint=(1, .95, .85)),
-    'roe_pale':  dict(base=(224, 212, 190), n1=4, n2=6, tint=(1, .99, .96)),
-    'antler':    dict(base=(176, 156, 120), n1=6, n2=7, tint=(1, .96, .86)),
-    'hoofd':     dict(base=(44, 38, 34), n1=4, n2=5, tint=(1, 1, 1.05)),
-    'fox':       dict(base=(190, 96, 34), n1=6, n2=8, tint=(1, .92, .78)),
-    'fox_pale':  dict(base=(236, 230, 220), n1=4, n2=5, tint=(1, .99, .97)),
-    'fox_dark':  dict(base=(46, 38, 36), n1=4, n2=5, tint=(1, 1, 1.04)),
-    'squirrel':  dict(base=(166, 86, 44), n1=6, n2=8, tint=(1, .93, .8)),
-    'squi_pale': dict(base=(234, 226, 214), n1=4, n2=5, tint=(1, .99, .97)),
+    'deer':      dict(base=(134, 100, 68), n1=2, n2=2, tint=(1, .97, .9)),
+    'deer_pale': dict(base=(198, 176, 146), n1=2, n2=2, tint=(1, .99, .94)),
+    'roe':       dict(base=(160, 112, 68), n1=2, n2=2, tint=(1, .96, .88)),
+    'roe_pale':  dict(base=(226, 216, 198), n1=2, n2=2, tint=(1, .99, .97)),
+    'antler':    dict(base=(174, 156, 124), n1=2, n2=3, tint=(1, .97, .88)),
+    'hoofd':     dict(base=(46, 40, 36), n1=2, n2=2, tint=(1, 1, 1.04)),
+    'fox':       dict(base=(192, 100, 40), n1=2, n2=2, tint=(1, .94, .82)),
+    'fox_pale':  dict(base=(234, 228, 218), n1=2, n2=2, tint=(1, .99, .98)),
+    'fox_dark':  dict(base=(48, 40, 38), n1=2, n2=2, tint=(1, 1, 1.03)),
+    'squirrel':  dict(base=(168, 92, 50), n1=2, n2=2, tint=(1, .94, .83)),
+    'squi_pale': dict(base=(232, 224, 212), n1=2, n2=2, tint=(1, .99, .98)),
     'duck_head': dict(base=(34, 96, 66), n1=5, n2=7, tint=(.9, 1, .95)),
     'duck_body': dict(base=(150, 146, 138), n1=5, n2=7, tint=(1, 1, 1.02)),
     'duck_br':   dict(base=(122, 74, 52), n1=5, n2=6, tint=(1, .94, .86)),
     'duck_bill': dict(base=(214, 178, 62), n1=5, n2=6, tint=(1, .97, .78)),
     'duck_white': dict(base=(238, 234, 226), n1=3, n2=4, tint=(1, 1, 1)),
     'duck_wing': dict(base=(74, 86, 122), n1=5, n2=6, tint=(.95, .98, 1.06)),
-    'heron':     dict(base=(168, 174, 182), n1=4, n2=6, tint=(1, 1, 1.05)),
-    'heron_pale': dict(base=(232, 232, 230), n1=3, n2=4, tint=(1, 1, 1.01)),
-    'heron_dark': dict(base=(42, 44, 52), n1=4, n2=5, tint=(1, 1, 1.08)),
-    'heron_bill': dict(base=(216, 184, 70), n1=5, n2=6, tint=(1, .97, .76)),
-    'beaver':    dict(base=(96, 64, 40), n1=5, n2=7, tint=(1, .95, .86)),
-    'beaver_d':  dict(base=(66, 44, 30), n1=5, n2=6, tint=(1, .95, .88)),
-    'beaver_tl': dict(base=(58, 46, 42), n1=7, n2=9, tint=(1, .98, .96)),
-    'tooth':     dict(base=(226, 206, 134), n1=4, n2=5, tint=(1, .98, .8)),
+    'heron':     dict(base=(170, 176, 184), n1=2, n2=2, tint=(1, 1, 1.03)),
+    'heron_pale': dict(base=(232, 232, 230), n1=1, n2=2, tint=(1, 1, 1.01)),
+    'heron_dark': dict(base=(44, 46, 54), n1=2, n2=2, tint=(1, 1, 1.05)),
+    'heron_bill': dict(base=(214, 182, 72), n1=2, n2=2, tint=(1, .98, .8)),
+    'beaver':    dict(base=(100, 68, 44), n1=2, n2=2, tint=(1, .96, .88)),
+    'beaver_d':  dict(base=(70, 48, 32), n1=2, n2=2, tint=(1, .96, .9)),
+    'beaver_tl': dict(base=(60, 48, 44), n1=2, n2=3, tint=(1, .99, .97)),
+    'tooth':     dict(base=(224, 206, 140), n1=2, n2=2, tint=(1, .99, .84)),
 })
+
+def flat(dark, density=22, a=.42, grad=.94):
+    """texture a la maniere de vanilla : fond uni, quelques pixels plus sombres, un leger degrade"""
+    import numpy as _np
+    def f(arr, face, rng):
+        h, w, _ = arr.shape
+        for _ in range(max(1, int(h * w / density))):
+            x = int(rng.integers(0, w)); y = int(rng.integers(0, h))
+            put(arr, x, y, dark, a)
+            if rng.random() < .35: put(arr, x + 1, y, dark, a * .8)
+            if rng.random() < .2: put(arr, x, y + 1, dark, a * .7)
+        if face not in ('up', 'down') and h > 4:
+            arr *= _np.linspace(1.04, grad, h)[:, None, None]
+    return f
+
 
 # peinture de chaque matiere : fourrure, plume, corne, bec
 tc.DECOR.update({
-    'deer': d_bristle((178, 140, 98), (74, 52, 32), 4), 'deer_pale': d_bristle((226, 208, 180), (140, 118, 92), 4),
-    'roe': d_bristle((198, 146, 92), (92, 60, 34), 4), 'roe_pale': d_bristle((242, 236, 222), (168, 152, 130), 4),
-    'antler': d_antler, 'hoofd': d_hoof,
-    'fox': d_bristle((232, 134, 52), (104, 46, 14), 3), 'fox_pale': d_bristle((250, 246, 240), (168, 160, 150), 3),
-    'fox_dark': d_bristle((80, 68, 64), (18, 14, 14), 3),
-    'squirrel': d_bristle((210, 118, 62), (86, 42, 20), 3), 'squi_pale': d_bristle((248, 242, 234), (176, 166, 154), 3),
+    'deer': flat((92, 66, 42)), 'deer_pale': flat((160, 138, 110), 30),
+    'roe': flat((112, 74, 42)), 'roe_pale': flat((190, 178, 158), 30),
+    'antler': flat((132, 114, 84), 26), 'hoofd': flat((28, 24, 22), 40),
+    'fox': flat((136, 62, 18)), 'fox_pale': flat((196, 190, 180), 30),
+    'fox_dark': flat((26, 22, 22), 34),
+    'squirrel': flat((116, 58, 26)), 'squi_pale': flat((194, 186, 174), 30),
     'duck_head': d_feather((56, 134, 96), (14, 56, 38), 2), 'duck_body': d_feather((186, 182, 174), (92, 88, 82), 3),
     'duck_br': d_feather((156, 102, 72), (70, 40, 26), 3), 'duck_bill': d_ebeak, 'duck_white': d_feather((250, 248, 244), (190, 186, 178), 3),
     'duck_wing': d_feather((104, 118, 158), (36, 44, 72), 3),
-    'heron': d_feather((198, 204, 212), (104, 110, 120), 3), 'heron_pale': d_feather((248, 248, 246), (190, 190, 188), 3),
-    'heron_dark': d_black, 'heron_bill': d_ebeak,
-    'beaver': d_bristle((132, 92, 60), (48, 30, 18), 3), 'beaver_d': d_bristle((96, 66, 44), (34, 22, 14), 3),
-    'beaver_tl': d_hide(.26, 2, .5), 'tooth': d_antler,
+    'heron': flat((124, 130, 140), 26), 'heron_pale': flat((198, 198, 196), 34),
+    'heron_dark': flat((22, 24, 30), 40), 'heron_bill': flat((168, 136, 40), 30),
+    'beaver': flat((62, 40, 24)), 'beaver_d': flat((44, 28, 18), 26),
+    'beaver_tl': flat((36, 28, 26), 14, .5), 'tooth': flat((186, 166, 100), 34),
 })
 
 MODELS = {}
