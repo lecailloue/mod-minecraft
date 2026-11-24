@@ -236,13 +236,31 @@ def blocks():
     btex('autumn_red_leaves', leaves('#a9391c', 46, accent='#d9601f'))
     block('autumn_red_leaves', "Feuilles d'automne rousses", 'leaves')
 
-    # --- feuilles tombees : un tapis clairseme, de la couleur des arbres au dessus
-    for _id, _fr, _col, _sd, _ac in (('golden_leaf_litter', 'Tapis de feuilles dorées', '#c9a132', 47, '#eadc8c'),
-                                     ('orange_leaf_litter', 'Tapis de feuilles orangées', '#c4661a', 48, '#e59a38'),
-                                     ('red_leaf_litter', 'Tapis de feuilles rousses', '#97331a', 49, '#c8551d'),
-                                     ('brown_leaf_litter', 'Tapis de feuilles mortes', '#6f4b26', 50, '#8f6a39')):
-        btex(_id, leaves(_col, _sd, holes=0.55, accent=_ac))
+    # --- tas de feuilles au sol : la couleur des arbres au dessus
+    import autumn
+    for _id, _fr in (('golden_leaf_litter', 'Tas de feuilles dorées'), ('orange_leaf_litter', 'Tas de feuilles orangées'),
+                     ('red_leaf_litter', 'Tas de feuilles rousses'), ('deep_leaf_litter', 'Épais tas de feuilles'),
+                     ('brown_leaf_litter', 'Feuilles mortes éparses')):
+        btex(_id, autumn.LITTERS[_id]())
         block(_id, _fr, 'carpet', copy='MOSS_CARPET', tool='hoe')
+
+    # --- fleurs d'automne de Fondcombe
+    _FX = {'flame_rose': 'MobEffects.REGENERATION, 5.0F', 'gold_bell': 'MobEffects.SATURATION, 4.0F',
+           'ember_bloom': 'MobEffects.FIRE_RESISTANCE, 4.0F', 'scarlet_spike': 'MobEffects.DAMAGE_BOOST, 5.0F',
+           'pale_daisy': 'MobEffects.HEAL, 1.0F', 'red_sprig': 'MobEffects.MOVEMENT_SPEED, 5.0F',
+           'golden_lily': 'MobEffects.LUCK, 8.0F'}
+    for _id, _fr in (('flame_rose', 'Flammerose'), ('gold_bell', 'Clochette dorée'), ('ember_bloom', 'Souci de braise'),
+                     ('scarlet_spike', 'Épi écarlate'), ('pale_daisy', 'Marguerite pâle'), ('red_sprig', 'Brindille écarlate'),
+                     ('golden_lily', 'Lys doré')):
+        btex(_id, autumn.FLOWERS[_id]())
+        block(_id, _fr, 'cross', java=f'new FlowerBlock({_FX[_id]}, copy(Blocks.DANDELION))',
+              tags=['small_flowers'], itags=['small_flowers'])
+
+    # --- touffes et buissons du sous bois
+    for _id, _fr in (('gold_tuft', "Herbe d'or"), ('red_tuft', 'Herbe rousse'), ('orange_tuft', 'Herbe cuivrée'),
+                     ('gold_bush', 'Buisson doré'), ('red_bush', 'Buisson écarlate')):
+        btex(_id, autumn.TUFTS[_id]())
+        block(_id, _fr, 'cross', java='new TallGrassBlock(copy(Blocks.SHORT_GRASS))')
     btex('golden_sapling', sprite([
         '................', '.......bb.......', '......bcab......', '.....babbab.....', '....bbacbaab....', '.....abbabb.....',
         '......babb......', '.......ss.......', '..bb...ss..ab...', '.baab..ss.bbab..', '..bab..ssabb....', '...ba.ssss......',

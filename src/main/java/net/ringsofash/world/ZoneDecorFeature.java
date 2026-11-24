@@ -198,7 +198,8 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
         }
 
         /** la couleur des feuilles tombees suit celle de l'arbre au dessus */
-        net.minecraft.world.level.block.Block litterOf(int main, int h) {
+        net.minecraft.world.level.block.Block litterOf(int main, int h, boolean thick) {
+            if (thick && h % 3 != 0) return Reg.DEEP_LEAF_LITTER.get();
             if (h % 7 == 0) return Reg.BROWN_LEAF_LITTER.get();
             return switch (main) {
                 case 0 -> Reg.ORANGE_LEAF_LITTER.get();
@@ -209,16 +210,18 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
         }
 
         BlockState elvenFlower(int h) {
-            return switch (h % 10) {
-                case 0, 1 -> Reg.SUNSTAR.get().defaultBlockState();
-                case 2 -> Reg.MOONBELL.get().defaultBlockState();
-                case 3 -> Blocks.ORANGE_TULIP.defaultBlockState();
-                case 4 -> Blocks.RED_TULIP.defaultBlockState();
-                case 5 -> Blocks.WHITE_TULIP.defaultBlockState();
-                case 6 -> Blocks.OXEYE_DAISY.defaultBlockState();
-                case 7 -> Blocks.CORNFLOWER.defaultBlockState();
-                case 8 -> Blocks.LILY_OF_THE_VALLEY.defaultBlockState();
-                default -> Blocks.DANDELION.defaultBlockState();
+            return switch (h % 11) {
+                case 0 -> Reg.FLAME_ROSE.get().defaultBlockState();
+                case 1 -> Reg.GOLD_BELL.get().defaultBlockState();
+                case 2 -> Reg.EMBER_BLOOM.get().defaultBlockState();
+                case 3 -> Reg.SCARLET_SPIKE.get().defaultBlockState();
+                case 4 -> Reg.PALE_DAISY.get().defaultBlockState();
+                case 5 -> Reg.RED_SPRIG.get().defaultBlockState();
+                case 6 -> Reg.GOLDEN_LILY.get().defaultBlockState();
+                case 7 -> Reg.SUNSTAR.get().defaultBlockState();
+                case 8 -> Reg.MOONBELL.get().defaultBlockState();
+                case 9 -> Blocks.ORANGE_TULIP.defaultBlockState();
+                default -> Blocks.OXEYE_DAISY.defaultBlockState();
             };
         }
 
@@ -244,7 +247,7 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 double n = (vn(x * 0.13, z * 0.13, 71) + 1) * 0.5;
                 double dens = main < 0 || near > 9 ? 0.10 : near <= 0 ? 0.78 : near < 5 ? 0.45 : 0.20;
                 if (n * 0.55 + (h % 100) / 220.0 < dens) {
-                    set(x, gy + 1, z, litterOf(main, h >> 4).defaultBlockState());
+                    set(x, gy + 1, z, litterOf(main, h >> 4, near <= -1).defaultBlockState());
                     any = true;
                 } else if (h % 97 < 5 && near > 1) {
                     set(x, gy + 1, z, elvenFlower(h >> 7));
@@ -261,8 +264,17 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                                 net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
                         any = true;
                     }
-                } else if (h % 71 < 6) {
-                    set(x, gy + 1, z, (h & 1) == 0 ? Blocks.FERN.defaultBlockState() : Blocks.SHORT_GRASS.defaultBlockState());
+                } else if (h % 71 < 9) {                           // sous bois : herbes et buissons d'automne
+                    BlockState u = switch ((h >> 5) % 8) {
+                        case 0 -> Reg.GOLD_TUFT.get().defaultBlockState();
+                        case 1 -> Reg.RED_TUFT.get().defaultBlockState();
+                        case 2 -> Reg.ORANGE_TUFT.get().defaultBlockState();
+                        case 3 -> Reg.GOLD_BUSH.get().defaultBlockState();
+                        case 4 -> Reg.RED_BUSH.get().defaultBlockState();
+                        case 5 -> Blocks.FERN.defaultBlockState();
+                        default -> Blocks.SHORT_GRASS.defaultBlockState();
+                    };
+                    set(x, gy + 1, z, u);
                     any = true;
                 } else if (h % 211 < 3 && g.is(Blocks.MOSS_BLOCK)) {
                     set(x, gy + 1, z, Blocks.MOSS_CARPET.defaultBlockState());
