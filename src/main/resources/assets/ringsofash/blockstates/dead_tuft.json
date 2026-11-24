@@ -1,1 +1,1 @@
-{"variants":{"":{"model":"ringsofash:block/dead_tuft"}}}
+{"variants":{"waterlogged=false":{"model":"ringsofash:block/dead_tuft"},"waterlogged=true":{"model":"ringsofash:block/dead_tuft"}}}

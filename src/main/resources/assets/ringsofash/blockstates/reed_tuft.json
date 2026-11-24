@@ -1,1 +1,1 @@
-{"variants":{"":{"model":"ringsofash:block/reed_tuft"}}}
+{"variants":{"waterlogged=false":{"model":"ringsofash:block/reed_tuft"},"waterlogged=true":{"model":"ringsofash:block/reed_tuft"}}}

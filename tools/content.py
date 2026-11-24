@@ -301,7 +301,7 @@ def blocks():
     # les plantes de rive tiennent aussi sur le sable, le gravier et la vase
     for _id, _fr in (('reed_tuft', 'Roseaux'), ('cattail', 'Massettes'), ('dead_tuft', 'Herbe morte')):
         btex(_id, autumn.DETAILS[_id]())
-        block(_id, _fr, 'cross', java='new MarshPlantBlock(copy(Blocks.SHORT_GRASS))')
+        block(_id, _fr, 'cross_water', java='new MarshPlantBlock(copy(Blocks.SHORT_GRASS))')
     btex('field_daisies', autumn.DETAILS['field_daisies']())
     block('field_daisies', 'Marguerites des champs', 'cross',
           java='new FlowerBlock(MobEffects.SATURATION, 5.0F, copy(Blocks.DANDELION))', tags=['small_flowers'], itags=['small_flowers'])

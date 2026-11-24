@@ -236,6 +236,10 @@ def gen_block_assets(b):
         bmodel(id, 'minecraft:block/cross', {'cross': T(tx)}, 'minecraft:cutout')
         bstate(id, {'variants': {'': {'model': T(id)}}})
         imodel(id, {'parent': 'minecraft:item/generated', 'textures': {'layer0': T(tx)}})
+    elif kind == 'cross_water':                      # plante qui peut avoir les pieds dans l'eau
+        bmodel(id, 'minecraft:block/cross', {'cross': T(tx)}, 'minecraft:cutout')
+        bstate(id, {'variants': {'waterlogged=false': {'model': T(id)}, 'waterlogged=true': {'model': T(id)}}})
+        imodel(id, {'parent': 'minecraft:item/generated', 'textures': {'layer0': T(tx)}})
     elif kind == 'custom':
         pass  # assets fournis par l'appelant
     else:
