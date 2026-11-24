@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"zon", "cyp", "mini", "cro", "riv"};
+    private static final String[] ONLY = {"zon", "cyp", "mini", "cro", "riv", "pon"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -636,6 +636,8 @@ public final class ClientTest {
         morT("cyp2_cypres_sol", 1978.5, 87, -950.5, 2005, 83, -950, 6000);
         morT("cyp3_sequoia", 2078.5, 85, -798.5, 2088, 104, -788, 6000);
         morT("cyp4_cypres_aerien", 2268.5, 132, -630.5, 2330, 78, -630, 6000);
+        morT("pon1_pont", 800.5, 70, 561.5, 808, 66, 568, 6000);
+        morT("pon2_pont_cote", 814.5, 68, 573.5, 808, 66, 568, 6000);
         morT("riv1_berge", -196.5, 70, 60.5, -175, 65, 70, 6000);
         morT("riv2_berge_foret", -660.5, 76, 190.5, -640, 70, 200, 6000);
         morT("riv3_berge_pres", -200.5, 68, 72.5, -190, 65, 78, 6000);
