@@ -38,6 +38,7 @@ public final class ModWorldgen {
     public static final DeferredHolder<Feature<?>, ZoneDecorFeature> ELVEN_DECOR = FEATURES.register("elven_forest_decor", () -> new ZoneDecorFeature(ZoneDecorFeature.ELVEN));
     public static final DeferredHolder<Feature<?>, ZoneDecorFeature> FANGORN_DECOR = FEATURES.register("fangorn_decor", () -> new ZoneDecorFeature(ZoneDecorFeature.FANGORN));
     public static final DeferredHolder<Feature<?>, ZoneDecorFeature> MARSH_DECOR = FEATURES.register("marsh_decor", () -> new ZoneDecorFeature(ZoneDecorFeature.MARSH));
+    public static final DeferredHolder<Feature<?>, MiniStructFeature> MINI_STRUCT = FEATURES.register("mini_struct", MiniStructFeature::new);
     public static final DeferredHolder<Feature<?>, ZoneDecorFeature> CYPRESS_DECOR = FEATURES.register("cypress_decor", () -> new ZoneDecorFeature(ZoneDecorFeature.CYPRESS));
     public static final DeferredHolder<Feature<?>, BigTreeFeature> BIG_TREE = FEATURES.register("big_tree", BigTreeFeature::new);
 

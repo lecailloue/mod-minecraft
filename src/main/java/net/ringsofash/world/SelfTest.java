@@ -56,6 +56,11 @@ public final class SelfTest {
             if (lands != null) {
                 step("carte biomes", () -> biomeMap(lands));
                 step("biomes", () -> eachBiome(lands));
+                step("petites structures", () -> {
+                    java.util.List<String> l = new java.util.ArrayList<>(MiniStructFeature.PLACED);
+                    log("petites structures posees : " + l.size());
+                    for (int i = 0; i < Math.min(40, l.size()); i++) log("  " + l.get(i));
+                });
                 step("sol des scenes", () -> {
                     for (int[] c : new int[][] {{-1520, -75}, {-1510, -78}, {-1450, -244}, {-768, -704}}) census(lands, c[0], c[1]);
                 });

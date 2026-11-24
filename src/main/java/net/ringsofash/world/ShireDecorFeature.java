@@ -190,7 +190,7 @@ public class ShireDecorFeature extends Feature<NoneFeatureConfiguration> {
         }
     }
 
-    private static boolean inStamp(int x, int z) { return x >= stampX0 && x < stampX1 && z >= stampZ0 && z < stampZ1; }
+    public static boolean inStamp(int x, int z) { return x >= stampX0 && x < stampX1 && z >= stampZ0 && z < stampZ1; }
 
     /** distance au chemin le plus proche (grande si loin) */
     static double pathDist(int x, int z) {

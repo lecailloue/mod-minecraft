@@ -141,7 +141,8 @@
    "ringsofash:bushes_oak",
    "minecraft:patch_grass_forest",
    "minecraft:patch_large_fern",
-   "minecraft:brown_mushroom_normal"
+   "minecraft:brown_mushroom_normal",
+   "ringsofash:mini_struct"
   ],
   [
    "minecraft:freeze_top_layer"
