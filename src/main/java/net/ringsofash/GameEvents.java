@@ -113,6 +113,20 @@ public final class GameEvents {
         bus.addListener(GameEvents::onRightClickBlock);
         bus.addListener(GameEvents::onRightClickItem);
         bus.addListener(GameEvents::onBreak);
+        bus.addListener(GameEvents::onSpawn);
+    }
+
+    // ------------------------------------------------------- aucun monstre dans les villes libres
+    private static void onSpawn(net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent e) {
+        net.minecraft.world.entity.MobSpawnType how = e.getSpawnType();
+        if (how != net.minecraft.world.entity.MobSpawnType.NATURAL && how != net.minecraft.world.entity.MobSpawnType.CHUNK_GENERATION
+                && how != net.minecraft.world.entity.MobSpawnType.PATROL && how != net.minecraft.world.entity.MobSpawnType.REINFORCEMENT
+                && how != net.minecraft.world.entity.MobSpawnType.SPAWNER) return;
+        net.minecraft.world.entity.Mob mob = e.getEntity();
+        if (!(mob instanceof net.minecraft.world.entity.monster.Enemy) && mob.getType().getCategory() != net.minecraft.world.entity.MobCategory.MONSTER) return;
+        if (e.getLevel().getLevel().dimension() != net.ringsofash.world.ModWorldgen.LANDS) return;
+        if (!net.ringsofash.world.Towns.safe((int) e.getX(), (int) e.getZ())) return;
+        e.setSpawnCancelled(true);
     }
 
     // ------------------------------------------------------------------ objets jetes

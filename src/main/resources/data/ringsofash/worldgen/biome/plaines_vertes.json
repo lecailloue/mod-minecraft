@@ -73,6 +73,18 @@
     "weight": 6,
     "minCount": 2,
     "maxCount": 3
+   },
+   {
+    "type": "ringsofash:roe_deer",
+    "weight": 3,
+    "minCount": 1,
+    "maxCount": 2
+   },
+   {
+    "type": "ringsofash:fox",
+    "weight": 2,
+    "minCount": 1,
+    "maxCount": 1
    }
   ],
   "ambient": [

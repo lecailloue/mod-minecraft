@@ -733,5 +733,11 @@ def beasts_gen():
     import beasts
     beasts.gen()
 
+
+def fauna_gen():
+    import beasts, fauna
+    beasts.MODELS.update(fauna.MODELS)
+    fauna.gen()
+
 def build():
-    troll(); warg(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); orc_weapons(); lurker(); treeman_bb(); sylvestres(); shadow_dragon(); shadow_chief(); weapons_3d(); dragon(); beasts_gen(); skins()
+    troll(); warg(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); orc_weapons(); lurker(); treeman_bb(); sylvestres(); shadow_dragon(); shadow_chief(); weapons_3d(); dragon(); beasts_gen(); fauna_gen(); skins()

@@ -255,6 +255,19 @@ def biomes():
     biome('rivage', 'Rivage', 0.7, 0.5, '#82b4f0', '#c8dcf0', veg=('minecraft:patch_sugar_cane',), spawns={'creature': [('minecraft:turtle', 3, 1, 2)]})
     biome('riviere', 'Rivière', 0.6, 0.6, '#82b4f0', '#c8dcf0', veg=('minecraft:patch_sugar_cane', 'minecraft:seagrass_river'),
           spawns={'water_ambient': [('minecraft:salmon', 6, 1, 5)], 'water_creature': SQUID, 'monster': [('lurker', 6, 1, 1)]})
+    # faune des bois et des rivieres (les biomes des zones peintes ont leur propre json ecrit a la main)
+    FAUNA = {
+        'grande_foret': [('deer', 8, 1, 3), ('roe_deer', 8, 1, 2), ('fox', 5, 1, 2), ('squirrel', 8, 1, 3)],
+        'foret_clairsemee': [('deer', 4, 1, 2), ('roe_deer', 6, 1, 2), ('fox', 4, 1, 2), ('squirrel', 6, 1, 2)],
+        'bosquets': [('roe_deer', 5, 1, 2), ('fox', 3, 1, 1), ('squirrel', 5, 1, 2)],
+        'plaines_vertes': [('roe_deer', 3, 1, 2), ('fox', 2, 1, 1)],
+        'plaines_jaunes': [('roe_deer', 2, 1, 2), ('fox', 2, 1, 1)],
+        'monts_rocheux': [('roe_deer', 2, 1, 1), ('squirrel', 2, 1, 2)],
+        'riviere': [('duck', 10, 2, 4), ('heron', 5, 1, 1), ('beaver', 5, 1, 2)],
+        'rivage': [('duck', 6, 2, 3), ('heron', 4, 1, 1)],
+    }
+    for id, lst in FAUNA.items():
+        BIOMES[id]['spawners']['creature'] += [{'type': R(t), 'weight': w, 'minCount': a, 'maxCount': b} for (t, w, a, b) in lst]
     for id in ('plaines_cendre', 'monts_de_cendre', 'rivieres_de_lave'):      # fumee du cratere (la fonction ne fait rien loin du volcan)
         BIOMES[id]['features'][10].append(R('crater_smoke'))
     for id, b in BIOMES.items(): wjson(f'{W}/biome/{id}.json', b)

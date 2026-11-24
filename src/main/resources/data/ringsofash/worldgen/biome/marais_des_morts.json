@@ -55,6 +55,12 @@
     "weight": 10,
     "minCount": 2,
     "maxCount": 3
+   },
+   {
+    "type": "ringsofash:heron",
+    "weight": 3,
+    "minCount": 1,
+    "maxCount": 1
    }
   ],
   "ambient": [

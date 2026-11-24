@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"zon", "cyp", "mini", "cro", "riv"};
+    private static final String[] ONLY = {"fau"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -1202,6 +1202,17 @@ public final class ClientTest {
         halflingLine("semi_e_proches_b", 4.2, 4F, 1.3, new int[]{17, 21, 22, 27});
         lineup("03_divers", 7.0, 2F, 2.2, List.of(ModEntities.CAVE_THIEF.get(), ModEntities.SORCERER.get(), ModEntities.DEAD_SOLDIER.get(), ModEntities.CROW.get(), ModEntities.STAG.get(), ModEntities.WARG.get()));
         lineup("04_betes", 12.0, -4F, 5.5, List.of(ModEntities.CAVE_TROLL.get(), ModEntities.TROLL_CHIEF.get(), ModEntities.STONE_TROLL.get(), ModEntities.GIANT_SPIDER.get(), ModEntities.EAGLE.get(), ModEntities.LURKER.get()));
+        // faune des bois et des rivieres
+        lineup("fau_01_foret", 9.0, -2F, 2.8, List.of(ModEntities.DEER.get(), ModEntities.ROE_DEER.get(), ModEntities.FOX.get(), ModEntities.SQUIRREL.get()));
+        lineup("fau_02_riviere", 8.0, -2F, 2.6, List.of(ModEntities.DUCK.get(), ModEntities.HERON.get(), ModEntities.BEAVER.get()));
+        lineup("fau_03_cerf", 4.6, 1F, 3.0, List.of(ModEntities.DEER.get()));
+        lineup("fau_04_chevreuil", 3.8, 2F, 3.0, List.of(ModEntities.ROE_DEER.get()));
+        lineup("fau_05_renard", 3.0, 6F, 3.0, List.of(ModEntities.FOX.get()));
+        lineup("fau_06_ecureuil", 2.4, 8F, 3.0, List.of(ModEntities.SQUIRREL.get()));
+        lineup("fau_07_canard", 2.6, 8F, 3.0, List.of(ModEntities.DUCK.get()));
+        lineup("fau_08_heron", 4.0, 2F, 3.0, List.of(ModEntities.HERON.get()));
+        lineup("fau_09_castor", 2.8, 8F, 3.0, List.of(ModEntities.BEAVER.get()));
+        lineup("fau_10_cote", 4.5, 0F, 2.6, List.of(ModEntities.DEER.get(), ModEntities.STAG.get()));
         // poses des trolls (profil + trois quarts) : course a quatre pattes, poings leves, poings abattus
         {
             Object[][] poses = {{"04b_troll_course", true, 0, 90F}, {"04c_troll_leve", false, 17, 90F}, {"04d_troll_frappe", false, 22, 90F}, {"04e_troll_face", true, 0, 20F}, {"04f_troll_leve_face", false, 17, 35F}};

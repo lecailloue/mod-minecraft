@@ -13,6 +13,9 @@ MOBS = [  # id, nom, constante, couleur1, couleur2
     ('dwarf', 'Nain', 0xc89070, 0x8a3a1a), ('halfling', 'Semi-homme', 0xd8a888, 0x5a7a3a), ('ranger', 'Rôdeur', 0x2f3d2a, 0xc09070),
     ('mage', 'Mage errant', 0x7a7a80, 0xe0e0e0), ('treeman', 'Sylvegarde', 0x5c4832, 0x3f7a34), ('eagle', 'Aigle géant', 0x6b4a2c, 0xefe9dc),
     ('stag', 'Cerf blanc', 0xf2efe6, 0xc9b48a), ('crow', 'Corbeau espion', 0x1a181e, 0x3c3832),
+    ('deer', 'Cerf', 0x8a6442, 0x3a2a1e), ('roe_deer', 'Chevreuil', 0xa8794c, 0xefe4d2), ('fox', 'Renard', 0xc4702c, 0xefe6d8),
+    ('squirrel', 'Écureuil', 0x8a4a28, 0xe8dcc8), ('duck', 'Canard', 0x2c6a44, 0xc8a53c), ('heron', 'Héron', 0xb8bec6, 0x24242a),
+    ('beaver', 'Castor', 0x6a4426, 0x2e2018),
     ('eye_of_sauron', 'Œil de Sauron', 0x1a0a06, 0xff8a1a),
 ]
 
@@ -69,6 +72,13 @@ def build():
     loot('eagle', entry('minecraft:feather', 2, 5), entry('eagle_talon', 0, 2, 0.6))
     loot('stag', entry('minecraft:leather', 1, 2), entry('minecraft:mutton', 1, 2), entry('stag_antler', 0, 1, 0.5))
     loot('crow', entry('minecraft:feather', 0, 1), entry('crow_feather', 0, 2, 0.8))
+    loot('deer', entry('minecraft:leather', 1, 3), entry('minecraft:mutton', 2, 4), entry('stag_antler', 0, 1, 0.35))
+    loot('roe_deer', entry('minecraft:leather', 1, 2), entry('minecraft:mutton', 1, 3))
+    loot('fox', entry('minecraft:rabbit_hide', 0, 2), entry('minecraft:bone', 0, 1, 0.3))
+    loot('squirrel', entry('minecraft:stick', 0, 1), entry('minecraft:sweet_berries', 0, 2, 0.4))
+    loot('duck', entry('minecraft:chicken', 1, 2), entry('minecraft:feather', 1, 3))
+    loot('heron', entry('minecraft:feather', 1, 3), entry('minecraft:cod', 0, 1, 0.5))
+    loot('beaver', entry('minecraft:leather', 1, 2), entry('minecraft:stick', 1, 3))
     # coffres
     chest('halfling_house', (3, 6), [('minecraft:bread', 10, 1, 4), ('honey_cake', 8, 1, 3), ('halfling_stew', 6, 1, 2), ('pipeweed', 6, 1, 4), ('minecraft:wheat_seeds', 6, 2, 6),
                                      ('silver_coin', 6, 1, 3), ('minecraft:carrot', 8, 2, 6), ('dwarf_ale', 4, 1, 2), ('halfling_dagger', 1, 1, 1)])

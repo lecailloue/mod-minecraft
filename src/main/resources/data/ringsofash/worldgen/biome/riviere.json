@@ -29,7 +29,26 @@
     "maxCount": 1
    }
   ],
-  "creature": [],
+  "creature": [
+   {
+    "type": "ringsofash:duck",
+    "weight": 10,
+    "minCount": 2,
+    "maxCount": 4
+   },
+   {
+    "type": "ringsofash:heron",
+    "weight": 5,
+    "minCount": 1,
+    "maxCount": 1
+   },
+   {
+    "type": "ringsofash:beaver",
+    "weight": 5,
+    "minCount": 1,
+    "maxCount": 2
+   }
+  ],
   "ambient": [],
   "axolotls": [],
   "underground_water_creature": [],

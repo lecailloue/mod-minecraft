@@ -599,6 +599,13 @@ public final class Reg {
     public static final DeferredItem<Item> EAGLE_SPAWN_EGG = ITEMS.register("eagle_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.EAGLE, 0x6b4a2c, 0xefe9dc, props()));
     public static final DeferredItem<Item> STAG_SPAWN_EGG = ITEMS.register("stag_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.STAG, 0xf2efe6, 0xc9b48a, props()));
     public static final DeferredItem<Item> CROW_SPAWN_EGG = ITEMS.register("crow_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.CROW, 0x1a181e, 0x3c3832, props()));
+    public static final DeferredItem<Item> DEER_SPAWN_EGG = ITEMS.register("deer_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.DEER, 0x8a6442, 0x3a2a1e, props()));
+    public static final DeferredItem<Item> ROE_DEER_SPAWN_EGG = ITEMS.register("roe_deer_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.ROE_DEER, 0xa8794c, 0xefe4d2, props()));
+    public static final DeferredItem<Item> FOX_SPAWN_EGG = ITEMS.register("fox_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.FOX, 0xc4702c, 0xefe6d8, props()));
+    public static final DeferredItem<Item> SQUIRREL_SPAWN_EGG = ITEMS.register("squirrel_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.SQUIRREL, 0x8a4a28, 0xe8dcc8, props()));
+    public static final DeferredItem<Item> DUCK_SPAWN_EGG = ITEMS.register("duck_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.DUCK, 0x2c6a44, 0xc8a53c, props()));
+    public static final DeferredItem<Item> HERON_SPAWN_EGG = ITEMS.register("heron_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.HERON, 0xb8bec6, 0x24242a, props()));
+    public static final DeferredItem<Item> BEAVER_SPAWN_EGG = ITEMS.register("beaver_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.BEAVER, 0x6a4426, 0x2e2018, props()));
     public static final DeferredItem<Item> EYE_OF_SAURON_SPAWN_EGG = ITEMS.register("eye_of_sauron_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.EYE_OF_SAURON, 0x1a0a06, 0xff8a1a, props()));
     private Reg() {}
 }
