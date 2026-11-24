@@ -213,7 +213,7 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
         }
 
         BlockState elvenFlower(int h) {
-            return switch (h % 11) {
+            return switch (h % 9) {                       // uniquement les fleurs du mod
                 case 0 -> Reg.FLAME_ROSE.get().defaultBlockState();
                 case 1 -> Reg.GOLD_BELL.get().defaultBlockState();
                 case 2 -> Reg.EMBER_BLOOM.get().defaultBlockState();
@@ -222,9 +222,7 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 case 5 -> Reg.RED_SPRIG.get().defaultBlockState();
                 case 6 -> Reg.GOLDEN_LILY.get().defaultBlockState();
                 case 7 -> Reg.SUNSTAR.get().defaultBlockState();
-                case 8 -> Reg.MOONBELL.get().defaultBlockState();
-                case 9 -> Blocks.ORANGE_TULIP.defaultBlockState();
-                default -> Blocks.OXEYE_DAISY.defaultBlockState();
+                default -> Reg.MOONBELL.get().defaultBlockState();
             };
         }
 
@@ -252,21 +250,9 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
                 if (n * 0.55 + (h % 100) / 220.0 < dens) {
                     set(x, gy + 1, z, litterOf(main, h >> 4, near <= -1).defaultBlockState());
                     any = true;
-                } else if (h % 97 < 5 && near > 1) {
+                } else if (near > 1 && h % 97 < (vn(x * 0.06, z * 0.06, 75) > 0.3 ? 17 : 4)) {   // clairieres fleuries
                     set(x, gy + 1, z, elvenFlower(h >> 7));
                     any = true;
-                } else if (h % 89 < 4 && near > 2) {               // grandes fleurs
-                    BlockState tall = switch ((h >> 9) % 3) {
-                        case 0 -> Blocks.PEONY.defaultBlockState();
-                        case 1 -> Blocks.LILAC.defaultBlockState();
-                        default -> Blocks.ROSE_BUSH.defaultBlockState();
-                    };
-                    if (soft(level.getBlockState(p.set(x, gy + 2, z)))) {
-                        set(x, gy + 1, z, tall);
-                        set(x, gy + 2, z, tall.setValue(net.minecraft.world.level.block.DoublePlantBlock.HALF,
-                                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
-                        any = true;
-                    }
                 } else if (h % 71 < 9) {                           // sous bois : herbes et buissons d'automne
                     BlockState u = switch ((h >> 5) % 8) {
                         case 0 -> Reg.GOLD_TUFT.get().defaultBlockState();
