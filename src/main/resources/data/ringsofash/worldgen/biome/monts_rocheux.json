@@ -157,7 +157,8 @@
    "ringsofash:bushes_spruce_few",
    "minecraft:patch_grass_plain",
    "minecraft:patch_berry_common",
-   "ringsofash:mini_struct"
+   "ringsofash:mini_struct",
+   "ringsofash:croquis"
   ],
   [
    "minecraft:freeze_top_layer"

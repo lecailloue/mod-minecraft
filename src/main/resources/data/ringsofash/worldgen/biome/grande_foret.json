@@ -153,7 +153,8 @@
    "minecraft:patch_large_fern",
    "minecraft:brown_mushroom_normal",
    "minecraft:red_mushroom_normal",
-   "ringsofash:mini_struct"
+   "ringsofash:mini_struct",
+   "ringsofash:croquis"
   ],
   [
    "minecraft:freeze_top_layer"

@@ -147,7 +147,8 @@
    "minecraft:patch_pumpkin",
    "minecraft:patch_berry_common",
    "ringsofash:shire_decor",
-   "ringsofash:mini_struct"
+   "ringsofash:mini_struct",
+   "ringsofash:croquis"
   ],
   [
    "minecraft:freeze_top_layer"

@@ -124,7 +124,8 @@
    "minecraft:patch_tall_grass",
    "minecraft:brown_mushroom_swamp",
    "minecraft:patch_dead_bush",
-   "ringsofash:mini_struct"
+   "ringsofash:mini_struct",
+   "ringsofash:croquis"
   ],
   [
    "minecraft:freeze_top_layer"

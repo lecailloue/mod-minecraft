@@ -140,7 +140,8 @@
    "minecraft:flower_default",
    "minecraft:patch_tall_grass",
    "minecraft:patch_grass_plain",
-   "ringsofash:mini_struct"
+   "ringsofash:mini_struct",
+   "ringsofash:croquis"
   ],
   [
    "minecraft:freeze_top_layer"

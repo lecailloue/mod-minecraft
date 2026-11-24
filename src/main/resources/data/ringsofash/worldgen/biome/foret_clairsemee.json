@@ -141,7 +141,8 @@
    "ringsofash:bushes_birch_few",
    "minecraft:flower_default",
    "minecraft:patch_grass_forest",
-   "ringsofash:mini_struct"
+   "ringsofash:mini_struct",
+   "ringsofash:croquis"
   ],
   [
    "minecraft:freeze_top_layer"
