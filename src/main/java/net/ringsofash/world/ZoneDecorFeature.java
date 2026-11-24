@@ -379,9 +379,9 @@ public class ZoneDecorFeature extends Feature<NoneFeatureConfiguration> {
         // ------------------------------------------------------------------ foret de cypres : conif res en fleche, sequoias, sous bois vert
         boolean cypress() {
             boolean any = false;
-            for (int k = 0; k < 14; k++) {
-                boolean giant = r.nextFloat() < 0.07f;
-                if (r.nextFloat() > (giant ? 0.45f : 0.78f)) continue;
+            for (int k = 0; k < 11; k++) {
+                boolean giant = r.nextFloat() < 0.08f;
+                if (r.nextFloat() > (giant ? 0.45f : 0.6f)) continue;
                 int x = x0 + 2 + r.nextInt(12), z = z0 + 2 + r.nextInt(12);
                 if (!mine(x, z) || !far(x, z, giant ? 13 : 5)) continue;
                 int gy = groundY(x, z);
