@@ -34,10 +34,12 @@ tc.MATS.update({
     'duck_bill': dict(base=(214, 178, 62), n1=5, n2=6, tint=(1, .97, .78)),
     'duck_white': dict(base=(238, 234, 226), n1=3, n2=4, tint=(1, 1, 1)),
     'duck_wing': dict(base=(74, 86, 122), n1=5, n2=6, tint=(.95, .98, 1.06)),
-    'heron':     dict(base=(170, 176, 184), n1=2, n2=2, tint=(1, 1, 1.03)),
-    'heron_pale': dict(base=(232, 232, 230), n1=1, n2=2, tint=(1, 1, 1.01)),
-    'heron_dark': dict(base=(44, 46, 54), n1=2, n2=2, tint=(1, 1, 1.05)),
-    'heron_bill': dict(base=(214, 182, 72), n1=2, n2=2, tint=(1, .98, .8)),
+    'heron':     dict(base=(196, 198, 202), n1=2, n2=2, tint=(1, 1, 1.02)),
+    'heron_pale': dict(base=(232, 233, 234), n1=1, n2=2, tint=(1, 1, 1.01)),
+    'heron_wing': dict(base=(96, 100, 108), n1=2, n2=2, tint=(1, 1, 1.04)),
+    'heron_dark': dict(base=(40, 42, 48), n1=2, n2=2, tint=(1, 1, 1.05)),
+    'heron_bill': dict(base=(208, 132, 54), n1=2, n2=2, tint=(1, .96, .8)),
+    'heron_leg':  dict(base=(84, 72, 62), n1=2, n2=2, tint=(1, .98, .94)),
     'beaver':    dict(base=(100, 68, 44), n1=2, n2=2, tint=(1, .96, .88)),
     'beaver_d':  dict(base=(70, 48, 32), n1=2, n2=2, tint=(1, .96, .9)),
     'beaver_tl': dict(base=(60, 48, 44), n1=2, n2=3, tint=(1, .99, .97)),
@@ -77,8 +79,9 @@ tc.DECOR.update({
     'duck_head': d_feather((56, 134, 96), (14, 56, 38), 2), 'duck_body': d_feather((186, 182, 174), (92, 88, 82), 3),
     'duck_br': d_feather((156, 102, 72), (70, 40, 26), 3), 'duck_bill': d_ebeak, 'duck_white': d_feather((250, 248, 244), (190, 186, 178), 3),
     'duck_wing': d_feather((104, 118, 158), (36, 44, 72), 3),
-    'heron': flat((124, 130, 140), 26), 'heron_pale': flat((198, 198, 196), 34),
-    'heron_dark': flat((22, 24, 30), 40), 'heron_bill': flat((168, 136, 40), 30),
+    'heron': flat((150, 154, 160), 30), 'heron_pale': flat((198, 200, 202), 34),
+    'heron_wing': flat((56, 60, 68), 28), 'heron_dark': flat((22, 24, 30), 40),
+    'heron_bill': flat((162, 96, 32), 30), 'heron_leg': flat((52, 44, 38), 30),
     'beaver': flat((62, 40, 24)), 'beaver_d': flat((44, 28, 18), 26),
     'beaver_tl': flat((36, 28, 26), 14, .5), 'tooth': flat((186, 166, 100), 34),
 })
@@ -121,31 +124,30 @@ def antlers(B, G, s, key, y, z, size=1.0):
 # ================================================================== cerf
 @model
 def cerf():
+    """silhouette massive : un corps d'une piece, une grosse tete carree, des bois fins"""
     B, G = mkT(1.0)
-    legs = quad_legs(B, G, 'deer', 'hoofd', 20, 2.4, 3.4, -7, 8, 3.6, ('cl_u', 'cl_l', 'cl_h'))
+    legs = []
+    for nm, sgn, z in (('leg_fr', 1, -6), ('leg_fl', -1, -6), ('leg_br', 1, 7), ('leg_bl', -1, 7)):
+        x = 3.2 * sgn
+        legs.append(G(nm, (x, 17, z), children=[
+            B(f'{nm}_up', x - 1.8, 6, z - 1.8, 3.6, 11, 3.6, 'deer', key='c_legu'),
+            B(f'{nm}_lo', x - 1.6, 1.6, z - 1.6, 3.2, 5, 3.2, 'deer', key='c_legl'),
+            B(f'{nm}_hoof', x - 1.7, 0, z - 1.8, 3.4, 2, 3.6, 'hoofd', key='c_hoof')]))
     body = [
-        B('chest', -4.6, 17, -11, 9.2, 12, 9, 'deer', key='c_chest'),
-        B('torso', -4.2, 18, -3, 8.4, 11, 14, 'deer', key='c_torso'),
-        B('rump', -4.4, 18.5, 10, 8.8, 10.5, 5, 'deer', key='c_rump'),
-        B('belly', -3.2, 16.6, -6, 6.4, 2, 17, 'deer_pale', key='c_belly'),
-        B('tail', -1.4, 26, 14, 2.8, 4.5, 2.4, 'deer_pale', key='c_tail'),
+        B('torso', -4.5, 17, -9, 9, 11, 19, 'deer', key='c_torso'),
+        B('belly', -3.6, 16.2, -7, 7.2, 1.6, 15, 'deer_pale', key='c_belly'),
+        B('tail', -1.4, 25, 9.8, 2.8, 4, 2, 'deer_pale', key='c_tail'),
     ]
-    head = G('head', (0, 34, -10), rot=(22, 0, 0), children=[
-        B('skull', -2.8, 31, -15.5, 5.6, 6, 7.5, 'deer', key='c_skull', fx=fx_eye(1, 2, col=(26, 18, 14))),
-        B('muzzle', -2, 29.8, -20, 4, 4.2, 5, 'deer', key='c_muzzle'),
-        B('nose', -2.1, 29.6, -21, 4.2, 2.4, 1.6, 'hoofd', key='c_nose'),
-        B('jaw', -1.7, 28.6, -19.5, 3.4, 1.6, 4.5, 'deer_pale', key='c_jaw'),
-        G('ear_r', (2.6, 35, -11), rot=(16, 0, -58), children=[
-            B('ear_r_o', 2.4, 35, -11.7, 3.2, 6.5, 1.2, 'deer', key='c_ear'),
-            B('ear_r_i', 3.0, 35.7, -12.2, 2.0, 5.0, .6, 'deer_pale', key='c_earin')]),
-        G('ear_l', (-2.6, 35, -11), rot=(16, 0, 58), children=[
-            B('ear_l_o', -5.6, 35, -11.7, 3.2, 6.5, 1.2, 'deer', key='c_ear'),
-            B('ear_l_i', -5.0, 35.7, -12.2, 2.0, 5.0, .6, 'deer_pale', key='c_earin')]),
-        antlers(B, G, 1, 'c_ant', 36, -12), antlers(B, G, -1, 'c_ant', 36, -12),
+    head = G('head', (0, 31, -8), rot=(-12, 0, 0), children=[
+        B('skull', -3.4, 29, -15.5, 6.8, 6.5, 8, 'deer', key='c_skull', fx=fx_eye(1, 2, col=(22, 16, 12))),
+        B('muzzle', -2.6, 28.4, -18.6, 5.2, 4.4, 3.4, 'deer_pale', key='c_muzzle'),
+        B('nose', -2.4, 30.6, -18.9, 4.8, 2, 1.2, 'hoofd', key='c_nose'),
+        B('ear_r', 3.2, 33.5, -12.4, 2.6, 3.6, 1.4, 'deer', key='c_ear'),
+        B('ear_l', -5.8, 33.5, -12.4, 2.6, 3.6, 1.4, 'deer', key='c_ear'),
+        antlers(B, G, 1, 'c_ant', 35, -12), antlers(B, G, -1, 'c_ant', 35, -12),
     ])
-    neck = G('neck', (0, 24, -8), rot=(-34, 0, 0), children=[
-        B('neck_a', -2.9, 24, -12, 5.8, 11, 6, 'deer', key='c_neck'),
-        B('neck_b', -2.6, 32, -12.6, 5.2, 5, 5.4, 'deer', key='c_neck2'),
+    neck = G('neck', (0, 23, -7), rot=(10, 0, 0), children=[
+        B('neck_a', -3.2, 22, -12, 6.4, 11, 6.4, 'deer', key='c_neck'),
         head,
     ])
     return [G('body', (0, 0, 0), children=body + legs + [neck])]
@@ -228,38 +230,32 @@ def renard():
 # ================================================================== ecureuil
 @model
 def ecureuil():
-    B, G = mkT(0.62)
+    """assis sur l'arriere-train, grosse tete, panache en C au dessus du dos"""
+    B, G = mkT(0.8)
     body = [
-        B('torso', -2.4, 5, -3, 4.8, 7, 7, 'squirrel', key='e_torso'),
-        B('chest', -2.2, 6, -6, 4.4, 5.4, 4, 'squirrel', key='e_chest'),
-        B('belly', -1.6, 5.2, -5.2, 3.2, 3.4, 7, 'squi_pale', key='e_belly'),
+        B('torso', -2.6, 4, -3.4, 5.2, 7.5, 6.6, 'squirrel', key='e_torso'),
+        B('belly', -2, 4.4, -4.2, 4, 6, 1.6, 'squi_pale', key='e_belly'),
+        B('leg_r', 1.4, 0, -2.6, 2.4, 4.4, 4.6, 'squirrel', key='e_leg'),
+        B('leg_l', -3.8, 0, -2.6, 2.4, 4.4, 4.6, 'squirrel', key='e_leg'),
+        B('arm_r', 1.6, 5.2, -5, 1.8, 3.6, 2, 'squirrel', key='e_arm'),
+        B('arm_l', -3.4, 5.2, -5, 1.8, 3.6, 2, 'squirrel', key='e_arm'),
     ]
-    legs = [
-        B('arm_r', 1.4, 3.4, -5.6, 1.8, 4, 2.2, 'squirrel', key='e_arm'),
-        B('arm_l', -3.2, 3.4, -5.6, 1.8, 4, 2.2, 'squirrel', key='e_arm'),
-        B('leg_r', 1.6, 0, -1.4, 2.2, 5, 3.4, 'squirrel', key='e_leg'),
-        B('leg_l', -3.8, 0, -1.4, 2.2, 5, 3.4, 'squirrel', key='e_leg'),
-        B('foot_r', 1.6, 0, -2.6, 2.2, 1.4, 3.4, 'squi_pale', key='e_foot'),
-        B('foot_l', -3.8, 0, -2.6, 2.2, 1.4, 3.4, 'squi_pale', key='e_foot'),
-    ]
-    head = G('head', (0, 11, -4), rot=(-8, 0, 0), children=[
-        B('skull', -2.2, 10, -8.4, 4.4, 4.4, 5, 'squirrel', key='e_skull', fx=fx_eye(1, 1, col=(18, 14, 12), glint=(240, 240, 250))),
-        B('snout', -1.2, 10.2, -10.2, 2.4, 2.4, 2, 'squi_pale', key='e_snout'),
-        B('nose', -.8, 11.4, -10.8, 1.6, 1.2, 1, 'fox_dark', key='e_nose'),
-        G('ear_r', (1.6, 14, -6), rot=(-6, 0, -10), children=[
-            B('ear_r_o', 1.0, 14, -6.6, 1.8, 3.2, 1.0, 'squirrel', key='e_ear'),
-            B('ear_r_t', 1.2, 16.8, -6.5, 1.4, 1.6, .8, 'squirrel', key='e_eart')]),
-        G('ear_l', (-1.6, 14, -6), rot=(-6, 0, 10), children=[
-            B('ear_l_o', -2.8, 14, -6.6, 1.8, 3.2, 1.0, 'squirrel', key='e_ear'),
-            B('ear_l_t', -2.6, 16.8, -6.5, 1.4, 1.6, .8, 'squirrel', key='e_eart')]),
+    head = G('head', (0, 11.5, -2.6), rot=(-6, 0, 0), children=[
+        B('skull', -2.8, 10.6, -7.4, 5.6, 5.4, 5.4, 'squirrel', key='e_skull', fx=fx_eye(1, 1, col=(16, 12, 10), glint=(246, 244, 238))),
+        B('muzzle', -1.6, 10.6, -9, 3.2, 3, 1.8, 'squi_pale', key='e_muzzle'),
+        B('nose', -.9, 12.6, -9.3, 1.8, 1.2, 1, 'fox_dark', key='e_nose'),
+        B('ear_r', 1.8, 15.6, -5.6, 1.8, 3, 1.2, 'squirrel', key='e_ear'),
+        B('ear_l', -3.6, 15.6, -5.6, 1.8, 3, 1.2, 'squirrel', key='e_ear'),
     ])
+    # le panache : il part bas derriere, monte, puis revient vers l'avant au dessus de la tete
     tail = [
-        B('tail_a', -1.9, 4.2, 4.0, 3.8, 5.6, 3.8, 'squirrel', key='e_tail1'),
-        B('tail_b', -2.2, 9.2, 3.8, 4.4, 6.4, 4.0, 'squirrel', key='e_tail2'),
-        B('tail_c', -2.4, 14.8, 3.0, 4.8, 5.6, 4.2, 'squirrel', key='e_tail3'),
-        B('tail_d', -2.1, 19.2, 1.6, 4.2, 4.2, 4, 'squirrel', key='e_tail4'),
+        B('tail_a', -1.8, 1.6, 3, 3.6, 6, 4.4, 'squirrel', key='e_tail1'),
+        B('tail_b', -1.9, 7, 3.6, 3.8, 6.4, 4.6, 'squirrel', key='e_tail2'),
+        B('tail_c', -1.9, 12.6, 2.4, 3.8, 6, 4.6, 'squirrel', key='e_tail3'),
+        B('tail_d', -1.8, 17.4, -1, 3.6, 4.8, 4.6, 'squirrel', key='e_tail4'),
+        B('tail_tip', -1.4, 17.8, -1.9, 2.8, 4, .9, 'squi_pale', key='e_tailtip'),
     ]
-    return [G('body', (0, 0, 0), children=body + legs + tail + [head])]
+    return [G('body', (0, 0, 0), children=body + tail + [head])]
 
 
 # ================================================================== canard
@@ -296,68 +292,73 @@ def canard():
 # ================================================================== heron
 @model
 def heron():
+    """d'apres les references : corps porte a l'horizontale, cou fin penche en avant,
+    long bec orange, calotte noire a huppe, grandes remiges sombres"""
     B, G = mkT(1.0)
     legs = []
     for nm, s in (('leg_r', 1), ('leg_l', -1)):
-        x = 1.6 * s
-        legs.append(G(nm, (x, 15, 2), children=[
-            B(f'{nm}_th', x - .7, 8, 1.4, 1.4, 7.4, 1.4, 'heron_bill', key='h_th'),
-            B(f'{nm}_sh', x - .6, 0, 1.6, 1.2, 8.2, 1.2, 'heron_bill', key='h_sh'),
-            B(f'{nm}_ft', x - 1, 0, -2, 2, .9, 4.6, 'heron_bill', key='h_ft')]))
+        x = 1.5 * s
+        legs.append(G(nm, (x, 14, 2), children=[
+            B(f'{nm}_th', x - .6, 7, 1.6, 1.2, 7.4, 1.2, 'heron_leg', key='h_th'),
+            B(f'{nm}_sh', x - .5, 0, 1.8, 1.0, 7.6, 1.0, 'heron_leg', key='h_sh'),
+            B(f'{nm}_ft', x - .9, 0, -1.6, 1.8, .8, 4.2, 'heron_leg', key='h_ft')]))
     body = [
-        B('hull', -2.6, 15, -4.5, 5.2, 6.4, 10, 'heron', key='h_hull'),
-        B('breast', -2.3, 15.4, -7, 4.6, 5.6, 3, 'heron_pale', key='h_breast'),
-        B('back', -2.5, 20.8, -4, 5, 1.0, 9, 'heron', key='h_back'),
-        B('throat', -1.4, 19.6, -7.2, 2.8, 2.4, 2.6, 'heron_pale', key='h_throat'),
-        B('wing_r', 2.55, 15.6, -3.8, .9, 4.8, 9, 'heron', key='h_wing'),
-        B('wing_l', -3.45, 15.6, -3.8, .9, 4.8, 9, 'heron', key='h_wing'),
-        B('shoulder_r', 2.5, 19.4, -4.2, 1.0, 1.6, 4, 'heron_dark', key='h_shldr'),
-        B('shoulder_l', -3.5, 19.4, -4.2, 1.0, 1.6, 4, 'heron_dark', key='h_shldr'),
-        B('tail', -1.6, 16.4, 5.2, 3.2, 1.8, 5, 'heron', key='h_tail'),
+        B('hull', -2.8, 13.8, -5, 5.6, 6.4, 9, 'heron', key='h_hull'),
+        B('back', -2.4, 19.4, -4.2, 4.8, 1.4, 8, 'heron', key='h_back'),
+        B('breast', -2.4, 14.4, -7.4, 4.8, 5.6, 2.8, 'heron_pale', key='h_breast'),
+        B('rump', -2.2, 14.6, 3.8, 4.4, 5, 3.6, 'heron', key='h_rump'),
+        B('belly', -2.2, 13.2, -4, 4.4, 1.4, 8, 'heron_pale', key='h_belly'),
+        # ailes repliees : le haut gris clair, les remiges sombres qui depassent vers l'arriere
+        B('wing_r', 2.7, 15.4, -4.2, 1.0, 5, 9.4, 'heron', key='h_wing'),
+        B('wing_l', -3.7, 15.4, -4.2, 1.0, 5, 9.4, 'heron', key='h_wing'),
+        B('flight_r', 2.6, 14.2, 1, 1.2, 3.4, 7.5, 'heron_wing', key='h_flight'),
+        B('flight_l', -3.8, 14.2, 1, 1.2, 3.4, 7.5, 'heron_wing', key='h_flight'),
+        B('tail', -1.8, 15, 8, 3.6, 2, 4, 'heron_wing', key='h_tail'),
     ]
-    # cou en S : il remonte en arriere, puis la tete repart vers l'avant
-    neck = [
-        B('neck_a', -1.3, 20.5, -2.2, 2.6, 6.5, 2.6, 'heron_pale', key='h_neck1'),
-        B('neck_b', -1.2, 26.6, -3.6, 2.4, 6.2, 2.4, 'heron_pale', key='h_neck2'),
-    ]
-    head = [
-        B('skull', -1.3, 32.2, -7.6, 2.6, 2.8, 4.6, 'heron_pale', key='h_skull', fx=fx_eye(1, 1, col=(20, 18, 14), glint=(250, 226, 110))),
-        B('crown', -1.3, 34.6, -7.2, 2.6, .9, 3.2, 'heron_dark', key='h_crown'),
-        B('plume', -.6, 34.2, -4.4, 1.2, .8, 4.6, 'heron_dark', key='h_plume'),
-        B('bill', -.6, 32.9, -13.4, 1.2, 1.3, 6, 'heron_bill', key='h_bill'),
-    ]
-    return [G('body', (0, 0, 0), children=body + legs + neck + head)]
+    head = G('head', (0, 29.5, -5.5), rot=(-48, 0, 0), children=[
+        B('skull', -1.3, 29, -8.6, 2.6, 2.8, 4.2, 'heron_pale', key='h_skull',
+          fx=fx_eye(1, 1, col=(16, 16, 18), glint=(252, 248, 240))),
+        B('crown', -1.35, 31.3, -8.4, 2.7, 1.0, 3.6, 'heron_dark', key='h_crown'),
+        B('plume', -.6, 31.1, -5.6, 1.2, .8, 4.4, 'heron_dark', key='h_plume'),
+        B('bill', -.6, 29.6, -16, 1.2, 1.3, 7.6, 'heron_bill', key='h_bill'),
+    ])
+    neck = G('neck', (0, 19.5, -3.5), rot=(14, 0, 0), children=[
+        B('neck_a', -1.3, 19.5, -4.6, 2.6, 6, 2.6, 'heron_pale', key='h_neck1'),
+        B('neck_b', -1.15, 25, -5.4, 2.3, 5.4, 2.3, 'heron_pale', key='h_neck2'),
+        head,
+    ])
+    return [G('body', (0, 0, 0), children=body + legs + [neck])]
 
 
 # ================================================================== castor
 @model
 def castor():
-    B, G = mkT(0.9)
+    """trapu : un corps d'un bloc, une grosse tete carree a museau sombre et queue plate"""
+    B, G = mkT(1.0)
     legs = []
-    for nm, s, z, h in (('leg_fr', 1, -4.5, 3.4), ('leg_fl', -1, -4.5, 3.4), ('leg_br', 1, 4.5, 4.2), ('leg_bl', -1, 4.5, 4.2)):
-        x = 2.8 * s
-        legs.append(G(nm, (x, h, z), children=[
-            B(f'{nm}_up', x - 1.6, 0, z - 1.8, 3.2, h, 3.6, 'beaver_d', key='b_leg' + ('b' if h > 4 else 'f')),
-            B(f'{nm}_ft', x - 1.8, 0, z - 2.6, 3.6, 1.2, 5, 'beaver_d', key='b_foot')]))
+    for nm, sgn, z in (('leg_fr', 1, -4), ('leg_fl', -1, -4), ('leg_br', 1, 5), ('leg_bl', -1, 5)):
+        x = 3.2 * sgn
+        legs.append(G(nm, (x, 4, z), children=[
+            B(f'{nm}_up', x - 1.7, 0, z - 1.8, 3.4, 4.2, 3.6, 'beaver_d', key='b_leg'),
+            B(f'{nm}_ft', x - 1.9, 0, z - 2.8, 3.8, 1.3, 5.2, 'beaver_d', key='b_foot')]))
     body = [
-        B('rump', -4, 3, 1, 8, 8.4, 8, 'beaver', key='b_rump'),
-        B('torso', -3.6, 3.2, -6, 7.2, 7.6, 8, 'beaver', key='b_torso'),
-        B('belly', -3, 2.6, -5, 6, 1.8, 11, 'beaver_d', key='b_belly'),
+        B('torso', -4.5, 3.6, -7, 9, 9, 15, 'beaver', key='b_torso'),
+        B('belly', -3.6, 3, -6, 7.2, 1.4, 13, 'beaver_d', key='b_belly'),
     ]
-    tail = G('tail', (0, 4, 9), rot=(8, 0, 0), children=[
-        B('tail_a', -3, 3.2, 9, 6, 1.6, 6, 'beaver_tl', key='b_tail1'),
-        B('tail_b', -3.6, 3.3, 14, 7.2, 1.4, 6, 'beaver_tl', key='b_tail2'),
-        B('tail_c', -2.6, 3.4, 19.5, 5.2, 1.2, 3, 'beaver_tl', key='b_tail3'),
+    tail = [
+        B('tail_a', -3.4, 3.8, 7.6, 6.8, 1.6, 7, 'beaver_tl', key='b_tail1'),
+        B('tail_b', -4, 3.9, 14, 8, 1.4, 7, 'beaver_tl', key='b_tail2'),
+        B('tail_c', -3, 4, 20.5, 6, 1.2, 3, 'beaver_tl', key='b_tail3'),
+    ]
+    head = G('head', (0, 10, -6), rot=(-6, 0, 0), children=[
+        B('skull', -3.6, 8.5, -13.5, 7.2, 7, 7, 'beaver', key='b_skull', fx=fx_eye(1, 2, col=(16, 12, 10))),
+        B('muzzle', -2.4, 8.6, -15.6, 4.8, 4, 2.4, 'beaver_d', key='b_muzzle'),
+        B('nose', -1.5, 11.2, -15.9, 3, 1.6, 1.2, 'fox_dark', key='b_nose'),
+        B('teeth', -1.2, 8.2, -15.9, 2.4, 2, 1, 'tooth', key='b_teeth'),
+        B('ear_r', 3, 14.8, -11, 1.8, 1.8, 1.4, 'beaver_d', key='b_ear'),
+        B('ear_l', -4.8, 14.8, -11, 1.8, 1.8, 1.4, 'beaver_d', key='b_ear'),
     ])
-    head = G('head', (0, 9, -7), rot=(4, 0, 0), children=[
-        B('skull', -3, 7.6, -12, 6, 5.6, 5.4, 'beaver', key='b_skull', fx=fx_eye(1, 1, col=(18, 14, 12), glint=(240, 236, 226))),
-        B('snout', -1.8, 7.6, -14.2, 3.6, 3.4, 2.6, 'beaver_d', key='b_snout'),
-        B('nose', -1.2, 9.6, -14.8, 2.4, 1.4, 1.2, 'fox_dark', key='b_nose'),
-        B('teeth', -1, 7.2, -14.6, 2, 1.8, 1, 'tooth', key='b_teeth'),
-        B('ear_r', 2.4, 11.4, -9.4, 1.6, 1.6, 1.2, 'beaver_d', key='b_ear'),
-        B('ear_l', -4, 11.4, -9.4, 1.6, 1.6, 1.2, 'beaver_d', key='b_ear'),
-    ])
-    return [G('body', (0, 0, 0), children=body + legs + [tail, head])]
+    return [G('body', (0, 0, 0), children=body + legs + tail + [head])]
 
 
 # ------------------------------------------------------------------ apercus et export
