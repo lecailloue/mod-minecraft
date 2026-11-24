@@ -12,6 +12,12 @@
    "tick_delay": 6000,
    "block_search_extent": 8,
    "offset": 2.0
+  },
+  "music": {
+   "sound": "ringsofash:music.hautemarche",
+   "min_delay": 4800,
+   "max_delay": 12000,
+   "replace_current_music": true
   }
  },
  "spawners": {

@@ -14,7 +14,13 @@
    "offset": 2.0
   },
   "grass_color": 9422191,
-  "foliage_color": 6265407
+  "foliage_color": 6265407,
+  "music": {
+   "sound": "ringsofash:music.hautemarche",
+   "min_delay": 4800,
+   "max_delay": 12000,
+   "replace_current_music": true
+  }
  },
  "spawners": {
   "monster": [

@@ -5,3 +5,5 @@ out/
 *.iml
 .idea/
 __pycache__/
+# la musique du joueur n'est pas distribuee avec le mod
+src/main/resources/assets/ringsofash/sounds/music/*.ogg

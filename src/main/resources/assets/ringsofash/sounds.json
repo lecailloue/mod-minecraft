@@ -1,0 +1,12 @@
+{
+ "music.hautemarche": {
+  "category": "music",
+  "subtitle": "Musique de la Hautemarche",
+  "sounds": [
+   {
+    "name": "ringsofash:music/hautemarche",
+    "stream": true
+   }
+  ]
+ }
+}

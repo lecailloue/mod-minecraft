@@ -9,6 +9,7 @@ def build():
     items()
     recipes()
     LANG.update({
+        'biome.ringsofash.plaines_cendre': 'Mordor',
         'itemGroup.ringsofash': 'Les Anneaux de Cendre',
         'dimension.ringsofash.hautemarche': 'La Hautemarche',
     })
