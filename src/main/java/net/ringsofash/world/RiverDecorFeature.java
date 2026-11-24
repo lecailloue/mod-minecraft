@@ -59,7 +59,13 @@ public class RiverDecorFeature extends Feature<NoneFeatureConfiguration> {
             if (water) {                                        // dans l'eau : hauts-fonds
                 int depth = 0;
                 while (depth < 5 && level.getFluidState(p.set(x, gy + 1 + depth, z)).is(FluidTags.WATER)) depth++;
-                if (depth <= 2 && h % 100 < 30) {               // roseaux les pieds dans l'eau
+                boolean shore = false;                           // les roseaux restent pres du bord
+                for (int[] o : new int[][] {{2, 0}, {-2, 0}, {0, 2}, {0, -2}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}}) {
+                    int nx = x + o[0], nz = z + o[1];
+                    int ny = level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, nx, nz) - 1;
+                    if (!level.getFluidState(p.set(nx, ny + 1, nz)).is(FluidTags.WATER)) { shore = true; break; }
+                }
+                if (shore && depth <= 2 && h % 100 < 22) {       // roseaux les pieds dans l'eau
                     BlockState reed = (h % 7 == 0 ? Reg.CATTAIL.get() : Reg.REED_TUFT.get()).defaultBlockState()
                             .setValue(MarshPlantBlock.WATERLOGGED, true);
                     level.setBlock(p.set(x, gy + 1, z), reed, 2);
