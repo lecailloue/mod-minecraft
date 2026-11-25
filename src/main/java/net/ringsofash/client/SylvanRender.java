@@ -32,6 +32,7 @@ public final class SylvanRender {
     private SylvanRender() {}
 
     private static GeoModel<Player> model;
+    private static int dbgHand;
 
     private static GeoModel<Player> model() {
         if (model == null) model = new GeoModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ClientSetup.layer("geo_treeman")), "treeman");
@@ -97,6 +98,10 @@ public final class SylvanRender {
         if (e.getHand() != InteractionHand.MAIN_HAND) return;  // les deux bras sont dessines une seule fois
         GeoModel<Player> m = model();
         m.root().getAllParts().forEach(ModelPart::resetPose);
+        if (dbgHand < 4) {
+            dbgHand++;
+            net.ringsofash.RingsOfAsh.LOGGER.info("[SYL] renderHand main=" + e.getHand() + " armR=" + (m.part("arm_r") != null) + " armL=" + (m.part("arm_l") != null));
+        }
         float age = p.tickCount + e.getPartialTick();
         float swing = e.getSwingProgress();
         VertexConsumer vc = e.getMultiBufferSource().getBuffer(RenderType.entityCutoutNoCull(Renderers.tex("treeman")));
@@ -124,6 +129,9 @@ public final class SylvanRender {
 
     // ---------- racines : vraies racines en 3D autour de la creature prise
     private static GeoModel<net.minecraft.world.entity.LivingEntity> rootsModel;
+    /** debut de l'enracinement vu par le client (pour l'animation de pousse) */
+    private static final java.util.Map<Integer, Long> ROOT_START = new java.util.HashMap<>();
+    private static int dbg;
 
     private static GeoModel<net.minecraft.world.entity.LivingEntity> rootsModel() {
         if (rootsModel == null) rootsModel = new GeoModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ClientSetup.layer("geo_racines")), "racines");
@@ -133,16 +141,18 @@ public final class SylvanRender {
     private static void renderRooted(net.neoforged.neoforge.client.event.RenderLivingEvent.Post<?, ?> e) {
         net.minecraft.world.entity.LivingEntity le = e.getEntity();
         if (le.isInvisible()) return;
-        net.minecraft.world.effect.MobEffectInstance inst = le.getEffect(net.ringsofash.effect.ModEffects.ROOTED);
-        if (inst == null) return;
+        var attr = le.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+        if (attr == null || attr.getModifier(net.ringsofash.RingsOfAsh.id("rooted_speed")) == null) {
+            ROOT_START.remove(le.getId());
+            return;
+        }
         GeoModel<net.minecraft.world.entity.LivingEntity> m = rootsModel();
         m.root().getAllParts().forEach(ModelPart::resetPose);
+        if (dbg < 3) { dbg++; net.ringsofash.RingsOfAsh.LOGGER.info("[SYL] racines sur " + le.getType().getDescriptionId() + " h=" + GeoDef.get("racines").height); }
         float pt = e.getPartialTick();
-        int left = inst.getDuration();
-        int full = net.ringsofash.item.SylvanHeart.ROOTS_TIME;
-        float in = left >= full ? 1.0F : (full - left + pt) / 5.0F;    // les racines sortent de terre
-        float grow = Mth.clamp(Math.min(in, (left - pt) / 5.0F), 0.0F, 1.0F);
-        if (grow <= 0.0F) return;
+        long now = le.level().getGameTime();
+        long start = ROOT_START.computeIfAbsent(le.getId(), k -> now);
+        float grow = Mth.clamp((now - start + pt) / 5.0F, 0.18F, 1.0F);   // les racines sortent de terre
         float blocks = Mth.clamp(le.getBbHeight() * 0.62F, 0.7F, 2.4F);
         float s = blocks * 16.0F / GeoDef.get("racines").height * grow;
         PoseStack ps = e.getPoseStack();
