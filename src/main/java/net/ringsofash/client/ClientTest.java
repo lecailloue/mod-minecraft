@@ -1235,7 +1235,7 @@ public final class ClientTest {
         // forme de Sylvgarde : les deux bras-branches en vue subjective
         for (int hand = 0; hand < 2; hand++) {
             final int h = hand;
-            SCENES.add(new Scene("syl_a" + (h == 0 ? "1_mains_vides" : "2_mains_objet"), 50, p -> {
+            SCENES.add(new Scene("syl_a" + (h == 0 ? "1_1p_mains_vides" : "2_1p_mains_objet"), 50, p -> {
                 ServerLevel ow = p.server.overworld();
                 clear(ow);
                 p.getInventory().clearContent();
@@ -1256,7 +1256,7 @@ public final class ClientTest {
             double x = SX - 3.0;
             for (EntityType<? extends Mob> t : List.of(EntityType.ZOMBIE, EntityType.SPIDER, ModEntities.ORC.get())) {
                 actor(ow, (EntityType) t, x, SZ + 7.0, m -> ((Mob) m).addEffect(
-                        new net.minecraft.world.effect.MobEffectInstance(net.ringsofash.effect.ModEffects.ROOTED, 300, 0, false, false)));
+                        new net.minecraft.world.effect.MobEffectInstance(net.ringsofash.effect.ModEffects.ROOTED, 180, 0, false, false)));
                 x += 3.0;
             }
             view(p, ow, SX + 0.5, SY + 1.4, SZ, 0F, 2F);

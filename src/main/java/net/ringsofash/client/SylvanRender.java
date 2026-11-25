@@ -139,7 +139,9 @@ public final class SylvanRender {
         m.root().getAllParts().forEach(ModelPart::resetPose);
         float pt = e.getPartialTick();
         int left = inst.getDuration();
-        float grow = Math.min(1.0F, Math.min((net.ringsofash.item.SylvanHeart.ROOTS_TIME - left + pt) / 5.0F, (left - pt) / 5.0F));
+        int full = net.ringsofash.item.SylvanHeart.ROOTS_TIME;
+        float in = left >= full ? 1.0F : (full - left + pt) / 5.0F;    // les racines sortent de terre
+        float grow = Mth.clamp(Math.min(in, (left - pt) / 5.0F), 0.0F, 1.0F);
         if (grow <= 0.0F) return;
         float blocks = Mth.clamp(le.getBbHeight() * 0.62F, 0.7F, 2.4F);
         float s = blocks * 16.0F / GeoDef.get("racines").height * grow;
