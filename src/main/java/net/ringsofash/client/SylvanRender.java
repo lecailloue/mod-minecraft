@@ -205,7 +205,8 @@ public final class SylvanRender {
             if (dbg < 2) {
                 dbg++;
                 RingsOfAsh.LOGGER.info("[SYL] modele racines : pieces=" + rm.root().getAllParts().count()
-                        + " enfants=" + rm.root().children.size() + " cubes_body=" + (rm.part("body") == null ? -1 : rm.part("body").cubes.size()));
+                        + " body=" + (rm.part("body") != null) + " rac0=" + (rm.part("rac0") != null)
+                        + " vide=" + rm.root().getAllParts().allMatch(ModelPart::isEmpty));
             }
             GeoModel<Player> tm = model();
             tm.root().getAllParts().forEach(ModelPart::resetPose);
