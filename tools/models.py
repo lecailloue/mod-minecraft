@@ -389,82 +389,6 @@ SCALE_3D = {'staff_fire': 1.4, 'staff_light': 1.4, 'staff_storm': 1.4, 'staff_he
 NO_ITEM_3D = {'medieval_sword', 'morning_star'}               # pas (encore) d'objets dans le jeu
 
 
-def weapons_3d():
-    """les modeles 3D d'armes (tools/weapons3d.py) remplacent les icones plates : geo + texture (+ lueur) + modele d'objet 'builtin/entity'"""
-    import bbimport, tempfile
-    import trollcore as T
-    import weapons3d as WP
-    from genlib import wjson, save
-    from PIL import Image
-    ws = WP.all_weapons()
-    n = 0
-    for id in ws:
-        if id in NO_ITEM_3D:
-            continue
-        label, groups, cubes, W, H, tex, glow = WP.build(id, ws)
-        name = 'arme_' + id
-        tmp = tempfile.mkdtemp()
-        T.export_bbmodel(name, groups, cubes, W, H, tex, os.path.join(tmp, name + '.bbmodel'))
-        geo = bbimport.convert(os.path.join(tmp, name + '.bbmodel'))
-        geo['ymin'], geo['ymax'] = geo_extent(geo)
-        geo['height'] = geo['ymax']
-        geo['hold'] = float(HOLD_3D.get(id, 11 if id not in HOLD_FRAC else geo['ymin'] + HOLD_FRAC[id] * (geo['ymax'] - geo['ymin'])))
-        geo['scale'] = float(SCALE_3D.get(id, 1.0))
-        geo['glow'] = bool(glow[..., 3].any())
-        geo['translucent'] = bool(((tex[..., 3] > 0) & (tex[..., 3] < 255)).any())
-        wjson(f'{A}/geo/{name}.json', geo)
-        save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}.png')
-        if geo['glow']:
-            save(Image.fromarray(glow, 'RGBA'), f'{A}/textures/entity/{name}_glow.png')
-        wjson(f'{A}/models/item/{id}.json', {'parent': 'minecraft:builtin/entity', 'display': BOW_3D if id == 'elven_bow' else POLE_3D if id in POLE_IDS else ITEM_3D})
-        n += 1
-    print(f'armes 3D : {n} objets')
-
-
-def orc_weapons():
-    """les armes d'orques en 3D (memes cubes que celles que portent les orques) : modele + texture, rendus comme objets (WeaponItemRenderer)"""
-    import bbimport, tempfile
-    import orcs as O
-    import trollcore as T
-    from genlib import wjson, save
-    from PIL import Image
-    import goblins as GB
-    ws = {'orc_cleaver': O.w_cleaver, 'orc_scimitar': O.w_scimitar, 'orc_machete': O.w_notched, 'orc_spear': O.w_spear, 'orc_mace': O.w_mace, 'goblin_king_staff': GB.w_kstaff}
-    item_model = {'parent': 'minecraft:builtin/entity', 'display': {
-        'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0, 0.5, 0.5], 'scale': [0.85, 0.85, 0.85]},
-        'thirdperson_lefthand': {'rotation': [0, 90, -55], 'translation': [0, 0.5, 0.5], 'scale': [0.85, 0.85, 0.85]},
-        'firstperson_righthand': {'rotation': [0, -90, 25], 'translation': [1.13, 1.0, 1.13], 'scale': [0.68, 0.68, 0.68]},
-        'firstperson_lefthand': {'rotation': [0, 90, -25], 'translation': [1.13, 1.0, 1.13], 'scale': [0.68, 0.68, 0.68]},
-        'ground': {'rotation': [0, 0, 0], 'translation': [0, 2, 0], 'scale': [0.6, 0.6, 0.6]},
-        'head': {'rotation': [0, 180, 0], 'translation': [0, 13, 7], 'scale': [1, 1, 1]},
-        'gui': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]},
-        'fixed': {'rotation': [0, 180, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]}}}
-    for id, fn in ws.items():
-        name = 'arme_' + id
-        T._N[0] = 0
-        groups = [T.Group('arme', (0, 0, 0), (0, 0, 0), fn())]
-        O.unique_names(groups)
-        T.normalize(groups)
-        cubes = [c for c, _ in T.walk(groups)]
-        for c in cubes:                                      # une pointe a longueur negative (masse) : on la retourne
-            fr, sz = list(c.frm), list(c.size)
-            for i in range(3):
-                if sz[i] < 0:
-                    fr[i] += sz[i]; sz[i] = -sz[i]
-            c.frm, c.size = tuple(fr), tuple(sz)
-        W, H = T.pack(cubes)
-        tex, glow = T.paint_all(cubes, W, H)
-        tmp = tempfile.mkdtemp()
-        T.export_bbmodel(name, groups, cubes, W, H, tex, os.path.join(tmp, name + '.bbmodel'))
-        geo = bbimport.convert(os.path.join(tmp, name + '.bbmodel'))
-        geo['ymin'], geo['ymax'] = geo_extent(geo)
-        geo['height'] = geo['ymax']
-        wjson(f'{A}/geo/{name}.json', geo)
-        save(Image.fromarray(tex, 'RGBA'), f'{A}/textures/entity/{name}.png')
-        wjson(f'{A}/models/item/{id}.json', item_model)
-        print(f'arme {id}: etendue {geo["ymin"]} .. {geo["ymax"]} px')
-    wjson(f'{A}/models/item/goblin_pickaxe.json', item_model)     # la pioche du gobelin (modele issu de assets/gobelin_3.bbmodel, voir goblins())
-
 def shadows():
     """etres des ombres (tools/shadows.py) : cavalier + cheval en un seul modele, texture lumineuse (yeux du cheval)"""
     import bbimport, tempfile
@@ -740,4 +664,4 @@ def fauna_gen():
     fauna.gen()
 
 def build():
-    troll(); warg(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); orc_weapons(); lurker(); treeman_bb(); sylvestres(); shadow_dragon(); shadow_chief(); weapons_3d(); dragon(); beasts_gen(); fauna_gen(); skins()
+    troll(); warg(); demon(); ash_lord(); orcs(); spectres(); shadows(); goblins(); giant_spider(); lurker(); treeman_bb(); sylvestres(); shadow_dragon(); shadow_chief(); dragon(); beasts_gen(); fauna_gen(); skins()

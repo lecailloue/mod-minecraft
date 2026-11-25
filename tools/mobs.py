@@ -92,7 +92,7 @@ def build():
                                  ('minecraft:bone', 8, 1, 4), ('dwarven_hammer', 2, 1, 1), ('lunargent_ingot', 3, 1, 2), ('rune_key', 2, 1, 1), ('minecraft:torch', 8, 4, 12)])
     chest('mine_treasure', (6, 9), [('lunargent_ingot', 10, 2, 5), ('minecraft:diamond', 8, 2, 4), ('minecraft:gold_ingot', 10, 3, 8), ('silver_coin', 10, 5, 14), ('ring_forge', 2, 1, 1),
                                     ('dwarven_helmet', 3, 1, 1), ('dwarven_chestplate', 2, 1, 1), ('minecraft:emerald', 6, 2, 5), ('lunargent_pickaxe', 2, 1, 1)])
-    chest('orc_fort', (4, 7), [('black_steel_ingot', 10, 2, 5), ('silver_coin', 10, 3, 9), ('minecraft:rotten_flesh', 8, 2, 6), ('orc_scimitar', 4, 1, 1), ('orc_cleaver', 3, 1, 1), ('orc_machete', 3, 1, 1), ('orc_spear', 2, 1, 1), ('orc_mace', 1, 1, 1),
+    chest('orc_fort', (4, 7), [('black_steel_ingot', 10, 2, 5), ('silver_coin', 10, 3, 9), ('minecraft:rotten_flesh', 8, 2, 6), ('orc_mace', 1, 1, 1),
                                ('orc_helmet', 3, 1, 1), ('orc_chestplate', 2, 1, 1), ('minecraft:gunpowder', 6, 1, 4), ('war_horn', 1, 1, 1), ('minecraft:iron_ingot', 6, 1, 4)])
     chest('barrow', (3, 5), [('wight_blade', 6, 1, 1), ('silver_coin', 10, 3, 10), ('minecraft:gold_ingot', 8, 1, 5), ('ring_kings', 2, 1, 1), ('ring_shadows', 2, 1, 1),
                              ('wight_dust', 8, 1, 3), ('minecraft:bone', 8, 1, 4), ('minecraft:emerald', 5, 1, 3), ('dead_horn', 1, 1, 1)])
