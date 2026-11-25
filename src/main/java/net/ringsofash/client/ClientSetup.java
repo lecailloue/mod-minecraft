@@ -235,6 +235,8 @@ public final class ClientSetup {
 
     private static void setup(FMLClientSetupEvent e) {
         e.enqueueWork(() -> {
+            // l'epee elfique luit de bleu quand des orques rodent
+            ItemProperties.register(Reg.ELVEN_SWORD.get(), RingsOfAsh.id("glow"), (stack, level, entity, seed) -> orcNear(entity) ? 1.0F : 0.0F);
             // dragon des ombres monte : Espace pour monter, fleche du bas pour descendre (WASD / ZQSD : avancer, reculer, cotes)
             net.ringsofash.entity.ShadowDragonEntity.VERTICAL = pl -> {
                 Minecraft mc = Minecraft.getInstance();

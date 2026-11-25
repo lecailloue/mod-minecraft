@@ -188,7 +188,14 @@ def build():
                           ('smoke_powder', ['minecraft:gunpowder', 'minecraft:charcoal'], 2),
                           ('haste_rune', ['raw_orrune', 'minecraft:redstone', 'minecraft:glowstone_dust'], 1)):
         shapeless(rid, parts, rid, n)
-    # ---- armes, arcs et batons : retires, a refaire (voir git : tools/gear.py avant ce commit)
+    # ---- armes : on les remet une par une (texture dessinee a la main, donc pas de tex= ici)
+    item('elven_sword', 'Épée elfique', model='handheld',
+         java='ModGear.special(SpecialSword.Kind.ELVEN, ModGear.T_ELVEN, 3, -2.2F, 0, props())',
+         tags=['swords'])
+    imodel('elven_sword', {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/elven_sword'},
+                           'overrides': [{'predicate': {f'{MOD}:glow': 1}, 'model': f'{MOD}:item/elven_sword_glow'}]})
+    imodel('elven_sword_glow', {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/elven_sword_glow'}})
+    # ---- le reste des armes, arcs et batons : a refaire (voir git : tools/gear.py avant le commit a689a5f4)
     # ---- armures
     armor_set('lunargent', 'de lunargent', 'LUNARGENT', 35, '#cfe6f2', '#8fb0c8', '#58b0e0')
     armor_set('orc', 'orque', 'ORC', 14, '#3d3a42', '#6a2018', '#c03020')

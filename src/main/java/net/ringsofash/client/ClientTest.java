@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"syl"};
+    private static final String[] ONLY = {"epee"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -1231,6 +1231,26 @@ public final class ClientTest {
         SCENES.add(new Scene("12d_anneaux_actif", 80, p -> {
             net.ringsofash.menu.RingsMenu.select(p, 4);
             hook = () -> log("12d anneau actif=" + net.ringsofash.item.RingItem.worn(p) + " chance=" + p.hasEffect(net.minecraft.world.effect.MobEffects.LUCK) + " nuit=" + p.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION));
+        }));
+        // l'epee elfique en main, et a cote d'un orque (elle doit luire de bleu)
+        SCENES.add(new Scene("epee_1p_elfique", 30, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            p.getInventory().clearContent();
+            p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Reg.ELVEN_SWORD.get()));
+            view(p, ow, SX + 0.5, SY, SZ, 0F, 12F);
+            p.getAbilities().flying = false;
+            p.onUpdateAbilities();
+        }));
+        SCENES.add(new Scene("epee_1p_elfique_orque", 40, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            p.getInventory().clearContent();
+            p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Reg.ELVEN_SWORD.get()));
+            actor(ow, ModEntities.ORC.get(), SX + 0.5, SZ + 6.0, o -> {});
+            view(p, ow, SX + 0.5, SY, SZ, 0F, 8F);
+            p.getAbilities().flying = false;
+            p.onUpdateAbilities();
         }));
         // forme de Sylvgarde : les deux bras-branches en vue subjective
         SCENES.add(new Scene("syl_a_1p_bras", 40, p -> {

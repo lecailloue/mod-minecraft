@@ -17,8 +17,8 @@
   "foliage_color": 3104298,
   "music": {
    "sound": "ringsofash:music.hautemarche",
-   "min_delay": 4800,
-   "max_delay": 12000,
+   "min_delay": 0,
+   "max_delay": 0,
    "replace_current_music": true
   }
  },
