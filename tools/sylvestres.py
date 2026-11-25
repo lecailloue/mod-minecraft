@@ -442,9 +442,30 @@ def saule():
     return [body_g] + legs
 
 
+def racines():
+    """Racines qui jaillissent du sol et se referment sur une creature (sort du Sylvgarde)."""
+    rng = np.random.default_rng(7)
+    kids = []
+    N = 5
+    for k in range(N):
+        ang = 2 * math.pi * k / N
+        R = 15
+        n = 4 + int(rng.integers(0, 2))
+        lean = -0.02 + 0.06 * float(rng.random())
+        br = up_branch(f'rac{k}', (R, 0, 0), n, 6, 10, lean, 0.22, mat='sy_dark', leaf=0, key=f'rac{k}')
+        kids.append(Group(f'ring{k}', (0, 0, 0), (0, ang, 0), [br]))
+    for k in range(N):                                   # bourrelet de terre soulevee
+        ang = 2 * math.pi * (k + 0.5) / N
+        x, z = 12 * math.cos(ang), 12 * math.sin(ang)
+        kids.append(C(f'sol{k}', x - 5, 0, z - 5, 10, 4, 10, 'sy_bark', key='sol'))
+    kids += roots('c', 1, 0, 0, n=7, rng=rng, length=17)  # racines rampantes au sol
+    return [Group('body', (0, 0, 0), (0, 0, 0), kids)]
+
+
 ALL = {
     'sylvestre_ancien': dict(fn=ancien, m=5.4, label='Sylvestre ancien (barbu)'),
     'sylvestre_saule': dict(fn=saule, m=5.2, label='Sylvestre saule (maigre, rideaux de feuilles)'),
+    'racines': dict(fn=racines, m=1.05, label='Racines qui emprisonnent une creature'),
 }
 
 

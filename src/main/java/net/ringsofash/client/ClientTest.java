@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"fau"};
+    private static final String[] ONLY = {"syl"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -1231,6 +1231,35 @@ public final class ClientTest {
         SCENES.add(new Scene("12d_anneaux_actif", 80, p -> {
             net.ringsofash.menu.RingsMenu.select(p, 4);
             hook = () -> log("12d anneau actif=" + net.ringsofash.item.RingItem.worn(p) + " chance=" + p.hasEffect(net.minecraft.world.effect.MobEffects.LUCK) + " nuit=" + p.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION));
+        }));
+        // forme de Sylvgarde : les deux bras-branches en vue subjective
+        for (int hand = 0; hand < 2; hand++) {
+            final int h = hand;
+            SCENES.add(new Scene("syl_a" + (h == 0 ? "1_mains_vides" : "2_mains_objet"), 50, p -> {
+                ServerLevel ow = p.server.overworld();
+                clear(ow);
+                p.getInventory().clearContent();
+                if (h == 1) {
+                    p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Reg.SYLVAN_HEART.get()));
+                    p.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(net.minecraft.world.item.Items.TORCH));
+                }
+                p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.ringsofash.effect.ModEffects.SYLVAN_FORM, 2000, 0, false, false));
+                view(p, ow, SX + 0.5, SY, SZ, 0F, 10F);
+                hook = () -> log("syl_a sylvestre=" + net.ringsofash.item.SylvanHeart.isSylvan(p));
+            }));
+        }
+        // racines : modele 3D autour d'une creature prise
+        SCENES.add(new Scene("syl_b_racines", 60, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            p.getInventory().clearContent();
+            double x = SX - 3.0;
+            for (EntityType<? extends Mob> t : List.of(EntityType.ZOMBIE, EntityType.SPIDER, ModEntities.ORC.get())) {
+                actor(ow, (EntityType) t, x, SZ + 7.0, m -> ((Mob) m).addEffect(
+                        new net.minecraft.world.effect.MobEffectInstance(net.ringsofash.effect.ModEffects.ROOTED, 300, 0, false, false)));
+                x += 3.0;
+            }
+            view(p, ow, SX + 0.5, SY + 1.4, SZ, 0F, 2F);
         }));
         for (int[] v : new int[][]{{0, 14, -6, 40}, {1, 8, -4, 40}, {2, 8, -4, 110}}) {
             final int close = v[0];

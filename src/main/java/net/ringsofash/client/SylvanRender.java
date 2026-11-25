@@ -40,6 +40,7 @@ public final class SylvanRender {
 
     public static void init() {
         NeoForge.EVENT_BUS.addListener(SylvanRender::renderPlayer);
+        NeoForge.EVENT_BUS.addListener(SylvanRender::renderRooted);
         NeoForge.EVENT_BUS.addListener(SylvanRender::renderHand);
         NeoForge.EVENT_BUS.addListener(SylvanRender::clickEmpty);
         NeoForge.EVENT_BUS.addListener(SylvanRender::clickItem);
@@ -119,6 +120,38 @@ public final class SylvanRender {
         arm.render(ps, vc, light, OverlayTexture.NO_OVERLAY);
         ps.popPose();
         arm.x = ox; arm.y = oy; arm.z = oz; arm.xRot = rx; arm.yRot = ry; arm.zRot = rz;
+    }
+
+    // ---------- racines : vraies racines en 3D autour de la creature prise
+    private static GeoModel<net.minecraft.world.entity.LivingEntity> rootsModel;
+
+    private static GeoModel<net.minecraft.world.entity.LivingEntity> rootsModel() {
+        if (rootsModel == null) rootsModel = new GeoModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ClientSetup.layer("geo_racines")), "racines");
+        return rootsModel;
+    }
+
+    private static void renderRooted(net.neoforged.neoforge.client.event.RenderLivingEvent.Post<?, ?> e) {
+        net.minecraft.world.entity.LivingEntity le = e.getEntity();
+        if (le.isInvisible()) return;
+        net.minecraft.world.effect.MobEffectInstance inst = le.getEffect(net.ringsofash.effect.ModEffects.ROOTED);
+        if (inst == null) return;
+        GeoModel<net.minecraft.world.entity.LivingEntity> m = rootsModel();
+        m.root().getAllParts().forEach(ModelPart::resetPose);
+        float pt = e.getPartialTick();
+        int left = inst.getDuration();
+        float grow = Math.min(1.0F, Math.min((net.ringsofash.item.SylvanHeart.ROOTS_TIME - left + pt) / 5.0F, (left - pt) / 5.0F));
+        if (grow <= 0.0F) return;
+        float blocks = Mth.clamp(le.getBbHeight() * 0.62F, 0.7F, 2.4F);
+        float s = blocks * 16.0F / GeoDef.get("racines").height * grow;
+        PoseStack ps = e.getPoseStack();
+        ps.pushPose();
+        ps.mulPose(Axis.YP.rotationDegrees((le.getId() * 61) % 360));
+        ps.scale(-1.0F, -1.0F, 1.0F);
+        ps.scale(s, s, s);
+        ps.translate(0.0F, -1.501F, 0.0F);
+        VertexConsumer vc = e.getMultiBufferSource().getBuffer(RenderType.entityCutoutNoCull(Renderers.tex("racines")));
+        m.renderToBuffer(ps, vc, e.getPackedLight(), OverlayTexture.NO_OVERLAY, -1);
+        ps.popPose();
     }
 
     // ---------- le Sylvgarde fige en arbre : tronc et feuillage
