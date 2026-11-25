@@ -1232,24 +1232,19 @@ public final class ClientTest {
             net.ringsofash.menu.RingsMenu.select(p, 4);
             hook = () -> log("12d anneau actif=" + net.ringsofash.item.RingItem.worn(p) + " chance=" + p.hasEffect(net.minecraft.world.effect.MobEffects.LUCK) + " nuit=" + p.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION));
         }));
-        // forme de Sylvgarde : les deux bras-branches en vue subjective, a plusieurs tailles
-        for (float sc : new float[]{0.12F, 0.16F, 0.20F, 0.26F}) {
-            final float v = sc;
-            SCENES.add(new Scene("syl_a_1p_bras_" + (int) (v * 100), 40, p -> {
-                ServerLevel ow = p.server.overworld();
-                clear(ow);
-                p.getInventory().clearContent();
-                net.ringsofash.client.SylvanRender.ARM_SCALE = v;
-                p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.ringsofash.effect.ModEffects.SYLVAN_FORM, 2000, 0, false, false));
-                view(p, ow, SX + 0.5, SY, SZ, 0F, 10F);
-            }));
-        }
+        // forme de Sylvgarde : les deux bras-branches en vue subjective
+        SCENES.add(new Scene("syl_a_1p_bras", 40, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            p.getInventory().clearContent();
+            p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.ringsofash.effect.ModEffects.SYLVAN_FORM, 2000, 0, false, false));
+            view(p, ow, SX + 0.5, SY, SZ, 0F, 10F);
+        }));
         // racines : modele 3D autour d'une creature prise
         SCENES.add(new Scene("syl_b_racines", 60, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
             p.removeEffect(net.ringsofash.effect.ModEffects.SYLVAN_FORM);
-            net.ringsofash.client.SylvanRender.DBG_SHOW = true;
             p.getInventory().clearContent();
             double x = SX - 3.0;
             for (EntityType<? extends Mob> t : List.of(EntityType.ZOMBIE, EntityType.SPIDER, ModEntities.ORC.get())) {

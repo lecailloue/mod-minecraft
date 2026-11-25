@@ -452,7 +452,7 @@ def racines():
         R = 15
         n = 4 + int(rng.integers(0, 2))
         lean = -0.02 + 0.06 * float(rng.random())
-        br = up_branch(f'rac{k}', (R, 0, 0), n, 6, 10, lean, 0.22, mat='sy_dark', leaf=0, key=f'rac{k}')
+        br = up_branch(f'rac{k}', (R, 0, 0), n, 6, 10, lean, 0.22, mat='sy_bark', leaf=0, key=f'rac{k}')
         kids.append(Group(f'ring{k}', (0, 0, 0), (0, ang, 0), [br]))
     for k in range(N):                                   # bourrelet de terre soulevee
         ang = 2 * math.pi * (k + 0.5) / N

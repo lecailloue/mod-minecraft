@@ -33,10 +33,9 @@ public final class SylvanRender {
     private SylvanRender() {}
 
     private static GeoModel<Player> model;
-    private static int dbgHand;
     /** taille des bras-branches en vue subjective (essais) */
-    public static float ARM_SCALE = 0.20F;
-    public static boolean DBG_SHOW;
+    /** taille des bras-branches en vue subjective */
+    private static final float ARM_SCALE = 0.18F;
 
     private static GeoModel<Player> model() {
         if (model == null) model = new GeoModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ClientSetup.layer("geo_treeman")), "treeman");
@@ -102,10 +101,6 @@ public final class SylvanRender {
         if (e.getHand() != InteractionHand.MAIN_HAND) return;  // les deux bras sont dessines une seule fois
         GeoModel<Player> m = model();
         m.root().getAllParts().forEach(ModelPart::resetPose);
-        if (dbgHand < 4) {
-            dbgHand++;
-            net.ringsofash.RingsOfAsh.LOGGER.info("[SYL] renderHand main=" + e.getHand() + " armR=" + (m.part("arm_r") != null) + " armL=" + (m.part("arm_l") != null));
-        }
         float age = p.tickCount + e.getPartialTick();
         float swing = e.getSwingProgress();
         VertexConsumer vc = e.getMultiBufferSource().getBuffer(RenderType.entityCutoutNoCull(Renderers.tex("treeman")));
@@ -136,15 +131,9 @@ public final class SylvanRender {
     private static GeoModel<net.minecraft.world.entity.LivingEntity> rootsModel;
     /** debut de l'enracinement vu par le client (pour l'animation de pousse) */
     private static final java.util.Map<Integer, Long> ROOT_START = new java.util.HashMap<>();
-    private static int dbg, dbg2;
 
     private static GeoModel<net.minecraft.world.entity.LivingEntity> rootsModel() {
-        if (rootsModel == null) {
-            rootsModel = new GeoModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ClientSetup.layer("geo_racines")), "racines");
-            RingsOfAsh.LOGGER.info("[SYL] modele racines : pieces=" + rootsModel.root().getAllParts().count()
-                    + " body=" + (rootsModel.part("body") != null) + " rac0=" + (rootsModel.part("rac0") != null)
-                    + " toutes_vides=" + rootsModel.root().getAllParts().allMatch(ModelPart::isEmpty));
-        }
+        if (rootsModel == null) rootsModel = new GeoModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ClientSetup.layer("geo_racines")), "racines");
         return rootsModel;
     }
 
@@ -155,23 +144,10 @@ public final class SylvanRender {
         return attr != null && attr.getModifier(net.ringsofash.RingsOfAsh.id("rooted_speed")) != null;
     }
 
-    private static void dbgDraw(PoseStack ps, net.minecraft.client.renderer.MultiBufferSource.BufferSource buf,
-                                GeoModel<?> m, String tex, double x, double y, double z, float s, boolean solid) {
-        ps.pushPose();
-        ps.translate(x, y, z);
-        ps.scale(-1.0F, -1.0F, 1.0F);
-        ps.scale(s, s, s);
-        ps.translate(0.0F, -1.501F, 0.0F);
-        m.renderToBuffer(ps, buf.getBuffer(solid ? RenderType.entitySolid(Renderers.tex(tex)) : RenderType.entityCutoutNoCull(Renderers.tex(tex))),
-                0xF000F0, OverlayTexture.NO_OVERLAY, -1);
-        ps.popPose();
-    }
-
     private static void renderRoots(net.neoforged.neoforge.client.event.RenderLevelStageEvent e) {
         if (e.getStage() != net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_ENTITIES) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
-        if (dbg < 2) { dbg++; RingsOfAsh.LOGGER.info("[SYL] passe monde ok"); }
         float pt = e.getPartialTick().getGameTimeDeltaPartialTick(false);
         net.minecraft.world.phys.Vec3 cam = e.getCamera().getPosition();
         PoseStack ps = e.getPoseStack();
@@ -187,7 +163,7 @@ public final class SylvanRender {
             }
             long start = ROOT_START.computeIfAbsent(le.getId(), k -> now);
             float grow = Mth.clamp((now - start + pt) / 5.0F, 0.2F, 1.0F);
-            float blocks = Mth.clamp(le.getBbHeight() * 0.60F, 0.7F, 2.4F);
+            float blocks = Mth.clamp(le.getBbHeight() * 0.80F, 0.9F, 2.8F);
             float s = blocks * 16.0F / GeoDef.get("racines").height;
             double x = Mth.lerp(pt, le.xo, le.getX()) - cam.x;
             double y = Mth.lerp(pt, le.yo, le.getY()) - cam.y;
@@ -201,18 +177,6 @@ public final class SylvanRender {
             m.renderToBuffer(ps, buf.getBuffer(RenderType.entityCutoutNoCull(Renderers.tex("racines"))),
                     mc.getEntityRenderDispatcher().getPackedLightCoords(le, pt), OverlayTexture.NO_OVERLAY, -1);
             ps.popPose();
-            if (dbg2 < 4) { dbg2++; RingsOfAsh.LOGGER.info("[SYL] racines " + le.getType().getDescriptionId() + " s=" + s + " grow=" + grow + " pos=" + x + "," + y + "," + z + " cam=" + cam); }
-        }
-        if (DBG_SHOW && mc.player != null) {                      // essais : trois cages devant le joueur
-            double px = mc.player.getX() - cam.x, py = mc.player.getY() - cam.y, pz = mc.player.getZ() - cam.z;
-            GeoModel<net.minecraft.world.entity.LivingEntity> rm = rootsModel();
-            rm.root().getAllParts().forEach(ModelPart::resetPose);
-            GeoModel<Player> tm = model();
-            tm.root().getAllParts().forEach(ModelPart::resetPose);
-            // A : le modele du Sylvestre (connu bon) ; B : racines en opaque ; C : racines, texture du Sylvestre
-            dbgDraw(ps, buf, tm, "treeman", px, py, pz + 4.0, 0.08F, false);
-            dbgDraw(ps, buf, rm, "racines", px, py, pz + 7.0, 3.0F, true);
-            dbgDraw(ps, buf, rm, "treeman", px, py, pz + 10.0, 0.6F, false);
         }
         buf.endBatch();
     }
