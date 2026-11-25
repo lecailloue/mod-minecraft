@@ -135,7 +135,7 @@ public final class SylvanRender {
     private static GeoModel<net.minecraft.world.entity.LivingEntity> rootsModel;
     /** debut de l'enracinement vu par le client (pour l'animation de pousse) */
     private static final java.util.Map<Integer, Long> ROOT_START = new java.util.HashMap<>();
-    private static int dbg;
+    private static int dbg, dbg2;
 
     private static GeoModel<net.minecraft.world.entity.LivingEntity> rootsModel() {
         if (rootsModel == null) rootsModel = new GeoModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ClientSetup.layer("geo_racines")), "racines");
@@ -153,6 +153,7 @@ public final class SylvanRender {
         if (e.getStage() != net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_ENTITIES) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
+        if (dbg < 2) { dbg++; RingsOfAsh.LOGGER.info("[SYL] passe monde ok"); }
         float pt = e.getPartialTick().getGameTimeDeltaPartialTick(false);
         net.minecraft.world.phys.Vec3 cam = e.getCamera().getPosition();
         PoseStack ps = e.getPoseStack();
@@ -161,6 +162,7 @@ public final class SylvanRender {
         long now = mc.level.getGameTime();
         for (net.minecraft.world.entity.Entity ent : mc.level.entitiesForRendering()) {
             if (!(ent instanceof net.minecraft.world.entity.LivingEntity le) || le.isInvisible()) continue;
+            if (dbg2 < 6) { dbg2++; RingsOfAsh.LOGGER.info("[SYL] vu " + le.getType().getDescriptionId() + " racine=" + rooted(le)); }
             if (!rooted(le)) { ROOT_START.remove(le.getId()); continue; }
             if (m == null) {
                 m = rootsModel();
