@@ -202,11 +202,16 @@ public final class SylvanRender {
             double px = mc.player.getX() - cam.x, py = mc.player.getY() - cam.y, pz = mc.player.getZ() - cam.z;
             GeoModel<net.minecraft.world.entity.LivingEntity> rm = rootsModel();
             rm.root().getAllParts().forEach(ModelPart::resetPose);
+            if (dbg < 2) {
+                dbg++;
+                RingsOfAsh.LOGGER.info("[SYL] modele racines : pieces=" + rm.root().getAllParts().count()
+                        + " enfants=" + rm.root().children.size() + " cubes_body=" + (rm.part("body") == null ? -1 : rm.part("body").cubes.size()));
+            }
             GeoModel<Player> tm = model();
             tm.root().getAllParts().forEach(ModelPart::resetPose);
             // A : le modele du Sylvestre (connu bon) ; B : racines en opaque ; C : racines, texture du Sylvestre
             dbgDraw(ps, buf, tm, "treeman", px, py, pz + 4.0, 0.08F, false);
-            dbgDraw(ps, buf, rm, "racines", px, py, pz + 7.0, 0.6F, true);
+            dbgDraw(ps, buf, rm, "racines", px, py, pz + 7.0, 3.0F, true);
             dbgDraw(ps, buf, rm, "treeman", px, py, pz + 10.0, 0.6F, false);
         }
         buf.endBatch();
