@@ -36,6 +36,7 @@ public final class SylvanRender {
     private static int dbgHand;
     /** taille des bras-branches en vue subjective (essais) */
     public static float ARM_SCALE = 0.20F;
+    public static boolean DBG_SHOW;
 
     private static GeoModel<Player> model() {
         if (model == null) model = new GeoModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ClientSetup.layer("geo_treeman")), "treeman");
@@ -162,7 +163,6 @@ public final class SylvanRender {
         long now = mc.level.getGameTime();
         for (net.minecraft.world.entity.Entity ent : mc.level.entitiesForRendering()) {
             if (!(ent instanceof net.minecraft.world.entity.LivingEntity le) || le.isInvisible()) continue;
-            if (dbg2 < 6) { dbg2++; RingsOfAsh.LOGGER.info("[SYL] vu " + le.getType().getDescriptionId() + " racine=" + rooted(le)); }
             if (!rooted(le)) { ROOT_START.remove(le.getId()); continue; }
             if (m == null) {
                 m = rootsModel();
@@ -184,7 +184,20 @@ public final class SylvanRender {
             m.renderToBuffer(ps, buf.getBuffer(RenderType.entityCutoutNoCull(Renderers.tex("racines"))),
                     mc.getEntityRenderDispatcher().getPackedLightCoords(le, pt), OverlayTexture.NO_OVERLAY, -1);
             ps.popPose();
-            if (dbg < 3) { dbg++; RingsOfAsh.LOGGER.info("[SYL] racines " + le.getType().getDescriptionId() + " s=" + s + " grow=" + grow + " pos=" + x + "," + y + "," + z); }
+            if (dbg2 < 4) { dbg2++; RingsOfAsh.LOGGER.info("[SYL] racines " + le.getType().getDescriptionId() + " s=" + s + " grow=" + grow + " pos=" + x + "," + y + "," + z + " cam=" + cam); }
+        }
+        if (DBG_SHOW && mc.player != null) {                      // essai : une cage devant le joueur
+            if (m == null) { m = rootsModel(); m.root().getAllParts().forEach(ModelPart::resetPose); }
+            double px = Mth.lerp(pt, mc.player.xo, mc.player.getX()) - cam.x;
+            double py = Mth.lerp(pt, mc.player.yo, mc.player.getY()) - cam.y;
+            double pz = Mth.lerp(pt, mc.player.zo, mc.player.getZ()) - cam.z;
+            ps.pushPose();
+            ps.translate(px, py, pz - 3.0);
+            ps.scale(-1.0F, -1.0F, 1.0F);
+            ps.scale(0.6F, 0.6F, 0.6F);
+            ps.translate(0.0F, -1.501F, 0.0F);
+            m.renderToBuffer(ps, buf.getBuffer(RenderType.entityCutoutNoCull(Renderers.tex("racines"))), 0xF000F0, OverlayTexture.NO_OVERLAY, -1);
+            ps.popPose();
         }
         buf.endBatch();
     }

@@ -1249,6 +1249,7 @@ public final class ClientTest {
             ServerLevel ow = p.server.overworld();
             clear(ow);
             p.removeEffect(net.ringsofash.effect.ModEffects.SYLVAN_FORM);
+            net.ringsofash.client.SylvanRender.DBG_SHOW = true;
             p.getInventory().clearContent();
             double x = SX - 3.0;
             for (EntityType<? extends Mob> t : List.of(EntityType.ZOMBIE, EntityType.SPIDER, ModEntities.ORC.get())) {
