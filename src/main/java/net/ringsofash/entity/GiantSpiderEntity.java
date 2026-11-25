@@ -29,6 +29,17 @@ public class GiantSpiderEntity extends Spider {
         this.xpReward = 15;
     }
 
+    /** Pas de cavalier : l'araignee du Bois-Noir ne porte jamais de squelette sur le dos. */
+    @Override
+    public net.minecraft.world.entity.SpawnGroupData finalizeSpawn(net.minecraft.world.level.ServerLevelAccessor level,
+                                                                   net.minecraft.world.DifficultyInstance difficulty,
+                                                                   net.minecraft.world.entity.MobSpawnType type,
+                                                                   net.minecraft.world.entity.SpawnGroupData data) {
+        net.minecraft.world.entity.SpawnGroupData out = super.finalizeSpawn(level, difficulty, type, data);
+        for (Entity rider : getPassengers()) rider.discard();      // l'araignee vanilla monte parfois un squelette
+        return out;
+    }
+
     @Override
     protected void registerGoals() {
         super.registerGoals();
