@@ -9,6 +9,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -123,6 +124,10 @@ public final class GameEvents {
                 && how != net.minecraft.world.entity.MobSpawnType.PATROL && how != net.minecraft.world.entity.MobSpawnType.REINFORCEMENT
                 && how != net.minecraft.world.entity.MobSpawnType.SPAWNER) return;
         net.minecraft.world.entity.Mob mob = e.getEntity();
+        if (mob instanceof net.ringsofash.entity.ShadowRiderEntity && !shadowRoom(e.getLevel().getLevel().getServer(), 1)) {
+            e.setSpawnCancelled(true);                       // pas plus de 7 ombres, et aucune sans malediction
+            return;
+        }
         if (!(mob instanceof net.minecraft.world.entity.monster.Enemy) && mob.getType().getCategory() != net.minecraft.world.entity.MobCategory.MONSTER) return;
         if (e.getLevel().getLevel().dimension() != net.ringsofash.world.ModWorldgen.LANDS) return;
         if (!net.ringsofash.world.Towns.safe((int) e.getX(), (int) e.getZ())) return;
@@ -277,6 +282,7 @@ public final class GameEvents {
                 if (a != null) a.removeModifier(GROW_ID);
             }
         }
+        if (p.serverLevel().getGameTime() % 40 == 0) shadowSweep(p.server);
         if (p.tickCount % 100 == 0) Net.sync(p);
     }
 
@@ -290,15 +296,65 @@ public final class GameEvents {
         p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, ticks, 0));
     }
 
+    /** Les ombres : jamais plus de 7 dans le monde, et aucune tant que la malediction est sous 30 %. */
+    public static final int SHADOW_MAX = 7;
+    public static final int SHADOW_MIN_CURSE = 300;          // sur 1000, soit 30 %
+
+    /** vrai si au moins un joueur porte assez de malediction pour que les ombres rodent */
+    public static boolean shadowsAllowed(MinecraftServer server) {
+        if (server == null) return false;
+        for (ServerPlayer sp : server.getPlayerList().getPlayers())
+            if (ModData.lore(sp).corruption >= SHADOW_MIN_CURSE) return true;
+        return false;
+    }
+
+    /** nombre d'ombres vivantes dans tous les mondes */
+    public static int shadowCount(MinecraftServer server) {
+        int n = 0;
+        for (ServerLevel sl : server.getAllLevels())
+            n += sl.getEntities(ModEntities.SHADOW_RIDER.get(), ShadowRiderEntity::isAlive).size();
+        return n;
+    }
+
+    /** reste-t-il de la place pour n ombres de plus ? */
+    public static boolean shadowRoom(MinecraftServer server, int n) {
+        return server != null && shadowsAllowed(server) && shadowCount(server) + n <= SHADOW_MAX;
+    }
+
+    /** fait disparaitre les ombres en trop, et toutes si la malediction est retombee */
+    private static void shadowSweep(MinecraftServer server) {
+        boolean allowed = shadowsAllowed(server);
+        int keep = allowed ? SHADOW_MAX : 0;
+        for (ServerLevel sl : server.getAllLevels()) {
+            for (ShadowRiderEntity r : sl.getEntities(ModEntities.SHADOW_RIDER.get(), ShadowRiderEntity::isAlive)) {
+                if (keep > 0) { keep--; continue; }
+                r.vanish();
+            }
+        }
+    }
+
     public static void summonRiders(ServerPlayer p, int n) {
         ServerLevel sl = p.serverLevel();
-        int done = 0;
-        for (int i = 0; i < n * 6 && done < n; i++) {
+        n = Math.min(n, SHADOW_MAX - shadowCount(p.server));
+        if (n <= 0 || !shadowsAllowed(p.server)) return;
+        // elles arrivent ensemble : un seul endroit, la troupe cote a cote
+        int cx = p.getBlockX(), cz = p.getBlockZ(), cy = p.getBlockY();
+        boolean place = false;
+        for (int i = 0; i < 20 && !place; i++) {
             double a = p.getRandom().nextDouble() * Math.PI * 2;
-            int r = 22 + p.getRandom().nextInt(12);
-            int x = p.getBlockX() + (int) (Math.cos(a) * r), z = p.getBlockZ() + (int) (Math.sin(a) * r);
+            int r = 24 + p.getRandom().nextInt(10);
+            cx = p.getBlockX() + (int) (Math.cos(a) * r);
+            cz = p.getBlockZ() + (int) (Math.sin(a) * r);
+            cy = sl.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, cx, cz);
+            if (Math.abs(cy - p.getBlockY()) > 24) cy = p.getBlockY();
+            BlockPos pos = new BlockPos(cx, cy, cz);
+            place = sl.getBlockState(pos).getCollisionShape(sl, pos).isEmpty() && sl.getFluidState(pos).isEmpty();
+        }
+        int done = 0;
+        for (int i = 0; i < n * 8 && done < n; i++) {
+            int x = cx + p.getRandom().nextInt(7) - 3, z = cz + p.getRandom().nextInt(7) - 3;
             int y = sl.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-            if (Math.abs(y - p.getBlockY()) > 24) y = p.getBlockY();
+            if (Math.abs(y - cy) > 6) y = cy;
             BlockPos pos = new BlockPos(x, y, z);
             if (!sl.getBlockState(pos).getCollisionShape(sl, pos).isEmpty() || !sl.getFluidState(pos).isEmpty()) continue;
             ShadowRiderEntity rider = ModEntities.SHADOW_RIDER.get().create(sl);

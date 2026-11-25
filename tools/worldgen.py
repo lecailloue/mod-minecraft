@@ -201,7 +201,7 @@ def biome(id, fr, temp, down, sky, fog, water='#3f76e4', wfog='#050533', grass=N
                   'features': steps}
     LANG[f'biome.{MOD}.{id}'] = fr
 
-ORCS = [('shadow_rider', 3, 1, 2), ('goblin', 30, 3, 5), ('cave_troll', 6, 1, 1), ('cave_thief', 3, 1, 1)]
+ORCS = [('shadow_rider', 3, 2, 4), ('goblin', 30, 3, 5), ('cave_troll', 6, 1, 1), ('cave_thief', 3, 1, 1)]
 FARM = [('minecraft:sheep', 12, 4, 4), ('minecraft:pig', 10, 4, 4), ('minecraft:chicken', 10, 4, 4), ('minecraft:cow', 8, 4, 4)]
 BATS = [('minecraft:bat', 10, 8, 8)]
 FISH = [('minecraft:cod', 15, 3, 6), ('minecraft:salmon', 10, 1, 5)]
@@ -218,13 +218,13 @@ def biomes():
     biome('plaines_vertes', 'Plaines Vertes', 0.7, 0.6, '#79b4ff', '#c4dcff', grass='#BEEB9E', foliage='#9bd36a',
           veg=('trees_oak_sparse', 'bushes_oak_few', 'fallen_oak_logs_few', 'sunstar_patch_rare', 'pipeweed_patch', 'minecraft:flower_plains', 'minecraft:patch_tall_grass_2',
                'minecraft:patch_grass_plain', 'minecraft:patch_sugar_cane', 'minecraft:patch_pumpkin', 'minecraft:patch_berry_common'),
-          spawns={'creature': FARM + [('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS, 'monster': [('shadow_rider', 2, 1, 1), ('goblin', 30, 3, 5), ('cave_thief', 3, 1, 1)]})
+          spawns={'creature': FARM + [('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS, 'monster': [('shadow_rider', 2, 2, 4), ('goblin', 30, 3, 5), ('cave_thief', 3, 1, 1)]})
     biome('plaines_jaunes', 'Plaines Pâles', 0.6, 0.35, '#86b8f5', '#d2e2f2', grass='#FFEB9E', foliage='#d9c85a',
           veg=('trees_birch_sparse', 'trees_oak_sparse', 'bushes_birch_few', 'bushes_oak_few', 'fallen_birch_logs_few', 'minecraft:flower_default', 'minecraft:patch_tall_grass', 'minecraft:patch_grass_plain'),
           spawns={'creature': [('minecraft:horse', 10, 2, 6), ('minecraft:cow', 8, 4, 4), ('minecraft:sheep', 6, 4, 4)], 'ambient': BATS, 'monster': ORCS})
     biome('plaines_cendre', 'Plaines de Cendre', 0.9, 0.1, '#55200e', '#30140c', water='#4a4a44', wfog='#1c1c18', grass='#96938E', foliage='#7d7a6a',
           veg=('ash_rocks_big', 'ash_rocks', 'ash_rocks_small', 'ashroot_patch', 'smoke_vents'), precip=False, particle=('minecraft:ash', 0.06), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
-          spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 60, 3, 5), ('war_orc', 35, 2, 3), ('warg', 4, 1, 2), ('cave_troll', 10, 1, 1), ('troll_chief', 3, 1, 1), ('shadow_rider', 5, 1, 2), ('shadow_chief', 1, 1, 1), ('goblin', 20, 3, 5)]})
+          spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 60, 3, 5), ('war_orc', 35, 2, 3), ('warg', 4, 1, 2), ('cave_troll', 10, 1, 1), ('troll_chief', 3, 1, 1), ('shadow_rider', 5, 2, 4), ('shadow_chief', 1, 1, 1), ('goblin', 20, 3, 5)]})
     biome('grande_foret', 'Grande Forêt', 0.6, 0.9, '#6f9ed8', '#7f9a78', water='#3d6a55', wfog='#0c1f16', grass='#3f7a2e', foliage='#2f6a25',
           veg=('trees_oak_big', 'trees_birch_big', 'trees_spruce_big', 'fallen_oak_logs', 'fallen_spruce_logs', 'fallen_birch_logs_few', 'bushes_oak', 'bushes_spruce', 'moonbell_patch', 'minecraft:patch_grass_forest', 'minecraft:patch_large_fern',
                'minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal', 'web_patch_low', 'web_patch_high'),
@@ -232,7 +232,7 @@ def biomes():
                   'monster': ORCS + [('giant_spider', 10, 1, 1)]})
     biome('monts_rocheux', 'Monts Rocheux', 0.3, 0.4, '#7fa6e0', '#c0d0e0', grass='#7a9a64', foliage='#6a8a54', lunar='ore_lunargent',
           veg=('trees_spruce_sparse', 'fallen_spruce_logs_few', 'bushes_spruce_few', 'minecraft:patch_grass_plain', 'minecraft:patch_berry_common'),
-          spawns={'creature': [('minecraft:goat', 10, 1, 3), ('minecraft:sheep', 4, 2, 3), ('eagle', 3, 1, 1)], 'ambient': BATS, 'monster': [('goblin', 60, 3, 6), ('goblin_king', 2, 1, 1), ('cave_troll', 14, 1, 1), ('troll_chief', 3, 1, 1), ('stone_troll', 12, 1, 1), ('cave_thief', 6, 1, 1), ('shadow_rider', 2, 1, 1)]},
+          spawns={'creature': [('minecraft:goat', 10, 1, 3), ('minecraft:sheep', 4, 2, 3), ('eagle', 3, 1, 1)], 'ambient': BATS, 'monster': [('goblin', 60, 3, 6), ('goblin_king', 2, 1, 1), ('cave_troll', 14, 1, 1), ('troll_chief', 3, 1, 1), ('stone_troll', 12, 1, 1), ('cave_thief', 6, 1, 1), ('shadow_rider', 2, 2, 4)]},
           extra_steps={6: ORES + [R('ore_lunargent'), R('ore_lunargent_rich')] + ORES_TAIL})
     biome('foret_clairsemee', 'Forêt Clairsemée', 0.65, 0.7, '#74a6e0', '#a8c4a0', water='#3d6a55', wfog='#0c1f16', grass='#8fc56f', foliage='#5f9a3f',
           veg=('trees_oak_sparse', 'trees_birch_sparse', 'trees_spruce_sparse', 'fallen_oak_logs', 'fallen_birch_logs_few', 'bushes_oak', 'bushes_birch_few', 'minecraft:patch_grass_forest', 'minecraft:flower_default'),
@@ -242,7 +242,7 @@ def biomes():
           spawns={'creature': FARM + [('minecraft:rabbit', 6, 2, 3)], 'ambient': BATS, 'monster': ORCS})
     biome('monts_de_cendre', 'Monts de Cendre', 1.0, 0.0, '#4a1a0c', '#28100a', water='#4a3a36', wfog='#1c100c', grass='#57503f', foliage='#57503f',
           veg=('ash_rocks_big', 'ash_rocks', 'ash_rocks_small', 'smoke_vents_dense'), precip=False, particle=('minecraft:ash', 0.06), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
-          spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 40, 2, 4), ('war_orc', 25, 2, 3), ('warg', 3, 1, 2), ('cave_troll', 14, 1, 1), ('troll_chief', 3, 1, 1), ('stone_troll', 10, 1, 1), ('goblin', 40, 3, 6), ('goblin_king', 2, 1, 1), ('shadow_rider', 4, 1, 2), ('shadow_chief', 1, 1, 1)]})
+          spawns={'ambient': BATS + [('crow', 10, 2, 4)], 'monster': [('orc', 40, 2, 4), ('war_orc', 25, 2, 3), ('warg', 3, 1, 2), ('cave_troll', 14, 1, 1), ('troll_chief', 3, 1, 1), ('stone_troll', 10, 1, 1), ('goblin', 40, 3, 6), ('goblin_king', 2, 1, 1), ('shadow_rider', 4, 2, 4), ('shadow_chief', 1, 1, 1)]})
     biome('rivieres_de_lave', 'Rivières de Lave', 2.0, 0.0, '#4a1a0c', '#28100a', water='#4a3a36', wfog='#1c100c', veg=('smoke_vents',), precip=False,
           particle=('minecraft:ash', 0.05), loop='minecraft:ambient.basalt_deltas.loop', additions='minecraft:ambient.basalt_deltas.additions',
           spawns={'monster': [('minecraft:magma_cube', 20, 1, 3)], 'ambient': BATS})

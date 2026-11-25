@@ -27,8 +27,8 @@
    {
     "type": "ringsofash:shadow_rider",
     "weight": 2,
-    "minCount": 1,
-    "maxCount": 1
+    "minCount": 2,
+    "maxCount": 4
    },
    {
     "type": "ringsofash:goblin",
