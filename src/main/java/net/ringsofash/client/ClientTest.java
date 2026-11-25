@@ -1233,6 +1233,22 @@ public final class ClientTest {
             hook = () -> log("12d anneau actif=" + net.ringsofash.item.RingItem.worn(p) + " chance=" + p.hasEffect(net.minecraft.world.effect.MobEffects.LUCK) + " nuit=" + p.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION));
         }));
         // l'epee elfique en main, et a cote d'un orque (elle doit luire de bleu)
+        // l'epee tenue par un semi-homme, vue de cote (comme sur la capture du joueur)
+        SCENES.add(new Scene("epee_porteur", 40, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            p.getInventory().clearContent();
+            for (int i = 0; i < 2; i++) {
+                final int k = i;
+                actor(ow, i == 0 ? ModEntities.HALFLING.get() : ModEntities.HUMAN.get(), SX - 1.0 + i * 2.5, SZ + 5.0, m -> {
+                    m.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.ELVEN_SWORD.get()));
+                    m.setYRot(90F);
+                    m.setYBodyRot(90F);
+                    m.setYHeadRot(90F);
+                });
+            }
+            view(p, ow, SX + 0.2, SY + 1.1, SZ, 0F, 2F);
+        }));
         SCENES.add(new Scene("epee_face_main", 30, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
