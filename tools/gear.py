@@ -192,9 +192,13 @@ def build():
     item('elven_sword', 'Épée elfique', model='handheld',
          java='ModGear.special(SpecialSword.Kind.ELVEN, ModGear.T_ELVEN, 3, -2.2F, 0, props())',
          tags=['swords'])
+    # l'epee est longue : on l'agrandit en main (sinon elle fait la taille d'un couteau)
+    EPEE_DISPLAY = {'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0, 9.0, 0.5], 'scale': [1.9, 1.9, 1.9]}, 'thirdperson_lefthand': {'rotation': [0, 90, -55], 'translation': [0, 9.0, 0.5], 'scale': [1.9, 1.9, 1.9]}, 'firstperson_righthand': {'rotation': [0, -90, 25], 'translation': [1.13, 6.5, 1.13], 'scale': [1.35, 1.35, 1.35]}, 'firstperson_lefthand': {'rotation': [0, 90, -25], 'translation': [1.13, 6.5, 1.13], 'scale': [1.35, 1.35, 1.35]}, 'ground': {'rotation': [0, 0, 0], 'translation': [0, 2, 0], 'scale': [0.8, 0.8, 0.8]}, 'fixed': {'rotation': [0, 180, 0], 'translation': [0, 0, 0], 'scale': [1.3, 1.3, 1.3]}, 'gui': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]}, 'head': {'rotation': [0, 180, 0], 'translation': [0, 13, 7], 'scale': [1.2, 1.2, 1.2]}}
     imodel('elven_sword', {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/elven_sword'},
+                           'display': EPEE_DISPLAY,
                            'overrides': [{'predicate': {f'{MOD}:glow': 1}, 'model': f'{MOD}:item/elven_sword_glow'}]})
-    imodel('elven_sword_glow', {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/elven_sword_glow'}})
+    imodel('elven_sword_glow', {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/elven_sword_glow'},
+                                'display': EPEE_DISPLAY})
     # ---- le reste des armes, arcs et batons : a refaire (voir git : tools/gear.py avant le commit a689a5f4)
     # ---- armures
     armor_set('lunargent', 'de lunargent', 'LUNARGENT', 35, '#cfe6f2', '#8fb0c8', '#58b0e0')

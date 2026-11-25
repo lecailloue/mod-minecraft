@@ -1233,6 +1233,15 @@ public final class ClientTest {
             hook = () -> log("12d anneau actif=" + net.ringsofash.item.RingItem.worn(p) + " chance=" + p.hasEffect(net.minecraft.world.effect.MobEffects.LUCK) + " nuit=" + p.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION));
         }));
         // l'epee elfique en main, et a cote d'un orque (elle doit luire de bleu)
+        SCENES.add(new Scene("epee_face_main", 30, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            p.getInventory().clearContent();
+            p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Reg.ELVEN_SWORD.get()));
+            view(p, ow, SX + 0.5, SY, SZ, 0F, 0F);
+            p.getAbilities().flying = false;
+            p.onUpdateAbilities();
+        }));
         SCENES.add(new Scene("epee_1p_elfique", 30, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
