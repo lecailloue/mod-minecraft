@@ -1,13 +1,9 @@
-"""Les armes du mod, dessinees en 2D (icones 32x32).
+"""Les armes du mod, dessinees en 2D (icones 64x64), d'apres les references du croquis.
 
-Chaque race a sa propre silhouette, pas seulement sa couleur :
-  elfes  : lames en feuille, fines, garde en ailes, or et argent clair
-  nains  : lames courtes et larges en coin, grosses ferrures de bronze, tout est epais
-  hommes : lames droites a gouttiere, longue garde en croix, cuir et acier
-  uruk   : lames crochues et ebrechees, metal noir rouille, os et chiffons
-
-On dessine au pixel pres : une lame = un chemin + un profil de largeur, l'ombrage
-suit la normale (lumiere en haut a gauche), et un contour sombre ferme la silhouette.
+Chaque arme est dessinee dans son propre repere : u le long de l'arme (0 = bout du
+manche), v en travers (v negatif = cote eclaire, en haut a gauche). Une lame est donc
+une ligne de dos et une ligne de tranchant, ce qui permet les lames courbes elfiques
+comme les lames droites naines.
 
     python3 tools/weapons2d.py preview   -> planche de contact dans /tmp/armes2d
     python3 tools/weapons2d.py gen       -> icones dans le mod
@@ -16,33 +12,40 @@ import math
 import os
 import sys
 
-W = 32  # cote de l'icone
+W = 64
+DIAG = math.radians(-45)      # arme en diagonale, pointe en haut a droite
+VERT = math.radians(-90)      # arcs : debout
+O_DIAG = (8.0, 56.0)
+O_VERT = (24.0, 61.0)
 
-# ------------------------------------------------------- matieres (clair, moyen, sombre, contour)
-ELF_STEEL = ((0xF4, 0xFA, 0xFC), (0xCE, 0xE0, 0xE8), (0x93, 0xAC, 0xBA), (0x44, 0x5A, 0x68))
-ELF_GOLD = ((0xF6, 0xE0, 0x9E), (0xD4, 0xAC, 0x52), (0x96, 0x74, 0x2E), (0x4C, 0x38, 0x14))
-ELF_WOOD = ((0xEE, 0xE4, 0xCE), (0xCA, 0xBA, 0x98), (0x96, 0x84, 0x64), (0x4E, 0x42, 0x30))
-DWA_STEEL = ((0xE2, 0xE4, 0xE6), (0xAE, 0xB4, 0xBA), (0x74, 0x7C, 0x86), (0x32, 0x36, 0x3E))
-DWA_BRONZE = ((0xF0, 0xBC, 0x60), (0xC2, 0x88, 0x34), (0x86, 0x58, 0x20), (0x42, 0x2A, 0x0E))
-DWA_GRIP = ((0xA8, 0x4C, 0x3C), (0x7A, 0x32, 0x28), (0x52, 0x1E, 0x18), (0x2A, 0x0E, 0x0A))
-MAN_STEEL = ((0xEC, 0xF0, 0xF4), (0xBC, 0xC4, 0xCC), (0x82, 0x8C, 0x98), (0x3A, 0x40, 0x4A))
-MAN_DARK = ((0x6E, 0x78, 0x86), (0x4C, 0x54, 0x60), (0x32, 0x38, 0x42), (0x18, 0x1C, 0x22))
-MAN_GRIP = ((0x9A, 0x6C, 0x40), (0x6E, 0x4A, 0x2A), (0x4A, 0x30, 0x1A), (0x24, 0x16, 0x0C))
-URU_STEEL = ((0x8A, 0x90, 0x8E), (0x5C, 0x62, 0x62), (0x38, 0x3C, 0x3E), (0x1A, 0x1C, 0x1E))
-URU_RUST = ((0xB0, 0x5E, 0x30), (0x80, 0x40, 0x20), (0x54, 0x28, 0x14), (0x2A, 0x12, 0x08))
-URU_GRIP = ((0x7E, 0x66, 0x46), (0x58, 0x46, 0x2E), (0x3A, 0x2C, 0x1C), (0x1C, 0x14, 0x0C))
-BONE = ((0xF2, 0xEC, 0xD8), (0xD0, 0xC6, 0xAA), (0x9E, 0x92, 0x76), (0x4E, 0x46, 0x34))
-GLOW_BLUE = ((0xF0, 0xFA, 0xFF), (0xC2, 0xE8, 0xFE), (0x86, 0xBE, 0xE4), (0x3C, 0x6E, 0x96))
-GLOW_GOLD = ((0xFF, 0xF0, 0xB6), (0xF6, 0xCE, 0x62), (0xC0, 0x92, 0x2C), (0x5E, 0x42, 0x12))
-EMBER = ((0xFF, 0xD0, 0x72), (0xF2, 0x7E, 0x24), (0xA8, 0x3A, 0x12), (0x4A, 0x16, 0x08))
-GREEN = ((0xD2, 0xF0, 0x90), (0x92, 0xC8, 0x4C), (0x56, 0x86, 0x2C), (0x24, 0x40, 0x16))
-LEATHER = ((0x5E, 0x4A, 0x38), (0x42, 0x32, 0x26), (0x2A, 0x1E, 0x16), (0x14, 0x0E, 0x0A))
-DARKWOOD = ((0x7E, 0x60, 0x40), (0x5A, 0x42, 0x2A), (0x3C, 0x2A, 0x1A), (0x1E, 0x14, 0x0C))
+# ----------------------------------------------------- matieres (clair, moyen, sombre, contour)
+SILVER = ((0xF4, 0xF8, 0xFA), (0xCA, 0xD6, 0xDC), (0x8E, 0x9E, 0xA8), (0x44, 0x50, 0x58))
+SILVER_D = ((0xB4, 0xC0, 0xC8), (0x86, 0x94, 0x9E), (0x5A, 0x66, 0x70), (0x2C, 0x34, 0x3A))
+STEEL = ((0xEE, 0xF2, 0xF6), (0xBE, 0xC6, 0xCE), (0x84, 0x8E, 0x9A), (0x3A, 0x42, 0x4C))
+DARKSTEEL = ((0x7A, 0x82, 0x8A), (0x55, 0x5C, 0x64), (0x36, 0x3C, 0x42), (0x1A, 0x1E, 0x22))
+BRASS = ((0xEE, 0xC8, 0x72), (0xC2, 0x96, 0x42), (0x84, 0x62, 0x26), (0x3E, 0x2C, 0x0E))
+BRONZE = ((0xE4, 0xB0, 0x5C), (0xB2, 0x80, 0x34), (0x74, 0x50, 0x1E), (0x36, 0x24, 0x0C))
+BLACKIRON = ((0x5C, 0x52, 0x46), (0x40, 0x38, 0x30), (0x28, 0x22, 0x1C), (0x12, 0x0E, 0x0A))
+BLACKIRON_L = ((0x8E, 0x82, 0x70), (0x66, 0x5C, 0x4E), (0x42, 0x3A, 0x30), (0x1C, 0x18, 0x12))
+WOOD = ((0xA8, 0x7A, 0x4A), (0x7E, 0x58, 0x32), (0x56, 0x3A, 0x20), (0x28, 0x1A, 0x0E))
+PALEWOOD = ((0xE2, 0xC4, 0x92), (0xC0, 0x9E, 0x6C), (0x92, 0x74, 0x48), (0x46, 0x36, 0x20))
+DARKWOOD = ((0x6E, 0x5C, 0x44), (0x4E, 0x40, 0x2E), (0x34, 0x2A, 0x1E), (0x16, 0x12, 0x0C))
+ELFWOOD = ((0x8A, 0x82, 0x68), (0x62, 0x5C, 0x48), (0x42, 0x3C, 0x2E), (0x1E, 0x1A, 0x14))
+LEATHER = ((0x8C, 0x4E, 0x34), (0x66, 0x36, 0x24), (0x44, 0x22, 0x16), (0x20, 0x10, 0x0A))
+DARKLEATHER = ((0x4E, 0x3C, 0x2C), (0x36, 0x28, 0x1E), (0x22, 0x18, 0x12), (0x0E, 0x0A, 0x08))
+GREENWRAP = ((0x7E, 0xA2, 0x4E), (0x5A, 0x78, 0x34), (0x3A, 0x52, 0x20), (0x1A, 0x26, 0x0E))
+STRING = ((0xF0, 0xEC, 0xE0), (0xC8, 0xC2, 0xB2), (0x90, 0x8A, 0x7C), (0x44, 0x40, 0x38))
 
 
-# ---------------------------------------------------------------- primitives
+# ---------------------------------------------------------------- base
 def new():
     return [[None] * W for _ in range(W)]
+
+
+def place(u, v, origin, ang):
+    dx, dy = math.cos(ang), math.sin(ang)
+    nx, ny = -dy, dx
+    return origin[0] + u * dx + v * nx, origin[1] + u * dy + v * ny
 
 
 def px(c, x, y, col, out=None):
@@ -51,26 +54,138 @@ def px(c, x, y, col, out=None):
         c[y][x] = (col, out)
 
 
-def seg(c, p0, p1, col, out=None):
-    x0, y0 = p0
-    x1, y1 = p1
-    n = int(max(abs(x1 - x0), abs(y1 - y0)) * 2)
+def shape(c, pts, pal, origin=O_DIAG, ang=DIAG, hi=0.30, lo=0.68, step=0.34, flat=False, band=None):
+    """remplit un polygone donne dans le repere de l'arme, lumiere sur le bord v-"""
+    us = [p[0] for p in pts]
+    u = min(us)
+    while u <= max(us) + 1e-9:
+        vs = []
+        for i in range(len(pts)):
+            (u0, v0), (u1, v1) = pts[i], pts[(i + 1) % len(pts)]
+            if (u0 <= u < u1) or (u1 <= u < u0):
+                vs.append(v0 + (u - u0) * (v1 - v0) / (u1 - u0))
+        vs.sort()
+        for k in range(0, len(vs) - 1, 2):
+            a, b = vs[k], vs[k + 1]
+            v = a
+            while v <= b + 1e-9:
+                r = (v - a) / (b - a) if b > a else 0.0
+                col = pal[1] if flat else (pal[0] if r < hi else (pal[1] if r < lo else pal[2]))
+                if band and band(u):
+                    col = pal[2]
+                x, y = place(u, v, origin, ang)
+                px(c, x, y, col, pal[3])
+                v += step
+        u += step
+
+
+def blade_pts(u0, u1, cf, wf, n=None):
+    """polygone d'une lame : ligne de dos (v-) puis retour par le tranchant (v+)"""
+    n = n or max(8, int((u1 - u0) * 2))
+    top, bot = [], []
     for i in range(n + 1):
+        u = u0 + (u1 - u0) * i / n
+        cc, ww = cf(u), max(0.0, wf(u))
+        top.append((u, cc - ww / 2))
+        bot.append((u, cc + ww / 2))
+    return top + bot[::-1]
+
+
+def stroke_pts(path, wf):
+    """polygone autour d'un chemin (u,v) de largeur variable : pour les arcs"""
+    top, bot = [], []
+    n = len(path) - 1
+    for i, (u, v) in enumerate(path):
+        t = i / n
+        w = wf(t) / 2
+        j, k = min(i + 1, n), max(i - 1, 0)
+        du, dv = path[j][0] - path[k][0], path[j][1] - path[k][1]
+        d = math.hypot(du, dv) or 1
+        nu, nv = -dv / d, du / d
+        top.append((u + nu * w, v + nv * w))
+        bot.append((u - nu * w, v - nv * w))
+    return top + bot[::-1]
+
+
+def free_shape(c, pts, pal, origin=O_DIAG, ang=VERT, step=0.34, hi=0.3, lo=0.68):
+    """meme chose mais pour un polygone quelconque (balayage en v)"""
+    vs = [p[1] for p in pts]
+    v = min(vs)
+    while v <= max(vs) + 1e-9:
+        us = []
+        for i in range(len(pts)):
+            (u0, v0), (u1, v1) = pts[i], pts[(i + 1) % len(pts)]
+            if (v0 <= v < v1) or (v1 <= v < v0):
+                us.append(u0 + (v - v0) * (u1 - u0) / (v1 - v0))
+        us.sort()
+        for k in range(0, len(us) - 1, 2):
+            a, b = us[k], us[k + 1]
+            u = a
+            while u <= b + 1e-9:
+                r = (u - a) / (b - a) if b > a else 0.0
+                col = pal[0] if r < hi else (pal[1] if r < lo else pal[2])
+                x, y = place(u, v, origin, ang)
+                px(c, x, y, col, pal[3])
+                u += step
+        v += step
+
+
+def thick(c, path, pal, wf, origin=O_DIAG, ang=DIAG, step=0.34, hi=0.30, lo=0.66):
+    """trait epais le long d'un chemin (u,v) : marche aussi quand le chemin revient en arriere"""
+    n = len(path) - 1
+    for i, (u, v) in enumerate(path):
         t = i / n if n else 0
-        px(c, x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, col, out)
+        w = wf(t) if callable(wf) else wf
+        j, k = min(i + 1, n), max(i - 1, 0)
+        du, dv = path[j][0] - path[k][0], path[j][1] - path[k][1]
+        d = math.hypot(du, dv) or 1
+        nu, nv = -dv / d, du / d
+        s0 = -w / 2
+        while s0 <= w / 2 + 1e-9:
+            r = (s0 + w / 2) / w if w else 0
+            col = pal[0] if r < hi else (pal[1] if r < lo else pal[2])
+            x, y = place(u + nu * s0, v + nv * s0, origin, ang)
+            px(c, x, y, pal[0] if col is None else col, pal[3])
+            s0 += step
 
 
-def bez(p0, p1, p2, n=64):
-    out = []
+def line(c, p0, p1, col, origin=O_DIAG, ang=DIAG, out=None):
+    n = int(max(abs(p1[0] - p0[0]), abs(p1[1] - p0[1])) * 3) + 1
     for i in range(n + 1):
         t = i / n
-        u = 1 - t
-        out.append((u * u * p0[0] + 2 * u * t * p1[0] + t * t * p2[0],
-                    u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1]))
-    return out
+        x, y = place(p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t, origin, ang)
+        px(c, x, y, col, out)
 
 
-def bez3(p0, p1, p2, p3, n=80):
+def hole(c, pts, origin=O_DIAG, ang=DIAG):
+    """evide un polygone (ajours des lames elfiques, coeur des gardes naines)"""
+    us = [p[0] for p in pts]
+    u = min(us)
+    while u <= max(us):
+        vs = []
+        for i in range(len(pts)):
+            (u0, v0), (u1, v1) = pts[i], pts[(i + 1) % len(pts)]
+            if (u0 <= u < u1) or (u1 <= u < u0):
+                vs.append(v0 + (u - u0) * (v1 - v0) / (u1 - u0))
+        vs.sort()
+        for k in range(0, len(vs) - 1, 2):
+            v = vs[k]
+            while v <= vs[k + 1]:
+                x, y = place(u, v, origin, ang)
+                xi, yi = int(round(x)), int(round(y))
+                if 0 <= xi < W and 0 <= yi < W:
+                    c[yi][xi] = None
+                v += 0.34
+        u += 0.34
+
+
+def bez(p0, p1, p2, n=40):
+    return [((1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * p1[0] + t * t * p2[0],
+             (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * p1[1] + t * t * p2[1])
+            for t in [i / n for i in range(n + 1)]]
+
+
+def bez3(p0, p1, p2, p3, n=60):
     out = []
     for i in range(n + 1):
         t = i / n
@@ -80,77 +195,40 @@ def bez3(p0, p1, p2, p3, n=80):
     return out
 
 
-def stroke(c, path, pal, w=1.0, out=True):
-    """trait epais le long d'un chemin, ombre sur le cote bas-droite"""
-    hi, mid, lo, ol = pal
-    for i, (x, y) in enumerate(path):
-        j = min(i + 1, len(path) - 1)
-        k = max(i - 1, 0)
-        dx, dy = path[j][0] - path[k][0], path[j][1] - path[k][1]
-        n = math.hypot(dx, dy) or 1
-        nx, ny = -dy / n, dx / n
-        half = w / 2
-        s = -half
-        while s <= half + 1e-6:
-            col = hi if s < -half * 0.3 else (lo if s > half * 0.3 else mid)
-            px(c, x + nx * s, y + ny * s, col, ol if out else None)
-            s += 0.4
+def fill(c, pts, pal, origin=O_DIAG, ang=DIAG, hi=0.26, lo=0.64):
+    """polygone quelconque : on teste chaque pixel (marche pour les croissants, becs, etc.)"""
+    world = [place(u, v, origin, ang) for u, v in pts]
+    xs = [p[0] for p in world]
+    ys = [p[1] for p in world]
+    dx, dy = math.cos(ang), math.sin(ang)
+    for yy in range(max(0, int(min(ys)) - 1), min(W, int(max(ys)) + 2)):
+        for xx in range(max(0, int(min(xs)) - 1), min(W, int(max(xs)) + 2)):
+            inside = False
+            j = len(world) - 1
+            for i in range(len(world)):
+                (x0, y0), (x1, y1) = world[i], world[j]
+                if (y0 > yy) != (y1 > yy) and xx < x0 + (yy - y0) * (x1 - x0) / (y1 - y0):
+                    inside = not inside
+                j = i
+            if not inside:
+                continue
+            u = (xx - origin[0]) * dx + (yy - origin[1]) * dy
+            v = -(xx - origin[0]) * dy + (yy - origin[1]) * dx
+            vs = []
+            for i in range(len(pts)):
+                (u0, v0), (u1, v1) = pts[i], pts[(i + 1) % len(pts)]
+                if (u0 <= u < u1) or (u1 <= u < u0):
+                    vs.append(v0 + (u - u0) * (v1 - v0) / (u1 - u0))
+            vs.sort()
+            r = 0.5
+            for k in range(0, len(vs) - 1, 2):
+                if vs[k] - 0.6 <= v <= vs[k + 1] + 0.6 and vs[k + 1] > vs[k]:
+                    r = (v - vs[k]) / (vs[k + 1] - vs[k])
+                    break
+            c[yy][xx] = (pal[0] if r < hi else (pal[1] if r < lo else pal[2]), pal[3])
 
 
-def taper(c, path, wfun, pal, out=True, fuller=None, serrate=None):
-    """lame : chemin central + profil de largeur ; lumiere en haut a gauche"""
-    hi, mid, lo, ol = pal
-    n = len(path) - 1
-    for i, (x, y) in enumerate(path):
-        t = i / n
-        half = wfun(t)
-        if half <= 0:
-            continue
-        j = min(i + 1, n)
-        k = max(i - 1, 0)
-        dx, dy = path[j][0] - path[k][0], path[j][1] - path[k][1]
-        d = math.hypot(dx, dy) or 1
-        nx, ny = -dy / d, dx / d
-        if serrate and serrate(t):
-            half *= 0.55
-        s = -half
-        while s <= half + 1e-6:
-            r = s / half if half else 0
-            col = hi if r < -0.45 else (lo if r > 0.5 else mid)
-            if fuller and abs(r) < 0.18 and 0.08 < t < fuller:
-                col = lo
-            px(c, x + nx * s, y + ny * s, col, ol if out else None)
-            s += 0.4
-
-
-def poly(c, pts, pal, out=True, shade=True):
-    hi, mid, lo, ol = pal
-    ys = [p[1] for p in pts]
-    y0, y1 = int(math.floor(min(ys))), int(math.ceil(max(ys)))
-    rows = {}
-    for y in range(y0, y1 + 1):
-        xs = []
-        for i in range(len(pts)):
-            (ax, ay), (bx, by) = pts[i], pts[(i + 1) % len(pts)]
-            if (ay <= y < by) or (by <= y < ay):
-                xs.append(ax + (y - ay) * (bx - ax) / (by - ay))
-        xs.sort()
-        rows[y] = xs
-        for i in range(0, len(xs) - 1, 2):
-            a, b = int(round(xs[i])), int(round(xs[i + 1]))
-            for x in range(a, b + 1):
-                col = mid
-                if shade:
-                    if x <= a + (b - a) * 0.22:
-                        col = hi
-                    elif x >= a + (b - a) * 0.72:
-                        col = lo
-                px(c, x, y, col, ol)
-    return rows
-
-
-def outline(c, deep=0.0):
-    """ferme la silhouette avec le ton de contour de la matiere voisine"""
+def outline(c):
     add = {}
     for y in range(W):
         for x in range(W):
@@ -165,476 +243,311 @@ def outline(c, deep=0.0):
         c[y][x] = (col, None)
 
 
-def spot(c, p, col):
-    px(c, p[0], p[1], col, None)
+def wrap(c, u0, u1, pal, half, step=2.6, origin=O_DIAG, ang=DIAG):
+    """lanieres / anneaux sur un manche"""
+    u = u0
+    i = 0
+    while u <= u1:
+        line(c, (u, -half), (u + 0.8, half), pal[0] if i % 2 else pal[2], origin, ang, pal[3])
+        u += step
+        i += 1
 
 
-# ---------------------------------------------------------------- profils de lame
-def leaf(wmax, base=0.18):
-    """elfe : etroite au talon, ventre aux deux tiers, pointe fine"""
-    return lambda t: max(0.0, wmax * (math.sin(math.pi * min(1, t ** 0.78)) ** 0.62) + base * (1 - t))
+# ======================================================================= ELFES
+def elven_sword():
+    """epee de Thranduil : longue lame courbe a un tranchant, tout en argent"""
+    c = new()
+    cf = lambda u: -0.0040 * max(0.0, u - 22) ** 2
+    wf = lambda u: 4.0 if u < 52 else 4.0 * max(0.0, (66 - u) / 14) ** 0.55
+    shape(c, blade_pts(22, 66, cf, wf, 140), SILVER, hi=0.26, lo=0.60)
+    line(c, (24, cf(24) - 1.2), (60, cf(60) - 1.0), SILVER[0])
+    for u in range(27, 58, 3):                                   # entrelacs graves
+        line(c, (u, cf(u) - 0.4), (u + 1.6, cf(u) + 1.0), SILVER_D[1])
+    fill(c, [(17.5, 1.6), (21.5, 2.4), (23.5, 7.0), (19.5, 6.2), (17.5, 3.2)], SILVER_D)   # aile
+    shape(c, [(16.2, -3.4), (21.8, -2.6), (21.8, 2.6), (16.2, 3.4)], SILVER)               # virole
+    shape(c, blade_pts(5, 18, lambda u: 0, lambda u: 3.2 + 0.9 * math.sin((u - 5) / 13 * math.pi)), SILVER_D)
+    for u in (8.0, 11.0, 14.0):
+        line(c, (u, -1.8), (u + 0.5, 1.8), SILVER[2], out=SILVER[3])
+    shape(c, [(0.0, -2.4), (1.0, -4.8), (3.4, -4.4), (4.6, -1.8), (4.6, 1.8), (3.4, 4.4),
+              (1.0, 4.8), (0.0, 2.4)], SILVER)                   # pommeau
+    line(c, (1.2, -3.6), (3.4, -2.8), SILVER[0])
+    line(c, (1.2, 3.6), (3.4, 2.8), SILVER[2])
+    outline(c)
+    return c
 
 
-def wedge(wmax):
-    """nain : s'elargit franchement puis coupe net en pointe courte"""
-    return lambda t: wmax * (0.45 + 0.55 * min(1.0, t / 0.72)) if t < 0.78 else wmax * max(0.0, (1 - t) / 0.22)
+def elven_dagger():
+    """dague elfique : large lame a un tranchant qui s'elargit vers la pointe, bois et laiton"""
+    c = new()
+    cf = lambda u: -0.035 * (u - 20)
+    back = [(u, cf(u) - (2.0 + 2.8 * min(1.0, (u - 20) / 26.0))) for u in [20 + i * 0.3 for i in range(94)]]
+    edge = [(u, cf(u) + (2.0 + 2.8 * min(1.0, (u - 20) / 26.0))) for u in [20 + i * 0.3 for i in range(94)]]
+    nose = [(47.0, cf(47) - 4.8), (56.0, cf(56) - 0.4), (49.0, cf(49) + 4.8)]      # clip puis pointe
+    shape(c, back + nose + edge[::-1], STEEL, hi=0.20, lo=0.52)
+    line(c, (22, cf(22) - 3.4), (49, cf(49) - 4.4), STEEL[0])
+    for u in range(25, 48, 4):                                    # ligne de trempe
+        line(c, (u, cf(u) + 1.0), (u + 3.0, cf(u) + 1.6), SILVER_D[2])
+    shape(c, [(17.0, -3.8), (20.0, -3.4), (20.0, 3.4), (17.0, 3.8)], BRASS)
+    thick(c, [(u, 0.0) for u in [5 + i * 0.3 for i in range(40)]], WOOD,
+          lambda t: 4.6 + 0.8 * math.sin(math.pi * t))
+    shape(c, [(1.0, -4.6), (5.0, -3.4), (5.0, 3.4), (1.0, 4.6)], BRASS)
+    outline(c)
+    return c
 
 
-def straight(wmax):
-    """homme : bords paralleles, pointe sur le dernier quart"""
-    return lambda t: wmax if t < 0.74 else wmax * max(0.0, (1 - t) / 0.26) ** 0.7
+def _bow(c, limb_up, wf, pal, grip_pal, grip, string_pal, tips=None, nock=None):
+    """une branche + sa symetrique, la poignee, puis la corde"""
+    dn = [(62 - u, v) for (u, v) in limb_up]
+    for p in (limb_up, dn):
+        thick(c, p, pal, wf, origin=O_VERT, ang=VERT)
+    thick(c, [(u, grip[2]) for u in [grip[0] + i * 0.25 for i in range(int((grip[1] - grip[0]) / 0.25))]],
+          grip_pal, grip[3], origin=O_VERT, ang=VERT)
+    line(c, (limb_up[0][0], string_pal[4]), (62 - limb_up[0][0], string_pal[4]),
+         string_pal[0], O_VERT, VERT, string_pal[3])
 
 
-def hook(wmax):
-    """uruk : fin au talon, de plus en plus large vers la pointe"""
-    return lambda t: wmax * (0.35 + 0.8 * t) if t < 0.86 else wmax * max(0.0, (1 - t) / 0.14) * 1.1
+def elven_bow():
+    """arc elfique : branches fines a double courbure, poignee entouree de vert"""
+    c = new()
+    up = bez3((59.0, 1.0), (49.0, -9.0), (41.0, -4.0), (33.0, -1.0), 80)
+    _bow(c, up, lambda t: 1.6 + 2.0 * t, ELFWOOD, GREENWRAP, (26.0, 36.0, -1.0, lambda t: 5.0),
+         STRING + (1.6,))
+    wrap(c, 26.5, 35.5, GREENWRAP, 2.4, 1.8, origin=O_VERT, ang=VERT)
+    for u in (59.0, 3.0):                                          # pointes sombres
+        line(c, (u, -1.0), (u, 1.4), BLACKIRON[1], O_VERT, VERT, BLACKIRON[3])
+    outline(c)
+    return c
 
 
-# ---------------------------------------------------------------- pieces de poignee
-def elf_hilt(c, base, ang, metal, wood, length=9.0, gem=None):
-    """garde en ailes relevees + manche fuseau"""
-    ux, uy = math.cos(ang), math.sin(ang)
-    nx, ny = -uy, ux
+def elven_longbow():
+    """arc long elfique : le plus grand, branches a feuilles de la Foret Noire"""
+    c = new()
+    up = bez3((62.0, 1.5), (50.0, -11.0), (42.0, -4.0), (33.0, -1.2), 90)
+    _bow(c, up, lambda t: 1.4 + 2.2 * t, BLACKIRON, BLACKIRON, (27.0, 35.0, -1.4, lambda t: 5.4),
+         STRING + (2.0,))
+    for p in (up, [(64 - u, v) for (u, v) in up]):                 # nervures d'or
+        for i in (26, 48, 68):
+            u, v = p[i]
+            line(c, (u, v - 1.2), (u, v + 1.2), BRONZE[1], O_VERT, VERT, BRONZE[3])
+    wrap(c, 27.0, 35.0, BRONZE, 2.8, 2.0, origin=O_VERT, ang=VERT)
+    for u in range(28, 37):                                        # tresse de la corde
+        px(c, *place(u, 2.0, O_VERT, VERT), STRING[2], STRING[3])
+    outline(c)
+    return c
+
+
+def elven_spear():
+    """lance elfique a deux fers : hampe de bronze, lames courbes ajourees aux deux bouts"""
+    c = new()
+    thick(c, [(u, 0.0) for u in [18 + i * 0.3 for i in range(94)]], BRONZE, lambda t: 2.2)
+    line(c, (20, -1.0), (44, -1.0), BRONZE[0])
+    for a, s in ((46.0, 1), (18.0, -1)):
+        pts = blade_pts(min(a, a + s * 21), max(a, a + s * 21),
+                        lambda u, a=a, s=s: -0.016 * ((u - a) * s) ** 2,
+                        lambda u, a=a, s=s: 5.0 * max(0.05, 1 - abs(u - a) / 22.0) ** 0.62, 80)
+        shape(c, pts, BRONZE, hi=0.22, lo=0.56)
+        shape(c, [(a - s * 2.0, -4.6), (a + s * 3.0, -3.6), (a + s * 3.0, 3.6), (a - s * 2.0, 4.6)], BRONZE)
+        hole(c, [(a + s * 5.0, -1.4), (a + s * 11.0, -3.6), (a + s * 12.0, -1.8), (a + s * 6.0, 0.6)])
+    outline(c)
+    return c
+
+
+# ======================================================================= NAINS
+def dwarven_sword():
+    """epee naine : lame droite large a pointe en ciseau, garniture d'or geometrique"""
+    c = new()
+    shape(c, [(22.0, -3.6), (52.0, -3.6), (58.0, -1.0), (60.0, 1.4), (52.0, 3.6), (22.0, 3.6)],
+          STEEL, hi=0.18, lo=0.58)
+    line(c, (24, -2.2), (54, -2.2), STEEL[0])
+    line(c, (24, 2.2), (54, 2.2), SILVER_D[2])
+    line(c, (24, 0.0), (58, 0.0), SILVER_D[1])
+    shape(c, [(15.0, -4.2), (17.5, -9.4), (21.8, -6.0), (21.8, 6.0), (17.5, 9.4), (15.0, 4.2)], BRONZE)
+    line(c, (16.6, -7.6), (20.6, -5.2), BRASS[0])
+    line(c, (16.6, 7.6), (20.6, 5.2), BRONZE[2])
+    hole(c, [(18.0, -1.6), (19.6, 0.0), (18.0, 1.6), (16.6, 0.0)])
+    shape(c, blade_pts(4, 16, lambda u: 0, lambda u: 4.0), BRONZE)
+    for u in (6.5, 9.5, 12.5):
+        shape(c, [(u, -1.9), (u + 1.5, 0.0), (u, 1.9), (u - 1.5, 0.0)], BRASS)
+    shape(c, [(-1.0, -5.0), (1.5, -6.6), (4.5, -5.2), (4.5, 5.2), (1.5, 6.6), (-1.0, 5.0)], BRONZE)
+    line(c, (0.6, -5.4), (0.6, 5.4), BRASS[0])
+    shape(c, [(1.6, -2.2), (3.4, 0.0), (1.6, 2.2), (0.0, 0.0)], BRASS)
+    outline(c)
+    return c
+
+
+def dwarven_hammer():
+    """marteau de guerre nain : tete a deux tables gravees, long manche"""
+    c = new()
+    thick(c, [(u, 0.0) for u in [2 + i * 0.3 for i in range(134)]], WOOD, lambda t: 3.6)
+    for u in range(8, 36, 4):
+        line(c, (u, -2.4), (u + 1.0, 2.4), DARKLEATHER[1], out=DARKLEATHER[3])
+    shape(c, [(0.0, -4.4), (3.0, -3.6), (3.0, 3.6), (0.0, 4.4)], DARKSTEEL)
     for s in (-1, 1):
-        a = (base[0] + nx * s * 1.2, base[1] + ny * s * 1.2)
-        b = (base[0] + nx * s * 5.2 - ux * 1.0, base[1] + ny * s * 5.2 - uy * 1.0)
-        m = (base[0] + nx * s * 3.4 + ux * 1.8, base[1] + ny * s * 3.4 + uy * 1.8)
-        stroke(c, bez(a, m, b), metal, 1.6)
-    e = (base[0] - ux * length, base[1] - uy * length)
-    stroke(c, [(base[0] - ux * i * 0.4, base[1] - uy * i * 0.4) for i in range(int(length / 0.4))],
-           wood, 2.6)
-    stroke(c, bez((e[0] + ux * 1.2, e[1] + uy * 1.2), (e[0], e[1]), (e[0] - ux * 1.0, e[1] - uy * 1.0)), metal, 3.0)
-    if gem:
-        spot(c, (e[0] - ux * 0.4, e[1] - uy * 0.4), gem[0])
-    return e
-
-
-def dwa_hilt(c, base, ang, metal, grip, length=8.0):
-    """garde : gros bloc rectangulaire ; manche a trois anneaux ; pommeau large"""
-    ux, uy = math.cos(ang), math.sin(ang)
-    nx, ny = -uy, ux
-    a = (base[0] + nx * 4.6 + ux * 0.6, base[1] + ny * 4.6 + uy * 0.6)
-    b = (base[0] - nx * 4.6 + ux * 0.6, base[1] - ny * 4.6 + uy * 0.6)
-    poly(c, [(a[0] - ux * 2.2, a[1] - uy * 2.2), (a[0], a[1]), (b[0], b[1]),
-             (b[0] - ux * 2.2, b[1] - uy * 2.2)], metal)
-    e = (base[0] - ux * length, base[1] - uy * length)
-    stroke(c, [(base[0] - ux * (2 + i * 0.4), base[1] - uy * (2 + i * 0.4)) for i in range(int(length / 0.4))],
-           grip, 3.2)
-    for i in (2.8, 5.0, 7.0):
-        p0 = (base[0] - ux * i + nx * 2.0, base[1] - uy * i + ny * 2.0)
-        p1 = (base[0] - ux * i - nx * 2.0, base[1] - uy * i - ny * 2.0)
-        seg(c, p0, p1, metal[1], metal[3])
-    poly(c, [(e[0] + nx * 3.0, e[1] + ny * 3.0), (e[0] - nx * 3.0, e[1] - ny * 3.0),
-             (e[0] - nx * 2.2 - ux * 2.4, e[1] - ny * 2.2 - uy * 2.4),
-             (e[0] + nx * 2.2 - ux * 2.4, e[1] + ny * 2.2 - uy * 2.4)], metal)
-    return e
-
-
-def man_hilt(c, base, ang, metal, grip, length=9.0, cross=6.0, round_pommel=True):
-    """longue garde droite en croix, manche a lanieres croisees, pommeau rond"""
-    ux, uy = math.cos(ang), math.sin(ang)
-    nx, ny = -uy, ux
-    stroke(c, [(base[0] + nx * s * 0.4, base[1] + ny * s * 0.4) for s in range(-int(cross / 0.4), int(cross / 0.4))],
-           metal, 2.2)
-    e = (base[0] - ux * length, base[1] - uy * length)
-    stroke(c, [(base[0] - ux * (1.6 + i * 0.4), base[1] - uy * (1.6 + i * 0.4)) for i in range(int(length / 0.4))],
-           grip, 2.6)
-    for i in range(1, 5):                                  # lanieres
-        p = (base[0] - ux * (2.0 + i * 1.6), base[1] - uy * (2.0 + i * 1.6))
-        seg(c, (p[0] + nx * 1.4 - ux * 0.6, p[1] + ny * 1.4 - uy * 0.6),
-            (p[0] - nx * 1.4 + ux * 0.6, p[1] - ny * 1.4 + uy * 0.6), grip[2], grip[3])
-    if round_pommel:
-        poly(c, [(e[0] + nx * 2.4, e[1] + ny * 2.4), (e[0] - ux * 1.6 + nx * 1.7, e[1] - uy * 1.6 + ny * 1.7),
-                 (e[0] - ux * 2.4, e[1] - uy * 2.4), (e[0] - ux * 1.6 - nx * 1.7, e[1] - uy * 1.6 - ny * 1.7),
-                 (e[0] - nx * 2.4, e[1] - ny * 2.4)], metal)
-    return e
-
-
-def uru_hilt(c, base, ang, metal, grip, length=8.0):
-    """garde de travers avec un crochet, manche entoure de chiffons"""
-    ux, uy = math.cos(ang), math.sin(ang)
-    nx, ny = -uy, ux
-    a = (base[0] + nx * 4.4 - ux * 0.4, base[1] + ny * 4.4 - uy * 0.4)
-    b = (base[0] - nx * 2.6 + ux * 1.2, base[1] - ny * 2.6 + uy * 1.2)
-    stroke(c, bez(a, base, b), metal, 2.0)
-    stroke(c, bez(a, (a[0] + ux * 2.4, a[1] + uy * 2.4), (a[0] + nx * 1.0 + ux * 3.4, a[1] + ny * 1.0 + uy * 3.4)),
-           metal, 1.4)                                     # crochet
-    e = (base[0] - ux * length, base[1] - uy * length)
-    stroke(c, [(base[0] - ux * (1.4 + i * 0.4), base[1] - uy * (1.4 + i * 0.4)) for i in range(int(length / 0.4))],
-           grip, 2.8)
-    for i in range(0, 5):                                  # chiffons
-        p = (base[0] - ux * (2.4 + i * 1.5), base[1] - uy * (2.4 + i * 1.5))
-        seg(c, (p[0] + nx * 1.6, p[1] + ny * 1.6), (p[0] - nx * 1.6 - ux * 0.8, p[1] - ny * 1.6 - uy * 0.8),
-            grip[0] if i % 2 else grip[2], grip[3])
-    poly(c, [(e[0] + nx * 2.0, e[1] + ny * 2.0), (e[0] - nx * 2.0, e[1] - ny * 2.0),
-             (e[0] - nx * 1.4 - ux * 2.0, e[1] - ny * 1.4 - uy * 2.0),
-             (e[0] + nx * 1.4 - ux * 2.0, e[1] + ny * 1.4 - uy * 2.0)], metal)
-    return e
-
-
-# ---------------------------------------------------------------- epees
-def elven_sword(steel=ELF_STEEL, metal=ELF_GOLD, wood=ELF_WOOD, big=False, gem=None):
-    c = new()
-    base = (10.0, 21.0) if not big else (9.0, 22.0)
-    tip = (27.0, 4.0) if not big else (29.0, 2.0)
-    mid = ((base[0] + tip[0]) / 2 - 1.4, (base[1] + tip[1]) / 2 - 1.4)   # legere courbe
-    path = bez(base, mid, tip, 90)
-    taper(c, path, leaf(2.9 if not big else 3.3), steel)
-    ang = math.atan2(tip[1] - base[1], tip[0] - base[0])
-    elf_hilt(c, base, ang, metal, wood, length=9.5 if big else 8.4, gem=gem)
-    for i, t in enumerate((0.18, 0.28)):                                 # gravure
-        p = path[int(t * 90)]
-        spot(c, (p[0] + 0.4, p[1] + 0.4), metal[1])
+        shape(c, [(43.0, s * 4.6), (43.0, s * 13.0), (47.0, s * 14.6), (56.0, s * 13.6),
+                  (58.0, s * 9.6), (58.0, s * 6.0), (54.0, s * 4.6)], STEEL, hi=0.16, lo=0.60)
+        for u in (48.0, 52.0, 56.0):
+            line(c, (u, s * 6.6), (u, s * 12.0), DARKSTEEL[1])
+        line(c, (44.0, s * 12.6), (57.0, s * 11.6), STEEL[0])
+    shape(c, [(41.0, -5.2), (60.0, -5.2), (60.0, 5.2), (41.0, 5.2)], DARKSTEEL)
+    line(c, (43.0, -4.2), (58.0, -4.2), STEEL[1])
+    line(c, (43.0, 4.2), (58.0, 4.2), DARKSTEEL[2])
     outline(c)
     return c
 
 
-def dwarven_sword(steel=DWA_STEEL, metal=DWA_BRONZE, grip=DWA_GRIP):
+def dwarven_axe():
+    """hache naine a deux tranchants : fers en croissant, colonne gravee au milieu"""
     c = new()
-    base, tip = (10.0, 22.0), (24.0, 8.0)
-    path = bez(base, ((base[0] + tip[0]) / 2, (base[1] + tip[1]) / 2), tip, 70)
-    taper(c, path, wedge(4.0), steel)
-    ang = math.atan2(tip[1] - base[1], tip[0] - base[0])
-    dwa_hilt(c, base, ang, metal, grip, length=8.0)
-    for t in (0.35, 0.5, 0.65):                                          # runes
-        p = path[int(t * 70)]
-        spot(c, (p[0] - 0.6, p[1] - 0.6), metal[1])
+    thick(c, [(u, 0.0) for u in [2 + i * 0.3 for i in range(140)]], WOOD, lambda t: 3.2)
+    for u in range(6, 30, 3):
+        line(c, (u, -2.2), (u + 0.8, 2.2), DARKLEATHER[1], out=DARKLEATHER[3])
+    shape(c, [(0.0, -3.8), (2.5, -3.0), (2.5, 3.0), (0.0, 3.8)], BLACKIRON)
+    for s in (-1, 1):                                              # deux grands fers en demi-lune
+        arc = bez3((40.0, s * 6.0), (42.0, s * 21.0), (58.0, s * 22.0), (62.0, s * 6.0), 70)
+        fill(c, arc + [(62.0, s * 4.0), (40.0, s * 4.0)], BLACKIRON_L, hi=0.2, lo=0.6)
+        thick(c, arc[16:54], BLACKIRON_L, lambda t: 1.4)           # tranchant clair
+        hole(c, [(44.5, s * 7.0), (47.0, s * 13.0), (50.5, s * 7.5)])      # ajours
+        hole(c, [(52.5, s * 7.5), (56.0, s * 13.0), (58.5, s * 7.0)])
+    shape(c, [(41.0, -4.2), (59.0, -4.2), (59.0, 4.2), (41.0, 4.2)], BRONZE)       # colonne gravee
+    for u in (44.0, 49.0, 54.0):
+        line(c, (u, -3.4), (u, 3.4), BLACKIRON[1])
+    line(c, (42.0, -3.5), (58.0, -3.5), BRASS[0])
     outline(c)
     return c
 
 
-def man_sword(steel=MAN_STEEL, metal=MAN_DARK, grip=MAN_GRIP, great=False, gem=None):
+def dwarven_pick():
+    """pioche de combat : long bec droit, contre-bec court, collier d'or"""
     c = new()
-    base = (9.0, 22.0) if not great else (8.0, 23.0)
-    tip = (26.0, 5.0) if not great else (28.0, 3.0)
-    path = bez(base, ((base[0] + tip[0]) / 2, (base[1] + tip[1]) / 2), tip, 80)
-    taper(c, path, straight(2.6 if not great else 3.6), steel, fuller=0.72)
-    ang = math.atan2(tip[1] - base[1], tip[0] - base[0])
-    man_hilt(c, base, ang, metal, grip, length=8.0 if not great else 11.0, cross=5.4 if not great else 7.0)
-    if gem:
-        spot(c, (base[0] - 0.4, base[1] - 0.4), gem[0])
+    thick(c, [(u, 0.0) for u in [2 + i * 0.3 for i in range(127)]], PALEWOOD, lambda t: 3.0)
+    shape(c, [(0.0, -4.0), (3.5, -3.2), (3.5, 3.2), (0.0, 4.0)], DARKSTEEL)
+    for u in (9.0, 28.0):
+        shape(c, [(u, -3.6), (u + 2.2, -3.6), (u + 2.2, 3.6), (u, 3.6)], BRASS)
+    shape(c, [(36.0, -6.2), (45.0, -5.4), (45.0, 5.4), (36.0, 6.2)], BRASS)
+    line(c, (38.0, -5.0), (43.0, -4.4), BRASS[0])
+    fill(c, [(43.0, -4.6), (50.0, -20.0), (55.0, -17.0), (46.0, -1.0)], STEEL)               # long bec
+    fill(c, [(41.0, 3.6), (35.0, 11.0), (39.0, 13.5), (45.0, 4.6)], STEEL)                   # contre-bec
+    line(c, (44.5, -5.4), (51.5, -19.0), STEEL[0])
+    line(c, (41.5, 4.4), (36.5, 10.6), STEEL[0])
     outline(c)
     return c
 
 
-def uruk_scimitar(steel=URU_STEEL, metal=URU_RUST, grip=URU_GRIP):
+def dwarven_bow():
+    """arc nain (type Thorin) : bois epais, ferrures, poignee gravee"""
     c = new()
-    base, tip = (10.0, 22.0), (27.0, 7.0)
-    path = bez3(base, (17.0, 19.0), (25.0, 16.0), tip, 90)               # dos tres courbe
-    taper(c, path, hook(3.4), steel, serrate=lambda t: 0.55 < t < 0.95 and int(t * 26) % 2 == 0)
-    ang = math.atan2(-6, 8)
-    uru_hilt(c, base, ang, metal, grip, length=7.5)
+    up = bez3((57.0, 2.5), (49.0, -8.0), (41.0, -5.0), (33.0, -1.6), 80)
+    _bow(c, up, lambda t: 2.4 + 2.8 * t, WOOD, DARKWOOD, (25.0, 37.0, -1.4, lambda t: 6.2),
+         STRING + (2.8,))
+    for p in (up, [(62 - u, v) for (u, v) in up]):
+        for i in (28, 56):
+            u, v = p[i]
+            line(c, (u, v - 1.6), (u, v + 1.6), WOOD[0], O_VERT, VERT)
+    for u in (28.0, 33.0):
+        line(c, (u, -4.4), (u, 1.4), BRONZE[1], O_VERT, VERT, BRONZE[3])
+    for u in (24.0, 38.0):
+        line(c, (u, -4.6), (u, 1.8), DARKSTEEL[1], O_VERT, VERT, DARKSTEEL[3])
     outline(c)
     return c
 
 
-def dagger(race, steel, metal, third):
+# ======================================================================= HOMMES
+def man_sword():
+    """epee des hommes : lame droite a deux tranchants et gouttiere, longue garde en croix"""
     c = new()
-    if race == 'elf':
-        base, tip = (11.0, 20.0), (23.0, 8.0)
-        taper(c, bez(base, (16.0, 13.4), tip, 60), leaf(2.2), steel)
-        elf_hilt(c, base, math.atan2(-1, 1), metal, third, length=6.0)
-    else:
-        base, tip = (11.0, 21.0), (23.0, 9.0)
-        taper(c, bez(base, (17.0, 15.0), tip, 60), straight(1.9), steel, fuller=0.7)
-        man_hilt(c, base, math.atan2(-1, 1), metal, third, length=6.0, cross=3.4)
+    wf = lambda u: 5.2 if u < 48 else 5.2 * max(0.0, (60 - u) / 12) ** 0.8
+    shape(c, blade_pts(21, 60, lambda u: 0, wf, 100), STEEL, hi=0.22, lo=0.60)
+    shape(c, blade_pts(23, 52, lambda u: 0, lambda u: 1.5), SILVER_D, flat=True)
+    line(c, (23, -2.3), (54, -2.3), STEEL[0])
+    shape(c, [(18.5, -11.0), (20.8, -10.0), (20.8, 10.0), (18.5, 11.0)], DARKSTEEL)
+    shape(c, [(17.6, -3.4), (21.8, -3.0), (21.8, 3.0), (17.6, 3.4)], DARKSTEEL)
+    thick(c, [(u, 0.0) for u in [5 + i * 0.3 for i in range(42)]], LEATHER, lambda t: 3.4)
+    for u in range(7, 17, 2):
+        line(c, (u, -1.9), (u + 0.6, 1.9), LEATHER[2], out=LEATHER[3])
+    shape(c, [(0.5, -3.0), (2.5, -4.2), (4.6, -1.8), (4.6, 1.8), (2.5, 4.2), (0.5, 3.0)], DARKSTEEL)
     outline(c)
     return c
 
 
-# ---------------------------------------------------------------- hampes
-def elven_spear(steel=ELF_STEEL, metal=ELF_GOLD, wood=ELF_WOOD):
+def man_greatsword():
+    """grande epee : plus longue, plus large, poignee a deux mains"""
     c = new()
-    a, b = (3.0, 29.0), (22.0, 10.0)
-    stroke(c, [(a[0] + (b[0] - a[0]) * i / 60, a[1] + (b[1] - a[1]) * i / 60) for i in range(61)], wood, 2.4)
-    for i in (0.25, 0.5):                                                # anneaux d'or
-        p = (a[0] + (b[0] - a[0]) * i, a[1] + (b[1] - a[1]) * i)
-        seg(c, (p[0] - 1.4, p[1] - 1.4), (p[0] + 1.4, p[1] + 1.4), metal[1], metal[3])
-    taper(c, bez((21.0, 11.0), (25.0, 7.0), (29.0, 2.0), 50), leaf(2.4), steel)
-    stroke(c, bez((19.4, 12.6), (21.0, 11.0), (22.6, 9.4)), metal, 2.4)  # douille
+    wf = lambda u: 6.8 if u < 54 else 6.8 * max(0.0, (66 - u) / 12) ** 0.8
+    shape(c, blade_pts(26, 66, lambda u: 0, wf, 110), STEEL, hi=0.20, lo=0.58)
+    shape(c, blade_pts(28, 58, lambda u: 0, lambda u: 2.0), SILVER_D, flat=True)
+    line(c, (28, -3.0), (60, -3.0), STEEL[0])
+    shape(c, [(23.0, -14.0), (25.6, -12.6), (25.6, 12.6), (23.0, 14.0)], DARKSTEEL)
+    shape(c, [(22.0, -3.8), (26.4, -3.4), (26.4, 3.4), (22.0, 3.8)], DARKSTEEL)
+    thick(c, [(u, 0.0) for u in [4 + i * 0.3 for i in range(60)]], LEATHER, lambda t: 3.6)
+    for u in range(6, 22, 2):
+        line(c, (u, -2.0), (u + 0.6, 2.0), LEATHER[2], out=LEATHER[3])
+    shape(c, [(0.0, -3.4), (2.0, -4.6), (4.6, -2.0), (4.6, 2.0), (2.0, 4.6), (0.0, 3.4)], DARKSTEEL)
     outline(c)
     return c
 
 
-def man_spear(steel=MAN_STEEL, metal=MAN_DARK, wood=MAN_GRIP, royal=False):
+def man_spear():
+    """lance des hommes : fer en feuille a arete centrale, douille, hampe de frene"""
     c = new()
-    a, b = (3.0, 29.0), (21.0, 11.0)
-    stroke(c, [(a[0] + (b[0] - a[0]) * i / 60, a[1] + (b[1] - a[1]) * i / 60) for i in range(61)],
-           wood if not royal else DARKWOOD, 2.8)
-    taper(c, bez((20.0, 12.0), (24.0, 8.0), (29.0, 3.0), 50), straight(2.2), steel, fuller=0.75)
-    poly(c, [(19.0, 13.0), (22.6, 9.4), (24.0, 10.8), (20.4, 14.4)], metal)   # collet
-    for s in (1, -1):                                                         # ailerons
-        poly(c, [(21.0, 11.0), (21.0 + 3.0 * s, 11.0 + 3.0 * s),
-                 (22.4 + 2.2 * s, 9.6 + 2.2 * s), (22.4, 9.6)], steel)
-    if royal:
-        spot(c, (18.0, 14.0), GLOW_GOLD[0])
-        spot(c, (7.0, 25.0), GLOW_GOLD[1])
-        seg(c, (5.0, 27.0), (8.0, 24.0), GLOW_GOLD[1], GLOW_GOLD[3])
+    thick(c, [(u, 0.0) for u in [2 + i * 0.3 for i in range(143)]], PALEWOOD, lambda t: 2.8)
+    shape(c, [(0.0, -3.4), (2.5, -2.6), (2.5, 2.6), (0.0, 3.4)], DARKSTEEL)
+    shape(c, [(41.0, -4.2), (46.0, -3.2), (46.0, 3.2), (41.0, 4.2)], DARKSTEEL)
+    wf = lambda u: 6.0 * math.sin(math.pi * min(1.0, (u - 45) / 19.0)) ** 0.62
+    shape(c, blade_pts(45, 64, lambda u: 0, wf, 80), STEEL, hi=0.22, lo=0.60)
+    line(c, (46, 0.0), (62, 0.0), SILVER_D[1])
+    line(c, (47, -1.8), (60, -0.8), STEEL[0])
     outline(c)
     return c
 
 
-def uruk_spear(steel=URU_STEEL, metal=URU_RUST, grip=URU_GRIP):
+def man_dagger():
+    """dague des hommes : lame a deux tranchants, garde a boules de laiton, cuir enroule"""
     c = new()
-    path = bez3((3.0, 29.0), (9.0, 22.0), (15.0, 19.0), (21.0, 11.0), 70)     # hampe de travers
-    stroke(c, path, DARKWOOD, 2.6)
-    taper(c, bez((20.0, 12.0), (24.0, 9.0), (29.0, 3.0), 50), hook(2.2), steel,
-          serrate=lambda t: 0.3 < t < 0.9 and int(t * 18) % 2 == 0)
-    poly(c, [(19.6, 12.6), (22.0, 10.2), (23.2, 11.4), (20.8, 13.8)], metal)
-    for i in range(3):                                                        # chiffons
-        p = path[40 + i * 8]
-        seg(c, (p[0] + 1.6, p[1] + 1.0), (p[0] - 1.6, p[1] - 1.0), grip[0] if i % 2 else grip[2], grip[3])
-    poly(c, [(16.0, 16.0), (19.0, 15.0), (18.0, 17.6)], BONE)                 # os accroche
+    wf = lambda u: 4.2 * math.sin(math.pi * min(1.0, (u - 20) / 32.0)) ** 0.38
+    shape(c, blade_pts(20, 52, lambda u: 0, wf, 90), STEEL, hi=0.24, lo=0.62)
+    shape(c, blade_pts(22, 46, lambda u: 0, lambda u: 1.3), DARKSTEEL, flat=True)
+    line(c, (22, -1.7), (48, -0.9), STEEL[0])
+    for s in (-1, 1):
+        shape(c, [(16.6, s * 4.2), (19.4, s * 5.4), (18.8, s * 7.8), (16.0, s * 7.0)], BRASS)
+    shape(c, [(16.2, -5.0), (19.4, -4.2), (19.4, 4.2), (16.2, 5.0)], BRASS)
+    thick(c, [(u, 0.0) for u in [5 + i * 0.3 for i in range(37)]], LEATHER, lambda t: 3.4)
+    for u in range(6, 16, 2):
+        line(c, (u, -1.9), (u + 0.5, 1.9), LEATHER[2], out=LEATHER[3])
+    shape(c, [(1.2, -3.8), (4.6, -3.0), (4.6, 3.0), (1.2, 3.8)], BRASS)
     outline(c)
     return c
 
 
-# ---------------------------------------------------------------- haches, marteaux, masses
-def dwarven_axe(steel=DWA_STEEL, metal=DWA_BRONZE, grip=DWA_GRIP):
+def man_bow():
+    """arc des hommes : grand arc de bois clair, poignee de cuir"""
     c = new()
-    shaft = [(5.0, 28.0 - i * 0.58) for i in range(0, 1)]
-    path = [(5.0 + i * 0.36, 28.0 - i * 0.40) for i in range(45)]
-    stroke(c, path, grip, 3.0)
-    top = path[-1]
-    poly(c, [(top[0] - 0.5, top[1] + 1.0), (top[0] + 1.5, top[1] - 7.5), (top[0] + 9.0, top[1] - 5.0),
-             (top[0] + 8.0, top[1] + 3.0)], steel)                      # grande lame droite
-    poly(c, [(top[0] - 0.5, top[1] + 0.5), (top[0] - 1.5, top[1] - 6.5), (top[0] - 7.0, top[1] - 4.0),
-             (top[0] - 6.0, top[1] + 2.0)], steel)                      # lame gauche (double)
-    poly(c, [(top[0] - 2.4, top[1] - 1.2), (top[0] + 2.4, top[1] - 1.2),
-             (top[0] + 2.4, top[1] + 2.6), (top[0] - 2.4, top[1] + 2.6)], metal)
-    seg(c, (5.6, 26.0), (7.4, 26.0), metal[1], metal[3])
-    outline(c)
-    return c
-
-
-def dwarven_hammer(steel=DWA_STEEL, metal=DWA_BRONZE, grip=DWA_GRIP):
-    c = new()
-    path = [(6.0 + i * 0.34, 28.0 - i * 0.40) for i in range(42)]
-    stroke(c, path, grip, 3.2)
-    t = path[-1]
-    poly(c, [(t[0] - 7.5, t[1] - 3.0), (t[0] - 5.0, t[1] - 7.5), (t[0] + 6.5, t[1] - 4.0),
-             (t[0] + 4.5, t[1] + 1.5), (t[0] - 6.0, t[1] + 1.0)], steel)     # tete massive
-    poly(c, [(t[0] - 7.5, t[1] - 3.0), (t[0] - 6.0, t[1] + 1.0), (t[0] - 9.0, t[1] + 0.0),
-             (t[0] - 9.5, t[1] - 2.6)], metal)                               # panne bronze
-    seg(c, (t[0] - 3.4, t[1] - 4.6), (t[0] + 3.0, t[1] - 2.4), metal[1], metal[3])
-    seg(c, (t[0] - 3.0, t[1] - 2.8), (t[0] + 2.4, t[1] - 0.8), metal[2], metal[3])
-    seg(c, (7.0, 25.6), (9.2, 25.6), metal[1], metal[3])
-    outline(c)
-    return c
-
-
-def dwarven_pick(steel=DWA_STEEL, metal=DWA_BRONZE, grip=DWA_GRIP):
-    c = new()
-    path = [(6.0 + i * 0.34, 28.0 - i * 0.40) for i in range(42)]
-    stroke(c, path, grip, 3.0)
-    t = path[-1]
-    taper(c, bez((t[0] - 1.0, t[1] - 1.0), (t[0] + 5.0, t[1] - 5.0), (t[0] + 10.0, t[1] - 4.0), 50),
-          lambda u: 3.0 * (1 - u) + 0.4, steel)                              # bec long
-    poly(c, [(t[0] - 1.0, t[1] - 2.0), (t[0] - 7.0, t[1] - 5.0), (t[0] - 7.5, t[1] - 1.5),
-             (t[0] - 1.5, t[1] + 1.0)], steel)                               # contre-bec
-    poly(c, [(t[0] - 2.4, t[1] - 2.2), (t[0] + 2.0, t[1] - 2.8), (t[0] + 2.4, t[1] + 1.4),
-             (t[0] - 2.2, t[1] + 1.8)], metal)
-    seg(c, (7.0, 25.6), (9.2, 25.6), metal[1], metal[3])
-    outline(c)
-    return c
-
-
-def uruk_mace(steel=URU_STEEL, metal=URU_RUST, grip=URU_GRIP):
-    c = new()
-    path = bez3((4.0, 29.0), (9.0, 23.0), (13.0, 20.0), (17.0, 14.0), 60)
-    stroke(c, path, DARKWOOD, 3.0)
-    for i in range(3):
-        p = path[20 + i * 10]
-        seg(c, (p[0] + 1.8, p[1] + 1.0), (p[0] - 1.8, p[1] - 1.0), grip[1], grip[3])
-    cx, cy = 21.0, 10.0
-    for a in range(0, 360, 45):                                              # pointes
-        r = math.radians(a)
-        poly(c, [(cx + math.cos(r) * 7.4, cy + math.sin(r) * 7.4),
-                 (cx + math.cos(r + 0.5) * 3.6, cy + math.sin(r + 0.5) * 3.6),
-                 (cx + math.cos(r - 0.5) * 3.6, cy + math.sin(r - 0.5) * 3.6)], metal)
-    poly(c, [(cx + math.cos(math.radians(a)) * 4.6, cy + math.sin(math.radians(a)) * 4.6)
-             for a in range(0, 360, 30)], steel)                             # boule
-    spot(c, (cx - 2, cy - 2), steel[0])
-    outline(c)
-    return c
-
-
-def uruk_cleaver(steel=URU_STEEL, metal=URU_RUST, grip=URU_GRIP):
-    c = new()
-    poly(c, [(11.0, 20.0), (15.0, 6.0), (26.0, 8.0), (27.0, 14.0), (17.0, 23.0)], steel)
-    for y in range(8, 22, 3):                                                # tranchant ebreche
-        px(c, 26.0 - (y - 8) * 0.68, y, None)
-        px(c, 25.4 - (y - 8) * 0.68, y, steel[2], steel[3])
-    seg(c, (13.0, 16.0), (22.0, 10.0), steel[0], None)                       # reflet
-    poly(c, [(12.0, 22.0), (10.0, 19.0), (13.0, 17.0), (15.0, 20.0)], metal)
-    uru_hilt(c, (12.6, 20.6), math.atan2(-1, 1.1), metal, grip, length=7.0)
-    outline(c)
-    return c
-
-
-def uruk_machete(steel=URU_STEEL, metal=URU_RUST, grip=URU_GRIP):
-    c = new()
-    base, tip = (10.0, 22.0), (25.0, 7.0)
-    path = bez(base, (18.0, 14.0), tip, 70)
-    taper(c, path, lambda t: 1.4 + 2.2 * t if t < 0.8 else 3.2 * max(0.0, (1 - t) / 0.2), steel)
-    poly(c, [(22.0, 11.0), (27.0, 4.0), (28.0, 8.0), (24.0, 13.0)], steel)   # bec releve
-    for i in range(4):                                                       # dents de scie
-        p = path[20 + i * 9]
-        px(c, p[0] - 1.6, p[1] - 1.6, steel[0], steel[3])
-    uru_hilt(c, base, math.atan2(-1, 1), metal, grip, length=7.0)
-    outline(c)
-    return c
-
-
-# ---------------------------------------------------------------- arcs et arbaletes
-def elven_bow(wood=ELF_WOOD, metal=ELF_GOLD, string=ELF_STEEL, long=False, ornate=False):
-    c = new()
-    y0, y1 = (2.0, 29.0) if long else (4.0, 27.0)
-    belly = 7.0 if long else 9.0
-    top, bot = (22.0, y0), (22.0, y1)
-    mid = ((y0 + y1) / 2)
-    arc = bez3(top, (belly - 3.0, y0 + 5.0), (belly - 3.0, y1 - 5.0), bot, 90)   # double courbure
-    stroke(c, arc, wood, 2.6)
-    stroke(c, bez((22.0, y0), (26.0, y0 + 2.0), (24.0, y0 + 5.0)), metal, 2.0)   # pointes relevees
-    stroke(c, bez((22.0, y1), (26.0, y1 - 2.0), (24.0, y1 - 5.0)), metal, 2.0)
-    seg(c, (24.0, y0 + 4.0), (24.0, y1 - 4.0), string[0], None)
-    for i in range(int(y0) + 4, int(y1) - 3, 2):
-        px(c, 24, i, string[1], None)
-    stroke(c, [(belly - 3.0 + 0.0, mid - 3.0 + i * 0.5) for i in range(13)], metal, 2.8)   # poignee
-    if ornate:
-        for p in ((belly - 4.0, mid - 6.0), (belly - 4.0, mid + 6.0)):
-            spot(c, p, GLOW_GOLD[0])
-        spot(c, (belly - 2.0, mid), GLOW_BLUE[0])
-    outline(c)
-    return c
-
-
-def man_bow(wood=MAN_GRIP, string=MAN_STEEL):
-    c = new()
-    y0, y1 = 2.0, 29.0
-    arc = bez((21.0, y0), (7.0, 15.5), (21.0, y1), 90)            # grand arc simple en D
-    stroke(c, arc, wood, 3.0)
-    seg(c, (21.0, y0), (21.0, y1), string[0], None)
-    for i in range(int(y0), int(y1), 2):
-        px(c, 21, i, string[2], None)
-    stroke(c, [(7.6, 13.0 + i * 0.5) for i in range(11)], LEATHER, 3.4)   # poignee de cuir
-    for p in ((21.0, y0 + 1.0), (21.0, y1 - 1.0)):
-        spot(c, p, MAN_DARK[1])
-    outline(c)
-    return c
-
-
-def dwarven_bow(wood=DARKWOOD, metal=DWA_BRONZE, string=DWA_STEEL):
-    c = new()
-    y0, y1 = 6.0, 25.0
-    arc = bez3((20.0, y0), (10.0, y0 + 3.0), (10.0, y1 - 3.0), (20.0, y1), 80)   # court et trapu
-    stroke(c, arc, wood, 4.0)
-    for yy in (y0 + 2.0, y1 - 2.0):                                              # ferrures
-        stroke(c, [(15.0 + i * 0.4, yy + (1 if yy < 15 else -1) * i * 0.25) for i in range(10)], metal, 2.6)
-    stroke(c, [(10.2, 13.0 + i * 0.5) for i in range(12)], metal, 3.4)           # poignee de fer
-    seg(c, (20.0, y0), (20.0, y1), string[0], None)
-    for i in range(int(y0), int(y1), 2):
-        px(c, 20, i, string[2], None)
-    for p in ((20.0, y0), (20.0, y1)):
-        spot(c, p, metal[0])
-    outline(c)
-    return c
-
-
-def dragon_crossbow(stock=BONE, limb=URU_RUST, metal=EMBER):
-    c = new()
-    body = [(5.0 + i * 0.44, 27.0 - i * 0.44) for i in range(38)]
-    stroke(c, body, stock, 3.4)                                   # fut en os
-    t = body[-1]
-    arcs = bez3((t[0] - 7.0, t[1] - 8.0), (t[0] - 1.0, t[1] - 5.0), (t[0] + 3.0, t[1] - 1.0), (t[0] + 6.0, t[1] + 5.0), 70)
-    stroke(c, arcs, limb, 3.0)                                    # branches
-    seg(c, (t[0] - 7.0, t[1] - 8.0), (t[0] + 6.0, t[1] + 5.0), DWA_STEEL[0], None)   # corde
-    poly(c, [(t[0] - 3.0, t[1] - 1.0), (t[0] + 1.0, t[1] - 4.0), (t[0] + 3.0, t[1] - 1.0),
-             (t[0] - 1.0, t[1] + 2.0)], metal)                    # noix incandescente
-    poly(c, [(9.0, 23.0), (12.0, 20.0), (14.0, 22.0), (11.0, 25.0)], limb)          # detente
-    for p in ((t[0] - 5.0, t[1] - 6.0), (t[0] + 4.0, t[1] + 3.0), (12.0, 22.0)):
-        spot(c, p, metal[0])
-    outline(c)
-    return c
-
-
-# ---------------------------------------------------------------- uniques
-def goblin_staff(wood=BONE, gem=GREEN, bind=LEATHER):
-    c = new()
-    path = bez3((6.0, 30.0), (10.0, 22.0), (12.0, 16.0), (14.0, 9.0), 70)   # baton tordu
-    stroke(c, path, wood, 3.2)
-    claw = bez((14.0, 9.0), (21.0, 7.0), (19.0, 1.0), 50)                   # griffe
-    stroke(c, claw, wood, 2.2)
-    claw2 = bez((14.0, 9.0), (10.0, 4.0), (14.0, 1.0), 50)
-    stroke(c, claw2, wood, 2.0)
-    cx, cy = 16.0, 5.0
-    poly(c, [(cx + math.cos(math.radians(a)) * 3.2, cy + math.sin(math.radians(a)) * 3.2)
-             for a in range(0, 360, 45)], gem)
-    spot(c, (cx - 1, cy - 1), gem[0])
-    spot(c, (cx + 2, cy + 2), gem[2])
-    for i in range(3):
-        p = path[25 + i * 14]
-        seg(c, (p[0] + 2.0, p[1] + 0.8), (p[0] - 2.0, p[1] - 0.8), bind[1], bind[3])
-    poly(c, [(11.0, 19.0), (14.0, 18.0), (13.0, 21.0)], BONE)               # petit crane
-    outline(c)
-    return c
-
-
-def balrog_whip(cord=LEATHER, fire=EMBER):
-    c = new()
-    stroke(c, [(4.0 + i * 0.3, 29.0 - i * 0.3) for i in range(16)], DARKWOOD, 3.4)   # manche
-    loop1 = bez3((9.0, 24.0), (22.0, 24.0), (26.0, 14.0), (17.0, 11.0), 90)
-    loop2 = bez3((17.0, 11.0), (8.0, 8.0), (6.0, 18.0), (14.0, 19.0), 90)
-    tail = bez3((14.0, 19.0), (20.0, 20.0), (24.0, 6.0), (28.0, 2.0), 90)
-    for p, w in ((loop1, 2.6), (loop2, 2.2), (tail, 1.8)):
-        stroke(c, p, cord, w)
-    for i in range(0, 90, 9):                                                        # braises
-        for p, col in ((loop1, fire[1]), (loop2, fire[2]), (tail, fire[0])):
-            if (i // 9) % 2 == 0:
-                spot(c, p[i], col)
-    spot(c, (28.0, 2.0), fire[0])
-    spot(c, (27.0, 3.0), fire[1])
+    up = bez3((60.0, 1.5), (50.0, -8.0), (42.0, -5.0), (33.0, -1.4), 80)
+    _bow(c, up, lambda t: 1.8 + 2.2 * t, PALEWOOD, DARKLEATHER, (27.0, 35.0, -1.2, lambda t: 5.0),
+         DARKSTEEL + (2.2,))
+    wrap(c, 27.5, 34.5, DARKLEATHER, 2.4, 1.8, origin=O_VERT, ang=VERT)
     outline(c)
     return c
 
 
 # ---------------------------------------------------------------- la liste
 def models():
-    M = {}
-    M['elven_sword'] = ('Épée elfique', elven_sword())
-    M['elven_dagger'] = ('Dague elfique', dagger('elf', ELF_STEEL, ELF_GOLD, ELF_WOOD))
-    M['elven_bow'] = ('Arc elfique', elven_bow())
-    M['elven_longbow'] = ('Arc long elfique', elven_bow(long=True))
-    M['elven_spear'] = ('Lance elfique', elven_spear())
-
-    M['dwarven_sword'] = ('Épée naine', dwarven_sword())
-    M['dwarven_hammer'] = ('Marteau nain', dwarven_hammer())
-    M['dwarven_axe'] = ('Hache naine', dwarven_axe())
-    M['dwarven_war_pick'] = ('Pioche de combat', dwarven_pick())
-    M['dwarven_bow'] = ('Arc nain', dwarven_bow())
-
-    M['man_sword'] = ('Épée des hommes', man_sword())
-    M['man_spear'] = ('Lance des hommes', man_spear())
-    M['man_greatsword'] = ('Grande épée', man_sword(great=True))
-    M['man_bow'] = ('Arc des hommes', man_bow())
-    M['man_dagger'] = ('Dague des hommes', dagger('man', MAN_STEEL, MAN_DARK, MAN_GRIP))
-
-    M['uruk_scimitar'] = ('Cimeterre uruk', uruk_scimitar())
-    M['uruk_cleaver'] = ('Couperet uruk', uruk_cleaver())
-    M['uruk_machete'] = ('Machette uruk', uruk_machete())
-    M['uruk_spear'] = ('Lance uruk', uruk_spear())
-    M['uruk_mace'] = ('Masse uruk', uruk_mace())
-
-    M['gondor_guard_spear'] = ('Lance des gardes du Gondor', man_spear(steel=MAN_STEEL, metal=GLOW_GOLD, royal=True))
-    M['goblin_king_staff'] = ('Bâton du roi gobelin', goblin_staff())
-
-    M['elf_lord_sword'] = ('Épée du seigneur elfe', elven_sword(steel=GLOW_BLUE, big=True, gem=GLOW_BLUE))
-    M['ancient_elven_bow'] = ('Arc des anciens elfes', elven_bow(long=True, ornate=True, string=GLOW_BLUE))
-    M['gondor_king_sword'] = ('Épée du roi du Gondor', man_sword(metal=GLOW_GOLD, great=True, gem=GLOW_BLUE))
-    M['rohan_sword'] = ('Épée du Rohan', man_sword(steel=DWA_STEEL, metal=DWA_BRONZE, grip=DWA_GRIP))
-    M['dragon_crossbow'] = ('Arbalète du dragon', dragon_crossbow())
-    M['balrog_whip'] = ('Fouet du Balrog', balrog_whip())
-    return M
+    return {
+        'elven_sword': ('Épée elfique', elven_sword()),
+        'elven_dagger': ('Dague elfique', elven_dagger()),
+        'elven_bow': ('Arc elfique', elven_bow()),
+        'elven_longbow': ('Arc long elfique', elven_longbow()),
+        'elven_spear': ('Lance elfique', elven_spear()),
+        'dwarven_sword': ('Épée naine', dwarven_sword()),
+        'dwarven_hammer': ('Marteau nain', dwarven_hammer()),
+        'dwarven_axe': ('Hache naine', dwarven_axe()),
+        'dwarven_war_pick': ('Pioche de combat', dwarven_pick()),
+        'dwarven_bow': ('Arc nain', dwarven_bow()),
+        'man_sword': ('Épée des hommes', man_sword()),
+        'man_spear': ('Lance des hommes', man_spear()),
+        'man_greatsword': ('Grande épée', man_greatsword()),
+        'man_bow': ('Arc des hommes', man_bow()),
+        'man_dagger': ('Dague des hommes', man_dagger()),
+    }
 
 
 # ---------------------------------------------------------------- sortie
@@ -654,14 +567,13 @@ def preview(out='/tmp/armes2d'):
     os.makedirs(out, exist_ok=True)
     M = models()
     ids = list(M)
-    groups = [('ARMES ELFIQUES', ids[0:5]), ('ARMES NAINES', ids[5:10]), ('ARMES DES HOMMES', ids[10:15]),
-              ('ARMES URUK', ids[15:20]), ('ARMES UNIQUES', ids[20:22]), ('ARMES LEGENDAIRES', ids[22:])]
-    S, PAD, TOP, LBL = 128, 18, 36, 28
+    groups = [('ARMES ELFIQUES', ids[0:5]), ('ARMES NAINES', ids[5:10]), ('ARMES DES HOMMES', ids[10:15])]
+    S, PAD, TOP, LBL = 192, 20, 38, 30
     img = Image.new('RGB', (5 * (S + PAD) + PAD, len(groups) * (S + LBL + TOP) + PAD), (26, 26, 30))
     d = ImageDraw.Draw(img)
     try:
-        f = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 17)
-        fs = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 14)
+        f = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 19)
+        fs = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 15)
     except OSError:
         f = fs = ImageFont.load_default()
     for r, (title, keys) in enumerate(groups):
@@ -673,15 +585,14 @@ def preview(out='/tmp/armes2d'):
             x = PAD + i * (S + PAD)
             d.rectangle([x - 2, y + TOP - 2, x + S + 1, y + TOP + S + 1], fill=(0x34, 0x34, 0x3C))
             img.paste(im, (x, y + TOP), im)
-            d.text((x, y + TOP + S + 5), name, (0xDD, 0xDD, 0xDD), font=fs)
+            d.text((x, y + TOP + S + 6), name, (0xDD, 0xDD, 0xDD), font=fs)
     img.save(out + '/planche.png')
     for k, (name, c) in M.items():
-        to_image(c).resize((160, 160), Image.NEAREST).save(f'{out}/{k}.png')
+        to_image(c).resize((256, 256), Image.NEAREST).save(f'{out}/{k}.png')
     print('planche :', out + '/planche.png', '-', len(M), 'armes')
 
 
 def gen():
-    """ecrit les icones dans le mod (a n'appeler que quand on passe aux objets)"""
     A = 'src/main/resources/assets/ringsofash'
     for k, (name, c) in models().items():
         to_image(c).save(f'{A}/textures/item/{k}.png')
