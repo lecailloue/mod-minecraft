@@ -1249,6 +1249,19 @@ public final class ClientTest {
             }
             view(p, ow, SX + 0.2, SY + 1.1, SZ, 0F, 2F);
         }));
+        // vue du dessus : c'est la tranche de l'epee qu'on voit, elle doit rester fine
+        SCENES.add(new Scene("epee_dessus", 40, p -> {
+            ServerLevel ow = p.server.overworld();
+            clear(ow);
+            p.getInventory().clearContent();
+            actor(ow, ModEntities.HALFLING.get(), SX + 0.5, SZ + 2.5, m -> {
+                m.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Reg.ELVEN_SWORD.get()));
+                m.setYRot(0F);
+                m.setYBodyRot(0F);
+                m.setYHeadRot(0F);
+            });
+            view(p, ow, SX + 0.5, SY + 3.4, SZ + 1.2, 0F, 72F);
+        }));
         SCENES.add(new Scene("epee_face_main", 30, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
