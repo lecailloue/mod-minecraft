@@ -16,7 +16,7 @@
   "music": {
    "sound": "ringsofash:music.hautemarche",
    "min_delay": 0,
-   "max_delay": 0,
+   "max_delay": 20,
    "replace_current_music": true
   }
  },
