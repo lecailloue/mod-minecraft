@@ -117,11 +117,11 @@ public final class SylvanRender {
         float hit = Mth.sin(Mth.sqrt(swing) * Mth.PI);
         float bob = Mth.sin(age * 0.08F) * 0.015F;
         ps.pushPose();
-        ps.translate(side * 0.52F, -0.58F + bob + hit * 0.18F, -0.52F - hit * 0.35F);
-        ps.mulPose(Axis.XP.rotationDegrees(112.0F - hit * 40.0F));
+        ps.translate(side * 0.46F, -0.62F + bob + hit * 0.18F, -0.48F - hit * 0.35F);
+        ps.mulPose(Axis.XP.rotationDegrees(104.0F - hit * 40.0F));
         ps.mulPose(Axis.ZP.rotationDegrees(side * (8.0F + hit * 12.0F)));
         ps.mulPose(Axis.YP.rotationDegrees(side * 8.0F));
-        float s = 0.52F;
+        float s = 0.26F;
         ps.scale(-s, -s, s);
         arm.render(ps, vc, light, OverlayTexture.NO_OVERLAY);
         ps.popPose();

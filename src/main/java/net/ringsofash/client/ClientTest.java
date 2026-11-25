@@ -1252,14 +1252,15 @@ public final class ClientTest {
         SCENES.add(new Scene("syl_b_racines", 60, p -> {
             ServerLevel ow = p.server.overworld();
             clear(ow);
+            p.removeEffect(net.ringsofash.effect.ModEffects.SYLVAN_FORM);
             p.getInventory().clearContent();
             double x = SX - 3.0;
             for (EntityType<? extends Mob> t : List.of(EntityType.ZOMBIE, EntityType.SPIDER, ModEntities.ORC.get())) {
-                actor(ow, (EntityType) t, x, SZ + 7.0, m -> ((Mob) m).addEffect(
+                actor(ow, (EntityType) t, x, SZ + 5.0, m -> ((Mob) m).addEffect(
                         new net.minecraft.world.effect.MobEffectInstance(net.ringsofash.effect.ModEffects.ROOTED, 180, 0, false, false)));
                 x += 3.0;
             }
-            view(p, ow, SX + 0.5, SY + 1.2, SZ - 1.5, 0F, 6F);
+            view(p, ow, SX + 0.5, SY + 2.2, SZ - 1.0, 0F, 14F);
         }));
         for (int[] v : new int[][]{{0, 14, -6, 40}, {1, 8, -4, 40}, {2, 8, -4, 110}}) {
             final int close = v[0];
