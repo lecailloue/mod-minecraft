@@ -150,6 +150,18 @@ public final class SylvanRender {
         return attr != null && attr.getModifier(net.ringsofash.RingsOfAsh.id("rooted_speed")) != null;
     }
 
+    private static void dbgDraw(PoseStack ps, net.minecraft.client.renderer.MultiBufferSource.BufferSource buf,
+                                GeoModel<?> m, String tex, double x, double y, double z, float s, boolean solid) {
+        ps.pushPose();
+        ps.translate(x, y, z);
+        ps.scale(-1.0F, -1.0F, 1.0F);
+        ps.scale(s, s, s);
+        ps.translate(0.0F, -1.501F, 0.0F);
+        m.renderToBuffer(ps, buf.getBuffer(solid ? RenderType.entitySolid(Renderers.tex(tex)) : RenderType.entityCutoutNoCull(Renderers.tex(tex))),
+                0xF000F0, OverlayTexture.NO_OVERLAY, -1);
+        ps.popPose();
+    }
+
     private static void renderRoots(net.neoforged.neoforge.client.event.RenderLevelStageEvent e) {
         if (e.getStage() != net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_ENTITIES) return;
         Minecraft mc = Minecraft.getInstance();
@@ -186,18 +198,16 @@ public final class SylvanRender {
             ps.popPose();
             if (dbg2 < 4) { dbg2++; RingsOfAsh.LOGGER.info("[SYL] racines " + le.getType().getDescriptionId() + " s=" + s + " grow=" + grow + " pos=" + x + "," + y + "," + z + " cam=" + cam); }
         }
-        if (DBG_SHOW && mc.player != null) {                      // essai : une cage devant le joueur
-            if (m == null) { m = rootsModel(); m.root().getAllParts().forEach(ModelPart::resetPose); }
-            double px = Mth.lerp(pt, mc.player.xo, mc.player.getX()) - cam.x;
-            double py = Mth.lerp(pt, mc.player.yo, mc.player.getY()) - cam.y;
-            double pz = Mth.lerp(pt, mc.player.zo, mc.player.getZ()) - cam.z;
-            ps.pushPose();
-            ps.translate(px, py, pz - 3.0);
-            ps.scale(-1.0F, -1.0F, 1.0F);
-            ps.scale(0.6F, 0.6F, 0.6F);
-            ps.translate(0.0F, -1.501F, 0.0F);
-            m.renderToBuffer(ps, buf.getBuffer(RenderType.entityCutoutNoCull(Renderers.tex("racines"))), 0xF000F0, OverlayTexture.NO_OVERLAY, -1);
-            ps.popPose();
+        if (DBG_SHOW && mc.player != null) {                      // essais : trois cages devant le joueur
+            double px = mc.player.getX() - cam.x, py = mc.player.getY() - cam.y, pz = mc.player.getZ() - cam.z;
+            GeoModel<net.minecraft.world.entity.LivingEntity> rm = rootsModel();
+            rm.root().getAllParts().forEach(ModelPart::resetPose);
+            GeoModel<Player> tm = model();
+            tm.root().getAllParts().forEach(ModelPart::resetPose);
+            // A : le modele du Sylvestre (connu bon) ; B : racines en opaque ; C : racines, texture du Sylvestre
+            dbgDraw(ps, buf, tm, "treeman", px, py, pz + 4.0, 0.08F, false);
+            dbgDraw(ps, buf, rm, "racines", px, py, pz + 7.0, 0.6F, true);
+            dbgDraw(ps, buf, rm, "treeman", px, py, pz + 10.0, 0.6F, false);
         }
         buf.endBatch();
     }
