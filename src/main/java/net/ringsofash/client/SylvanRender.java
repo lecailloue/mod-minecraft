@@ -22,6 +22,7 @@ import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.ringsofash.RingsOfAsh;
 import net.ringsofash.data.Net;
 import net.ringsofash.entity.TreemanEntity;
 import net.ringsofash.gen.Reg;
@@ -33,6 +34,8 @@ public final class SylvanRender {
 
     private static GeoModel<Player> model;
     private static int dbgHand;
+    /** taille des bras-branches en vue subjective (essais) */
+    public static float ARM_SCALE = 0.20F;
 
     private static GeoModel<Player> model() {
         if (model == null) model = new GeoModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ClientSetup.layer("geo_treeman")), "treeman");
@@ -41,7 +44,7 @@ public final class SylvanRender {
 
     public static void init() {
         NeoForge.EVENT_BUS.addListener(SylvanRender::renderPlayer);
-        NeoForge.EVENT_BUS.addListener(SylvanRender::renderRooted);
+        NeoForge.EVENT_BUS.addListener(SylvanRender::renderRoots);
         NeoForge.EVENT_BUS.addListener(SylvanRender::renderHand);
         NeoForge.EVENT_BUS.addListener(SylvanRender::clickEmpty);
         NeoForge.EVENT_BUS.addListener(SylvanRender::clickItem);
@@ -121,7 +124,7 @@ public final class SylvanRender {
         ps.mulPose(Axis.XP.rotationDegrees(104.0F - hit * 40.0F));
         ps.mulPose(Axis.ZP.rotationDegrees(side * (8.0F + hit * 12.0F)));
         ps.mulPose(Axis.YP.rotationDegrees(side * 8.0F));
-        float s = 0.26F;
+        float s = ARM_SCALE;
         ps.scale(-s, -s, s);
         arm.render(ps, vc, light, OverlayTexture.NO_OVERLAY);
         ps.popPose();
@@ -139,32 +142,49 @@ public final class SylvanRender {
         return rootsModel;
     }
 
-    private static void renderRooted(net.neoforged.neoforge.client.event.RenderLivingEvent.Post<?, ?> e) {
-        net.minecraft.world.entity.LivingEntity le = e.getEntity();
-        if (le.isInvisible()) return;
+    /** vrai si la creature porte les racines (les effets des mobs ne sont pas envoyes au client :
+     *  on lit le modificateur d'attribut, lui, qui est synchronise) */
+    private static boolean rooted(net.minecraft.world.entity.LivingEntity le) {
         var attr = le.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
-        if (attr == null || attr.getModifier(net.ringsofash.RingsOfAsh.id("rooted_speed")) == null) {
-            ROOT_START.remove(le.getId());
-            return;
-        }
-        GeoModel<net.minecraft.world.entity.LivingEntity> m = rootsModel();
-        m.root().getAllParts().forEach(ModelPart::resetPose);
-        if (dbg < 3) { dbg++; net.ringsofash.RingsOfAsh.LOGGER.info("[SYL] racines sur " + le.getType().getDescriptionId() + " h=" + GeoDef.get("racines").height); }
-        float pt = e.getPartialTick();
-        long now = le.level().getGameTime();
-        long start = ROOT_START.computeIfAbsent(le.getId(), k -> now);
-        float grow = Mth.clamp((now - start + pt) / 5.0F, 0.18F, 1.0F);   // les racines sortent de terre
-        float blocks = Mth.clamp(le.getBbHeight() * 0.62F, 0.7F, 2.4F);
-        float s = blocks * 16.0F / GeoDef.get("racines").height * grow;
+        return attr != null && attr.getModifier(net.ringsofash.RingsOfAsh.id("rooted_speed")) != null;
+    }
+
+    private static void renderRoots(net.neoforged.neoforge.client.event.RenderLevelStageEvent e) {
+        if (e.getStage() != net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_ENTITIES) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+        float pt = e.getPartialTick().getGameTimeDeltaPartialTick(false);
+        net.minecraft.world.phys.Vec3 cam = e.getCamera().getPosition();
         PoseStack ps = e.getPoseStack();
-        ps.pushPose();
-        ps.mulPose(Axis.YP.rotationDegrees((le.getId() * 61) % 360));
-        ps.scale(-1.0F, -1.0F, 1.0F);
-        ps.scale(s, s, s);
-        ps.translate(0.0F, -1.501F, 0.0F);
-        VertexConsumer vc = e.getMultiBufferSource().getBuffer(RenderType.entityCutoutNoCull(Renderers.tex("racines")));
-        m.renderToBuffer(ps, vc, e.getPackedLight(), OverlayTexture.NO_OVERLAY, -1);
-        ps.popPose();
+        net.minecraft.client.renderer.MultiBufferSource.BufferSource buf = mc.renderBuffers().bufferSource();
+        GeoModel<net.minecraft.world.entity.LivingEntity> m = null;
+        long now = mc.level.getGameTime();
+        for (net.minecraft.world.entity.Entity ent : mc.level.entitiesForRendering()) {
+            if (!(ent instanceof net.minecraft.world.entity.LivingEntity le) || le.isInvisible()) continue;
+            if (!rooted(le)) { ROOT_START.remove(le.getId()); continue; }
+            if (m == null) {
+                m = rootsModel();
+                m.root().getAllParts().forEach(ModelPart::resetPose);
+            }
+            long start = ROOT_START.computeIfAbsent(le.getId(), k -> now);
+            float grow = Mth.clamp((now - start + pt) / 5.0F, 0.2F, 1.0F);
+            float blocks = Mth.clamp(le.getBbHeight() * 0.60F, 0.7F, 2.4F);
+            float s = blocks * 16.0F / GeoDef.get("racines").height;
+            double x = Mth.lerp(pt, le.xo, le.getX()) - cam.x;
+            double y = Mth.lerp(pt, le.yo, le.getY()) - cam.y;
+            double z = Mth.lerp(pt, le.zo, le.getZ()) - cam.z;
+            ps.pushPose();
+            ps.translate(x, y, z);
+            ps.mulPose(Axis.YP.rotationDegrees((le.getId() * 61) % 360));
+            ps.scale(-1.0F, -1.0F, 1.0F);
+            ps.scale(s, s * grow, s);
+            ps.translate(0.0F, -1.501F / grow, 0.0F);
+            m.renderToBuffer(ps, buf.getBuffer(RenderType.entityCutoutNoCull(Renderers.tex("racines"))),
+                    mc.getEntityRenderDispatcher().getPackedLightCoords(le, pt), OverlayTexture.NO_OVERLAY, -1);
+            ps.popPose();
+            if (dbg < 3) { dbg++; RingsOfAsh.LOGGER.info("[SYL] racines " + le.getType().getDescriptionId() + " s=" + s + " grow=" + grow + " pos=" + x + "," + y + "," + z); }
+        }
+        buf.endBatch();
     }
 
     // ---------- le Sylvgarde fige en arbre : tronc et feuillage
