@@ -139,7 +139,12 @@ public final class SylvanRender {
     private static int dbg, dbg2;
 
     private static GeoModel<net.minecraft.world.entity.LivingEntity> rootsModel() {
-        if (rootsModel == null) rootsModel = new GeoModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ClientSetup.layer("geo_racines")), "racines");
+        if (rootsModel == null) {
+            rootsModel = new GeoModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ClientSetup.layer("geo_racines")), "racines");
+            RingsOfAsh.LOGGER.info("[SYL] modele racines : pieces=" + rootsModel.root().getAllParts().count()
+                    + " body=" + (rootsModel.part("body") != null) + " rac0=" + (rootsModel.part("rac0") != null)
+                    + " toutes_vides=" + rootsModel.root().getAllParts().allMatch(ModelPart::isEmpty));
+        }
         return rootsModel;
     }
 
@@ -202,12 +207,6 @@ public final class SylvanRender {
             double px = mc.player.getX() - cam.x, py = mc.player.getY() - cam.y, pz = mc.player.getZ() - cam.z;
             GeoModel<net.minecraft.world.entity.LivingEntity> rm = rootsModel();
             rm.root().getAllParts().forEach(ModelPart::resetPose);
-            if (dbg < 2) {
-                dbg++;
-                RingsOfAsh.LOGGER.info("[SYL] modele racines : pieces=" + rm.root().getAllParts().count()
-                        + " body=" + (rm.part("body") != null) + " rac0=" + (rm.part("rac0") != null)
-                        + " vide=" + rm.root().getAllParts().allMatch(ModelPart::isEmpty));
-            }
             GeoModel<Player> tm = model();
             tm.root().getAllParts().forEach(ModelPart::resetPose);
             // A : le modele du Sylvestre (connu bon) ; B : racines en opaque ; C : racines, texture du Sylvestre
