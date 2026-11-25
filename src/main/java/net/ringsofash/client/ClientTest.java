@@ -1259,7 +1259,7 @@ public final class ClientTest {
                         new net.minecraft.world.effect.MobEffectInstance(net.ringsofash.effect.ModEffects.ROOTED, 180, 0, false, false)));
                 x += 3.0;
             }
-            view(p, ow, SX + 0.5, SY + 1.4, SZ, 0F, 2F);
+            view(p, ow, SX + 0.5, SY + 1.2, SZ - 1.5, 0F, 6F);
         }));
         for (int[] v : new int[][]{{0, 14, -6, 40}, {1, 8, -4, 40}, {2, 8, -4, 110}}) {
             final int close = v[0];
