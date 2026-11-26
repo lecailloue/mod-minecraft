@@ -199,6 +199,35 @@ def build():
                            'overrides': [{'predicate': {f'{MOD}:glow': 1}, 'model': f'{MOD}:item/elven_sword_glow'}]})
     imodel('elven_sword_glow', {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/elven_sword_glow'},
                                 'display': EPEE_DISPLAY})
+    # ---- les armes des trois peuples et des uruks (textures provisoires : tools/weapons2d.py)
+    ARMES = [
+        ('elven_dagger', 'Dague elfique', "ModGear.special(SpecialSword.Kind.ELVEN, ModGear.T_ELVEN, 1, -1.7F, 0, props())", 'swords'),
+        ('elven_bow', 'Arc elfique', "new MiscItems.ElvenBow(props().durability(640))", None),
+        ('elven_longbow', 'Arc long elfique', "new MiscItems.ElvenBow(props().durability(820))", None),
+        ('elven_spear', 'Lance elfique', "ModGear.special(SpecialSword.Kind.ELVEN, ModGear.T_ELVEN, 4, -2.9F, 1.0, props())", 'swords'),
+        ('dwarven_sword', 'Épée naine', "ModGear.sword(ModGear.T_DWARVEN, 4, -2.5F, props())", 'swords'),
+        ('dwarven_hammer', 'Marteau nain', "ModGear.sword(ModGear.T_DWARVEN, 6, -3.1F, props())", 'swords'),
+        ('dwarven_axe', 'Hache naine', "ModGear.axe(ModGear.T_DWARVEN, 6.0F, -3.0F, props())", 'axes'),
+        ('dwarven_war_pick', 'Pioche de combat', "ModGear.pickaxe(ModGear.T_DWARVEN, 4.0F, -2.9F, props())", 'pickaxes'),
+        ('dwarven_bow', 'Arc nain', "new BowItem(props().durability(560))", None),
+        ('man_sword', 'Épée des hommes', "ModGear.sword(ModGear.T_STEEL, 3, -2.4F, props())", 'swords'),
+        ('man_spear', 'Lance des hommes', "ModGear.special(SpecialSword.Kind.NONE, ModGear.T_STEEL, 4, -2.9F, 1.0, props())", 'swords'),
+        ('man_greatsword', 'Grande épée', "ModGear.sword(ModGear.T_STEEL, 5, -3.0F, props())", 'swords'),
+        ('man_bow', 'Arc des hommes', "new BowItem(props().durability(480))", None),
+        ('man_dagger', 'Dague des hommes', "ModGear.sword(ModGear.T_STEEL, 1, -1.6F, props())", 'swords'),
+        ('uruk_scimitar', 'Cimeterre uruk', "ModGear.sword(ModGear.T_ORC, 3, -2.3F, props())", 'swords'),
+        ('uruk_cleaver', 'Couperet uruk', "ModGear.sword(ModGear.T_ORC, 4, -2.8F, props())", 'swords'),
+        ('uruk_machete', 'Machette uruk', "ModGear.sword(ModGear.T_ORC, 2, -2.0F, props())", 'swords'),
+        ('uruk_spear', 'Lance uruk', "ModGear.special(SpecialSword.Kind.NONE, ModGear.T_ORC, 3, -2.9F, 1.0, props())", 'swords'),
+        ('uruk_mace', 'Masse uruk', "ModGear.sword(ModGear.T_ORC, 5, -3.1F, props())", 'swords'),
+    ]
+    for aid, afr, ajava, atag in ARMES:
+        item(aid, afr, java=ajava, tags=[atag] if atag else [])
+        if atag is None:
+            imodel(aid, {'parent': 'minecraft:item/bow', 'textures': {'layer0': f'{MOD}:item/{aid}'}})
+        else:
+            imodel(aid, {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/{aid}'},
+                         'display': EPEE_DISPLAY})
     # ---- le reste des armes, arcs et batons : a refaire (voir git : tools/gear.py avant le commit a689a5f4)
     # ---- armures
     armor_set('lunargent', 'de lunargent', 'LUNARGENT', 35, '#cfe6f2', '#8fb0c8', '#58b0e0')

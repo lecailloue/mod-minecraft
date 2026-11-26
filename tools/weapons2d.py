@@ -486,6 +486,94 @@ def man_bow():
                                wrap_n=4, string_col=DARKSTEEL)))
 
 
+# ======================================================================= URUK
+URU = ((0x8A, 0x90, 0x8E), (0x5C, 0x62, 0x62), (0x38, 0x3C, 0x3E), (0x1A, 0x1C, 0x1E))
+RUST = ((0xB0, 0x5E, 0x30), (0x80, 0x40, 0x20), (0x54, 0x28, 0x14), (0x2A, 0x12, 0x08))
+RAG = ((0x7E, 0x66, 0x46), (0x58, 0x46, 0x2E), (0x3A, 0x2C, 0x1C), (0x1C, 0x14, 0x0C))
+
+
+def uruk_scimitar():
+    """cimeterre uruk : lame courbe qui s'elargit vers la pointe, ebrechee"""
+    v = V(18, 50)
+    cf = lambda t: 5.0 + 4.0 * t ** 0.9
+    wf = lambda t: 1.0 + 2.6 * t
+    v.blade(0, 32, cf, wf, URU)
+    for r in range(4, 30, 4):                                    # dents sur le dos
+        t = r / 32
+        v.put(cf(t) - wf(t) - 1, r, URU[0], URU[3])
+    v.band(32, 35, 4.0, 13.0, RUST)                              # garde de travers
+    v.band(35, 37, 9.0, 15.0, RUST)
+    v.band(35, 45, 6.0, 10.0, RAG)
+    for r in (36, 39, 42):
+        v.hline(r, 6, 10, RAG[0], RAG[3])
+    v.band(45, 49, 5.0, 11.0, RUST)
+    return outline(tilt(v))
+
+
+def uruk_cleaver():
+    """couperet uruk : lame large et courte, tranchant ebreche"""
+    v = V(20, 40)
+    v.band(0, 4, lerp(10.0, 4.0), lerp(12.0, 16.0), URU)
+    v.band(4, 22, lerp(4.0, 6.0), lerp(16.0, 13.0), URU)
+    for r in range(5, 21, 3):
+        v.put(16 - (r - 5) * 0.18, r, None, None) if False else v.put(15 - (r - 5) * 0.18, r, URU[0], URU[3])
+    v.band(22, 25, 5.0, 11.0, RUST)
+    v.band(25, 35, 6.0, 10.0, RAG)
+    for r in (26, 29, 32):
+        v.hline(r, 6, 10, RAG[2], RAG[3])
+    v.band(35, 39, 5.0, 11.0, RUST)
+    return outline(tilt(v))
+
+
+def uruk_machete():
+    """machette uruk : lame droite a dos dente, bec releve"""
+    v = V(16, 44)
+    v.band(0, 5, lerp(9.0, 4.0), lerp(10.0, 11.0), URU)
+    v.band(5, 26, lerp(4.0, 5.5), lerp(11.0, 10.0), URU)
+    for r in range(7, 25, 3):
+        v.put(4.6, r, URU[0], URU[3])
+    v.band(26, 28, 4.5, 11.0, RUST)
+    v.band(28, 39, 6.0, 10.0, RAG)
+    for r in (29, 32, 35):
+        v.hline(r, 6, 10, RAG[0], RAG[3])
+    v.band(39, 43, 5.0, 11.0, RUST)
+    return outline(tilt(v))
+
+
+def uruk_spear():
+    """lance uruk : hampe tordue, fer barbele, chiffons"""
+    v = V(14, 58)
+    v.band(0, 5, lerp(7.0, 4.0), lerp(7.0, 10.0), URU)
+    v.band(5, 13, lerp(4.0, 5.0), lerp(10.0, 9.0), URU)
+    v.put(3, 6, URU[0], URU[3])
+    v.put(10, 8, URU[0], URU[3])
+    v.band(13, 16, 4.5, 9.5, RUST)
+    v.band(16, 54, 5.5, 8.5, DARKWOOD)
+    v.vline(5, 17, 54, DARKWOOD[0], DARKWOOD[3])
+    for r in (22, 30, 38, 46):
+        v.hline(r, 5, 9, RAG[0] if r % 16 else RAG[2], RAG[3])
+    v.band(54, 58, 4.0, 10.0, RUST)
+    return outline(tilt(v))
+
+
+def uruk_mace():
+    """masse uruk : boule herissee de pointes au bout d'un manche"""
+    v = V(24, 46)
+    v.band(2, 6, 8.0, 15.0, URU)                                 # pointes du haut
+    v.band(6, 18, 5.0, 18.0, URU)
+    v.band(18, 22, 8.0, 15.0, URU)
+    for r, a, b in ((3, 10, 13), (9, 2, 4), (9, 19, 21), (15, 2, 4), (15, 19, 21), (21, 10, 13)):
+        v.band(r, r + 2, a, b, URU)
+    v.hline(8, 7, 16, URU[0], URU[3])
+    v.band(22, 25, 10.0, 14.0, RUST)                             # collier
+    v.band(25, 42, 10.0, 13.0, DARKWOOD)                         # manche
+    v.vline(10, 26, 42, DARKWOOD[0], DARKWOOD[3])
+    for r in (28, 33, 38):
+        v.hline(r, 10, 13, RAG[1], RAG[3])
+    v.band(42, 46, 9.0, 14.0, RUST)
+    return outline(tilt(v))
+
+
 # ---------------------------------------------------------------- la liste
 def models():
     return {
@@ -504,6 +592,11 @@ def models():
         'man_greatsword': ('Grande épée', man_greatsword()),
         'man_bow': ('Arc des hommes', man_bow()),
         'man_dagger': ('Dague des hommes', man_dagger()),
+        'uruk_scimitar': ('Cimeterre uruk', uruk_scimitar()),
+        'uruk_cleaver': ('Couperet uruk', uruk_cleaver()),
+        'uruk_machete': ('Machette uruk', uruk_machete()),
+        'uruk_spear': ('Lance uruk', uruk_spear()),
+        'uruk_mace': ('Masse uruk', uruk_mace()),
     }
 
 
@@ -549,11 +642,18 @@ def preview(out='/tmp/armes2d'):
     print('planche :', out + '/planche.png', '-', len(M), 'armes')
 
 
+GARDEES = ('elven_sword',)        # textures fournies par le joueur : on n'y touche pas
+
+
 def gen():
     A = 'src/main/resources/assets/ringsofash'
+    n = 0
     for k, (name, c) in models().items():
+        if k in GARDEES:
+            continue
         to_image(c).save(f'{A}/textures/item/{k}.png')
-    print('icones :', len(models()))
+        n += 1
+    print('icones ecrites :', n)
 
 
 if __name__ == '__main__':

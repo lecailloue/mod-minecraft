@@ -87,6 +87,8 @@ public final class ModGear {
     }
 
     public static Item axe(Tier t, float dmg, float speed, Item.Properties p) { return new AxeItem(t, p.attributes(AxeItem.createAttributes(t, dmg, speed))); }
+    public static Item pickaxe(Tier t, float dmg, float speed, Item.Properties p) { return new PickaxeItem(t, p.attributes(PickaxeItem.createAttributes(t, dmg, speed))); }
+
     public static Item pickaxe(Tier t, Item.Properties p) { return new PickaxeItem(t, p.attributes(PickaxeItem.createAttributes(t, 1.0F, -2.8F))); }
 
     public static Item armor(Holder<ArmorMaterial> m, ArmorItem.Type type, int durability, Item.Properties p) {

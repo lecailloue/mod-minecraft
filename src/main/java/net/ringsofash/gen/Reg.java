@@ -601,6 +601,26 @@ public final class Reg {
     // ---- armes (on les remet une par une)
     public static final DeferredItem<Item> ELVEN_SWORD = ITEMS.register("elven_sword", () -> ModGear.special(SpecialSword.Kind.ELVEN, ModGear.T_ELVEN, 3, -2.2F, 0, props()));
 
+    public static final DeferredItem<Item> ELVEN_DAGGER = ITEMS.register("elven_dagger", () -> ModGear.special(SpecialSword.Kind.ELVEN, ModGear.T_ELVEN, 1, -1.7F, 0, props()));
+    public static final DeferredItem<Item> ELVEN_BOW = ITEMS.register("elven_bow", () -> new MiscItems.ElvenBow(props().durability(640)));
+    public static final DeferredItem<Item> ELVEN_LONGBOW = ITEMS.register("elven_longbow", () -> new MiscItems.ElvenBow(props().durability(820)));
+    public static final DeferredItem<Item> ELVEN_SPEAR = ITEMS.register("elven_spear", () -> ModGear.special(SpecialSword.Kind.ELVEN, ModGear.T_ELVEN, 4, -2.9F, 1.0, props()));
+    public static final DeferredItem<Item> DWARVEN_SWORD = ITEMS.register("dwarven_sword", () -> ModGear.sword(ModGear.T_DWARVEN, 4, -2.5F, props()));
+    public static final DeferredItem<Item> DWARVEN_HAMMER = ITEMS.register("dwarven_hammer", () -> ModGear.sword(ModGear.T_DWARVEN, 6, -3.1F, props()));
+    public static final DeferredItem<Item> DWARVEN_AXE = ITEMS.register("dwarven_axe", () -> ModGear.axe(ModGear.T_DWARVEN, 6.0F, -3.0F, props()));
+    public static final DeferredItem<Item> DWARVEN_WAR_PICK = ITEMS.register("dwarven_war_pick", () -> ModGear.pickaxe(ModGear.T_DWARVEN, 4.0F, -2.9F, props()));
+    public static final DeferredItem<Item> DWARVEN_BOW = ITEMS.register("dwarven_bow", () -> new BowItem(props().durability(560)));
+    public static final DeferredItem<Item> MAN_SWORD = ITEMS.register("man_sword", () -> ModGear.sword(ModGear.T_STEEL, 3, -2.4F, props()));
+    public static final DeferredItem<Item> MAN_SPEAR = ITEMS.register("man_spear", () -> ModGear.special(SpecialSword.Kind.NONE, ModGear.T_STEEL, 4, -2.9F, 1.0, props()));
+    public static final DeferredItem<Item> MAN_GREATSWORD = ITEMS.register("man_greatsword", () -> ModGear.sword(ModGear.T_STEEL, 5, -3.0F, props()));
+    public static final DeferredItem<Item> MAN_BOW = ITEMS.register("man_bow", () -> new BowItem(props().durability(480)));
+    public static final DeferredItem<Item> MAN_DAGGER = ITEMS.register("man_dagger", () -> ModGear.sword(ModGear.T_STEEL, 1, -1.6F, props()));
+    public static final DeferredItem<Item> URUK_SCIMITAR = ITEMS.register("uruk_scimitar", () -> ModGear.sword(ModGear.T_ORC, 3, -2.3F, props()));
+    public static final DeferredItem<Item> URUK_CLEAVER = ITEMS.register("uruk_cleaver", () -> ModGear.sword(ModGear.T_ORC, 4, -2.8F, props()));
+    public static final DeferredItem<Item> URUK_MACHETE = ITEMS.register("uruk_machete", () -> ModGear.sword(ModGear.T_ORC, 2, -2.0F, props()));
+    public static final DeferredItem<Item> URUK_SPEAR = ITEMS.register("uruk_spear", () -> ModGear.special(SpecialSword.Kind.NONE, ModGear.T_ORC, 3, -2.9F, 1.0, props()));
+    public static final DeferredItem<Item> URUK_MACE = ITEMS.register("uruk_mace", () -> ModGear.sword(ModGear.T_ORC, 5, -3.1F, props()));
+
     public static final DeferredItem<Item> CROW_SPAWN_EGG = ITEMS.register("crow_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.CROW, 0x1a181e, 0x3c3832, props()));
     public static final DeferredItem<Item> DEER_SPAWN_EGG = ITEMS.register("deer_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.DEER, 0x8a6442, 0x3a2a1e, props()));
     public static final DeferredItem<Item> ROE_DEER_SPAWN_EGG = ITEMS.register("roe_deer_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.ROE_DEER, 0xa8794c, 0xefe4d2, props()));
