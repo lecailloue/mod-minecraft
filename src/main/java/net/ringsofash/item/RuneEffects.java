@@ -30,6 +30,43 @@ public final class RuneEffects {
     public static void init(IEventBus bus) {
         bus.addListener(RuneEffects::attributes);
         bus.addListener(RuneEffects::onHit);
+        bus.addListener(RuneEffects::onDraw);
+        bus.addListener(RuneEffects::onArrow);
+    }
+
+    // ------------------------------------------------------------------ arcs
+
+    /**
+     * Sur un arc, la rune de vitesse raccourcit le bandage : la charge compte comme si
+     * on avait tire un peu plus longtemps.
+     */
+    private static void onDraw(net.neoforged.neoforge.event.entity.player.ArrowLooseEvent e) {
+        ItemStack bow = e.getBow();
+        if (!Runes.runic(bow) || Rune.on(bow).isEmpty()) return;
+        float speed = Rune.totals(bow).speed();
+        if (speed != 0) e.setCharge(Math.max(0, Math.round(e.getCharge() * (1F + speed / 100F))));
+    }
+
+    /**
+     * La fleche part plus fort avec une rune de portee (la portee varie comme le carre
+     * de la vitesse, d'ou la racine), et s'enflamme avec une rune de feu.
+     */
+    private static void onArrow(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent e) {
+        if (e.getLevel().isClientSide) return;
+        if (!(e.getEntity() instanceof net.minecraft.world.entity.projectile.AbstractArrow arrow)) return;
+        if (!(arrow.getOwner() instanceof LivingEntity owner)) return;
+        ItemStack bow = owner.getMainHandItem();
+        if (!Runes.runic(bow) || Rune.grip(bow) != Rune.Grip.BOW) return;
+        List<Rune> runes = Rune.on(bow);
+        if (runes.isEmpty()) return;
+
+        float reach = Rune.totals(bow).reach();
+        if (reach != 0) {
+            // +2 blocs par point d'allonge sur une portee a plat d'environ 55 blocs
+            double k = Math.sqrt(Math.max(0.1, 1.0 + 2.0 * reach / 55.0));
+            arrow.setDeltaMovement(arrow.getDeltaMovement().scale(k));
+        }
+        if (runes.contains(Rune.FIRE)) arrow.igniteForSeconds(100);
     }
 
     // ------------------------------------------------------------------ chiffres
@@ -66,9 +103,13 @@ public final class RuneEffects {
     private static void onHit(LivingIncomingDamageEvent e) {
         DamageSource src = e.getSource();
         if (!(src.getEntity() instanceof LivingEntity attacker)) return;
-        if (src.getDirectEntity() != attacker) return;              // pas les fleches ni la magie
+        // un coup de main, ou une fleche de l'arc encore tenu : la magie et le reste ne comptent pas
+        boolean melee = src.getDirectEntity() == attacker;
+        boolean shot = src.getDirectEntity() instanceof net.minecraft.world.entity.projectile.AbstractArrow a && a.getOwner() == attacker;
+        if (!melee && !shot) return;
         ItemStack w = attacker.getMainHandItem();
         if (!Runes.runic(w)) return;
+        if (shot && Rune.grip(w) != Rune.Grip.BOW) return;
         List<Rune> runes = Rune.on(w);
         if (runes.isEmpty()) return;
 
@@ -76,7 +117,7 @@ public final class RuneEffects {
         List<Rune.Combo> combos = Rune.combos(w);
         var rnd = attacker.getRandom();
 
-        if (runes.contains(Rune.FIRE)) {
+        if (runes.contains(Rune.FIRE) && melee) {               // la fleche brule deja d'elle-meme
             target.igniteForSeconds(combos.contains(Rune.Combo.FOURNAISE) ? 8 : 4);
             // combo Flamme d'Udun : tout ce qui entoure la cible prend feu aussi
             if (combos.contains(Rune.Combo.UDUN)) {

@@ -163,9 +163,11 @@ public enum Rune {
     }
 
     /** emplacements deja occupes */
-    public static int used(ItemStack weapon) {
+    public static int used(ItemStack weapon) { return used(on(weapon)); }
+
+    public static int used(List<Rune> runes) {
         int n = 0;
-        for (Rune r : on(weapon)) n += r.cost();
+        for (Rune r : runes) n += r.cost();
         return n;
     }
 

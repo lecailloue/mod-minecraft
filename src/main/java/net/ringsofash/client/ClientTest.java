@@ -1668,7 +1668,7 @@ public final class ClientTest {
     /** une arme deja sertie, pour voir l'infobulle et la table sans rien faire a la main */
     private static net.minecraft.world.item.ItemStack armeRunique() {
         net.minecraft.world.item.ItemStack w = new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.ELVEN_SWORD.get());
-        net.ringsofash.item.Runes.setTier(w, 4);                       // legendaire : 4 emplacements
+        net.ringsofash.item.Runes.setTier(w, 5);                       // ultime : 5 emplacements, un restera libre
         net.ringsofash.item.Rune.socket(w, net.ringsofash.item.Rune.DAMAGE_2);
         net.ringsofash.item.Rune.socket(w, net.ringsofash.item.Rune.FIRE);
         net.ringsofash.item.Rune.socket(w, net.ringsofash.item.Rune.SPEED_1);

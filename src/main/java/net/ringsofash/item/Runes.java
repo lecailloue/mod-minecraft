@@ -78,17 +78,8 @@ public final class Runes {
         List<Component> add = new java.util.ArrayList<>();
         add.add(Component.literal(NAMES[t]).withStyle(COLORS[t]));
 
-        int slots = Rune.slots(s);
+        // les cases elles-memes sont dessinees cote client (voir RuneSlotsTooltip)
         List<Rune> runes = Rune.on(s);
-        if (slots > 0 || !runes.isEmpty()) {
-            MutableComponent boxes = Component.literal("Emplacements ").withStyle(ChatFormatting.DARK_GRAY);
-            for (Rune r : runes) {
-                for (int i = 0; i < r.cost(); i++) boxes.append(Component.literal("◆").withStyle(r.color()));
-            }
-            for (int i = Rune.used(s); i < slots; i++) boxes.append(Component.literal("◇").withStyle(ChatFormatting.DARK_GRAY));
-            add.add(boxes);
-        }
-
         for (Rune r : runes) {
             MutableComponent line = Component.literal(" ").append(Component.literal(r.label()).withStyle(r.color()));
             String d = effects(r, s);

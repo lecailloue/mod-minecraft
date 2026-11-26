@@ -58,6 +58,8 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::itemColors);
         modBus.addListener(ClientSetup::setup);
         modBus.addListener(ClientSetup::itemExtensions);
+        modBus.addListener(ClientSetup::tooltipFactories);
+        NeoForge.EVENT_BUS.addListener(ClientSetup::runeSlotsTooltip);
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent e) -> e.registerSpriteSet(net.ringsofash.fluid.ModFluids.ICHOR_SMOKE.get(), IchorSmokeParticle.Provider::new));
         NeoForge.EVENT_BUS.addListener(ClientSetup::tick);
         if (System.getProperty("roa.clienttest") != null) ClientTest.init();
@@ -69,6 +71,22 @@ public final class ClientSetup {
 
     private static void itemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item e) {
         e.register((stack, idx) -> 0xFF000000 | DwarvenTint.item(), net.ringsofash.gen.Tinted.items());
+    }
+
+    private static void tooltipFactories(net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent e) {
+        e.register(net.ringsofash.item.RuneSlots.class, RuneSlotsTooltip::new);
+    }
+
+    /** glisse les cases d'emplacements dans l'infobulle, juste sous la rarete */
+    private static void runeSlotsTooltip(net.neoforged.neoforge.client.event.RenderTooltipEvent.GatherComponents e) {
+        net.minecraft.world.item.ItemStack s = e.getItemStack();
+        if (!net.ringsofash.item.Runes.runic(s)) return;
+        java.util.List<net.ringsofash.item.Rune> runes = net.ringsofash.item.Rune.on(s);
+        int slots = net.ringsofash.item.Rune.slots(s);
+        if (slots <= 0 && runes.isEmpty()) return;
+        var list = e.getTooltipElements();
+        int at = Math.min(list.size(), 2);                 // apres le nom et la rarete
+        list.add(at, com.mojang.datafixers.util.Either.right(new net.ringsofash.item.RuneSlots(runes, slots)));
     }
 
     private static void screens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent e) {
