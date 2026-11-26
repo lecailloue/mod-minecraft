@@ -72,6 +72,16 @@ public class MapScreen extends Screen {
     /** Les reperes du joueur (pour la boussole du haut de l'ecran). */
     public static List<Marker> markers() { loadMarkers(); return MARKERS; }
 
+    /** le joueur tient une arme a rune des Hobbits et porte le guide : la carte s'ouvre en entier */
+    static boolean memory() {
+        var p = Minecraft.getInstance().player;
+        if (p == null) return false;
+        var w = p.getMainHandItem();
+        if (!net.ringsofash.item.Runes.runic(w) || !net.ringsofash.item.Rune.on(w).contains(net.ringsofash.item.Rune.HOBBIT)) return false;
+        for (var s : p.getInventory().items) if (net.ringsofash.data.Guide.isGuide(s)) return true;
+        return false;
+    }
+
     /** Vrai si le joueur est en Hautemarche (la carte et les reperes n'ont de sens que la). */
     public static boolean inLands() {
         Minecraft mc = Minecraft.getInstance();
@@ -358,6 +368,17 @@ public class MapScreen extends Screen {
             boolean h = e == hover;
             g.fill(px - (h ? 2 : 1), py - (h ? 2 : 1), px + (h ? 3 : 2), py + (h ? 3 : 2), h ? 0xFFFFFFFF : 0xFFFFD070);
             g.drawString(this.font, pretty(e.getKey()), px + 4, py - 4, h ? 0xFFFFFFFF : 0xFFF0E0B0, true);
+        }
+        // Memoire des Hobbits : tous les lieux du monde apparaissent, nommes
+        if (memory()) {
+            for (var en : MapData.places().entrySet()) {
+                int[] pos = en.getValue();
+                if (pos == null || pos.length < 2) continue;
+                int px = (int) toScreenX(pos[0]), py = (int) toScreenY(pos[1]);
+                if (px < x0 - 8 || px > x0 + size + 8 || py < y0 - 8 || py > y0 + size + 16) continue;
+                Ui.icon(g, Ui.I_PIN, px, py - 4, 0xFF6ADC8A);
+                g.drawString(this.font, en.getKey().replace('_', ' '), px + 6, py - 9, 0xFFB8F0C8, true);
+            }
         }
         for (Marker m : MARKERS) {
             int px = (int) toScreenX(m.x), py = (int) toScreenY(m.z);

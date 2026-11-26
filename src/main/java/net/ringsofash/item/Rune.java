@@ -35,13 +35,22 @@ public enum Rune {
     FIRE    ("rune_fire",       Family.ELEMENT,  1,    0F,      0F,      0F,    100F,     0,          0),
     WIND    ("rune_wind",       Family.ELEMENT,  1,   -5.0F,    0F,      0F,      0F,     0,          0),
     POISON  ("rune_poison",     Family.ELEMENT,  1,   -5.0F,    0F,      0F,      0F,     0,          0),
+    ICE     ("rune_ice",        Family.ELEMENT,  1,   -5.0F,    0F,      0F,      0F,     0,          0),
+    ELVEN   ("rune_elven",      Family.PEUPLES,  2,    0F,      0F,      0F,      0F,     0,          0),
+    HOBBIT  ("rune_hobbit",     Family.PEUPLES,  2,    0F,      0F,      0F,      0F,     0,          0),
+    FOREST  ("rune_forest",     Family.PEUPLES,  2,    0F,      0F,      0F,      0F,     0,          0),
+    MAGIC   ("rune_magic",      Family.MAGIE,    1,    0F,      0F,      0F,      0F,     0,          0),
     BLACK   ("rune_black",      Family.NOIRE,    1,   25.0F,    0F,      0F,      0F,     2,          1);
 
     /** une seule rune par famille sur une arme */
     public enum Family {
-        DEGATS("Dégâts"), TEMPO("Tempo"), ALLONGE("Allonge"), ELEMENT("Élément"), CORPS("Corps"), NOIRE("Ténèbres");
+        DEGATS("Dégâts"), TEMPO("Tempo"), ALLONGE("Allonge"), ELEMENT("Élément"),
+        CORPS("Corps"), PEUPLES("Peuples"), MAGIE("Magie"), NOIRE("Ténèbres");
         public final String label;
         Family(String l) { this.label = l; }
+
+        /** seules ces familles ont trois niveaux, donc seules elles se fusionnent */
+        public boolean graded() { return this == DEGATS || this == TEMPO || this == ALLONGE || this == CORPS; }
     }
 
     /** familles d'armes, pour les affinites */
@@ -69,10 +78,11 @@ public enum Rune {
             case ALLONGE -> "Portée";
             case CORPS -> "Solidité";
             case NOIRE -> "Rune noire";
-            case ELEMENT -> this == FIRE ? "Feu" : (this == WIND ? "Vent" : "Poison");
+            case MAGIE -> "Magie";
+            case PEUPLES -> this == ELVEN ? "Elfique" : (this == HOBBIT ? "Hobbit" : "Forêt");
+            case ELEMENT -> this == FIRE ? "Feu" : (this == WIND ? "Vent" : (this == POISON ? "Poison" : "Glace"));
         };
-        if (family == Family.ELEMENT || family == Family.NOIRE) return n;
-        return n + " " + new String[]{"I", "II", "III"}[level - 1];
+        return family.graded() ? n + " " + new String[]{"I", "II", "III"}[level - 1] : n;
     }
 
     public ChatFormatting color() {
@@ -80,8 +90,10 @@ public enum Rune {
             case DEGATS -> ChatFormatting.RED;
             case TEMPO -> ChatFormatting.YELLOW;
             case ALLONGE -> ChatFormatting.GREEN;
-            case ELEMENT -> ChatFormatting.GOLD;
+            case ELEMENT -> this == ICE ? ChatFormatting.BLUE : ChatFormatting.GOLD;
             case CORPS -> ChatFormatting.AQUA;
+            case PEUPLES -> ChatFormatting.DARK_GREEN;
+            case MAGIE -> ChatFormatting.LIGHT_PURPLE;
             case NOIRE -> ChatFormatting.DARK_PURPLE;
         };
     }
@@ -109,12 +121,9 @@ public enum Rune {
 
     /** la rune du niveau suivant dans la meme famille, pour la fusion ; null au niveau 3 */
     public Rune next() {
-        for (Rune r : values()) if (r.family == family && r.level == level + 1 && sameLine(r)) return r;
+        if (!family.graded()) return null;
+        for (Rune r : values()) if (r.family == family && r.level == level + 1) return r;
         return null;
-    }
-
-    private boolean sameLine(Rune other) {
-        return family != Family.ELEMENT || this == other;
     }
 
     // ------------------------------------------------------------------ affinites
@@ -224,16 +233,22 @@ public enum Rune {
      * Deux runes de familles differentes ouvrent un bonus cache. Chaque exigence est soit
      * une rune precise (FIRE), soit une famille avec un niveau minimum (DEGATS au moins II).
      */
-    public record Need(Rune exact, Family family, int min) {
-        static Need rune(Rune r) { return new Need(r, null, 0); }
-        static Need fam(Family f, int min) { return new Need(null, f, min); }
+    public record Need(Rune exact, Family family, int min, String other) {
+        static Need rune(Rune r) { return new Need(r, null, 0, null); }
+        static Need fam(Family f, int min) { return new Need(null, f, min, null); }
+        /** une condition qui ne tient pas a une rune : elle est verifiee au moment de l'effet */
+        static Need cond(String label) { return new Need(null, null, 0, label); }
         boolean met(List<Rune> runes) {
+            if (other != null) return true;
             for (Rune r : runes) {
                 if (exact != null ? r == exact : (r.family == family && r.level >= min)) return true;
             }
             return false;
         }
-        String label() { return exact != null ? exact.label() : family.label + " " + new String[]{"I", "II", "III"}[min - 1]; }
+        String label() {
+            if (other != null) return other;
+            return exact != null ? exact.label() : family.label + " " + new String[]{"I", "II", "III"}[min - 1];
+        }
     }
 
     public enum Combo {
@@ -241,7 +256,12 @@ public enum Rune {
         BOURRASQUE("Bourrasque", Need.rune(WIND), Need.fam(Family.ALLONGE, 2), "La projection passe de 5 % à 15 %."),
         VENIN("Venin vif", Need.rune(POISON), Need.fam(Family.TEMPO, 2), "Le poison dure 4 secondes au lieu de 2."),
         MUR("Mur", Need.fam(Family.CORPS, 2), Need.fam(Family.DEGATS, 2), "Les coups reçus ne te font plus reculer."),
-        UDUN("Flamme d'Udûn", Need.rune(BLACK), Need.rune(FIRE), "Les coups embrasent tout dans 3 blocs.");
+        UDUN("Flamme d'Udûn", Need.rune(BLACK), Need.rune(FIRE), "Clic droit : le prochain coup embrase une zone de 3 blocs sur 4."),
+        ELROND("Pouvoir d'Elrond", Need.rune(ELVEN), Need.rune(WIND), "Clic droit : dix secondes de vitesse d'attaque quadruplée."),
+        RADAGAST("Radagast", Need.rune(MAGIC), Need.rune(FOREST), "Les bêtes à dix blocs viennent se battre à tes côtés."),
+        PACTE("Pacte noir", Need.rune(MAGIC), Need.rune(BLACK), "La malédiction monte deux fois plus vite, mais le dernier ennemi tué se relève pour toi."),
+        ENTS("Appel des Ents", Need.rune(FOREST), Need.cond("sous cinq cœurs"), "Un Sylvegarde vient se battre ; il revient dix minutes après sa mort."),
+        MEMOIRE("Mémoire des Hobbits", Need.rune(HOBBIT), Need.cond("le guide en poche"), "Toutes les quêtes et leur emplacement apparaissent sur la carte.");
 
         public final String label, text;
         public final Need a, b;

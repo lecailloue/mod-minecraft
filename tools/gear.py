@@ -251,11 +251,17 @@ def build():
         imodel(rid, {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/rune'}})
     # ---- les deux runes a part : texture propre (voir tools/runes_assets.py)
     SPECIAUX = [
+        ('rune_ice', 'Rune de glace', "Gèle l'adversaire et le ralentit.", 'rune_ice', None),
+        ('rune_elven', 'Rune elfique', "Armure elfique complète : +20 % de dégâts. Une seule pièce étrangère : -20 %.", 'rune_elven', 'Rarity.RARE'),
+        ('rune_hobbit', 'Rune des Hobbits', "Pieds nus, avec un artefact de la Communauté : le mithril devient incassable et protège deux fois plus.", 'rune_hobbit', 'Rarity.RARE'),
+        ('rune_forest', 'Rune de la forêt', "Force I tant que tu touches un arbre.", 'rune_forest', 'Rarity.RARE'),
+        ('rune_magic', 'Rune de magie', "Seule, elle ne fait rien. Avec une autre rune, elle réveille un pouvoir.", 'rune_magic', 'Rarity.RARE'),
         ('rune_black', 'Rune noire', "+25 % de dégâts et un emplacement de plus. Chaque coup porté nourrit la malédiction.", 'rune_black', 'Rarity.EPIC'),
         ('runic_upgrade', 'Amélioration runique', "À la table runique : fait monter une arme d'une rareté et lui ouvre un emplacement.", 'runic_upgrade', 'Rarity.RARE'),
     ]
     for rid, rfr, rtip, rtex, rrar in SPECIAUX:
-        item(rid, rfr, java=f'new MiscItems.Info("{rtip}", props().rarity({rrar}))')
+        props = 'props()' if rrar is None else f'props().rarity({rrar})'
+        item(rid, rfr, java=f'new MiscItems.Info("{rtip}", {props})')
         imodel(rid, {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/{rtex}'}})
     # ---- le reste des armes, arcs et batons : a refaire (voir git : tools/gear.py avant le commit a689a5f4)
     # ---- armures

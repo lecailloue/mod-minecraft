@@ -81,6 +81,14 @@ public final class Artifacts {
 
     public static boolean isArtifact(ItemStack s) { return s.getItem() instanceof Piece && s.getOrDefault(ARTIFACT.get(), false); }
 
+    /** le joueur porte-t-il au moins un artefact de la Communaute dans sa chaine ? */
+    public static boolean anyEquipped(net.minecraft.world.entity.player.Player p) {
+        PlayerLore l = ModData.lore(p);
+        int lv = level(l.artifacts);
+        for (int i = 1; i <= lv; i++) if (isArtifact(l.artifacts.getItem(i))) return true;
+        return false;
+    }
+
     public static ItemStack artifact(Item item) {
         ItemStack s = new ItemStack(item);
         s.set(ARTIFACT.get(), true);

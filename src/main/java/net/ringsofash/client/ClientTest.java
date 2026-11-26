@@ -1675,6 +1675,15 @@ public final class ClientTest {
         return w;
     }
 
+    /** une arme a combo du nouveau lot : elfique + vent = pouvoir d'Elrond */
+    private static net.minecraft.world.item.ItemStack armeElrond() {
+        net.minecraft.world.item.ItemStack w = new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.MAN_SWORD.get());
+        net.ringsofash.item.Runes.setTier(w, 5);
+        net.ringsofash.item.Rune.socket(w, net.ringsofash.item.Rune.ELVEN);
+        net.ringsofash.item.Rune.socket(w, net.ringsofash.item.Rune.WIND);
+        return w;
+    }
+
     /** la meme arme, mais avec deux emplacements encore libres : le scellement doit etre possible */
     private static net.minecraft.world.item.ItemStack armeLibre() {
         net.minecraft.world.item.ItemStack w = new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.ELVEN_SWORD.get());
@@ -1698,9 +1707,10 @@ public final class ClientTest {
         @Override
         public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float pt) {
             g.fill(0, 0, width, height, 0xFF202028);
-            net.minecraft.world.item.ItemStack w = armeRunique();
-            g.renderTooltip(font, net.minecraft.client.gui.screens.Screen.getTooltipFromItem(Minecraft.getInstance(), w),
-                    java.util.Optional.empty(), 40, 60);
+            // passer par la pile elle-meme : c'est ce chemin qui declenche GatherComponents,
+            // donc les cases d'emplacements dessinees
+            g.renderTooltip(font, armeRunique(), 40, 60);
+            g.renderTooltip(font, armeElrond(), 40, 190);
         }
     }
 

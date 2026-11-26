@@ -9,27 +9,28 @@ import os
 
 ROOT = os.path.join(os.path.dirname(__file__), '..', 'src', 'main', 'resources', 'data', 'ringsofash', 'loot_table')
 STATS = ['rune_damage_1', 'rune_speed_1', 'rune_reach_1', 'rune_solidity_1']
-EFFETS = ['rune_fire', 'rune_wind', 'rune_poison']
+EFFETS = ['rune_fire', 'rune_wind', 'rune_poison', 'rune_ice']
+RARES = ['rune_elven', 'rune_hobbit', 'rune_forest', 'rune_magic']   # celles qui ouvrent les combos
 
-# fichier -> (lot de statistiques, lot d'effets, amelioration, rune noire)
-#            chaque valeur est le poids total de la chance sur 100, 0 = pas de lot
+# fichier -> (statistiques, effets, runes rares, amelioration, rune noire)
+#            chaque valeur est la chance sur 100 que le lot donne quelque chose, 0 = pas de lot
 CHESTS = {
-    'mine_ruins':    (10, 0, 0, 0),
-    'mine_treasure': (18, 4, 5, 0),
-    'orc_fort':      (12, 0, 0, 0),
-    'barrow':        (14, 4, 0, 0),
-    'dwarf_hall':    (16, 0, 3, 0),
-    'hoard':         (20, 6, 6, 0),
-    'dark_tower':    (20, 8, 6, 1),
+    'mine_ruins':    (10, 0, 0, 0, 0),
+    'mine_treasure': (18, 4, 0, 5, 0),
+    'orc_fort':      (12, 0, 0, 0, 0),
+    'barrow':        (14, 4, 2, 0, 0),
+    'dwarf_hall':    (16, 0, 2, 3, 0),
+    'hoard':         (20, 6, 4, 6, 0),
+    'dark_tower':    (20, 8, 4, 6, 1),
 }
 MOBS = {
-    'orc_chief':     (8, 0, 0, 0),
-    'goblin_king':   (10, 2, 2, 0),
-    'shadow_chief':  (10, 6, 3, 1),
-    'shadow_dragon': (12, 10, 6, 2),
-    'dragon':        (12, 10, 6, 0),
-    'fire_demon':    (8, 6, 2, 0),
-    'sorcerer':      (6, 4, 0, 0),
+    'orc_chief':     (8, 0, 0, 0, 0),
+    'goblin_king':   (10, 2, 1, 2, 0),
+    'shadow_chief':  (10, 6, 3, 3, 1),
+    'shadow_dragon': (12, 10, 5, 6, 2),
+    'dragon':        (12, 10, 5, 6, 0),
+    'fire_demon':    (8, 6, 2, 2, 0),
+    'sorcerer':      (6, 4, 3, 0, 0),
 }
 
 
@@ -49,7 +50,7 @@ def ours(p):
     return bool(names) and all(n.startswith('ringsofash:rune') or n == 'ringsofash:runic_upgrade' for n in names)
 
 
-def patch(path, stats, effets, upgrade, black):
+def patch(path, stats, effets, rares, upgrade, black):
     with io.open(path, encoding='utf-8') as f:
         d = json.load(f)
     pools = [p for p in d.get('pools', []) if not ours(p)]
@@ -57,6 +58,8 @@ def patch(path, stats, effets, upgrade, black):
         pools.append(pool(STATS, stats))
     if effets:
         pools.append(pool(EFFETS, effets))
+    if rares:
+        pools.append(pool(RARES, rares))
     if upgrade:
         pools.append(pool(['runic_upgrade'], upgrade))
     if black:

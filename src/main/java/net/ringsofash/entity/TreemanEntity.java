@@ -91,6 +91,14 @@ public class TreemanEntity extends PathfinderMob {
 
     public boolean isTree() { return entityData.get(TREE); }
     public boolean isTamed() { return entityData.get(OWNER).isPresent(); }
+
+    /** appele par l'Appel des Ents : le Sylvegarde arrive deja acquis a la cause */
+    public void bind(net.minecraft.world.entity.player.Player p) {
+        entityData.set(OWNER, Optional.of(p.getUUID()));
+        setTree(false);
+        setTarget(null);
+        setPersistenceRequired();
+    }
     public boolean isOwner(Entity e) { return e != null && entityData.get(OWNER).map(u -> u.equals(e.getUUID())).orElse(false); }
 
     public void setTree(boolean tree) {

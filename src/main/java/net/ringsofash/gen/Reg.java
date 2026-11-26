@@ -639,6 +639,11 @@ public final class Reg {
     public static final DeferredItem<Item> RUNE_SOLIDITY_1 = ITEMS.register("rune_solidity_1", () -> new MiscItems.Info("L'arme s'use un tiers moins vite, mais frappe un peu moins vite.", props()));
     public static final DeferredItem<Item> RUNE_SOLIDITY_2 = ITEMS.register("rune_solidity_2", () -> new MiscItems.Info("L'arme s'use 60 % moins vite, mais frappe moins vite.", props()));
     public static final DeferredItem<Item> RUNE_SOLIDITY_3 = ITEMS.register("rune_solidity_3", () -> new MiscItems.Info("L'arme s'use 80 % moins vite, mais frappe nettement moins vite.", props()));
+    public static final DeferredItem<Item> RUNE_ICE = ITEMS.register("rune_ice", () -> new MiscItems.Info("Gèle l'adversaire et le ralentit.", props()));
+    public static final DeferredItem<Item> RUNE_ELVEN = ITEMS.register("rune_elven", () -> new MiscItems.Info("Armure elfique complète : +20 % de dégâts. Une seule pièce étrangère : -20 %.", props().rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> RUNE_HOBBIT = ITEMS.register("rune_hobbit", () -> new MiscItems.Info("Pieds nus, avec un artefact de la Communauté : le mithril devient incassable et protège deux fois plus.", props().rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> RUNE_FOREST = ITEMS.register("rune_forest", () -> new MiscItems.Info("Force I tant que tu touches un arbre.", props().rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> RUNE_MAGIC = ITEMS.register("rune_magic", () -> new MiscItems.Info("Seule, elle ne fait rien. Avec une autre rune, elle réveille un pouvoir.", props().rarity(Rarity.RARE)));
     public static final DeferredItem<Item> RUNE_BLACK = ITEMS.register("rune_black", () -> new MiscItems.Info("+25 % de dégâts et un emplacement de plus. Chaque coup porté nourrit la malédiction.", props().rarity(Rarity.EPIC)));
     public static final DeferredItem<Item> RUNIC_UPGRADE = ITEMS.register("runic_upgrade", () -> new MiscItems.Info("À la table runique : fait monter une arme d'une rareté et lui ouvre un emplacement.", props().rarity(Rarity.RARE)));
 

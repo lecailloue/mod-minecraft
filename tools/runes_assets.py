@@ -36,6 +36,16 @@ def runes():
     recolor(src, os.path.join(ITEM, 'runic_upgrade.png'), {
         STONE: (152, 140, 112, 255), LIGHT: (186, 172, 138, 255), DARK: (112, 102, 80, 255),
         EDGE: (48, 42, 32, 255), GLOW: (255, 224, 120, 255)})
+    # les runes a effet : chacune sa pierre et son trait
+    for name, stone, light, dark, glow in (
+            ('rune_ice', (118, 142, 160), (152, 178, 196), (82, 100, 116), (150, 230, 255)),
+            ('rune_elven', (138, 146, 128), (172, 180, 158), (96, 102, 88), (240, 226, 150)),
+            ('rune_hobbit', (124, 102, 78), (156, 130, 100), (88, 72, 54), (150, 220, 120)),
+            ('rune_forest', (86, 106, 76), (112, 136, 98), (60, 74, 52), (170, 240, 130)),
+            ('rune_magic', (72, 76, 120), (98, 102, 154), (48, 50, 84), (210, 160, 255))):
+        recolor(src, os.path.join(ITEM, name + '.png'), {
+            STONE: stone + (255,), LIGHT: light + (255,), DARK: dark + (255,),
+            EDGE: (24, 24, 30, 255), GLOW: glow + (255,)})
 
 
 def table():
