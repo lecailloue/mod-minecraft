@@ -44,7 +44,7 @@ public final class RuneEffects {
         long udunUntil, elrondUntil, cooldown;       // en ticks de monde
         long entDead;                                // quand le Sylvegarde est mort
         java.util.UUID ent;
-        net.minecraft.world.entity.EntityType<?> lastKill;
+        java.util.UUID ally;                         // le dernier ennemi releve par le Pacte noir
     }
 
     private static State state(Player p) { return STATES.computeIfAbsent(p.getUUID(), u -> new State()); }
@@ -68,6 +68,11 @@ public final class RuneEffects {
      */
     private static void onArrow(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent e) {
         if (e.getLevel().isClientSide) return;
+        // un rallie qui reparait dans le monde : ses buts ne survivent pas aux sauvegardes, on les repose
+        if (e.getEntity() instanceof net.minecraft.world.entity.Mob mob && net.ringsofash.entity.Ally.marked(mob)) {
+            net.ringsofash.entity.Ally.apply(mob);
+            return;
+        }
         if (!(e.getEntity() instanceof net.minecraft.world.entity.projectile.AbstractArrow arrow)) return;
         if (!(arrow.getOwner() instanceof LivingEntity owner)) return;
         ItemStack bow = owner.getMainHandItem();
@@ -243,6 +248,8 @@ public final class RuneEffects {
             else if (!on && speed.getModifier(id) != null) speed.removeModifier(id);
         }
 
+        if (p.tickCount % 10 == 0) allies(p);        // les rallies se battent meme l'arme rangee
+
         if (!Runes.runic(w)) { hobbit(p, false); return; }
         List<Rune> runes = Rune.on(w);
         List<Rune.Combo> combos = Rune.combos(w);
@@ -317,6 +324,7 @@ public final class RuneEffects {
         if (tree == null) return;
         tree.moveTo(p.getX() + (p.getRandom().nextDouble() - 0.5) * 4, p.getY(), p.getZ() + (p.getRandom().nextDouble() - 0.5) * 4, p.getYRot(), 0);
         tree.bind(p);
+        net.ringsofash.entity.Ally.markKeep(tree, p);        // il te suit, mais garde ses propres cibles
         p.level().addFreshEntity(tree);
         st.ent = tree.getUUID();
         st.entDead = 0;
@@ -332,23 +340,51 @@ public final class RuneEffects {
         LivingEntity dead = e.getEntity();
         if (dead instanceof Player) return;
         State st = state(p);
-        st.lastKill = dead.getType();
         var copy = dead.getType().create(p.level());
         if (!(copy instanceof net.minecraft.world.entity.Mob m)) return;
+        // un seul releve a la fois : le precedent retourne a la poussiere
+        if (st.ally != null && p.level() instanceof net.minecraft.server.level.ServerLevel sl) {
+            var old = sl.getEntity(st.ally);
+            if (old != null) old.discard();
+        }
         m.moveTo(dead.getX(), dead.getY(), dead.getZ(), dead.getYRot(), 0);
-        m.setPersistenceRequired();
         m.addEffect(new MobEffectInstance(MobEffects.GLOWING, 6000, 0, true, false));
-        p.level().addFreshEntity(m);
-        allyOf(p, m);
+        net.ringsofash.entity.Ally.mark(m, p);
+        p.level().addFreshEntity(m);                  // l'arrivee dans le monde pose ses buts
+        st.ally = m.getUUID();
         say(p, "Il se relève et marche à tes côtés.", net.minecraft.ChatFormatting.DARK_PURPLE);
     }
 
-    /** un allie de fortune : il frappe ce que tu frappes et ne te vise jamais */
-    private static void allyOf(Player p, net.minecraft.world.entity.Mob m) {
-        m.targetSelector.removeAllGoals(g -> true);
-        m.targetSelector.addGoal(1, new net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal<>(
-                m, LivingEntity.class, 10, true, false,
-                t -> t != p && t instanceof net.minecraft.world.entity.monster.Enemy));
+    /**
+     * Les rallies suivent tout seuls (voir Ally), mais c'est ici qu'on leur dit qui frapper :
+     * ce que tu frappes, ce qui te frappe, ou a defaut le monstre le plus proche de toi.
+     */
+    private static void allies(net.minecraft.server.level.ServerPlayer p) {
+        List<net.minecraft.world.entity.Mob> mine = p.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class,
+                p.getBoundingBox().inflate(48.0), m -> net.ringsofash.entity.Ally.marked(m)
+                        && p.getUUID().equals(net.ringsofash.entity.Ally.ownerId(m)));
+        if (mine.isEmpty()) return;
+
+        LivingEntity foe = p.getLastHurtMob();
+        if (foe == null || !foe.isAlive() || foe.distanceToSqr(p) > 1024) foe = p.getLastHurtByMob();
+        if (foe == null || !foe.isAlive() || foe.distanceToSqr(p) > 1024) foe = null;
+
+        for (net.minecraft.world.entity.Mob m : mine) {
+            LivingEntity t = foe;
+            if (t == null) {
+                // personne de designe : il prend le monstre le plus proche de toi
+                double best = 256;
+                for (LivingEntity near : p.level().getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(16.0),
+                        x -> x instanceof net.minecraft.world.entity.monster.Enemy && x.isAlive()
+                                && !(x instanceof net.minecraft.world.entity.Mob mm && net.ringsofash.entity.Ally.marked(mm)))) {
+                    double d = near.distanceToSqr(p);
+                    if (d < best) { best = d; t = near; }
+                }
+            }
+            if (t == null || t == m) { if (m.getTarget() == p) m.setTarget(null); continue; }
+            if (m.getTarget() != t) m.setTarget(t);
+            m.setLastHurtByMob(null);
+        }
     }
 
     // ------------------------------------------------------------------ l'arme change d'allure
