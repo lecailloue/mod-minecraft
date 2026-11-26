@@ -239,9 +239,6 @@ def build():
         ('rune_reach_1', 'Rune de portée I', "+1 bloc d'allonge ; les arcs tirent 2 blocs plus loin."),
         ('rune_reach_2', 'Rune de portée II', "+2 blocs d'allonge ; les arcs tirent 4 blocs plus loin."),
         ('rune_reach_3', 'Rune de portée III', "+3 blocs d'allonge ; les arcs tirent 6 blocs plus loin."),
-        ('rune_fire', 'Rune de feu', 'Toutes les attaques brûlent.'),
-        ('rune_wind', 'Rune de vent', "5 % de chance de projeter l'adversaire à 6 blocs de haut."),
-        ('rune_poison', 'Rune de poison', "Une chance sur deux d'empoisonner 2 secondes."),
         ('rune_solidity_1', 'Rune de solidité I', "L'arme s'use un tiers moins vite, mais frappe un peu moins vite."),
         ('rune_solidity_2', 'Rune de solidité II', "L'arme s'use 60 % moins vite, mais frappe moins vite."),
         ('rune_solidity_3', 'Rune de solidité III', "L'arme s'use 80 % moins vite, mais frappe nettement moins vite."),
@@ -251,6 +248,9 @@ def build():
         imodel(rid, {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/rune'}})
     # ---- les deux runes a part : texture propre (voir tools/runes_assets.py)
     SPECIAUX = [
+        ('rune_fire', 'Rune de feu', 'Toutes les attaques brûlent.', 'rune_fire', None),
+        ('rune_wind', 'Rune de vent', "5 % de chance de projeter l'adversaire à 6 blocs de haut.", 'rune_wind', None),
+        ('rune_poison', 'Rune de poison', "Une chance sur deux d'empoisonner 2 secondes.", 'rune_poison', None),
         ('rune_ice', 'Rune de glace', "Gèle l'adversaire et le ralentit.", 'rune_ice', None),
         ('rune_elven', 'Rune elfique', "Armure elfique complète : +20 % de dégâts. Une seule pièce étrangère : -20 %.", 'rune_elven', 'Rarity.RARE'),
         ('rune_hobbit', 'Rune des Hobbits', "Pieds nus, avec un artefact de la Communauté : le mithril devient incassable et protège deux fois plus.", 'rune_hobbit', 'Rarity.RARE'),

@@ -1709,8 +1709,8 @@ public final class ClientTest {
             g.fill(0, 0, width, height, 0xFF202028);
             // passer par la pile elle-meme : c'est ce chemin qui declenche GatherComponents,
             // donc les cases d'emplacements dessinees
-            g.renderTooltip(font, armeRunique(), 40, 60);
-            g.renderTooltip(font, armeElrond(), 40, 190);
+            g.renderTooltip(font, armeRunique(), 20, 60);
+            g.renderTooltip(font, armeElrond(), 20, 300);
         }
     }
 
