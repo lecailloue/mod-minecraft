@@ -58,23 +58,25 @@ public class RunicScreen extends AbstractContainerScreen<RunicMenu> {
         for (Slot s : menu.slots) g.fill(x + s.x, y + s.y, x + s.x + 16, y + s.y + 16, 0xFF575160);
 
         ItemStack w = menu.weapon();
-        // les emplacements de l'arme, dessines sous sa case
+        // les emplacements de l'arme, a droite de sa case
         if (Runes.runic(w)) {
-            int slots = Rune.slots(w), used = Rune.used(w), bx = x + 8, by = y + 42;
-            List<Rune> runes = Rune.on(w);
+            int slots = Rune.slots(w), used = Rune.used(w), bx = x + 30, by = y + 27;
             int i = 0;
-            for (Rune r : runes) for (int k = 0; k < r.cost(); k++, i++) box(g, bx + i * 6, by, r.color().getColor() == null ? 0xFFFFFFFF : 0xFF000000 | r.color().getColor());
-            for (; i < slots; i++) box(g, bx + i * 6, by, 0xFF4A4452);
-            g.drawString(font, used + " / " + slots, bx + Math.max(slots, 1) * 6 + 4, by - 1, 0xFF9A90A8, false);
+            for (Rune r : Rune.on(w)) {
+                Integer c = r.color().getColor();
+                for (int k = 0; k < r.cost(); k++, i++) box(g, bx + i * 7, by, c == null ? 0xFFFFFFFF : 0xFF000000 | c);
+            }
+            for (; i < slots; i++) box(g, bx + i * 7, by, 0xFF4A4452);
+            g.drawString(font, used + " / " + slots, bx + Math.max(slots, 1) * 7 + 4, by - 1, 0xFF9A90A8, false);
         } else {
-            g.drawString(font, "Arme", x + 40, y + 26, 0xFF9A90A8, false);
+            g.drawString(font, "Arme", x + 30, y + 26, 0xFF9A90A8, false);
         }
-        g.drawString(font, "Rune", x + 8, y + 68, 0xFF9A90A8, false);
-        g.drawString(font, "Orrune", x + 40, y + 68, 0xFF9A90A8, false);
+        g.drawString(font, "Rune", x + 8, y + 42, 0xFF9A90A8, false);
+        g.drawString(font, "Orrune", x + 34, y + 42, 0xFF9A90A8, false);
 
         // le cout du geste possible, ou la raison du refus
         List<String> lines = status();
-        for (int i = 0; i < lines.size(); i++) g.drawString(font, lines.get(i), x + 8, y + 80 + 10 * i, 0xFFD0C4E0, false);
+        for (int i = 0; i < lines.size(); i++) g.drawString(font, lines.get(i), x + 8, y + 84 + 10 * i, 0xFFD0C4E0, false);
     }
 
     private List<String> status() {

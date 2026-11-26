@@ -1675,9 +1675,17 @@ public final class ClientTest {
         return w;
     }
 
+    /** la meme arme, mais avec deux emplacements encore libres : le scellement doit etre possible */
+    private static net.minecraft.world.item.ItemStack armeLibre() {
+        net.minecraft.world.item.ItemStack w = new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.ELVEN_SWORD.get());
+        net.ringsofash.item.Runes.setTier(w, 4);
+        net.ringsofash.item.Rune.socket(w, net.ringsofash.item.Rune.DAMAGE_2);
+        return w;
+    }
+
     private static net.minecraft.client.gui.screens.Screen runicTable(Minecraft mc) {
         net.ringsofash.menu.RunicMenu m = new net.ringsofash.menu.RunicMenu(1, mc.player.getInventory());
-        m.put(0, armeRunique());
+        m.put(0, armeLibre());
         m.put(1, net.ringsofash.item.Rune.POISON.stack());
         m.put(2, new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.ORRUNE_INGOT.get(), 8));
         return new RunicScreen(m, mc.player.getInventory(), net.minecraft.network.chat.Component.literal("Table runique"));

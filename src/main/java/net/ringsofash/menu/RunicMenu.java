@@ -40,14 +40,14 @@ public class RunicMenu extends AbstractContainerMenu {
     public RunicMenu(int id, Inventory pinv, ContainerLevelAccess access) {
         super(ModMenus.RUNIC.get(), id);
         this.access = access;
-        addSlot(new Slot(inv, 0, 20, 22) {
+        addSlot(new Slot(inv, 0, 8, 22) {
             @Override public boolean mayPlace(ItemStack s) { return Runes.runic(s); }
             @Override public int getMaxStackSize() { return 1; }
         });
-        addSlot(new Slot(inv, 1, 20, 48) {
+        addSlot(new Slot(inv, 1, 8, 52) {
             @Override public boolean mayPlace(ItemStack s) { return Rune.of(s) != null || s.is(Reg.RUNIC_UPGRADE.get()); }
         });
-        addSlot(new Slot(inv, 2, 46, 48) {
+        addSlot(new Slot(inv, 2, 34, 52) {
             @Override public boolean mayPlace(ItemStack s) { return s.is(Reg.ORRUNE_INGOT.get()); }
         });
         for (int r = 0; r < 3; r++) for (int c = 0; c < 9; c++) addSlot(new Slot(pinv, c + r * 9 + 9, 8 + c * 18, 116 + r * 18));

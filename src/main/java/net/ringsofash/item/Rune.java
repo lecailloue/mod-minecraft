@@ -177,11 +177,17 @@ public enum Rune {
         return false;
     }
 
+    /** « de dégâts » mais « d'élément » : l'elision devant une voyelle */
+    private static String de(String word) {
+        String w = word.toLowerCase();
+        return "aeiouéèêàâîôûy".indexOf(w.charAt(0)) >= 0 ? "d'" + w : "de " + w;
+    }
+
     /** pourquoi on ne peut pas sceller, ou null si c'est possible */
     public static String refuse(ItemStack weapon, Rune r) {
         if (!Runes.runic(weapon)) return "Seules les armes du mod portent des runes.";
         if (r == null) return "Posez une rune.";
-        if (taken(weapon, r.family)) return "Cette arme porte déjà une rune de " + r.family.label.toLowerCase() + ".";
+        if (taken(weapon, r.family)) return "Cette arme porte déjà une rune " + de(r.family.label) + ".";
         if (r.affinity(weapon) <= 0F) return "Cette rune ne tient pas sur cette arme.";
         if (r.cost() > free(weapon)) return "Il faut " + r.cost() + " emplacement" + (r.cost() > 1 ? "s" : "") + " libre" + (r.cost() > 1 ? "s" : "") + ".";
         return null;
