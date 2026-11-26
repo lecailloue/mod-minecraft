@@ -108,6 +108,11 @@ public final class Runes {
         if (r.reach != 0) parts.add(sign(r.reach * a) + fmt(Math.abs(r.reach * a)) + " bloc d'allonge");
         if (r.wear != 0) parts.add(r.wear < 0 ? pct(r.wear * a) + " d'usure" : "usure doublée");
         if (r == Rune.FIRE) parts.add("les coups brûlent");
+        if (r == Rune.ICE) parts.add("gèle et ralentit");
+        if (r == Rune.ELVEN) parts.add("armure elfique complète +20 %, sinon −20 %");
+        if (r == Rune.HOBBIT) parts.add("pieds nus + artefact : mithril incassable, armure doublée");
+        if (r == Rune.FOREST) parts.add("Force I sur un arbre");
+        if (r == Rune.MAGIC) parts.add("réveille les pouvoirs des autres runes");
         if (r == Rune.WIND) parts.add("5 % de projection");
         if (r == Rune.POISON) parts.add("50 % d'empoisonnement");
         if (r.corrupt > 0) parts.add("+" + r.corrupt + " de malédiction par coup");
