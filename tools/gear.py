@@ -245,7 +245,8 @@ def build():
     ]
     for rid, rfr, rtip in RUNES:
         item(rid, rfr, java=f'new MiscItems.Info("{rtip}", props())')
-        imodel(rid, {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/rune'}})
+        # chaque rune a sa pierre, dessinee a la main : la texture porte le nom de l'objet
+        imodel(rid, {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/{rid}'}})
     # ---- les deux runes a part : texture propre (voir tools/runes_assets.py)
     SPECIAUX = [
         ('rune_fire', 'Rune de feu', 'Toutes les attaques brûlent.', 'rune_fire', None),

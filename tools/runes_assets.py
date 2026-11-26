@@ -1,4 +1,10 @@
-"""Textures de la table runique et variantes de la pierre runique."""
+"""Texture de la table runique.
+
+Les pierres de runes ne sont plus generees ici : elles sont dessinees a la main et
+rangees dans textures/item sous le nom de leur objet (rune_damage_1.png, rune_elven.png,
+rune_black.png, runic_upgrade.png...). La fonction runes() ci-dessous ne sert plus qu'a
+refaire des ebauches si on en a besoin, et elle refuse d'ecraser ce qui existe deja.
+"""
 import os
 from PIL import Image
 
@@ -15,7 +21,9 @@ GLOW = (226, 208, 255, 255)
 
 
 def recolor(src, dst, mapping):
-    """remplace les couleurs de la rune par une autre palette"""
+    """remplace les couleurs de la rune par une autre palette, sans jamais ecraser un dessin"""
+    if os.path.exists(dst):
+        return
     im = Image.open(src).convert('RGBA')
     out = Image.new('RGBA', im.size, (0, 0, 0, 0))
     sp, op = im.load(), out.load()
@@ -102,6 +110,5 @@ def table():
 
 
 if __name__ == '__main__':
-    runes()
     table()
     print('ok')

@@ -1,1 +1,1 @@
-{"parent":"minecraft:item/generated","textures":{"layer0":"ringsofash:item/rune"}}
+{"parent": "minecraft:item/generated", "textures": {"layer0": "ringsofash:item/rune_solidity_2"}}
