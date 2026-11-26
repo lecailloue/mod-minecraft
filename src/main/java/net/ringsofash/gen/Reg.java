@@ -621,6 +621,20 @@ public final class Reg {
     public static final DeferredItem<Item> URUK_SPEAR = ITEMS.register("uruk_spear", () -> ModGear.special(SpecialSword.Kind.NONE, ModGear.T_ORC, 3, -2.9F, 1.0, props()));
     public static final DeferredItem<Item> URUK_MACE = ITEMS.register("uruk_mace", () -> ModGear.sword(ModGear.T_ORC, 5, -3.1F, props()));
 
+    // ---- runes a sertir dans les armes
+    public static final DeferredItem<Item> RUNE_DAMAGE_1 = ITEMS.register("rune_damage_1", () -> new MiscItems.Info("+1 % de dégâts.", props()));
+    public static final DeferredItem<Item> RUNE_DAMAGE_2 = ITEMS.register("rune_damage_2", () -> new MiscItems.Info("+2,5 % de dégâts.", props()));
+    public static final DeferredItem<Item> RUNE_DAMAGE_3 = ITEMS.register("rune_damage_3", () -> new MiscItems.Info("+4 % de dégâts.", props()));
+    public static final DeferredItem<Item> RUNE_SPEED_1 = ITEMS.register("rune_speed_1", () -> new MiscItems.Info("-2 % de temps d'attaque, ou de bandage pour un arc.", props()));
+    public static final DeferredItem<Item> RUNE_SPEED_2 = ITEMS.register("rune_speed_2", () -> new MiscItems.Info("-4 % de temps d'attaque, ou de bandage pour un arc.", props()));
+    public static final DeferredItem<Item> RUNE_SPEED_3 = ITEMS.register("rune_speed_3", () -> new MiscItems.Info("-8 % de temps d'attaque, ou de bandage pour un arc.", props()));
+    public static final DeferredItem<Item> RUNE_REACH_1 = ITEMS.register("rune_reach_1", () -> new MiscItems.Info("+1 bloc d'allonge ; les arcs tirent 2 blocs plus loin.", props()));
+    public static final DeferredItem<Item> RUNE_REACH_2 = ITEMS.register("rune_reach_2", () -> new MiscItems.Info("+2 blocs d'allonge ; les arcs tirent 4 blocs plus loin.", props()));
+    public static final DeferredItem<Item> RUNE_REACH_3 = ITEMS.register("rune_reach_3", () -> new MiscItems.Info("+3 blocs d'allonge ; les arcs tirent 6 blocs plus loin.", props()));
+    public static final DeferredItem<Item> RUNE_FIRE = ITEMS.register("rune_fire", () -> new MiscItems.Info("Toutes les attaques brûlent.", props()));
+    public static final DeferredItem<Item> RUNE_WIND = ITEMS.register("rune_wind", () -> new MiscItems.Info("5 % de chance de projeter l'adversaire à 6 blocs de haut.", props()));
+    public static final DeferredItem<Item> RUNE_POISON = ITEMS.register("rune_poison", () -> new MiscItems.Info("Une chance sur deux d'empoisonner 2 secondes.", props()));
+
     public static final DeferredItem<Item> CROW_SPAWN_EGG = ITEMS.register("crow_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.CROW, 0x1a181e, 0x3c3832, props()));
     public static final DeferredItem<Item> DEER_SPAWN_EGG = ITEMS.register("deer_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.DEER, 0x8a6442, 0x3a2a1e, props()));
     public static final DeferredItem<Item> ROE_DEER_SPAWN_EGG = ITEMS.register("roe_deer_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.ROE_DEER, 0xa8794c, 0xefe4d2, props()));

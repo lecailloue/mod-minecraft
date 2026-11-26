@@ -203,67 +203,76 @@ class C:
         return x0 - n + 1, y0 + n - 1
 
 
-# ======================================================================= ELFES
-def elven_sword():
-    """epee elfique : longue lame courbe a un tranchant, tout en argent"""
-    v = V(18, 52)
-    cf = lambda t: 5.0 + 4.6 * t ** 0.9                          # la lame s'incurve
-    wf = lambda t: 0.8 + 2.2 * min(1.0, t * 2.6)
-    v.blade(0, 33, cf, wf, SILVER)
-    for r in range(4, 32):                                       # dos lumineux
-        t = r / 33
-        v.put(cf(t) - wf(t), r, SILVER[0], SILVER[3])
-    for r in range(8, 31, 4):                                    # entrelacs graves
-        t = r / 33
-        v.put(cf(t), r, SILVER_D[1], SILVER[3])
-    v.band(33, 36, 3.0, 14.0, SILVER_D)                          # garde
-    v.band(36, 39, lerp(11.0, 12.0), lerp(15.0, 13.0), SILVER_D)  # aile relevee
-    v.band(33, 35, 7.0, 10.0, SILVER)
-    v.band(36, 46, 7.0, 10.0, SILVER_D)                          # fusee
-    for r in (38, 41, 44):
-        v.hline(r, 7, 10, SILVER[2], SILVER[3])
-    v.band(46, 52, lerp(5.0, 6.0), lerp(12.0, 11.0), SILVER)     # pommeau evase
-    v.hline(49, 7, 10, SILVER_D[1], SILVER[3])
+# =============================================================== formes simples
+# Toutes les armes sont baties sur quelques formes nettes, a la maniere des icones
+# vanilla : lame droite, garde droite, manche court. Seules les couleurs et les
+# proportions changent d'un peuple a l'autre. (Textures provisoires.)
+
+def blade_weapon(steel, grip, metal, L=30, W=5, G=11, H=10, tip=5, fuller=True):
+    """epee, dague, grande epee : lame droite a pointe, garde en croix, pommeau"""
+    v = V(max(G + 4, W + 8), L + H + 8)
+    c = v.w // 2
+    for r in range(tip):                                   # la pointe
+        half = (W / 2.0) * (r + 1) / tip
+        v.span(r, c - half, c + half, steel)
+    v.band(tip, L, c - W / 2.0, c + W / 2.0, steel)        # la lame
+    v.vline(c - W // 2, tip, L, steel[0], steel[3])
+    v.vline(c + W // 2, tip, L, steel[2], steel[3])
+    if fuller and W >= 5:
+        v.vline(c, tip + 2, L - 1, SILVER_D[1], steel[3])
+    v.band(L, L + 2, c - G / 2.0, c + G / 2.0, metal)      # la garde
+    v.band(L + 2, L + 2 + H, c - 1.5, c + 1.5, grip)       # le manche
+    v.band(L + 2 + H, L + 4 + H, c - 2.5, c + 2.5, metal)  # le pommeau
     return outline(tilt(v))
 
 
-def elven_dagger():
-    """dague elfique : lame large a un tranchant, pointe coupee, bois et laiton"""
-    v = V(16, 40)
-    v.band(0, 4, lerp(9.0, 3.6), lerp(10.5, 11.2), STEEL)        # clip de la pointe
-    v.band(4, 22, lerp(3.6, 5.0), lerp(11.2, 9.8), STEEL)        # lame
-    for r in range(1, 22):                                       # dos clair
-        t = max(0.0, (r - 4) / 18)
-        v.put(3.6 + 1.4 * t if r >= 4 else 9.0 - 1.4 * r, r, STEEL[0], STEEL[3])
-    for r in range(7, 21, 4):
-        v.put(7.0, r, SILVER_D[1], STEEL[3])
-    v.band(22, 25, 4.8, 10.2, BRASS)                             # collet
-    v.band(25, 35, lerp(5.6, 5.2), lerp(9.4, 9.8), WOOD)         # manche
-    v.vline(6, 26, 35, WOOD[0], WOOD[3])
-    v.band(35, 40, lerp(4.4, 3.6), lerp(10.6, 11.4), BRASS)      # talon evase
+def shaft_weapon(steel, shaft, metal, head=10, headw=5, L=44):
+    """lance : hampe longue, fer en feuille"""
+    v = V(headw + 8, L + head + 6)
+    c = v.w // 2
+    for r in range(4):
+        half = (headw / 2.0) * (r + 1) / 4
+        v.span(r, c - half, c + half, steel)
+    v.band(4, head, c - headw / 2.0, c + headw / 2.0, steel)
+    v.vline(c - headw // 2, 4, head, steel[0], steel[3])
+    v.vline(c, 5, head, SILVER_D[1], steel[3])
+    v.band(head, head + 2, c - 2.5, c + 2.5, metal)        # la douille
+    v.band(head + 2, head + 2 + L, c - 1.5, c + 1.5, shaft)
+    v.band(head + 2 + L, head + 4 + L, c - 2.0, c + 2.0, metal)
     return outline(tilt(v))
 
 
-def elven_spear():
-    """lance elfique a deux fers : hampe de bronze, lames courbes aux deux bouts"""
-    v = V(18, 58)
-    for end in (0, 1):
-        for i in range(16):
-            r = i if end == 0 else 57 - i
-            t = i / 15
-            off = 6.0 * (1 - t) ** 1.3                            # la lame part de cote
-            c = 9.0 + (off if end == 0 else -off)
-            w = 0.8 + 4.0 * math.sin(math.pi * min(1.0, 0.08 + t * 0.9)) ** 0.6
-            v.span(r, c - w, c + w, SILVER_D)
-            if 4 < i < 12:                                        # ajour
-                v.erase(int(round(c)), r)
-        base = 16 if end == 0 else 42
-        v.band(base, base + 3, 6.0, 12.0, BRONZE)                 # viroles
-    v.band(19, 39, 7.6, 10.4, BRONZE)                            # hampe
-    v.vline(7, 20, 39, BRONZE[0], BRONZE[3])
-    for r in (23, 29, 35):
-        v.hline(r, 7, 10, BRONZE[2], BRONZE[3])
-    return outline(tilt(v))
+def head_weapon(steel, shaft, metal, kind='axe'):
+    """hache, marteau, pioche, masse : manche en escalier, tete droite"""
+    c = C()
+    x, y = c.stair(32, 28, 26, 4, shaft)
+    c.rect(y - 1, y + 3, x - 1, x + 4, metal)              # le talon
+    if kind == 'axe':                                      # un seul fer, large
+        c.rect(8, 30, lambda t: 34 - 0 * t, lambda t: 52 - 0 * t, steel)
+        c.rect(6, 32, 34, 38, metal)
+        c.vline(35, 8, 30, metal[0], metal[3])
+        c.hline(9, 39, 51, steel[0], steel[3])
+    elif kind == 'hammer':                                 # tete rectangulaire
+        c.rect(10, 28, 30, 54, steel)
+        c.rect(8, 30, 34, 40, metal)
+        c.hline(11, 31, 53, steel[0], steel[3])
+        c.hline(27, 31, 53, steel[2], steel[3])
+    elif kind == 'pick':                                   # bec long et contre-bec
+        for xx in range(36, 60):
+            t = (xx - 36) / 23
+            c.vspan(xx, 12 + 5.0 * t, 20 - 3.0 * t, steel)
+        for xx in range(14, 34):
+            t = (34 - xx) / 20
+            c.vspan(xx, 13 + 4.0 * t, 21 - 2.0 * t, steel)
+        c.rect(10, 24, 32, 40, metal)
+    else:                                                  # masse : tete carree a pointes
+        c.rect(10, 28, 32, 52, steel)
+        c.rect(14, 24, 28, 32, steel)
+        c.rect(14, 24, 52, 56, steel)
+        c.rect(6, 10, 36, 48, steel)
+        c.rect(28, 32, 36, 48, steel)
+        c.hline(11, 33, 51, steel[0], steel[3])
+    return outline(c.g)
 
 
 def bow(v, wood, grip, w0, w1, bulge, wrap_n=4, gold=False, string_col=STRING, deep=0.72):
@@ -304,299 +313,34 @@ def bow(v, wood, grip, w0, w1, bulge, wrap_n=4, gold=False, string_col=STRING, d
     return v
 
 
-def elven_bow():
-    """arc elfique : branches fines a double courbure, poignee entouree de vert"""
-    return outline(upright(bow(V(22, 60), ELFWOOD, GREEN, 1.0, 2.6, 15.0, wrap_n=5)))
-
-
-def elven_longbow():
-    """arc long elfique : le plus grand, branches sombres a nervures d'or"""
-    return outline(upright(bow(V(24, 64), IRON_BLACK, IRON_BLACK, 1.0, 3.0, 17.0, wrap_n=4, gold=True)))
-
-
-# ======================================================================= NAINS
-def dwarven_sword():
-    """epee naine : lame droite large a pointe en ciseau, garniture d'or"""
-    v = V(18, 50)
-    v.band(0, 5, lerp(8.5, 4.0), lerp(9.5, 13.0), STEEL)         # pointe en ciseau
-    v.band(5, 30, 4.0, 13.0, STEEL)
-    v.vline(4, 5, 30, STEEL[0], STEEL[3])
-    v.vline(8, 6, 30, SILVER_D[0], STEEL[3])                     # arete centrale
-    v.vline(9, 6, 30, SILVER_D[2], STEEL[3])
-    v.band(30, 33, 1.0, 16.0, BRONZE)                            # garde evasee
-    v.band(33, 35, 3.0, 14.0, BRONZE)
-    for r in (31, 32):
-        v.erase(8, r), v.erase(9, r)
-    v.band(35, 44, 6.0, 11.0, BRONZE)                            # manche
-    for r in (36, 39, 42):
-        v.hline(r, 6, 11, BRASS[0], BRASS[3])
-    v.band(44, 50, lerp(4.0, 5.0), lerp(13.0, 12.0), BRONZE)     # pommeau
-    v.hline(47, 6, 11, BRASS[0], BRASS[3])
-    return outline(tilt(v))
-
-
-def dwarven_hammer():
-    """marteau de guerre nain : grosse tete a deux tables gravees, long manche"""
-    c = C()
-    x, y = c.stair(34, 27, 26, 5, WOOD, wrap=3, wrap_pal=DARKLEATHER)
-    c.rect(y - 2, y + 4, x - 1, x + 5, DARKSTEEL)                 # talon
-    c.rect(5, 8, 20, 48, DARKSTEEL)                               # tete
-    c.rect(8, 24, 16, 52, STEEL)
-    c.rect(24, 27, 20, 48, DARKSTEEL)
-    c.rect(8, 24, 30, 38, DARKSTEEL, shade=False)                 # oeil du manche
-    c.rect(24, 30, 31, 37, DARKSTEEL)                             # collier
-    for xx in (21, 25, 43, 47):                                   # runes
-        c.vline(xx, 11, 21, DARKSTEEL[1], STEEL[3])
-    c.hline(9, 17, 51, STEEL[0], STEEL[3])
-    c.hline(10, 17, 51, STEEL[0], STEEL[3])
-    c.hline(22, 17, 51, DARKSTEEL[2], STEEL[3])
-    return outline(c.g)
-
-
-def dwarven_axe():
-    """hache naine a deux tranchants : deux grands fers, colonne gravee au milieu"""
-    c = C()
-    x, y = c.stair(31, 29, 25, 5, WOOD, wrap=3, wrap_pal=DARKLEATHER)
-    c.rect(y - 2, y + 4, x - 1, x + 5, IRON_BLACK)                # talon
-    for row in range(4, 30):                                      # les deux fers
-        t = (row - 4) / 25
-        if t < 0.22:
-            sp = 4 + 70 * t
-        elif t > 0.78:
-            sp = 4 + 70 * (1 - t)
-        else:
-            sp = 19
-        c.span(row, 27 - sp, 27, IRON_BLACK)
-        c.span(row, 37, 37 + sp, IRON_BLACK)
-        c.put(27 - sp, row, DARKSTEEL[0], IRON_BLACK[3])
-        c.put(37 + sp, row, DARKSTEEL[1], IRON_BLACK[3])
-    for row in range(10, 24):                                     # ajours en triangle
-        d = 5 - abs(row - 17)
-        for k in range(max(0, d)):
-            c.erase(21 - k, row)
-            c.erase(43 + k, row)
-    c.rect(2, 31, 27, 38, BRONZE)                                 # colonne gravee
-    for row in (5, 11, 17, 23, 29):
-        c.hline(row, 27, 37, IRON_BLACK[1], BRONZE[3])
-    c.vline(28, 3, 31, BRASS[0], BRONZE[3])
-    c.rect(31, 34, 29, 36, IRON_BLACK)
-    return outline(c.g)
-
-
-def dwarven_pick():
-    """pioche de combat : long bec d'un cote, contre-bec court de l'autre, collier d'or"""
-    c = C()
-    x, y = c.stair(30, 26, 27, 5, PALEWOOD)
-    c.rect(y - 2, y + 4, x - 1, x + 5, DARKSTEEL)                 # talon
-    for xx in range(34, 62):                                      # long bec
-        t = (xx - 34) / 27
-        c.vspan(xx, 8 + 7.0 * t, 22 - 4.0 * t, STEEL)
-    for xx in range(10, 32):                                      # contre-bec
-        t = (32 - xx) / 22
-        c.vspan(xx, 11 + 5.0 * t, 23 - 3.0 * t, STEEL)
-    c.rect(10, 28, 28, 40, BRASS)                                 # collier
-    c.hline(11, 28, 40, BRASS[0], BRASS[3])
-    c.hline(27, 28, 40, BRONZE[2], BRASS[3])
-    c.hline(12, 41, 58, STEEL[0], STEEL[3])
-    c.hline(14, 12, 27, STEEL[0], STEEL[3])
-    for yy in (33, 41):
-        c.span(yy, 30 - (yy - 26), 34 - (yy - 26), BRASS)
-    return outline(c.g)
-
-
-def dwarven_bow():
-    """arc nain : bois epais, ferrures, poignee gravee"""
-    v = bow(V(22, 54), WOOD, DARKWOOD, 1.6, 3.6, 13.0, wrap_n=4, deep=0.8)
-    mid = v.h // 2
-    for r in (mid - 11, mid + 11):
-        v.hline(r, 0, v.w - 1, BRONZE[1], BRONZE[3])
-    return outline(upright(v))
-
-
-# ======================================================================= HOMMES
-def man_sword():
-    """epee des hommes : lame droite a deux tranchants et gouttiere, garde en croix"""
-    v = V(18, 50)
-    v.band(0, 6, lerp(9.0, 5.5), lerp(9.0, 12.5), STEEL)         # pointe
-    v.band(6, 31, 5.5, 12.5, STEEL)
-    v.vline(5, 6, 31, STEEL[0], STEEL[3])
-    v.vline(8, 7, 29, SILVER_D[2], STEEL[3])                     # gouttiere
-    v.vline(9, 7, 29, SILVER_D[1], STEEL[3])
-    v.band(31, 34, 1.0, 17.0, DARKSTEEL)                         # garde en croix
-    v.hline(31, 1, 17, DARKSTEEL[0], DARKSTEEL[3])
-    v.band(34, 44, 7.0, 11.0, LEATHER)                           # fusee
-    for r in range(35, 44, 2):
-        v.hline(r, 7, 11, LEATHER[2], LEATHER[3])
-    v.band(44, 49, lerp(5.5, 6.5), lerp(12.5, 11.5), DARKSTEEL)  # pommeau
-    return outline(tilt(v))
-
-
-def man_greatsword():
-    """grande epee : plus longue, plus large, poignee a deux mains"""
-    v = V(20, 58)
-    v.band(0, 8, lerp(10.0, 5.0), lerp(10.0, 15.0), STEEL)
-    v.band(8, 36, 5.0, 15.0, STEEL)
-    v.vline(5, 8, 36, STEEL[0], STEEL[3])
-    v.vline(9, 9, 34, SILVER_D[2], STEEL[3])
-    v.vline(10, 9, 34, SILVER_D[1], STEEL[3])
-    v.vline(11, 9, 34, SILVER_D[2], STEEL[3])
-    v.band(36, 39, 0.0, 19.0, DARKSTEEL)
-    v.hline(36, 0, 19, DARKSTEEL[0], DARKSTEEL[3])
-    v.band(39, 53, 8.0, 12.0, LEATHER)
-    for r in range(40, 53, 2):
-        v.hline(r, 8, 12, LEATHER[2], LEATHER[3])
-    v.band(53, 58, lerp(6.5, 7.5), lerp(13.5, 12.5), DARKSTEEL)
-    return outline(tilt(v))
-
-
-def man_spear():
-    """lance des hommes : fer en feuille a arete centrale, douille, hampe de frene"""
-    v = V(14, 58)
-    v.band(0, 4, lerp(7.0, 4.6), lerp(7.0, 9.4), STEEL)          # pointe
-    v.band(4, 14, lerp(4.6, 3.6), lerp(9.4, 10.4), STEEL)        # feuille
-    v.band(14, 18, lerp(3.6, 5.2), lerp(10.4, 8.8), STEEL)
-    v.vline(4, 4, 16, STEEL[0], STEEL[3])
-    v.vline(7, 2, 18, SILVER_D[1], STEEL[3])
-    v.band(18, 22, 5.0, 9.0, DARKSTEEL)                          # douille
-    v.band(22, 54, 5.5, 8.5, PALEWOOD)                           # hampe
-    v.vline(5, 23, 54, PALEWOOD[0], PALEWOOD[3])
-    v.band(54, 58, 4.0, 10.0, DARKSTEEL)
-    return outline(tilt(v))
-
-
-def man_dagger():
-    """dague des hommes : lame a deux tranchants, garde a boules de laiton"""
-    v = V(16, 38)
-    v.band(0, 5, lerp(8.0, 5.6), lerp(8.0, 10.4), STEEL)
-    v.band(5, 21, lerp(5.6, 6.0), lerp(10.4, 10.0), STEEL)
-    v.vline(6, 5, 21, STEEL[0], STEEL[3])
-    v.vline(8, 4, 20, DARKSTEEL[1], STEEL[3])
-    v.band(21, 24, 3.0, 13.0, BRASS)                             # garde
-    v.band(20, 22, 2.0, 14.0, BRASS)
-    v.band(24, 33, 6.0, 10.0, LEATHER)                           # fusee
-    for r in range(25, 33, 2):
-        v.hline(r, 6, 10, LEATHER[2], LEATHER[3])
-    v.band(33, 38, lerp(4.6, 5.6), lerp(11.4, 10.4), BRASS)      # pommeau
-    return outline(tilt(v))
-
-
-def man_bow():
-    """arc des hommes : grand arc de bois clair, poignee de cuir"""
-    return outline(upright(bow(V(22, 60), PALEWOOD, DARKLEATHER, 1.2, 2.8, 14.0,
-                               wrap_n=4, string_col=DARKSTEEL)))
-
-
-# ======================================================================= URUK
-URU = ((0x8A, 0x90, 0x8E), (0x5C, 0x62, 0x62), (0x38, 0x3C, 0x3E), (0x1A, 0x1C, 0x1E))
-RUST = ((0xB0, 0x5E, 0x30), (0x80, 0x40, 0x20), (0x54, 0x28, 0x14), (0x2A, 0x12, 0x08))
-RAG = ((0x7E, 0x66, 0x46), (0x58, 0x46, 0x2E), (0x3A, 0x2C, 0x1C), (0x1C, 0x14, 0x0C))
-
-
-def uruk_scimitar():
-    """cimeterre uruk : lame courbe qui s'elargit vers la pointe, ebrechee"""
-    v = V(18, 50)
-    cf = lambda t: 5.0 + 4.0 * t ** 0.9
-    wf = lambda t: 1.0 + 2.6 * t
-    v.blade(0, 32, cf, wf, URU)
-    for r in range(4, 30, 4):                                    # dents sur le dos
-        t = r / 32
-        v.put(cf(t) - wf(t) - 1, r, URU[0], URU[3])
-    v.band(32, 35, 4.0, 13.0, RUST)                              # garde de travers
-    v.band(35, 37, 9.0, 15.0, RUST)
-    v.band(35, 45, 6.0, 10.0, RAG)
-    for r in (36, 39, 42):
-        v.hline(r, 6, 10, RAG[0], RAG[3])
-    v.band(45, 49, 5.0, 11.0, RUST)
-    return outline(tilt(v))
-
-
-def uruk_cleaver():
-    """couperet uruk : lame large et courte, tranchant ebreche"""
-    v = V(20, 40)
-    v.band(0, 4, lerp(10.0, 4.0), lerp(12.0, 16.0), URU)
-    v.band(4, 22, lerp(4.0, 6.0), lerp(16.0, 13.0), URU)
-    for r in range(5, 21, 3):
-        v.put(16 - (r - 5) * 0.18, r, None, None) if False else v.put(15 - (r - 5) * 0.18, r, URU[0], URU[3])
-    v.band(22, 25, 5.0, 11.0, RUST)
-    v.band(25, 35, 6.0, 10.0, RAG)
-    for r in (26, 29, 32):
-        v.hline(r, 6, 10, RAG[2], RAG[3])
-    v.band(35, 39, 5.0, 11.0, RUST)
-    return outline(tilt(v))
-
-
-def uruk_machete():
-    """machette uruk : lame droite a dos dente, bec releve"""
-    v = V(16, 44)
-    v.band(0, 5, lerp(9.0, 4.0), lerp(10.0, 11.0), URU)
-    v.band(5, 26, lerp(4.0, 5.5), lerp(11.0, 10.0), URU)
-    for r in range(7, 25, 3):
-        v.put(4.6, r, URU[0], URU[3])
-    v.band(26, 28, 4.5, 11.0, RUST)
-    v.band(28, 39, 6.0, 10.0, RAG)
-    for r in (29, 32, 35):
-        v.hline(r, 6, 10, RAG[0], RAG[3])
-    v.band(39, 43, 5.0, 11.0, RUST)
-    return outline(tilt(v))
-
-
-def uruk_spear():
-    """lance uruk : hampe tordue, fer barbele, chiffons"""
-    v = V(14, 58)
-    v.band(0, 5, lerp(7.0, 4.0), lerp(7.0, 10.0), URU)
-    v.band(5, 13, lerp(4.0, 5.0), lerp(10.0, 9.0), URU)
-    v.put(3, 6, URU[0], URU[3])
-    v.put(10, 8, URU[0], URU[3])
-    v.band(13, 16, 4.5, 9.5, RUST)
-    v.band(16, 54, 5.5, 8.5, DARKWOOD)
-    v.vline(5, 17, 54, DARKWOOD[0], DARKWOOD[3])
-    for r in (22, 30, 38, 46):
-        v.hline(r, 5, 9, RAG[0] if r % 16 else RAG[2], RAG[3])
-    v.band(54, 58, 4.0, 10.0, RUST)
-    return outline(tilt(v))
-
-
-def uruk_mace():
-    """masse uruk : boule herissee de pointes au bout d'un manche"""
-    v = V(24, 46)
-    v.band(2, 6, 8.0, 15.0, URU)                                 # pointes du haut
-    v.band(6, 18, 5.0, 18.0, URU)
-    v.band(18, 22, 8.0, 15.0, URU)
-    for r, a, b in ((3, 10, 13), (9, 2, 4), (9, 19, 21), (15, 2, 4), (15, 19, 21), (21, 10, 13)):
-        v.band(r, r + 2, a, b, URU)
-    v.hline(8, 7, 16, URU[0], URU[3])
-    v.band(22, 25, 10.0, 14.0, RUST)                             # collier
-    v.band(25, 42, 10.0, 13.0, DARKWOOD)                         # manche
-    v.vline(10, 26, 42, DARKWOOD[0], DARKWOOD[3])
-    for r in (28, 33, 38):
-        v.hline(r, 10, 13, RAG[1], RAG[3])
-    v.band(42, 46, 9.0, 14.0, RUST)
-    return outline(tilt(v))
+def bow_weapon(wood, grip, w0=1.4, w1=3.0, bulge=14.0, h=56):
+    """arc : un D simple, corde a droite, poignee de cuir"""
+    return outline(upright(bow(V(22, h), wood, grip, w0, w1, bulge, wrap_n=3)))
 
 
 # ---------------------------------------------------------------- la liste
 def models():
     return {
-        'elven_sword': ('Épée elfique', elven_sword()),
-        'elven_dagger': ('Dague elfique', elven_dagger()),
-        'elven_bow': ('Arc elfique', elven_bow()),
-        'elven_longbow': ('Arc long elfique', elven_longbow()),
-        'elven_spear': ('Lance elfique', elven_spear()),
-        'dwarven_sword': ('Épée naine', dwarven_sword()),
-        'dwarven_hammer': ('Marteau nain', dwarven_hammer()),
-        'dwarven_axe': ('Hache naine', dwarven_axe()),
-        'dwarven_war_pick': ('Pioche de combat', dwarven_pick()),
-        'dwarven_bow': ('Arc nain', dwarven_bow()),
-        'man_sword': ('Épée des hommes', man_sword()),
-        'man_spear': ('Lance des hommes', man_spear()),
-        'man_greatsword': ('Grande épée', man_greatsword()),
-        'man_bow': ('Arc des hommes', man_bow()),
-        'man_dagger': ('Dague des hommes', man_dagger()),
-        'uruk_scimitar': ('Cimeterre uruk', uruk_scimitar()),
-        'uruk_cleaver': ('Couperet uruk', uruk_cleaver()),
-        'uruk_machete': ('Machette uruk', uruk_machete()),
-        'uruk_spear': ('Lance uruk', uruk_spear()),
-        'uruk_mace': ('Masse uruk', uruk_mace()),
+        'elven_sword': ('Épée elfique', blade_weapon(SILVER, ELFWOOD, ELF_GOLD if False else BRONZE, L=32, W=5, G=11, H=10)),
+        'elven_dagger': ('Dague elfique', blade_weapon(SILVER, ELFWOOD, BRONZE, L=16, W=4, G=7, H=7, tip=4, fuller=False)),
+        'elven_bow': ('Arc elfique', bow_weapon(ELFWOOD, GREEN, 1.2, 2.6, 14.0, 56)),
+        'elven_longbow': ('Arc long elfique', bow_weapon(ELFWOOD, GREEN, 1.2, 2.8, 16.0, 62)),
+        'elven_spear': ('Lance elfique', shaft_weapon(SILVER, ELFWOOD, BRONZE, head=11, headw=5, L=42)),
+        'dwarven_sword': ('Épée naine', blade_weapon(STEEL, LEATHER, BRONZE, L=26, W=7, G=13, H=9)),
+        'dwarven_hammer': ('Marteau nain', head_weapon(STEEL, WOOD, DARKSTEEL, 'hammer')),
+        'dwarven_axe': ('Hache naine', head_weapon(STEEL, WOOD, DARKSTEEL, 'axe')),
+        'dwarven_war_pick': ('Pioche de combat', head_weapon(STEEL, PALEWOOD, BRASS, 'pick')),
+        'dwarven_bow': ('Arc nain', bow_weapon(WOOD, DARKWOOD, 1.8, 3.4, 12.0, 50)),
+        'man_sword': ('Épée des hommes', blade_weapon(STEEL, LEATHER, DARKSTEEL, L=30, W=5, G=11, H=9)),
+        'man_spear': ('Lance des hommes', shaft_weapon(STEEL, PALEWOOD, DARKSTEEL, head=10, headw=6, L=44)),
+        'man_greatsword': ('Grande épée', blade_weapon(STEEL, LEATHER, DARKSTEEL, L=38, W=7, G=15, H=13)),
+        'man_bow': ('Arc des hommes', bow_weapon(PALEWOOD, DARKLEATHER, 1.4, 3.0, 14.0, 58)),
+        'man_dagger': ('Dague des hommes', blade_weapon(STEEL, LEATHER, DARKSTEEL, L=15, W=4, G=7, H=7, tip=4, fuller=False)),
+        'uruk_scimitar': ('Cimeterre uruk', blade_weapon(IRON_BLACK, DARKLEATHER, IRON_BLACK, L=28, W=6, G=9, H=8)),
+        'uruk_cleaver': ('Couperet uruk', blade_weapon(IRON_BLACK, DARKLEATHER, IRON_BLACK, L=20, W=9, G=9, H=8, tip=3)),
+        'uruk_machete': ('Machette uruk', blade_weapon(IRON_BLACK, DARKLEATHER, IRON_BLACK, L=24, W=5, G=7, H=8, fuller=False)),
+        'uruk_spear': ('Lance uruk', shaft_weapon(IRON_BLACK, DARKWOOD, IRON_BLACK, head=9, headw=5, L=40)),
+        'uruk_mace': ('Masse uruk', head_weapon(IRON_BLACK, DARKWOOD, IRON_BLACK, 'mace')),
     }
 
 

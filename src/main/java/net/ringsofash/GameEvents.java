@@ -282,6 +282,7 @@ public final class GameEvents {
                 if (a != null) a.removeModifier(GROW_ID);
             }
         }
+        if (p.tickCount % 20 == 0) net.ringsofash.item.Runes.ensure(p);      // rarete des armes obtenues
         if (p.serverLevel().getGameTime() % 40 == 0) shadowSweep(p.server);
         if (p.tickCount % 100 == 0) Net.sync(p);
     }

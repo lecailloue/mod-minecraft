@@ -36,6 +36,10 @@ public final class Artifacts {
 
     public static final DeferredRegister<DataComponentType<?>> COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, RingsOfAsh.MODID);
     /** drapeau secret : cet exemplaire est un vrai artefact */
+    /** rarete d'une arme : 0 commune ... 5 ultime (voir Runes) */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> RARITY = COMPONENTS.register("rarity_tier",
+            () -> DataComponentType.<Integer>builder().persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT).build());
+
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> ARTIFACT = COMPONENTS.register("artifact",
             () -> DataComponentType.<Boolean>builder().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
 

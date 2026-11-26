@@ -42,6 +42,7 @@ public class RingsOfAsh {
         TABS.register(modBus);
         net.ringsofash.menu.ModMenus.MENUS.register(modBus);
         net.ringsofash.item.Artifacts.init(modBus);
+        net.ringsofash.item.Runes.init(net.neoforged.neoforge.common.NeoForge.EVENT_BUS);
         net.ringsofash.effect.ModEffects.EFFECTS.register(modBus);
         net.ringsofash.fluid.ModFluids.register(modBus);
         ModWorldgen.register(modBus);

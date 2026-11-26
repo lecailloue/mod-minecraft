@@ -228,6 +228,24 @@ def build():
         else:
             imodel(aid, {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'{MOD}:item/{aid}'},
                          'display': EPEE_DISPLAY})
+    # ---- runes a sertir dans les armes (meme texture pour toutes : item/rune.png)
+    RUNES = [
+        ('rune_damage_1', 'Rune de dégât I', '+1 % de dégâts.'),
+        ('rune_damage_2', 'Rune de dégât II', '+2,5 % de dégâts.'),
+        ('rune_damage_3', 'Rune de dégât III', '+4 % de dégâts.'),
+        ('rune_speed_1', 'Rune de vitesse I', "-2 % de temps d'attaque, ou de bandage pour un arc."),
+        ('rune_speed_2', 'Rune de vitesse II', "-4 % de temps d'attaque, ou de bandage pour un arc."),
+        ('rune_speed_3', 'Rune de vitesse III', "-8 % de temps d'attaque, ou de bandage pour un arc."),
+        ('rune_reach_1', 'Rune de portée I', "+1 bloc d'allonge ; les arcs tirent 2 blocs plus loin."),
+        ('rune_reach_2', 'Rune de portée II', "+2 blocs d'allonge ; les arcs tirent 4 blocs plus loin."),
+        ('rune_reach_3', 'Rune de portée III', "+3 blocs d'allonge ; les arcs tirent 6 blocs plus loin."),
+        ('rune_fire', 'Rune de feu', 'Toutes les attaques brûlent.'),
+        ('rune_wind', 'Rune de vent', "5 % de chance de projeter l'adversaire à 6 blocs de haut."),
+        ('rune_poison', 'Rune de poison', "Une chance sur deux d'empoisonner 2 secondes."),
+    ]
+    for rid, rfr, rtip in RUNES:
+        item(rid, rfr, java=f'new MiscItems.Info("{rtip}", props())')
+        imodel(rid, {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/rune'}})
     # ---- le reste des armes, arcs et batons : a refaire (voir git : tools/gear.py avant le commit a689a5f4)
     # ---- armures
     armor_set('lunargent', 'de lunargent', 'LUNARGENT', 35, '#cfe6f2', '#8fb0c8', '#58b0e0')
