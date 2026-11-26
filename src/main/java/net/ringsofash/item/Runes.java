@@ -90,10 +90,14 @@ public final class Runes {
             else if (a < 0.99F) add.add(Component.literal("   mal adaptée à cette arme (×" + fmt(a) + ")").withStyle(ChatFormatting.DARK_RED));
         }
 
-        for (Rune.Combo c : Rune.combos(s)) {
+        Rune.Combo c = Rune.combo(s);
+        if (c != null) {
             add.add(Component.literal("Combo : " + c.label).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
             add.add(Component.literal(" " + c.text).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
         }
+        // une arme ne porte qu'un combo : les autres restent endormis
+        for (Rune.Combo d : Rune.dormant(s))
+            add.add(Component.literal("En sommeil : " + d.label).withStyle(ChatFormatting.DARK_GRAY));
 
         int at = Math.min(lines.size(), 1);
         lines.addAll(at, add);

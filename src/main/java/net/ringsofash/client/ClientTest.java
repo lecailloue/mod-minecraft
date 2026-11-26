@@ -128,7 +128,7 @@ public final class ClientTest {
                     if (s.name.contains("onglet")) { mc.options.hideGui = false; mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player)); }
                     if (s.name.contains("roue")) { mc.options.hideGui = false; RingWheel.keepOpen = true; mc.setScreen(new RingWheel()); }
                     if (s.name.contains("rune_table")) { mc.options.hideGui = false; mc.setScreen(runicTable(mc)); }
-                    if (s.name.contains("rune_bulle")) { mc.options.hideGui = false; mc.setScreen(new RuneTooltip(s.name.endsWith("combo"))); }
+                    if (s.name.contains("rune_bulle")) { mc.options.hideGui = false; mc.setScreen(new RuneTooltip(s.name.endsWith("ordre") ? 2 : s.name.endsWith("combo") ? 1 : 0)); }
                     if (s.name.contains("anneaux") || s.name.contains("artefacts")) mc.options.hideGui = false;
                     if (s.name.contains("suivi")) { mc.options.hideGui = false; QuestScreen.tracked = 1; }
                     server.execute(() -> {
@@ -437,6 +437,7 @@ public final class ClientTest {
         if (ARMOR_ONLY) return;
         SCENES.add(new Scene("rune_bulle", 50, p -> { }));            // l'infobulle d'une arme sertie
         SCENES.add(new Scene("rune_bulle_combo", 50, p -> { }));      // elfique + vent = pouvoir d'Elrond
+        SCENES.add(new Scene("rune_bulle_ordre", 50, p -> { }));      // feu, magie, noire : c'est le feu qui gagne
         SCENES.add(new Scene("rune_table", 50, p -> { }));            // la table runique
         // l'Oeil de Sauron en premier : la serie de captures est longue et peut etre coupee par le delai du CI
         eyeT("95_oeil_sud", 1712, 1742, 0, 0, 40, 180F, 0F, 6000);
@@ -1685,6 +1686,16 @@ public final class ClientTest {
         return w;
     }
 
+    /** feu, puis magie, puis noire : deux combos possibles, c'est le plus ancien qui prend */
+    private static net.minecraft.world.item.ItemStack armeOrdre() {
+        net.minecraft.world.item.ItemStack w = new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.URUK_SCIMITAR.get());
+        net.ringsofash.item.Runes.setTier(w, 3);
+        net.ringsofash.item.Rune.socket(w, net.ringsofash.item.Rune.FIRE);
+        net.ringsofash.item.Rune.socket(w, net.ringsofash.item.Rune.MAGIC);
+        net.ringsofash.item.Rune.socket(w, net.ringsofash.item.Rune.BLACK);
+        return w;
+    }
+
     /** la meme arme, mais avec deux emplacements encore libres : le scellement doit etre possible */
     private static net.minecraft.world.item.ItemStack armeLibre() {
         net.minecraft.world.item.ItemStack w = new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.ELVEN_SWORD.get());
@@ -1703,15 +1714,15 @@ public final class ClientTest {
 
     /** ecran nu qui n'affiche qu'une infobulle d'arme, pour la relire sur la capture */
     private static class RuneTooltip extends net.minecraft.client.gui.screens.Screen {
-        private final boolean combo;
-        RuneTooltip(boolean combo) { super(net.minecraft.network.chat.Component.literal("infobulle")); this.combo = combo; }
+        private final int which;
+        RuneTooltip(int which) { super(net.minecraft.network.chat.Component.literal("infobulle")); this.which = which; }
 
         @Override
         public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float pt) {
             g.fill(0, 0, width, height, 0xFF202028);
             // passer par la pile elle-meme : c'est ce chemin qui declenche GatherComponents,
             // donc les cases d'emplacements dessinees
-            g.renderTooltip(font, combo ? armeElrond() : armeRunique(), 20, 60);
+            g.renderTooltip(font, which == 2 ? armeOrdre() : which == 1 ? armeElrond() : armeRunique(), 20, 60);
         }
     }
 

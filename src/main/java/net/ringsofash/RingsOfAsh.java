@@ -44,6 +44,7 @@ public class RingsOfAsh {
         net.ringsofash.item.Artifacts.init(modBus);
         net.ringsofash.item.Runes.init(net.neoforged.neoforge.common.NeoForge.EVENT_BUS);
         net.ringsofash.item.RuneEffects.init(net.neoforged.neoforge.common.NeoForge.EVENT_BUS);
+        net.ringsofash.world.TownRespect.init(net.neoforged.neoforge.common.NeoForge.EVENT_BUS);
         net.ringsofash.effect.ModEffects.EFFECTS.register(modBus);
         net.ringsofash.fluid.ModFluids.register(modBus);
         ModWorldgen.register(modBus);

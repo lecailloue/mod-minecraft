@@ -249,6 +249,16 @@ public enum Rune {
             if (other != null) return other;
             return exact != null ? exact.label() : family.label + " " + new String[]{"I", "II", "III"}[min - 1];
         }
+
+        /** le rang, dans l'ordre de scellement, de la rune qui remplit cette exigence */
+        int rank(List<Rune> runes) {
+            if (other != null) return Integer.MAX_VALUE;          // une condition n'a pas de rang
+            for (int i = 0; i < runes.size(); i++) {
+                Rune r = runes.get(i);
+                if (exact != null ? r == exact : (r.family == family && r.level >= min)) return i;
+            }
+            return Integer.MAX_VALUE;
+        }
     }
 
     public enum Combo {
@@ -271,15 +281,51 @@ public enum Rune {
 
         public boolean active(List<Rune> runes) { return a.met(runes) && b.met(runes); }
 
+        /**
+         * De quelles runes ce combo depend, par leur ordre de scellement. Sert a departager
+         * deux combos possibles : c'est celui dont les runes ont ete posees le plus tot
+         * qui prend la main.
+         */
+        long key(List<Rune> runes) {
+            int ra = Math.min(a.rank(runes), 999), rb = Math.min(b.rank(runes), 999);
+            int lo = Math.min(ra, rb), hi = Math.max(ra, rb);
+            return (long) lo * 1000L + hi;
+        }
+
         /** ce qu'il faut pour l'ouvrir, pour l'ecrire dans la table */
         public String recipe() { return a.label() + " + " + b.label(); }
     }
 
-    public static List<Combo> combos(ItemStack weapon) {
+    /**
+     * Une arme n'a qu'un seul combo : les pouvoirs ne s'additionnent pas. Si deux combos
+     * sont possibles, c'est celui dont les runes ont ete scellees le plus tot qui l'emporte.
+     * Feu, puis magie, puis noire : la noire se marie au feu, pas a la magie.
+     */
+    public static Combo combo(ItemStack weapon) {
         List<Rune> runes = on(weapon);
+        if (runes.isEmpty()) return null;
+        Combo best = null;
+        long bestKey = Long.MAX_VALUE;
+        for (Combo c : Combo.values()) {
+            if (!c.active(runes)) continue;
+            long k = c.key(runes);
+            if (k < bestKey) { bestKey = k; best = c; }
+        }
+        return best;
+    }
+
+    /** le combo retenu, sous forme de liste pour s'ecrire simplement ailleurs */
+    public static List<Combo> combos(ItemStack weapon) {
+        Combo c = combo(weapon);
+        return c == null ? List.of() : List.of(c);
+    }
+
+    /** les combos que l'arme aurait pu avoir, mais qui dorment : un seul peut s'eveiller */
+    public static List<Combo> dormant(ItemStack weapon) {
+        List<Rune> runes = on(weapon);
+        Combo keep = combo(weapon);
         List<Combo> out = new ArrayList<>();
-        if (runes.size() < 2) return out;
-        for (Combo c : Combo.values()) if (c.active(runes)) out.add(c);
+        for (Combo c : Combo.values()) if (c != keep && c.active(runes)) out.add(c);
         return out;
     }
 
