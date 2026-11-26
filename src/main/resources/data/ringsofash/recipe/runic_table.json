@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","category":"misc","pattern":["ooo","#b#","###"],"key":{"o":{"item":"ringsofash:orrune_ingot"},"b":{"item":"ringsofash:dwarven_runes"},"#":{"item":"minecraft:deepslate_bricks"}},"result":{"id":"ringsofash:runic_table","count":1}}

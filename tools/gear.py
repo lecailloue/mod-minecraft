@@ -242,10 +242,21 @@ def build():
         ('rune_fire', 'Rune de feu', 'Toutes les attaques brûlent.'),
         ('rune_wind', 'Rune de vent', "5 % de chance de projeter l'adversaire à 6 blocs de haut."),
         ('rune_poison', 'Rune de poison', "Une chance sur deux d'empoisonner 2 secondes."),
+        ('rune_solidity_1', 'Rune de solidité I', "L'arme s'use un tiers moins vite, mais frappe un peu moins vite."),
+        ('rune_solidity_2', 'Rune de solidité II', "L'arme s'use 60 % moins vite, mais frappe moins vite."),
+        ('rune_solidity_3', 'Rune de solidité III', "L'arme s'use 80 % moins vite, mais frappe nettement moins vite."),
     ]
     for rid, rfr, rtip in RUNES:
         item(rid, rfr, java=f'new MiscItems.Info("{rtip}", props())')
         imodel(rid, {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/rune'}})
+    # ---- les deux runes a part : texture propre (voir tools/runes_assets.py)
+    SPECIAUX = [
+        ('rune_black', 'Rune noire', "+25 % de dégâts et un emplacement de plus. Chaque coup porté nourrit la malédiction.", 'rune_black', 'Rarity.EPIC'),
+        ('runic_upgrade', 'Amélioration runique', "À la table runique : fait monter une arme d'une rareté et lui ouvre un emplacement.", 'runic_upgrade', 'Rarity.RARE'),
+    ]
+    for rid, rfr, rtip, rtex, rrar in SPECIAUX:
+        item(rid, rfr, java=f'new MiscItems.Info("{rtip}", props().rarity({rrar}))')
+        imodel(rid, {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MOD}:item/{rtex}'}})
     # ---- le reste des armes, arcs et batons : a refaire (voir git : tools/gear.py avant le commit a689a5f4)
     # ---- armures
     armor_set('lunargent', 'de lunargent', 'LUNARGENT', 35, '#cfe6f2', '#8fb0c8', '#58b0e0')

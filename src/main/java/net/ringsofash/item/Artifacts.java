@@ -40,6 +40,13 @@ public final class Artifacts {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> RARITY = COMPONENTS.register("rarity_tier",
             () -> DataComponentType.<Integer>builder().persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT).build());
 
+    /** runes scellees sur une arme, dans l'ordre ou elles ont ete posees (voir Rune) */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<java.util.List<String>>> SOCKETS = COMPONENTS.register("sockets",
+            () -> DataComponentType.<java.util.List<String>>builder()
+                    .persistent(Codec.STRING.listOf())
+                    .networkSynchronized(ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()))
+                    .build());
+
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> ARTIFACT = COMPONENTS.register("artifact",
             () -> DataComponentType.<Boolean>builder().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
 

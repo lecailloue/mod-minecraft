@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"epee"};
+    private static final String[] ONLY = {"rune"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -127,6 +127,8 @@ public final class ClientTest {
                     RingWheel.keepOpen = false;
                     if (s.name.contains("onglet")) { mc.options.hideGui = false; mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player)); }
                     if (s.name.contains("roue")) { mc.options.hideGui = false; RingWheel.keepOpen = true; mc.setScreen(new RingWheel()); }
+                    if (s.name.contains("rune_table")) { mc.options.hideGui = false; mc.setScreen(runicTable(mc)); }
+                    if (s.name.contains("rune_bulle")) { mc.options.hideGui = false; mc.setScreen(new RuneTooltip()); }
                     if (s.name.contains("anneaux") || s.name.contains("artefacts")) mc.options.hideGui = false;
                     if (s.name.contains("suivi")) { mc.options.hideGui = false; QuestScreen.tracked = 1; }
                     server.execute(() -> {
@@ -433,6 +435,8 @@ public final class ClientTest {
     private static void scenes() {
         armourScenes();
         if (ARMOR_ONLY) return;
+        SCENES.add(new Scene("rune_bulle", 50, p -> { }));            // l'infobulle d'une arme sertie
+        SCENES.add(new Scene("rune_table", 50, p -> { }));            // la table runique
         // l'Oeil de Sauron en premier : la serie de captures est longue et peut etre coupee par le delai du CI
         eyeT("95_oeil_sud", 1712, 1742, 0, 0, 40, 180F, 0F, 6000);
         eyeT("99_oeil_haut", 1712, 1742, 20, 25, 30, 150F, 35F, 6000);
@@ -1657,6 +1661,39 @@ public final class ClientTest {
             lands.setDayTime(time);
             view(p, lands, pl[0] + fx - 160 + 0.5, py + fy, pl[1] + fz - 160 + 0.5, yaw, pitch);
         }));
+    }
+
+    // ---------------------------------------------------------------- runes
+
+    /** une arme deja sertie, pour voir l'infobulle et la table sans rien faire a la main */
+    private static net.minecraft.world.item.ItemStack armeRunique() {
+        net.minecraft.world.item.ItemStack w = new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.ELVEN_SWORD.get());
+        net.ringsofash.item.Runes.setTier(w, 4);                       // legendaire : 4 emplacements
+        net.ringsofash.item.Rune.socket(w, net.ringsofash.item.Rune.DAMAGE_2);
+        net.ringsofash.item.Rune.socket(w, net.ringsofash.item.Rune.FIRE);
+        net.ringsofash.item.Rune.socket(w, net.ringsofash.item.Rune.SPEED_1);
+        return w;
+    }
+
+    private static net.minecraft.client.gui.screens.Screen runicTable(Minecraft mc) {
+        net.ringsofash.menu.RunicMenu m = new net.ringsofash.menu.RunicMenu(1, mc.player.getInventory());
+        m.put(0, armeRunique());
+        m.put(1, net.ringsofash.item.Rune.POISON.stack());
+        m.put(2, new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.ORRUNE_INGOT.get(), 8));
+        return new RunicScreen(m, mc.player.getInventory(), net.minecraft.network.chat.Component.literal("Table runique"));
+    }
+
+    /** ecran nu qui n'affiche qu'une infobulle d'arme, pour la relire sur la capture */
+    private static class RuneTooltip extends net.minecraft.client.gui.screens.Screen {
+        RuneTooltip() { super(net.minecraft.network.chat.Component.literal("infobulle")); }
+
+        @Override
+        public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float pt) {
+            g.fill(0, 0, width, height, 0xFF202028);
+            net.minecraft.world.item.ItemStack w = armeRunique();
+            g.renderTooltip(font, net.minecraft.client.gui.screens.Screen.getTooltipFromItem(Minecraft.getInstance(), w),
+                    java.util.Optional.empty(), 40, 60);
+        }
     }
 
     private static void spotT(String name, int x, int z, int up, float yaw, float pitch, int time) {

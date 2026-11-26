@@ -200,6 +200,7 @@ public final class Reg {
     public static final DeferredBlock<Block> ROPE = BLOCKS.register("rope", () -> new RopeBlock(BlockBehaviour.Properties.of().noCollission().strength(0.2F).sound(SoundType.WOOL).noOcclusion()));
     public static final DeferredBlock<Block> DWARVEN_FORGE = BLOCKS.register("dwarven_forge", () -> new ForgeBlock(copy(Blocks.DEEPSLATE_BRICKS).noOcclusion().strength(5.0F, 8.0F).lightLevel(s -> ForgeBlock.isCenter(s) ? 13 : 0)));
     public static final DeferredBlock<Block> ALARM_PYRE = BLOCKS.register("alarm_pyre", () -> new AlarmPyreBlock(copy(Blocks.OAK_PLANKS).lightLevel(s -> s.getValue(AlarmPyreBlock.LIT) ? 15 : 0)));
+    public static final DeferredBlock<Block> RUNIC_TABLE = BLOCKS.register("runic_table", () -> new net.ringsofash.block.RunicTableBlock(copy(Blocks.DEEPSLATE_BRICKS).strength(4.0F, 7.0F).lightLevel(s -> 6)));
 
     public static final DeferredItem<BlockItem> BI_ASH_BLOCK = ITEMS.registerSimpleBlockItem("ash_block", ASH_BLOCK);
     public static final DeferredItem<BlockItem> BI_VOLCANIC_ROCK = ITEMS.registerSimpleBlockItem("volcanic_rock", VOLCANIC_ROCK);
@@ -371,6 +372,7 @@ public final class Reg {
     public static final DeferredItem<BlockItem> BI_SMOKE_VENT = ITEMS.registerSimpleBlockItem("smoke_vent", SMOKE_VENT);
     public static final DeferredItem<Item> BI_DWARVEN_FORGE = ITEMS.register("dwarven_forge", () -> new ForgeItem(DWARVEN_FORGE.get(), props()));
     public static final DeferredItem<BlockItem> BI_ALARM_PYRE = ITEMS.registerSimpleBlockItem("alarm_pyre", ALARM_PYRE);
+    public static final DeferredItem<BlockItem> BI_RUNIC_TABLE = ITEMS.registerSimpleBlockItem("runic_table", RUNIC_TABLE);
 
     public static final DeferredItem<Item> RAW_LUNARGENT = ITEMS.register("raw_lunargent", () -> new Item(props()));
     public static final DeferredItem<Item> RAW_SOMBREFER = ITEMS.register("raw_sombrefer", () -> new Item(props()));
@@ -634,6 +636,11 @@ public final class Reg {
     public static final DeferredItem<Item> RUNE_FIRE = ITEMS.register("rune_fire", () -> new MiscItems.Info("Toutes les attaques brûlent.", props()));
     public static final DeferredItem<Item> RUNE_WIND = ITEMS.register("rune_wind", () -> new MiscItems.Info("5 % de chance de projeter l'adversaire à 6 blocs de haut.", props()));
     public static final DeferredItem<Item> RUNE_POISON = ITEMS.register("rune_poison", () -> new MiscItems.Info("Une chance sur deux d'empoisonner 2 secondes.", props()));
+    public static final DeferredItem<Item> RUNE_SOLIDITY_1 = ITEMS.register("rune_solidity_1", () -> new MiscItems.Info("L'arme s'use un tiers moins vite, mais frappe un peu moins vite.", props()));
+    public static final DeferredItem<Item> RUNE_SOLIDITY_2 = ITEMS.register("rune_solidity_2", () -> new MiscItems.Info("L'arme s'use 60 % moins vite, mais frappe moins vite.", props()));
+    public static final DeferredItem<Item> RUNE_SOLIDITY_3 = ITEMS.register("rune_solidity_3", () -> new MiscItems.Info("L'arme s'use 80 % moins vite, mais frappe nettement moins vite.", props()));
+    public static final DeferredItem<Item> RUNE_BLACK = ITEMS.register("rune_black", () -> new MiscItems.Info("+25 % de dégâts et un emplacement de plus. Chaque coup porté nourrit la malédiction.", props().rarity(Rarity.EPIC)));
+    public static final DeferredItem<Item> RUNIC_UPGRADE = ITEMS.register("runic_upgrade", () -> new MiscItems.Info("À la table runique : fait monter une arme d'une rareté et lui ouvre un emplacement.", props().rarity(Rarity.RARE)));
 
     public static final DeferredItem<Item> CROW_SPAWN_EGG = ITEMS.register("crow_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.CROW, 0x1a181e, 0x3c3832, props()));
     public static final DeferredItem<Item> DEER_SPAWN_EGG = ITEMS.register("deer_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.DEER, 0x8a6442, 0x3a2a1e, props()));

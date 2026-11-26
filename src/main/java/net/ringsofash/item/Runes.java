@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -67,16 +68,66 @@ public final class Runes {
         }
     }
 
-    /** la rareté s'écrit sous le nom de l'arme, en couleur */
+    /** la rareté s'écrit sous le nom de l'arme, puis les emplacements et les runes scellées */
     private static void tooltip(ItemTooltipEvent e) {
         ItemStack s = e.getItemStack();
         if (!runic(s)) return;
         int t = tier(s);
         if (t < 0) return;
         List<Component> lines = e.getToolTip();
-        Component line = Component.literal(NAMES[t]).withStyle(COLORS[t]);
-        if (lines.size() > 1) lines.add(1, line);
-        else lines.add(line);
+        List<Component> add = new java.util.ArrayList<>();
+        add.add(Component.literal(NAMES[t]).withStyle(COLORS[t]));
+
+        int slots = Rune.slots(s);
+        List<Rune> runes = Rune.on(s);
+        if (slots > 0 || !runes.isEmpty()) {
+            MutableComponent boxes = Component.literal("Emplacements ").withStyle(ChatFormatting.DARK_GRAY);
+            for (Rune r : runes) {
+                for (int i = 0; i < r.cost(); i++) boxes.append(Component.literal("◆").withStyle(r.color()));
+            }
+            for (int i = Rune.used(s); i < slots; i++) boxes.append(Component.literal("◇").withStyle(ChatFormatting.DARK_GRAY));
+            add.add(boxes);
+        }
+
+        for (Rune r : runes) {
+            MutableComponent line = Component.literal(" ").append(Component.literal(r.label()).withStyle(r.color()));
+            String d = effects(r, s);
+            if (!d.isEmpty()) line.append(Component.literal("  " + d).withStyle(ChatFormatting.GRAY));
+            add.add(line);
+            float a = r.affinity(s);
+            if (a > 1.01F) add.add(Component.literal("   affinité ×" + fmt(a) + " avec cette arme").withStyle(ChatFormatting.DARK_GREEN));
+            else if (a < 0.99F) add.add(Component.literal("   mal adaptée à cette arme (×" + fmt(a) + ")").withStyle(ChatFormatting.DARK_RED));
+        }
+
+        for (Rune.Combo c : Rune.combos(s)) {
+            add.add(Component.literal("Combo : " + c.label).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+            add.add(Component.literal(" " + c.text).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
+        }
+
+        int at = Math.min(lines.size(), 1);
+        lines.addAll(at, add);
+    }
+
+    /** ce que la rune fait sur cette arme-la, affinite comprise */
+    private static String effects(Rune r, ItemStack weapon) {
+        float a = r.affinity(weapon);
+        List<String> parts = new java.util.ArrayList<>();
+        if (r.dmg != 0) parts.add(pct(r.dmg > 0 ? r.dmg * a : r.dmg) + " dégâts");
+        if (r.speed != 0) parts.add(pct(r.speed > 0 ? r.speed * a : r.speed) + " vitesse");
+        if (r.reach != 0) parts.add(sign(r.reach * a) + fmt(Math.abs(r.reach * a)) + " bloc d'allonge");
+        if (r.wear != 0) parts.add(r.wear < 0 ? pct(r.wear * a) + " d'usure" : "usure doublée");
+        if (r == Rune.FIRE) parts.add("les coups brûlent");
+        if (r == Rune.WIND) parts.add("5 % de projection");
+        if (r == Rune.POISON) parts.add("50 % d'empoisonnement");
+        if (r.corrupt > 0) parts.add("+" + r.corrupt + " de malédiction par coup");
+        if (r.bonusSlot > 0) parts.add("+" + r.bonusSlot + " emplacement");
+        return String.join(", ", parts);
+    }
+
+    private static String pct(float v) { return sign(v) + fmt(Math.abs(v)) + " %"; }
+    private static String sign(float v) { return v < 0 ? "−" : "+"; }
+    private static String fmt(float v) {
+        return Math.abs(v - Math.round(v)) < 0.05F ? String.valueOf(Math.round(v)) : String.format("%.1f", v).replace('.', ',');
     }
 
     static {
