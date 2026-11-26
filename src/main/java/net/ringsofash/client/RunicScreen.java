@@ -60,14 +60,16 @@ public class RunicScreen extends AbstractContainerScreen<RunicMenu> {
         ItemStack w = menu.weapon();
         // les emplacements de l'arme, a droite de sa case
         if (Runes.runic(w)) {
-            int slots = Rune.slots(w), used = Rune.used(w), bx = x + 30, by = y + 27;
+            int slots = Rune.slots(w), used = Rune.used(w), by = y + 27;
+            String count = used + "/" + slots;
+            g.drawString(font, count, x + 30, by - 1, 0xFF9A90A8, false);
+            int bx = x + 32 + font.width(count);
             int i = 0;
             for (Rune r : Rune.on(w)) {
                 Integer c = r.color().getColor();
-                for (int k = 0; k < r.cost(); k++, i++) box(g, bx + i * 7, by, c == null ? 0xFFFFFFFF : 0xFF000000 | c);
+                for (int k = 0; k < r.cost(); k++, i++) box(g, bx + i * 6, by, c == null ? 0xFFFFFFFF : 0xFF000000 | c);
             }
-            for (; i < slots; i++) box(g, bx + i * 7, by, 0xFF4A4452);
-            g.drawString(font, used + " / " + slots, bx + Math.max(slots, 1) * 7 + 4, by - 1, 0xFF9A90A8, false);
+            for (; i < slots; i++) box(g, bx + i * 6, by, 0xFF4A4452);
         } else {
             g.drawString(font, "Arme", x + 30, y + 26, 0xFF9A90A8, false);
         }

@@ -200,6 +200,20 @@ public enum Rune {
         if (old != null) keys.addAll(old);
         keys.add(r.path);
         weapon.set(Artifacts.SOCKETS.get(), List.copyOf(keys));
+        wear(weapon, r);
+    }
+
+    /**
+     * L'usure se regle une fois pour toutes : on change la durabilite maximale de
+     * l'exemplaire. Une rune de solidite I (-33 % d'usure) fait durer l'arme une fois
+     * et demie plus longtemps ; la rune de feu la fait durer deux fois moins.
+     */
+    private static void wear(ItemStack weapon, Rune r) {
+        if (r.wear == 0 || !weapon.isDamageableItem()) return;
+        float w = r.wear < 0 ? r.wear * r.affinity(weapon) : r.wear;
+        int max = Math.max(1, Math.round(weapon.getMaxDamage() * (100F / (100F + w))));
+        weapon.set(net.minecraft.core.component.DataComponents.MAX_DAMAGE, max);
+        if (weapon.getDamageValue() > max - 1) weapon.setDamageValue(max - 1);
     }
 
     // ------------------------------------------------------------------ combos
