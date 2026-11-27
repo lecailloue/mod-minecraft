@@ -19,38 +19,74 @@ import net.minecraft.world.item.ItemStack;
  * un marteau) et les combos (deux runes de familles differentes ouvrent un bonus cache).
  */
 public enum Rune {
-    //      chemin de l'objet   famille          niv  degats  vitesse  allonge  usure  corruption  emplacement
-    DAMAGE_1("rune_damage_1",   Family.DEGATS,   1,    1.0F,   -1.0F,    0F,      0F,     0,          0),
-    DAMAGE_2("rune_damage_2",   Family.DEGATS,   2,    2.5F,   -2.0F,    0F,      0F,     0,          0),
-    DAMAGE_3("rune_damage_3",   Family.DEGATS,   3,    4.0F,   -3.0F,    0F,      0F,     0,          0),
-    SPEED_1 ("rune_speed_1",    Family.TEMPO,    1,   -1.0F,    2.0F,    0F,      0F,     0,          0),
-    SPEED_2 ("rune_speed_2",    Family.TEMPO,    2,   -2.0F,    4.0F,    0F,      0F,     0,          0),
-    SPEED_3 ("rune_speed_3",    Family.TEMPO,    3,   -3.0F,    8.0F,    0F,      0F,     0,          0),
-    REACH_1 ("rune_reach_1",    Family.ALLONGE,  1,   -3.0F,    0F,      1.0F,    0F,     0,          0),
-    REACH_2 ("rune_reach_2",    Family.ALLONGE,  2,   -6.0F,    0F,      2.0F,    0F,     0,          0),
-    REACH_3 ("rune_reach_3",    Family.ALLONGE,  3,  -10.0F,    0F,      3.0F,    0F,     0,          0),
-    SOLID_1 ("rune_solidity_1", Family.CORPS,    1,    0F,     -2.0F,    0F,    -33F,     0,          0),
-    SOLID_2 ("rune_solidity_2", Family.CORPS,    2,    0F,     -4.0F,    0F,    -60F,     0,          0),
-    SOLID_3 ("rune_solidity_3", Family.CORPS,    3,    0F,     -6.0F,    0F,    -80F,     0,          0),
-    FIRE    ("rune_fire",       Family.ELEMENT,  1,    0F,      0F,      0F,    100F,     0,          0),
-    WIND    ("rune_wind",       Family.ELEMENT,  1,   -5.0F,    0F,      0F,      0F,     0,          0),
-    POISON  ("rune_poison",     Family.ELEMENT,  1,   -5.0F,    0F,      0F,      0F,     0,          0),
-    ICE     ("rune_ice",        Family.ELEMENT,  1,   -5.0F,    0F,      0F,      0F,     0,          0),
-    ELVEN   ("rune_elven",      Family.PEUPLES,  2,    0F,      0F,      0F,      0F,     0,          0),
-    HOBBIT  ("rune_hobbit",     Family.PEUPLES,  2,    0F,      0F,      0F,      0F,     0,          0),
-    FOREST  ("rune_forest",     Family.PEUPLES,  2,    0F,      0F,      0F,      0F,     0,          0),
-    MAGIC   ("rune_magic",      Family.MAGIE,    1,    0F,      0F,      0F,      0F,     0,          0),
-    BLACK   ("rune_black",      Family.NOIRE,    1,   25.0F,    0F,      0F,      0F,     2,          1);
+    //      chemin de l'objet   famille          niv  degats  vitesse  allonge  usure  corruption  emplacement  ou elle tient
+    DAMAGE_1("rune_damage_1",   Family.DEGATS,   1,    1.0F,   -1.0F,    0F,      0F,     0,          0, Fit.ARME),
+    DAMAGE_2("rune_damage_2",   Family.DEGATS,   2,    2.5F,   -2.0F,    0F,      0F,     0,          0, Fit.ARME),
+    DAMAGE_3("rune_damage_3",   Family.DEGATS,   3,    4.0F,   -3.0F,    0F,      0F,     0,          0, Fit.ARME),
+    SPEED_1 ("rune_speed_1",    Family.TEMPO,    1,   -1.0F,    2.0F,    0F,      0F,     0,          0, Fit.TOUT),
+    SPEED_2 ("rune_speed_2",    Family.TEMPO,    2,   -2.0F,    4.0F,    0F,      0F,     0,          0, Fit.TOUT),
+    SPEED_3 ("rune_speed_3",    Family.TEMPO,    3,   -3.0F,    8.0F,    0F,      0F,     0,          0, Fit.TOUT),
+    REACH_1 ("rune_reach_1",    Family.ALLONGE,  1,   -3.0F,    0F,      1.0F,    0F,     0,          0, Fit.ARME),
+    REACH_2 ("rune_reach_2",    Family.ALLONGE,  2,   -6.0F,    0F,      2.0F,    0F,     0,          0, Fit.ARME),
+    REACH_3 ("rune_reach_3",    Family.ALLONGE,  3,  -10.0F,    0F,      3.0F,    0F,     0,          0, Fit.ARME),
+    SOLID_1 ("rune_solidity_1", Family.CORPS,    1,    0F,     -2.0F,    0F,    -33F,     0,          0, Fit.TOUT),
+    SOLID_2 ("rune_solidity_2", Family.CORPS,    2,    0F,     -4.0F,    0F,    -60F,     0,          0, Fit.TOUT),
+    SOLID_3 ("rune_solidity_3", Family.CORPS,    3,    0F,     -6.0F,    0F,    -80F,     0,          0, Fit.TOUT),
+    FIRE    ("rune_fire",       Family.ELEMENT,  1,    0F,      0F,      0F,    100F,     0,          0, Fit.ARME),
+    WIND    ("rune_wind",       Family.ELEMENT,  1,   -5.0F,    0F,      0F,      0F,     0,          0, Fit.ARME),
+    POISON  ("rune_poison",     Family.ELEMENT,  1,   -5.0F,    0F,      0F,      0F,     0,          0, Fit.ARME),
+    ICE     ("rune_ice",        Family.ELEMENT,  1,   -5.0F,    0F,      0F,      0F,     0,          0, Fit.ARME),
+    ELVEN   ("rune_elven",      Family.PEUPLES,  2,    0F,      0F,      0F,      0F,     0,          0, Fit.ARME),
+    HOBBIT  ("rune_hobbit",     Family.PEUPLES,  2,    0F,      0F,      0F,      0F,     0,          0, Fit.ARME),
+    FOREST  ("rune_forest",     Family.PEUPLES,  2,    0F,      0F,      0F,      0F,     0,          0, Fit.ARME),
+    MAGIC   ("rune_magic",      Family.MAGIE,    1,    0F,      0F,      0F,      0F,     0,          0, Fit.ARME),
+    BLACK   ("rune_black",      Family.NOIRE,    1,   25.0F,    0F,      0F,      0F,     2,          1, Fit.ARME),
+
+    // ---- les runes d'armure
+    PROT_1  ("rune_protection_1", Family.PROTECTION, 1, 0F, 0F, 0F,   0F, 0, 0, Fit.ARMURE),
+    PROT_2  ("rune_protection_2", Family.PROTECTION, 2, 0F, 0F, 0F,   0F, 0, 0, Fit.ARMURE),
+    PROT_3  ("rune_protection_3", Family.PROTECTION, 3, 0F, 0F, 0F,   0F, 0, 0, Fit.ARMURE),
+    THORN_1 ("rune_thorns_1",     Family.EPINES,     1, 0F, 0F, 0F,  50F, 0, 0, Fit.ARMURE),
+    THORN_2 ("rune_thorns_2",     Family.EPINES,     2, 0F, 0F, 0F, 100F, 0, 0, Fit.ARMURE),
+    THORN_3 ("rune_thorns_3",     Family.EPINES,     3, 0F, 0F, 0F, 150F, 0, 0, Fit.ARMURE),
+    JUMP_1  ("rune_jump_1",       Family.SAUT,       1, 0F, 0F, 0F,   0F, 0, 0, Fit.BOTTES),
+    JUMP_2  ("rune_jump_2",       Family.SAUT,       2, 0F, 0F, 0F,   0F, 0, 0, Fit.BOTTES),
+    JUMP_3  ("rune_jump_3",       Family.SAUT,       3, 0F, 0F, 0F,   0F, 0, 0, Fit.BOTTES),
+    SWIM_1  ("rune_swim_1",       Family.NAGE,       1, 0F, 0F, 0F,   0F, 0, 0, Fit.BOTTES),
+    SWIM_2  ("rune_swim_2",       Family.NAGE,       2, 0F, 0F, 0F,   0F, 0, 0, Fit.BOTTES),
+    SWIM_3  ("rune_swim_3",       Family.NAGE,       3, 0F, 0F, 0F,   0F, 0, 0, Fit.BOTTES),
+    LIGHT   ("rune_light",        Family.LUMIERE,    1, 0F, 0F, 0F,   0F, 0, 0, Fit.ARMURE),
+    CAVE    ("rune_cave",         Family.MINE,       1, 0F, 0F, 0F,   0F, 0, 0, Fit.ARMURE),
+    BREATH  ("rune_breath",       Family.SOUFFLE,    1, 0F, 0F, 0F,   0F, 0, 0, Fit.CASQUE);
+
+    /** sur quoi la rune peut etre scellee */
+    public enum Fit {
+        ARME("une arme"), ARMURE("une pièce d'armure"), BOTTES("des bottes"),
+        CASQUE("un casque"), TOUT("une arme ou une armure");
+        public final String label;
+        Fit(String l) { this.label = l; }
+    }
+
+    /** la piece dont il s'agit */
+    public enum Gear {
+        WEAPON, BOW, HELMET, CHEST, LEGS, BOOTS;
+        public boolean armor() { return this != WEAPON && this != BOW; }
+    }
 
     /** une seule rune par famille sur une arme */
     public enum Family {
         DEGATS("Dégâts"), TEMPO("Tempo"), ALLONGE("Allonge"), ELEMENT("Élément"),
-        CORPS("Corps"), PEUPLES("Peuples"), MAGIE("Magie"), NOIRE("Ténèbres");
+        CORPS("Corps"), PEUPLES("Peuples"), MAGIE("Magie"), NOIRE("Ténèbres"),
+        PROTECTION("Protection"), EPINES("Épines"), SAUT("Saut"), NAGE("Nage"),
+        LUMIERE("Lumière"), MINE("Mine"), SOUFFLE("Souffle");
         public final String label;
         Family(String l) { this.label = l; }
 
         /** seules ces familles ont trois niveaux, donc seules elles se fusionnent */
-        public boolean graded() { return this == DEGATS || this == TEMPO || this == ALLONGE || this == CORPS; }
+        public boolean graded() {
+            return this == DEGATS || this == TEMPO || this == ALLONGE || this == CORPS
+                    || this == PROTECTION || this == EPINES || this == SAUT || this == NAGE;
+        }
     }
 
     /** familles d'armes, pour les affinites */
@@ -61,12 +97,50 @@ public enum Rune {
     public final int level;
     public final float dmg, speed, reach, wear;
     public final int corrupt, bonusSlot;
+    public final Fit fit;
 
-    Rune(String path, Family family, int level, float dmg, float speed, float reach, float wear, int corrupt, int bonusSlot) {
+    Rune(String path, Family family, int level, float dmg, float speed, float reach, float wear, int corrupt, int bonusSlot, Fit fit) {
         this.path = path; this.family = family; this.level = level;
         this.dmg = dmg; this.speed = speed; this.reach = reach; this.wear = wear;
-        this.corrupt = corrupt; this.bonusSlot = bonusSlot;
+        this.corrupt = corrupt; this.bonusSlot = bonusSlot; this.fit = fit;
     }
+
+    // ---------------------------------------------------------- ce que font les runes d'armure
+
+    /** points d'armure rendus par la rune de protection */
+    public float armorBonus() {
+        return switch (this) { case PROT_1 -> 1F; case PROT_2 -> 2F; case PROT_3 -> 4F; default -> 0F; };
+    }
+
+    /** pourcentage de vitesse de deplacement : les runes de vitesse donnent, la protection pese */
+    public float moveBonus() {
+        return switch (this) {
+            case SPEED_1 -> 2F; case SPEED_2 -> 4F; case SPEED_3 -> 8F;
+            case PROT_1 -> -2F; case PROT_2 -> -4F; case PROT_3 -> -6F;
+            default -> 0F;
+        };
+    }
+
+    /** degats renvoyes a qui te frappe */
+    public float thorns() {
+        return switch (this) { case THORN_1 -> 1F; case THORN_2 -> 2F; case THORN_3 -> 4F; default -> 0F; };
+    }
+
+    /** niveau de l'effet de saut (0 = aucun) */
+    public int jumpLevel() {
+        return switch (this) { case JUMP_1 -> 1; case JUMP_2 -> 2; case JUMP_3 -> 3; default -> 0; };
+    }
+
+    /** aisance dans l'eau, de 0 a 1 */
+    public float swim() {
+        return switch (this) { case SWIM_1 -> 0.25F; case SWIM_2 -> 0.5F; case SWIM_3 -> 1.0F; default -> 0F; };
+    }
+
+    /** souffle gagne sous l'eau, en multiples de la reserve normale */
+    public float oxygen() { return this == BREATH ? 2F : 0F; }
+
+    /** vitesse de creusement en plus, en pourcentage */
+    public float dig() { return this == CAVE ? 20F : 0F; }
 
     /** cout en emplacements : le niveau de la rune */
     public int cost() { return level; }
@@ -79,6 +153,13 @@ public enum Rune {
             case CORPS -> "Solidité";
             case NOIRE -> "Rune noire";
             case MAGIE -> "Magie";
+            case PROTECTION -> "Protection";
+            case EPINES -> "Épines";
+            case SAUT -> "Saut";
+            case NAGE -> "Nage";
+            case LUMIERE -> "Lumière";
+            case MINE -> "Grotte";
+            case SOUFFLE -> "Souffle";
             case PEUPLES -> this == ELVEN ? "Elfique" : (this == HOBBIT ? "Hobbit" : "Forêt");
             case ELEMENT -> this == FIRE ? "Feu" : (this == WIND ? "Vent" : (this == POISON ? "Poison" : "Glace"));
         };
@@ -95,6 +176,13 @@ public enum Rune {
             case PEUPLES -> ChatFormatting.DARK_GREEN;
             case MAGIE -> ChatFormatting.LIGHT_PURPLE;
             case NOIRE -> ChatFormatting.DARK_PURPLE;
+            case PROTECTION -> ChatFormatting.BLUE;
+            case EPINES -> ChatFormatting.DARK_RED;
+            case SAUT -> ChatFormatting.GREEN;
+            case NAGE -> ChatFormatting.DARK_AQUA;
+            case LUMIERE -> ChatFormatting.YELLOW;
+            case MINE -> ChatFormatting.GRAY;
+            case SOUFFLE -> ChatFormatting.AQUA;
         };
     }
 
@@ -128,6 +216,31 @@ public enum Rune {
 
     // ------------------------------------------------------------------ affinites
 
+    /** arme, arc, ou piece d'armure : c'est ce qui decide des runes acceptees */
+    public static Gear gear(ItemStack s) {
+        if (s.getItem() instanceof net.minecraft.world.item.ArmorItem a) {
+            return switch (a.getType()) {
+                case HELMET -> Gear.HELMET;
+                case CHESTPLATE, BODY -> Gear.CHEST;
+                case LEGGINGS -> Gear.LEGS;
+                case BOOTS -> Gear.BOOTS;
+            };
+        }
+        return grip(s) == Grip.BOW ? Gear.BOW : Gear.WEAPON;
+    }
+
+    /** la rune tient-elle sur cette piece ? */
+    public boolean fits(ItemStack s) {
+        Gear g = gear(s);
+        return switch (fit) {
+            case ARME -> !g.armor();
+            case ARMURE -> g.armor();
+            case BOTTES -> g == Gear.BOOTS;
+            case CASQUE -> g == Gear.HELMET;
+            case TOUT -> true;
+        };
+    }
+
     public static Grip grip(ItemStack weapon) {
         ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(weapon.getItem());
         String p = id == null ? "" : id.getPath();
@@ -143,7 +256,21 @@ public enum Rune {
     public float affinity(ItemStack weapon) {
         Grip g = grip(weapon);
         ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(weapon.getItem());
-        boolean dwarven = id != null && id.getPath().startsWith("dwarven");
+        String path = id == null ? "" : id.getPath();
+        boolean dwarven = path.startsWith("dwarven");
+        if (gear(weapon).armor()) {
+            // une armure lourde porte mieux la protection, une armure elfe le saut et la nage
+            boolean lourde = path.startsWith("dwarven") || path.startsWith("dwarfking")
+                    || path.startsWith("gondor") || path.startsWith("knight");
+            boolean legere = path.startsWith("elven") || path.startsWith("elfking")
+                    || path.startsWith("halfling") || path.startsWith("mithril");
+            return switch (family) {
+                case PROTECTION -> lourde ? 1.25F : 1.0F;
+                case SAUT, NAGE, TEMPO -> legere ? 1.25F : 1.0F;
+                case MINE -> dwarven || path.startsWith("miner") ? 1.5F : 1.0F;
+                default -> 1.0F;
+            };
+        }
         return switch (family) {
             case TEMPO -> switch (g) { case DAGGER -> 1.5F; case HEAVY -> 0.5F; case SPEAR -> 0.75F; default -> 1.0F; };
             case ALLONGE -> switch (g) { case SPEAR, BOW -> 1.0F; default -> 0.5F; };
@@ -196,10 +323,10 @@ public enum Rune {
 
     /** pourquoi on ne peut pas sceller, ou null si c'est possible */
     public static String refuse(ItemStack weapon, Rune r) {
-        if (!Runes.runic(weapon)) return "Seules les armes du mod portent des runes.";
+        if (!Runes.runic(weapon)) return "Seuls les équipements du mod portent des runes.";
         if (r == null) return "Posez une rune.";
-        if (taken(weapon, r.family)) return "Cette arme porte déjà une rune " + de(r.family.label) + ".";
-        if (r.affinity(weapon) <= 0F) return "Cette rune ne tient pas sur cette arme.";
+        if (!r.fits(weapon)) return "Cette rune ne tient que sur " + r.fit.label + ".";
+        if (taken(weapon, r.family)) return "Cette pièce porte déjà une rune " + de(r.family.label) + ".";
         if (r.cost() > free(weapon)) return "Il faut " + r.cost() + " emplacement" + (r.cost() > 1 ? "s" : "") + " libre" + (r.cost() > 1 ? "s" : "") + ".";
         return null;
     }
@@ -271,7 +398,8 @@ public enum Rune {
         RADAGAST("Radagast", Need.rune(MAGIC), Need.rune(FOREST), "Les bêtes à dix blocs viennent se battre à tes côtés."),
         PACTE("Pacte noir", Need.rune(MAGIC), Need.rune(BLACK), "La malédiction monte deux fois plus vite, mais le dernier ennemi tué se relève pour toi."),
         ENTS("Appel des Ents", Need.rune(FOREST), Need.cond("sous cinq cœurs"), "Un Sylvegarde vient se battre ; il revient dix minutes après sa mort."),
-        MEMOIRE("Mémoire des Hobbits", Need.rune(HOBBIT), Need.cond("le guide en poche"), "Toutes les quêtes et leur emplacement apparaissent sur la carte.");
+        MEMOIRE("Mémoire des Hobbits", Need.rune(HOBBIT), Need.cond("le guide en poche"), "Toutes les quêtes et leur emplacement apparaissent sur la carte."),
+        ETERNELLE("Lumière éternelle", Need.rune(LIGHT), Need.rune(CAVE), "Vision nocturne tant que la pièce est portée.");
 
         public final String label, text;
         public final Need a, b;

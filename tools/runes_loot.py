@@ -10,7 +10,9 @@ import os
 ROOT = os.path.join(os.path.dirname(__file__), '..', 'src', 'main', 'resources', 'data', 'ringsofash', 'loot_table')
 STATS = ['rune_damage_1', 'rune_speed_1', 'rune_reach_1', 'rune_solidity_1']
 EFFETS = ['rune_fire', 'rune_wind', 'rune_poison', 'rune_ice']
-RARES = ['rune_elven', 'rune_hobbit', 'rune_forest', 'rune_magic']   # celles qui ouvrent les combos
+RARES = ['rune_elven', 'rune_hobbit', 'rune_forest', 'rune_magic',
+         'rune_light', 'rune_cave', 'rune_breath']                   # celles qui ouvrent les combos
+ARMURE = ['rune_protection_1', 'rune_thorns_1', 'rune_jump_1', 'rune_swim_1']
 
 # fichier -> (statistiques, effets, runes rares, amelioration, rune noire)
 #            chaque valeur est la chance sur 100 que le lot donne quelque chose, 0 = pas de lot
@@ -56,6 +58,7 @@ def patch(path, stats, effets, rares, upgrade, black):
     pools = [p for p in d.get('pools', []) if not ours(p)]
     if stats:
         pools.append(pool(STATS, stats))
+        pools.append(pool(ARMURE, stats))      # les runes d'armure se trouvent aux memes endroits
     if effets:
         pools.append(pool(EFFETS, effets))
     if rares:

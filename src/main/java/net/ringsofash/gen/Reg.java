@@ -645,6 +645,21 @@ public final class Reg {
     public static final DeferredItem<Item> RUNE_FOREST = ITEMS.register("rune_forest", () -> new MiscItems.Info("Force I tant que tu touches un arbre.", props().rarity(Rarity.RARE)));
     public static final DeferredItem<Item> RUNE_MAGIC = ITEMS.register("rune_magic", () -> new MiscItems.Info("Seule, elle ne fait rien. Avec une autre rune, elle réveille un pouvoir.", props().rarity(Rarity.RARE)));
     public static final DeferredItem<Item> RUNE_BLACK = ITEMS.register("rune_black", () -> new MiscItems.Info("+25 % de dégâts et un emplacement de plus. Chaque coup porté nourrit la malédiction.", props().rarity(Rarity.EPIC)));
+    public static final DeferredItem<Item> RUNE_PROTECTION_1 = ITEMS.register("rune_protection_1", () -> new MiscItems.Info("+1 point d'armure, mais on se traîne un peu.", props()));
+    public static final DeferredItem<Item> RUNE_PROTECTION_2 = ITEMS.register("rune_protection_2", () -> new MiscItems.Info("+2 points d'armure, mais on se traîne.", props()));
+    public static final DeferredItem<Item> RUNE_PROTECTION_3 = ITEMS.register("rune_protection_3", () -> new MiscItems.Info("+4 points d'armure, mais on se traîne nettement.", props()));
+    public static final DeferredItem<Item> RUNE_THORNS_1 = ITEMS.register("rune_thorns_1", () -> new MiscItems.Info("Renvoie 1 dégât à qui te frappe. L'armure s'use plus vite.", props()));
+    public static final DeferredItem<Item> RUNE_THORNS_2 = ITEMS.register("rune_thorns_2", () -> new MiscItems.Info("Renvoie 2 dégâts à qui te frappe. L'armure s'use plus vite.", props()));
+    public static final DeferredItem<Item> RUNE_THORNS_3 = ITEMS.register("rune_thorns_3", () -> new MiscItems.Info("Renvoie 4 dégâts à qui te frappe. L'armure s'use bien plus vite.", props()));
+    public static final DeferredItem<Item> RUNE_JUMP_1 = ITEMS.register("rune_jump_1", () -> new MiscItems.Info("Sur des bottes : on saute plus haut.", props()));
+    public static final DeferredItem<Item> RUNE_JUMP_2 = ITEMS.register("rune_jump_2", () -> new MiscItems.Info("Sur des bottes : on saute bien plus haut.", props()));
+    public static final DeferredItem<Item> RUNE_JUMP_3 = ITEMS.register("rune_jump_3", () -> new MiscItems.Info("Sur des bottes : on saute très haut.", props()));
+    public static final DeferredItem<Item> RUNE_SWIM_1 = ITEMS.register("rune_swim_1", () -> new MiscItems.Info("Sur des bottes : on se déplace mieux dans l'eau.", props()));
+    public static final DeferredItem<Item> RUNE_SWIM_2 = ITEMS.register("rune_swim_2", () -> new MiscItems.Info("Sur des bottes : on file dans l'eau.", props()));
+    public static final DeferredItem<Item> RUNE_SWIM_3 = ITEMS.register("rune_swim_3", () -> new MiscItems.Info("Sur des bottes : l'eau ne te retient plus.", props()));
+    public static final DeferredItem<Item> RUNE_LIGHT = ITEMS.register("rune_light", () -> new MiscItems.Info("La pièce éclaire autour de toi.", props().rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> RUNE_CAVE = ITEMS.register("rune_cave", () -> new MiscItems.Info("On casse les blocs un peu plus vite.", props().rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> RUNE_BREATH = ITEMS.register("rune_breath", () -> new MiscItems.Info("Sur un casque : on tient plus longtemps sous l'eau.", props().rarity(Rarity.RARE)));
     public static final DeferredItem<Item> RUNIC_UPGRADE = ITEMS.register("runic_upgrade", () -> new MiscItems.Info("À la table runique : fait monter une arme d'une rareté et lui ouvre un emplacement.", props().rarity(Rarity.RARE)));
 
     public static final DeferredItem<Item> CROW_SPAWN_EGG = ITEMS.register("crow_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.CROW, 0x1a181e, 0x3c3832, props()));

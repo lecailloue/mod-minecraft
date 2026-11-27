@@ -35,6 +35,7 @@ public final class RuneEffects {
         bus.addListener(RuneEffects::onTick);
         bus.addListener(RuneEffects::onRightClick);
         bus.addListener(RuneEffects::onKill);
+        bus.addListener(RuneEffects::onLogout);
     }
 
     /** ce que chaque joueur traine d'un tick a l'autre : pouvoirs armes, ent, dernier tue */
@@ -45,9 +46,15 @@ public final class RuneEffects {
         long entDead;                                // quand le Sylvegarde est mort
         java.util.UUID ent;
         java.util.UUID ally;                         // le dernier ennemi releve par le Pacte noir
+        net.minecraft.core.BlockPos light;           // ou se trouve le bloc de lumiere pose
+        net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> lightDim;
     }
 
     private static State state(Player p) { return STATES.computeIfAbsent(p.getUUID(), u -> new State()); }
+
+    static final net.minecraft.world.entity.EquipmentSlot[] ARMOR = {
+            net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
+            net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
 
     // ------------------------------------------------------------------ arcs
 
@@ -96,6 +103,7 @@ public final class RuneEffects {
         if (!Runes.runic(s)) return;
         List<Rune> runes = Rune.on(s);
         if (runes.isEmpty()) return;
+        if (Rune.gear(s).armor()) { armorAttributes(e, s, runes); return; }
         Rune.Totals t = Rune.totals(s);
 
         if (t.dmg() != 0) e.addModifier(Attributes.ATTACK_DAMAGE,
@@ -118,11 +126,44 @@ public final class RuneEffects {
                 EquipmentSlotGroup.MAINHAND);
     }
 
+    /** une piece d'armure : protection, vitesse de marche, nage, souffle, creusement */
+    private static void armorAttributes(ItemAttributeModifierEvent e, ItemStack s, List<Rune> runes) {
+        EquipmentSlotGroup group = switch (Rune.gear(s)) {
+            case HELMET -> EquipmentSlotGroup.HEAD;
+            case CHEST -> EquipmentSlotGroup.CHEST;
+            case LEGS -> EquipmentSlotGroup.LEGS;
+            default -> EquipmentSlotGroup.FEET;
+        };
+        float armor = 0, move = 0, swim = 0, oxy = 0, dig = 0;
+        for (Rune r : runes) {
+            float a = r.affinity(s);
+            armor += r.armorBonus() * a;
+            move += r.moveBonus() > 0 ? r.moveBonus() * a : r.moveBonus();   // le poids reste entier
+            swim += r.swim() * a;
+            oxy += r.oxygen();
+            dig += r.dig() * a;
+        }
+        // chaque piece pose ses modificateurs sous un identifiant qui lui est propre
+        String tag = group.name().toLowerCase();
+        if (armor != 0) e.addModifier(Attributes.ARMOR,
+                new AttributeModifier(RingsOfAsh.id("rune_armor_" + tag), armor, AttributeModifier.Operation.ADD_VALUE), group);
+        if (move != 0) e.addModifier(Attributes.MOVEMENT_SPEED,
+                new AttributeModifier(RingsOfAsh.id("rune_move_" + tag), move / 100.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), group);
+        if (swim != 0) e.addModifier(Attributes.WATER_MOVEMENT_EFFICIENCY,
+                new AttributeModifier(RingsOfAsh.id("rune_swim_" + tag), Math.min(1.0F, swim), AttributeModifier.Operation.ADD_VALUE), group);
+        if (oxy != 0) e.addModifier(Attributes.OXYGEN_BONUS,
+                new AttributeModifier(RingsOfAsh.id("rune_oxygen_" + tag), oxy, AttributeModifier.Operation.ADD_VALUE), group);
+        if (dig != 0) e.addModifier(Attributes.BLOCK_BREAK_SPEED,
+                new AttributeModifier(RingsOfAsh.id("rune_dig_" + tag), dig / 100.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), group);
+    }
+
     // ------------------------------------------------------------------ a l'impact
 
     private static void onHit(LivingIncomingDamageEvent e) {
         DamageSource src = e.getSource();
         if (!(src.getEntity() instanceof LivingEntity attacker)) return;
+        thorns(e.getEntity(), attacker);
+
         // un coup de main, ou une fleche de l'arc encore tenu : la magie et le reste ne comptent pas
         boolean melee = src.getDirectEntity() == attacker;
         boolean shot = src.getDirectEntity() instanceof net.minecraft.world.entity.projectile.AbstractArrow a && a.getOwner() == attacker;
@@ -175,11 +216,22 @@ public final class RuneEffects {
         }
     }
 
+    /** l'armure du frappe renvoie une part du coup, et s'use pour l'avoir fait */
+    private static void thorns(LivingEntity victim, LivingEntity attacker) {
+        if (victim.level().isClientSide || victim == attacker) return;
+        float back = 0;
+        for (net.minecraft.world.entity.EquipmentSlot sl : ARMOR) {
+            ItemStack piece = victim.getItemBySlot(sl);
+            if (!Runes.runic(piece)) continue;
+            for (Rune r : Rune.on(piece)) back += r.thorns() * r.affinity(piece);
+        }
+        if (back <= 0) return;
+        attacker.hurt(victim.damageSources().thorns(victim), back);
+    }
+
     /** les quatre pieces d'armure sont-elles elfiques ? */
     private static boolean fullElven(Player p) {
-        for (net.minecraft.world.entity.EquipmentSlot sl : new net.minecraft.world.entity.EquipmentSlot[]{
-                net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
-                net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET}) {
+        for (net.minecraft.world.entity.EquipmentSlot sl : ARMOR) {
             var id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(p.getItemBySlot(sl).getItem());
             if (id == null) return false;
             String path = id.getPath();
@@ -249,6 +301,7 @@ public final class RuneEffects {
         }
 
         if (p.tickCount % 10 == 0) allies(p);        // les rallies se battent meme l'arme rangee
+        armorTick(p, st);                            // l'armure agit sans qu'on tienne quoi que ce soit
 
         if (!Runes.runic(w)) { hobbit(p, false); return; }
         List<Rune> runes = Rune.on(w);
@@ -267,6 +320,55 @@ public final class RuneEffects {
             if (combos.contains(Rune.Combo.ENTS)) ents(p, st, now);
         }
         if (p.tickCount % 4 == 0 && !combos.isEmpty()) aura(p, combos, st.udunUntil > now, st.elrondUntil > now);
+    }
+
+    /**
+     * Les runes d'armure qui ne passent pas par un attribut : le saut, la lumiere et la
+     * vision nocturne du combo Lumiere eternelle.
+     */
+    private static void armorTick(net.minecraft.server.level.ServerPlayer p, State st) {
+        int jump = 0;
+        boolean light = false, eternal = false;
+        for (net.minecraft.world.entity.EquipmentSlot sl : ARMOR) {
+            ItemStack piece = p.getItemBySlot(sl);
+            if (!Runes.runic(piece)) continue;
+            for (Rune r : Rune.on(piece)) {
+                jump = Math.max(jump, r.jumpLevel());
+                if (r == Rune.LIGHT) light = true;
+            }
+            if (Rune.combo(piece) == Rune.Combo.ETERNELLE) eternal = true;
+        }
+        if (jump > 0 && p.tickCount % 20 == 0)
+            p.addEffect(new MobEffectInstance(MobEffects.JUMP, 60, jump - 1, true, false, false));
+        if (eternal && p.tickCount % 100 == 0)
+            p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 400, 0, true, false, false));
+        if (p.tickCount % 5 == 0) glow(p, st, light);
+    }
+
+    /**
+     * La rune lumineuse pose un bloc de lumiere invisible a hauteur de tete et le retire
+     * des qu'on bouge. On garde ou il est pour ne jamais en laisser trainer.
+     */
+    private static void glow(net.minecraft.server.level.ServerPlayer p, State st, boolean on) {
+        net.minecraft.core.BlockPos want = on ? p.blockPosition().above() : null;
+        if (st.light != null && !st.light.equals(want)) {
+            net.minecraft.server.level.ServerLevel old = st.lightDim == null ? null : p.server.getLevel(st.lightDim);
+            if (old != null && old.getBlockState(st.light).is(net.minecraft.world.level.block.Blocks.LIGHT))
+                old.setBlock(st.light, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            st.light = null;
+            st.lightDim = null;
+        }
+        if (want == null || st.light != null) return;
+        if (!p.serverLevel().getBlockState(want).isAir()) return;
+        p.serverLevel().setBlock(want, net.minecraft.world.level.block.Blocks.LIGHT.defaultBlockState()
+                .setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 15), 3);
+        st.light = want.immutable();
+        st.lightDim = p.serverLevel().dimension();
+    }
+
+    /** on eteint la lumiere derriere le joueur qui s'en va */
+    private static void onLogout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e) {
+        if (e.getEntity() instanceof net.minecraft.server.level.ServerPlayer p) glow(p, state(p), false);
     }
 
     /** debout sur un arbre, ou les mains dedans */

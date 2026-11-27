@@ -128,7 +128,7 @@ public final class ClientTest {
                     if (s.name.contains("onglet")) { mc.options.hideGui = false; mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player)); }
                     if (s.name.contains("roue")) { mc.options.hideGui = false; RingWheel.keepOpen = true; mc.setScreen(new RingWheel()); }
                     if (s.name.contains("rune_table")) { mc.options.hideGui = false; mc.setScreen(runicTable(mc)); }
-                    if (s.name.contains("rune_bulle")) { mc.options.hideGui = false; mc.setScreen(new RuneTooltip(s.name.endsWith("ordre") ? 2 : s.name.endsWith("combo") ? 1 : 0)); }
+                    if (s.name.contains("rune_bulle")) { mc.options.hideGui = false; mc.setScreen(new RuneTooltip(s.name.endsWith("bottes") ? 3 : s.name.endsWith("ordre") ? 2 : s.name.endsWith("combo") ? 1 : 0)); }
                     if (s.name.contains("anneaux") || s.name.contains("artefacts")) mc.options.hideGui = false;
                     if (s.name.contains("suivi")) { mc.options.hideGui = false; QuestScreen.tracked = 1; }
                     server.execute(() -> {
@@ -438,6 +438,7 @@ public final class ClientTest {
         SCENES.add(new Scene("rune_bulle", 50, p -> { }));            // l'infobulle d'une arme sertie
         SCENES.add(new Scene("rune_bulle_combo", 50, p -> { }));      // elfique + vent = pouvoir d'Elrond
         SCENES.add(new Scene("rune_bulle_ordre", 50, p -> { }));      // feu, magie, noire : c'est le feu qui gagne
+        SCENES.add(new Scene("rune_bulle_bottes", 50, p -> { }));     // des bottes serties : saut, nage, protection
         SCENES.add(new Scene("rune_table", 50, p -> { }));            // la table runique
         // l'Oeil de Sauron en premier : la serie de captures est longue et peut etre coupee par le delai du CI
         eyeT("95_oeil_sud", 1712, 1742, 0, 0, 40, 180F, 0F, 6000);
@@ -1686,6 +1687,16 @@ public final class ClientTest {
         return w;
     }
 
+    /** des bottes elfiques serties : saut, nage et protection */
+    private static net.minecraft.world.item.ItemStack bottesRuniques() {
+        net.minecraft.world.item.ItemStack b = new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.ELVEN_BOOTS.get());
+        net.ringsofash.item.Runes.setTier(b, 4);
+        net.ringsofash.item.Rune.socket(b, net.ringsofash.item.Rune.JUMP_2);
+        net.ringsofash.item.Rune.socket(b, net.ringsofash.item.Rune.SWIM_1);
+        net.ringsofash.item.Rune.socket(b, net.ringsofash.item.Rune.PROT_1);
+        return b;
+    }
+
     /** feu, puis magie, puis noire : deux combos possibles, c'est le plus ancien qui prend */
     private static net.minecraft.world.item.ItemStack armeOrdre() {
         net.minecraft.world.item.ItemStack w = new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.URUK_SCIMITAR.get());
@@ -1722,7 +1733,7 @@ public final class ClientTest {
             g.fill(0, 0, width, height, 0xFF202028);
             // passer par la pile elle-meme : c'est ce chemin qui declenche GatherComponents,
             // donc les cases d'emplacements dessinees
-            g.renderTooltip(font, which == 2 ? armeOrdre() : which == 1 ? armeElrond() : armeRunique(), 20, 60);
+            g.renderTooltip(font, which == 3 ? bottesRuniques() : which == 2 ? armeOrdre() : which == 1 ? armeElrond() : armeRunique(), 20, 60);
         }
     }
 
