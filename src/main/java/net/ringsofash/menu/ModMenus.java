@@ -18,5 +18,8 @@ public final class ModMenus {
 
     public static final DeferredHolder<MenuType<?>, MenuType<RunicMenu>> RUNIC = MENUS.register("runic_table", () -> new MenuType<>(RunicMenu::new, FeatureFlags.DEFAULT_FLAGS));
 
+    public static final DeferredHolder<MenuType<?>, MenuType<RunicMenu>> RUNIC_ARMOR = MENUS.register("runic_anvil",
+            () -> new MenuType<>((id, inv) -> new RunicMenu(id, inv, net.minecraft.world.inventory.ContainerLevelAccess.NULL, true), FeatureFlags.DEFAULT_FLAGS));
+
     private ModMenus() {}
 }

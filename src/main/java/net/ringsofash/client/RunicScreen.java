@@ -71,7 +71,7 @@ public class RunicScreen extends AbstractContainerScreen<RunicMenu> {
             }
             for (; i < slots; i++) box(g, bx + i * 6, by, 0xFF4A4452);
         } else {
-            g.drawString(font, "Arme", x + 30, y + 26, 0xFF9A90A8, false);
+            g.drawString(font, menu.armor ? "Armure" : "Arme", x + 30, y + 26, 0xFF9A90A8, false);
         }
         g.drawString(font, "Rune", x + 8, y + 42, 0xFF9A90A8, false);
         g.drawString(font, "Orrune", x + 34, y + 42, 0xFF9A90A8, false);

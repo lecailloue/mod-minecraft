@@ -1,0 +1,22 @@
+{
+  "textures": {
+    "top": "ringsofash:block/runic_anvil_top",
+    "side": "ringsofash:block/runic_anvil_side",
+    "bottom": "ringsofash:block/dwarven_stone",
+    "particle": "ringsofash:block/runic_anvil_side"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 14, 16],
+      "faces": {
+        "north": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "east": {"texture": "#side"},
+        "west": {"texture": "#side"},
+        "up": {"texture": "#top"},
+        "down": {"texture": "#bottom"}
+      }
+    }
+  ]
+}

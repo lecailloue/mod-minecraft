@@ -129,7 +129,7 @@ public final class ClientTest {
                     if (s.name.contains("roue")) { mc.options.hideGui = false; RingWheel.keepOpen = true; mc.setScreen(new RingWheel()); }
                     if (s.name.contains("ville_carte")) { mc.options.hideGui = false; mc.setScreen(new MapScreen()); }
                     else if (s.name.contains("ville")) { mc.options.hideGui = false; mc.setScreen(new TownScreen("comte", net.ringsofash.world.MapData.places().get("comte")[0], net.ringsofash.world.MapData.places().get("comte")[1])); }
-                    if (s.name.contains("rune_table")) { mc.options.hideGui = false; mc.setScreen(runicTable(mc)); }
+                    if (s.name.contains("rune_table")) { mc.options.hideGui = false; mc.setScreen(runicTable(mc, s.name.endsWith("armure"))); }
                     if (s.name.contains("rune_bulle")) { mc.options.hideGui = false; mc.setScreen(new RuneTooltip(s.name.endsWith("bottes") ? 3 : s.name.endsWith("ordre") ? 2 : s.name.endsWith("combo") ? 1 : 0)); }
                     if (s.name.contains("anneaux") || s.name.contains("artefacts")) mc.options.hideGui = false;
                     if (s.name.contains("suivi")) { mc.options.hideGui = false; QuestScreen.tracked = 1; }
@@ -451,7 +451,8 @@ public final class ClientTest {
         SCENES.add(new Scene("rune_bulle_combo", 50, p -> { }));      // elfique + vent = pouvoir d'Elrond
         SCENES.add(new Scene("rune_bulle_ordre", 50, p -> { }));      // feu, magie, noire : c'est le feu qui gagne
         SCENES.add(new Scene("rune_bulle_bottes", 50, p -> { }));     // des bottes serties : saut, nage, protection
-        SCENES.add(new Scene("rune_table", 50, p -> { }));            // la table runique
+        SCENES.add(new Scene("rune_table", 50, p -> { }));
+        SCENES.add(new Scene("rune_table_armure", 50, p -> { }));  // l'enclume runique            // la table runique
         // l'Oeil de Sauron en premier : la serie de captures est longue et peut etre coupee par le delai du CI
         eyeT("95_oeil_sud", 1712, 1742, 0, 0, 40, 180F, 0F, 6000);
         eyeT("99_oeil_haut", 1712, 1742, 20, 25, 30, 150F, 35F, 6000);
@@ -1726,10 +1727,11 @@ public final class ClientTest {
         return w;
     }
 
-    private static net.minecraft.client.gui.screens.Screen runicTable(Minecraft mc) {
-        net.ringsofash.menu.RunicMenu m = new net.ringsofash.menu.RunicMenu(1, mc.player.getInventory());
-        m.put(0, armeLibre());
-        m.put(1, net.ringsofash.item.Rune.POISON.stack());
+    private static net.minecraft.client.gui.screens.Screen runicTable(Minecraft mc, boolean armure) {
+        net.ringsofash.menu.RunicMenu m = new net.ringsofash.menu.RunicMenu(1, mc.player.getInventory(),
+                net.minecraft.world.inventory.ContainerLevelAccess.NULL, armure);
+        m.put(0, armure ? new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.ELVEN_BOOTS.get()) : armeLibre());
+        m.put(1, armure ? net.ringsofash.item.Rune.JUMP_1.stack() : net.ringsofash.item.Rune.POISON.stack());
         m.put(2, new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.ORRUNE_INGOT.get(), 8));
         return new RunicScreen(m, mc.player.getInventory(), net.minecraft.network.chat.Component.literal("Table runique"));
     }

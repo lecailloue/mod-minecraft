@@ -30,18 +30,24 @@ import net.ringsofash.item.Runes;
 public class RunicMenu extends AbstractContainerMenu {
     public static final int SEAL = 0, FUSE = 1, UPGRADE = 2;
 
+    /** vrai pour l'enclume : elle ne prend que les armures et les boucliers */
+    public final boolean armor;
+
     private final ContainerLevelAccess access;
     private final Container inv = new SimpleContainer(3) {
         @Override public void setChanged() { super.setChanged(); RunicMenu.this.slotsChanged(this); }
     };
 
-    public RunicMenu(int id, Inventory pinv) { this(id, pinv, ContainerLevelAccess.NULL); }
+    public RunicMenu(int id, Inventory pinv) { this(id, pinv, ContainerLevelAccess.NULL, false); }
 
-    public RunicMenu(int id, Inventory pinv, ContainerLevelAccess access) {
-        super(ModMenus.RUNIC.get(), id);
+    public RunicMenu(int id, Inventory pinv, ContainerLevelAccess access) { this(id, pinv, access, false); }
+
+    public RunicMenu(int id, Inventory pinv, ContainerLevelAccess access, boolean armor) {
+        super(armor ? ModMenus.RUNIC_ARMOR.get() : ModMenus.RUNIC.get(), id);
+        this.armor = armor;
         this.access = access;
         addSlot(new Slot(inv, 0, 8, 22) {
-            @Override public boolean mayPlace(ItemStack s) { return Runes.runic(s); }
+            @Override public boolean mayPlace(ItemStack s) { return accepts(s); }
             @Override public int getMaxStackSize() { return 1; }
         });
         addSlot(new Slot(inv, 1, 8, 52) {
@@ -52,6 +58,11 @@ public class RunicMenu extends AbstractContainerMenu {
         });
         for (int r = 0; r < 3; r++) for (int c = 0; c < 9; c++) addSlot(new Slot(pinv, c + r * 9 + 9, 8 + c * 18, 116 + r * 18));
         for (int c = 0; c < 9; c++) addSlot(new Slot(pinv, c, 8 + c * 18, 174));
+    }
+
+    /** la table prend les armes et les arcs, l'enclume les armures et les boucliers */
+    public boolean accepts(ItemStack s) {
+        return Runes.runic(s) && Rune.gear(s).armor() == armor;
     }
 
     /** pour les captures d'ecran de ClientTest : remplit une case sans passer par le reseau */
@@ -103,7 +114,7 @@ public class RunicMenu extends AbstractContainerMenu {
                 if (s.getCount() < FUSE_COUNT) return "Il faut " + FUSE_COUNT + " runes identiques.";
             }
             case UPGRADE -> {
-                if (!Runes.runic(w)) return "Posez une arme du mod.";
+                if (!accepts(w)) return armor ? "Posez une armure ou un bouclier." : "Posez une arme du mod.";
                 if (!s.is(Reg.RUNIC_UPGRADE.get())) return "Posez une amélioration runique.";
                 if (Runes.tier(w) >= 5) return "Cette arme est déjà ultime.";
             }
@@ -188,7 +199,7 @@ public class RunicMenu extends AbstractContainerMenu {
                 if (!moveItemStackTo(st, 2, 3, false)) return ItemStack.EMPTY;
             } else if (Rune.of(st) != null || st.is(Reg.RUNIC_UPGRADE.get())) {
                 if (!moveItemStackTo(st, 1, 2, false)) return ItemStack.EMPTY;
-            } else if (Runes.runic(st)) {
+            } else if (accepts(st)) {
                 if (!moveItemStackTo(st, 0, 1, false)) return ItemStack.EMPTY;
             } else return ItemStack.EMPTY;
             if (st.isEmpty()) slot.setByPlayer(ItemStack.EMPTY); else slot.setChanged();
@@ -197,7 +208,9 @@ public class RunicMenu extends AbstractContainerMenu {
     }
 
     @Override
-    public boolean stillValid(Player player) { return stillValid(access, player, Reg.RUNIC_TABLE.get()); }
+    public boolean stillValid(Player player) {
+        return stillValid(access, player, armor ? Reg.RUNIC_ANVIL.get() : Reg.RUNIC_TABLE.get());
+    }
 
     @Override
     public void removed(Player player) {

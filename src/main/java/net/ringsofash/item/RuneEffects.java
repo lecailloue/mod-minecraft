@@ -132,6 +132,7 @@ public final class RuneEffects {
             case HELMET -> EquipmentSlotGroup.HEAD;
             case CHEST -> EquipmentSlotGroup.CHEST;
             case LEGS -> EquipmentSlotGroup.LEGS;
+            case SHIELD -> EquipmentSlotGroup.HAND;
             default -> EquipmentSlotGroup.FEET;
         };
         float armor = 0, move = 0, swim = 0, oxy = 0, dig = 0;

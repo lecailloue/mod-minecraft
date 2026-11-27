@@ -75,7 +75,7 @@ def runes():
             EDGE: (24, 24, 30, 255), GLOW: glow + (255,)})
 
 
-def table():
+def table(nom='runic_table', pierre=(58, 54, 66), cote=(50, 46, 58), trait=(176, 148, 226), clair=(206, 184, 255)):
     """dessus : dalle d'ardoise avec un cercle de runes qui luit ; cotes : pierre taillee"""
     n = 32
     rng = __import__('random').Random(7)
@@ -89,28 +89,28 @@ def table():
                 px[x, y] = (max(0, base[0] + k), max(0, base[1] + k), max(0, base[2] + k), 255)
         return im
 
-    top = stone((58, 54, 66), 8)
+    top = stone(pierre, 8)
     px = top.load()
     cx = cy = (n - 1) / 2.0
     for y in range(n):
         for x in range(n):
             d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
             if 10.0 <= d <= 11.6:                       # le cercle grave
-                px[x, y] = (176, 148, 226, 255)
+                px[x, y] = trait + (255,)
             elif 11.6 < d <= 12.4:
                 px[x, y] = (36, 32, 44, 255)
     # quatre traits vers le centre, comme les branches d'une etoile
     for k in range(4, 10):
         for sx, sy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            px[int(cx + sx * k), int(cy + sy * k)] = (206, 184, 255, 255)
+            px[int(cx + sx * k), int(cy + sy * k)] = clair + (255,)
     # bordure de la dalle
     for i in range(n):
         for j in (0, 1, n - 2, n - 1):
             px[i, j] = (40, 36, 48, 255)
             px[j, i] = (40, 36, 48, 255)
-    top.save(os.path.join(BLOCK, 'runic_table_top.png'))
+    top.save(os.path.join(BLOCK, nom + '_top.png'))
 
-    side = stone((50, 46, 58), 7)
+    side = stone(cote, 7)
     px = side.load()
     for y in range(n):
         for x in range(n):
@@ -122,9 +122,11 @@ def table():
                 px[x, y] = (34, 30, 40, 255)
     for i in range(n):
         px[i, n - 1] = (28, 24, 34, 255)
-    side.save(os.path.join(BLOCK, 'runic_table_side.png'))
+    side.save(os.path.join(BLOCK, nom + '_side.png'))
 
 
 if __name__ == '__main__':
     table()
+    # l'enclume runique : fer et braise, pour les armures et les boucliers
+    table('runic_anvil', pierre=(62, 60, 58), cote=(52, 50, 48), trait=(226, 150, 96), clair=(255, 198, 140))
     print('ok')

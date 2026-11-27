@@ -97,6 +97,7 @@ public final class ClientSetup {
         e.register(net.ringsofash.menu.ModMenus.ARTIFACTS.get(), ArtifactScreen::new);
         e.register(net.ringsofash.menu.ModMenus.FURNACE.get(), PocketFurnaceScreen::new);
         e.register(net.ringsofash.menu.ModMenus.RUNIC.get(), RunicScreen::new);
+        e.register(net.ringsofash.menu.ModMenus.RUNIC_ARMOR.get(), RunicScreen::new);
     }
 
     private static void gui(net.neoforged.neoforge.client.event.RegisterGuiLayersEvent e) {

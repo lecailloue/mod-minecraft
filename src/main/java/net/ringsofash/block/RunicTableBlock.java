@@ -18,7 +18,12 @@ import net.ringsofash.menu.RunicMenu;
 public class RunicTableBlock extends Block {
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 14, 16);
 
-    public RunicTableBlock(Properties p) { super(p); }
+    /** l'enclume ne prend que les armures et les boucliers */
+    private final boolean armor;
+
+    public RunicTableBlock(Properties p) { this(p, false); }
+
+    public RunicTableBlock(Properties p, boolean armor) { super(p); this.armor = armor; }
 
     @Override
     protected VoxelShape getShape(BlockState s, net.minecraft.world.level.BlockGetter l, BlockPos pos, CollisionContext ctx) { return SHAPE; }
@@ -27,8 +32,8 @@ public class RunicTableBlock extends Block {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide) return InteractionResult.SUCCESS;
         player.openMenu(new SimpleMenuProvider(
-                (id, inv, p) -> new RunicMenu(id, inv, ContainerLevelAccess.create(level, pos)),
-                Component.literal("Table runique")));
+                (id, inv, p) -> new RunicMenu(id, inv, ContainerLevelAccess.create(level, pos), armor),
+                Component.literal(armor ? "Enclume runique" : "Table runique")));
         return InteractionResult.CONSUME;
     }
 }

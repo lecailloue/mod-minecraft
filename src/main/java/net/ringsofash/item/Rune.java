@@ -61,7 +61,7 @@ public enum Rune {
 
     /** sur quoi la rune peut etre scellee */
     public enum Fit {
-        ARME("une arme"), ARMURE("une pièce d'armure"), BOTTES("des bottes"),
+        ARME("une arme"), ARMURE("une pièce d'armure ou un bouclier"), BOTTES("des bottes"),
         CASQUE("un casque"), TOUT("une arme ou une armure");
         public final String label;
         Fit(String l) { this.label = l; }
@@ -69,7 +69,8 @@ public enum Rune {
 
     /** la piece dont il s'agit */
     public enum Gear {
-        WEAPON, BOW, HELMET, CHEST, LEGS, BOOTS;
+        WEAPON, BOW, HELMET, CHEST, LEGS, BOOTS, SHIELD;
+        /** tout ce qui protege : les runes d'armure y tiennent */
         public boolean armor() { return this != WEAPON && this != BOW; }
     }
 
@@ -226,6 +227,7 @@ public enum Rune {
                 case BOOTS -> Gear.BOOTS;
             };
         }
+        if (s.getItem() instanceof net.minecraft.world.item.ShieldItem) return Gear.SHIELD;
         return grip(s) == Grip.BOW ? Gear.BOW : Gear.WEAPON;
     }
 

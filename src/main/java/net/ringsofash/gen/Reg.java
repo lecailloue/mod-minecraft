@@ -204,6 +204,7 @@ public final class Reg {
             BlockBehaviour.Properties.of().mapColor(MapColor.FIRE).noCollission().noOcclusion().instabreak()
                     .lightLevel(s -> 15).sound(SoundType.WOOL).noLootTable().replaceable()
                     .pushReaction(PushReaction.DESTROY)));
+    public static final DeferredBlock<Block> RUNIC_ANVIL = BLOCKS.register("runic_anvil", () -> new net.ringsofash.block.RunicTableBlock(copy(Blocks.DEEPSLATE_BRICKS).strength(4.0F, 7.0F).lightLevel(s -> 6), true));
     public static final DeferredBlock<Block> RUNIC_TABLE = BLOCKS.register("runic_table", () -> new net.ringsofash.block.RunicTableBlock(copy(Blocks.DEEPSLATE_BRICKS).strength(4.0F, 7.0F).lightLevel(s -> 6)));
 
     public static final DeferredItem<BlockItem> BI_ASH_BLOCK = ITEMS.registerSimpleBlockItem("ash_block", ASH_BLOCK);
@@ -377,6 +378,7 @@ public final class Reg {
     public static final DeferredItem<Item> BI_DWARVEN_FORGE = ITEMS.register("dwarven_forge", () -> new ForgeItem(DWARVEN_FORGE.get(), props()));
     public static final DeferredItem<BlockItem> BI_ALARM_PYRE = ITEMS.registerSimpleBlockItem("alarm_pyre", ALARM_PYRE);
     public static final DeferredItem<BlockItem> BI_RUNIC_TABLE = ITEMS.registerSimpleBlockItem("runic_table", RUNIC_TABLE);
+    public static final DeferredItem<BlockItem> BI_RUNIC_ANVIL = ITEMS.registerSimpleBlockItem("runic_anvil", RUNIC_ANVIL);
 
     public static final DeferredItem<Item> RAW_LUNARGENT = ITEMS.register("raw_lunargent", () -> new Item(props()));
     public static final DeferredItem<Item> RAW_SOMBREFER = ITEMS.register("raw_sombrefer", () -> new Item(props()));
