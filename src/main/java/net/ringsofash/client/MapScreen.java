@@ -125,11 +125,34 @@ public class MapScreen extends Screen {
      */
     private static void build() {
         image = new NativeImage(TEX, TEX, false);
-        image.fillRect(0, 0, TEX, TEX, abgr(BLANK));
+        if (MapMemory.revealed()) generated(); else image.fillRect(0, 0, TEX, TEX, abgr(BLANK));
         for (Map.Entry<Long, Integer> e : MapMemory.all()) paint(e.getKey(), e.getValue());
         texture = ResourceLocation.fromNamespaceAndPath(RingsOfAsh.MODID, "hautemarche_map");
         dynamic = new DynamicTexture(image);
         Minecraft.getInstance().getTextureManager().register(texture, dynamic);
+    }
+
+    /** /anneaux map : ce que le joueur n'a pas vu est comble par le relief du generateur */
+    private static void generated() {
+        double step = MapData.SIZE / (double) TEX;
+        for (int py = 0; py < TEX; py++) {
+            for (int px = 0; px < TEX; px++) {
+                int x = (int) (px * step - MapData.HALF), z = (int) (py * step - MapData.HALF);
+                int h = MapData.height(x, z), b = MapData.biome(x, z);
+                int rgb = COLORS[Math.max(0, Math.min(COLORS.length - 1, b))];
+                float shade;
+                if (h >= MapData.SEA) {
+                    int dx = MapData.height(x + 6, z) - MapData.height(x - 6, z), dz = MapData.height(x, z + 6) - MapData.height(x, z - 6);
+                    shade = Math.max(0.55f, Math.min(1.35f, 0.95f + (dx + dz) * 0.012f));
+                } else {
+                    shade = 0.6f + 0.4f * Math.max(0, Math.min(1, (h + 20) / 80f));
+                }
+                int r = Math.min(255, (int) (((rgb >> 16) & 255) * shade));
+                int gg = Math.min(255, (int) (((rgb >> 8) & 255) * shade));
+                int bl = Math.min(255, (int) ((rgb & 255) * shade));
+                image.setPixelRGBA(px, py, 0xFF000000 | bl << 16 | gg << 8 | r);
+            }
+        }
     }
 
     /** la texture de la carte, construite si besoin : la fenetre de ville s'en sert aussi */
@@ -416,6 +439,8 @@ public class MapScreen extends Screen {
         g.enableScissor(x0, y0, x0 + size, y0 + size);
         Map.Entry<String, int[]> hover = Ui.in(mx, my, x0, y0, size, size) ? placeAt(mx, my) : null;
         for (Map.Entry<String, int[]> e : MapData.places().entrySet()) {
+            // une ville ne se nomme qu'une fois qu'on y a mis les pieds
+            if (Towns.radius(e.getKey()) > 0 && !MapMemory.visited(e.getKey())) continue;
             int px = (int) toScreenX(e.getValue()[0]), py = (int) toScreenY(e.getValue()[1]);
             if (px < x0 - 40 || px > x0 + size + 40 || py < y0 - 10 || py > y0 + size + 10) continue;
             boolean h = e == hover;

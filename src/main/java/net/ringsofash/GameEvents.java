@@ -545,6 +545,12 @@ public final class GameEvents {
                     p.displayClientMessage(Component.literal("Réputation générale : " + l.general() + " — corruption : " + l.corruption / 10 + " %").withStyle(ChatFormatting.GOLD), false);
                     return 1;
                 }))
+                .then(Commands.literal("map").requires(s -> s.hasPermission(2)).executes(ctx -> {
+                    ServerPlayer p = ctx.getSource().getPlayerOrException();
+                    net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(p, new net.ringsofash.data.Net.RevealMap());
+                    p.displayClientMessage(Component.literal("La carte de la Hautemarche vous est entièrement révélée.").withStyle(ChatFormatting.GOLD), false);
+                    return 1;
+                }))
                 .then(Commands.literal("livre").executes(ctx -> {
                     ServerPlayer p = ctx.getSource().getPlayerOrException();
                     Travel.give(p, Guide.create(p));

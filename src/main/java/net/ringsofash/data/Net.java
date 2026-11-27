@@ -40,6 +40,13 @@ public final class Net {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    /** Carte : /anneaux map, le serveur dit au client de tout devoiler. */
+    public record RevealMap() implements CustomPacketPayload {
+        public static final CustomPacketPayload.Type<RevealMap> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("map_reveal"));
+        public static final StreamCodec<FriendlyByteBuf, RevealMap> CODEC = StreamCodec.of((buf, v) -> { }, buf -> new RevealMap());
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
     /** Forme de Sylvgarde : clic droit = racines. */
     public record CastRoots() implements CustomPacketPayload {
         public static final CustomPacketPayload.Type<CastRoots> TYPE = new CustomPacketPayload.Type<>(RingsOfAsh.id("roots"));
@@ -144,6 +151,8 @@ public final class Net {
         public static int corruption, eye, quest;
         /** centre de l'Oeil de Sauron dans la dimension actuelle (y = -1 : aucun) */
         public static int eyeX, eyeY = -1, eyeZ;
+        /** /anneaux map : toute la carte est devoilee, et tous les lieux nommes */
+        public static boolean mapRevealed;
         private ClientLore() {}
     }
 
@@ -182,6 +191,7 @@ public final class Net {
         e.registrar("1").playToClient(EyePos.TYPE, EyePos.CODEC, (payload, ctx) -> {
             ClientLore.eyeX = payload.x(); ClientLore.eyeY = payload.y(); ClientLore.eyeZ = payload.z();
         });
+        e.registrar("1").playToClient(RevealMap.TYPE, RevealMap.CODEC, (payload, ctx) -> ClientLore.mapRevealed = true);
         e.registrar("1").playToServer(MapTeleport.TYPE, MapTeleport.CODEC, (payload, ctx) -> ctx.enqueueWork(() -> {
             if (ctx.player() instanceof ServerPlayer sp) net.ringsofash.world.MapTravel.teleport(sp, payload.x(), payload.z());
         }));

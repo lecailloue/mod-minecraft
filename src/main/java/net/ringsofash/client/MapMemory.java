@@ -19,7 +19,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.material.MapColor;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.ringsofash.world.MapData;
@@ -43,11 +42,15 @@ public final class MapMemory {
     /** les chunks qui viennent de changer, que la carte doit repeindre */
     private static final Queue<Long> FRESH = new ArrayDeque<>();
 
+    /** les villes ou le joueur a mis les pieds : avant cela, leur nom n'est pas sur la carte */
+    private static final java.util.Set<String> VISITED = new java.util.HashSet<>();
+
     private static String world;
     private static boolean dirty;
     private static int sweep;
+    private static boolean revealed;
 
-    private static final int LOOK = 8;      // on releve jusqu'a 8 chunks autour du joueur
+    private static final int LOOK = 4;      // on releve jusqu'a 4 chunks autour du joueur
     private static final int REFRESH = 3;   // et on repasse sur les 3 plus proches
 
     public static void init(IEventBus bus) { bus.addListener(MapMemory::tick); }
@@ -65,6 +68,12 @@ public final class MapMemory {
 
     public static int count() { return SEEN.size(); }
 
+    /** le nom de ce lieu est-il connu ? */
+    public static boolean visited(String place) { return revealed || VISITED.contains(place); }
+
+    /** toute la carte est-elle devoilee (/anneaux map) ? */
+    public static boolean revealed() { return revealed; }
+
     // ------------------------------------------------------------------ le releve
 
     private static void tick(ClientTickEvent.Post e) {
@@ -72,8 +81,14 @@ public final class MapMemory {
         if (mc.player == null || mc.level == null) { save(); return; }
         if (!MapScreen.inLands()) return;
         load(mc);
+        if (net.ringsofash.data.Net.ClientLore.mapRevealed && !revealed) {
+            revealed = true;
+            dirty = true;
+            MapScreen.forget();
+        }
         if (mc.player.tickCount % 2400 == 0) write();     // deux minutes : on met a l'abri
         if (mc.player.tickCount % 10 != 0) return;
+        town(mc);
 
         ChunkPos here = new ChunkPos(mc.player.blockPosition());
         // un anneau par passage : on balaie tout le voisinage en quelques secondes
@@ -87,6 +102,18 @@ public final class MapMemory {
                 if (SEEN.containsKey(key) && !close) continue;      // deja vu et loin : on laisse
                 scan(mc.level, cx, cz, key);
             }
+        }
+    }
+
+    /** on retient la ville ou l'on vient d'entrer : c'est ce qui donne son nom sur la carte */
+    private static void town(Minecraft mc) {
+        if (mc.player == null) return;
+        int x = mc.player.getBlockX(), z = mc.player.getBlockZ();
+        for (var e : MapData.places().entrySet()) {
+            int r = net.ringsofash.world.Towns.radius(e.getKey());
+            if (r <= 0 || VISITED.contains(e.getKey())) continue;
+            long dx = x - e.getValue()[0], dz = z - e.getValue()[1];
+            if (dx * dx + dz * dz <= (long) r * r) { VISITED.add(e.getKey()); dirty = true; }
         }
     }
 
@@ -104,9 +131,8 @@ public final class MapMemory {
                 int h = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, wx + ox, wz + oz);
                 pos.set(wx + ox, h - 1, wz + oz);
                 BlockState s = chunk.getBlockState(pos);
-                MapColor mc = s.getMapColor(level, pos);
-                if (mc == MapColor.NONE) continue;
-                int col = mc.col;
+                if (s.isAir()) continue;
+                int col = BlockTint.of(s, level, pos);
                 r += (col >> 16) & 255; g += (col >> 8) & 255; b += col & 255;
                 hsum += h;
                 n++;
@@ -149,15 +175,21 @@ public final class MapMemory {
         if (key.equals(world)) return;
         SEEN.clear();
         FRESH.clear();
+        VISITED.clear();
         world = key;
         dirty = false;
+        revealed = net.ringsofash.data.Net.ClientLore.mapRevealed;
         Path p = file(key);
         if (!Files.exists(p)) { MapScreen.forget(); return; }
         try (DataInputStream in = new DataInputStream(new GZIPInputStream(Files.newInputStream(p)))) {
             int n = in.readInt();
             for (int i = 0; i < n; i++) SEEN.put(in.readLong(), in.readInt());
+            revealed = in.readBoolean();
+            int v = in.readInt();
+            for (int i = 0; i < v; i++) VISITED.add(in.readUTF());
         } catch (IOException | RuntimeException ignored) {
             SEEN.clear();
+            VISITED.clear();
         }
         MapScreen.forget();      // la carte sera redessinee avec ce qu'on vient de relire
     }
@@ -170,6 +202,9 @@ public final class MapMemory {
                 out.writeLong(e.getKey());
                 out.writeInt(e.getValue());
             }
+            out.writeBoolean(revealed);
+            out.writeInt(VISITED.size());
+            for (String v : VISITED) out.writeUTF(v);
             dirty = false;
         } catch (IOException ignored) {
             // tant pis : on reperdra la decouverte, ce n'est pas la fin du monde
@@ -182,8 +217,12 @@ public final class MapMemory {
         write();
         world = null;
         dirty = false;
+        revealed = false;
+        net.ringsofash.data.Net.ClientLore.mapRevealed = false;
         SEEN.clear();
         FRESH.clear();
+        VISITED.clear();
+        BlockTint.clear();
         MapScreen.forget();
     }
 }
