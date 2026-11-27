@@ -86,8 +86,9 @@ public final class Runes {
             if (!d.isEmpty()) line.append(Component.literal("  " + d).withStyle(ChatFormatting.GRAY));
             add.add(line);
             float a = r.affinity(s);
-            if (a > 1.01F) add.add(Component.literal("   affinité ×" + fmt(a) + " avec cette arme").withStyle(ChatFormatting.DARK_GREEN));
-            else if (a < 0.99F) add.add(Component.literal("   mal adaptée à cette arme (×" + fmt(a) + ")").withStyle(ChatFormatting.DARK_RED));
+            String quoi = Rune.gear(s).armor() ? "cette pièce" : "cette arme";
+            if (a > 1.01F) add.add(Component.literal("   affinité ×" + fmt(a) + " avec " + quoi).withStyle(ChatFormatting.DARK_GREEN));
+            else if (a < 0.99F) add.add(Component.literal("   mal adaptée à " + quoi + " (×" + fmt(a) + ")").withStyle(ChatFormatting.DARK_RED));
         }
 
         Rune.Combo c = Rune.combo(s);
@@ -121,7 +122,7 @@ public final class Runes {
         if (r.armorBonus() != 0) parts.add("+" + fmt(r.armorBonus() * a) + " d'armure");
         if (!arme && r.moveBonus() != 0) parts.add(pct(r.moveBonus() > 0 ? r.moveBonus() * a : r.moveBonus()) + " de déplacement");
         if (r.thorns() != 0) parts.add("renvoie " + fmt(r.thorns() * a) + " dégâts");
-        if (r.jumpLevel() != 0) parts.add("saut " + new String[]{"I", "II", "III"}[r.jumpLevel() - 1]);
+        if (r.jumpLevel() != 0) parts.add(new String[]{"+½ bloc de saut", "+1 bloc de saut", "+1½ bloc de saut"}[r.jumpLevel() - 1]);
         if (r.swim() != 0) parts.add("aisance dans l'eau +" + fmt(r.swim() * a * 100) + " %");
         if (r.oxygen() != 0) parts.add("souffle ×" + fmt(1 + r.oxygen()) + " sous l'eau");
         if (r.dig() != 0) parts.add("+" + fmt(r.dig() * a) + " % de vitesse de creusement");
