@@ -46,6 +46,7 @@ public class RingsOfAsh {
         net.ringsofash.item.RuneEffects.init(net.neoforged.neoforge.common.NeoForge.EVENT_BUS);
         net.ringsofash.world.TownRespect.init(net.neoforged.neoforge.common.NeoForge.EVENT_BUS);
         net.ringsofash.item.UdunFire.init(net.neoforged.neoforge.common.NeoForge.EVENT_BUS);
+        net.ringsofash.entity.Fauna.init(net.neoforged.neoforge.common.NeoForge.EVENT_BUS);
         net.ringsofash.effect.ModEffects.EFFECTS.register(modBus);
         net.ringsofash.fluid.ModFluids.register(modBus);
         ModWorldgen.register(modBus);

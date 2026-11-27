@@ -40,6 +40,12 @@ public class BeastEntity extends PathfinderMob {
     @Override
     protected PathNavigation createNavigation(Level level) {
         if (isCrow()) return Flight.navigation(this, level);
+        if (floats()) {
+            // oiseaux d'eau : ils marchent au sol et pagaient en surface, jamais dessous
+            var n = new net.minecraft.world.entity.ai.navigation.GroundPathNavigation(this, level);
+            n.setCanFloat(true);
+            return n;
+        }
         if (swims()) return new AmphibiousPathNavigation(this, level);
         return super.createNavigation(level);
     }
@@ -52,6 +58,78 @@ public class BeastEntity extends PathfinderMob {
     }
 
     public boolean isSquirrel() { return getType() == ModEntities.SQUIRREL.get(); }
+
+    /**
+     * L'ecureuil effraye ne fuit pas a plat : il court au tronc le plus proche et y monte.
+     * Une fois a six blocs de haut, il s'y tient tant que la menace rode.
+     */
+    private static class ClimbTreeGoal extends net.minecraft.world.entity.ai.goal.Goal {
+        private final BeastEntity bete;
+        private net.minecraft.core.BlockPos tronc;
+        private int patience;
+
+        ClimbTreeGoal(BeastEntity bete) {
+            this.bete = bete;
+            setFlags(java.util.EnumSet.of(Flag.MOVE, Flag.JUMP));
+        }
+
+        private boolean menace() {
+            if (bete.getLastHurtByMob() != null) return true;
+            Player p = bete.level().getNearestPlayer(bete, 8.0);
+            return p != null && !p.isCreative() && !p.isSpectator();
+        }
+
+        @Override
+        public boolean canUse() {
+            if (!bete.isSquirrel() || !menace()) return false;
+            tronc = cherche();
+            return tronc != null;
+        }
+
+        /** le tronc le plus proche, dans un rayon de huit blocs */
+        private net.minecraft.core.BlockPos cherche() {
+            var ici = bete.blockPosition();
+            net.minecraft.core.BlockPos best = null;
+            double bd = Double.MAX_VALUE;
+            for (int dx = -8; dx <= 8; dx++) for (int dz = -8; dz <= 8; dz++) for (int dy = -2; dy <= 3; dy++) {
+                var p = ici.offset(dx, dy, dz);
+                if (!bete.level().getBlockState(p).is(net.minecraft.tags.BlockTags.LOGS)) continue;
+                double d = p.distSqr(ici);
+                if (d < bd) { bd = d; best = p.immutable(); }
+            }
+            return best;
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return tronc != null && menace() && bete.getY() - tronc.getY() < 7.0
+                    && bete.level().getBlockState(tronc).is(net.minecraft.tags.BlockTags.LOGS);
+        }
+
+        @Override
+        public void start() { patience = 200; }
+
+        @Override
+        public void stop() { tronc = null; bete.getNavigation().stop(); }
+
+        @Override
+        public void tick() {
+            if (tronc == null || --patience < 0) { tronc = null; return; }
+            double dx = tronc.getX() + 0.5 - bete.getX(), dz = tronc.getZ() + 0.5 - bete.getZ();
+            double plat = dx * dx + dz * dz;
+            bete.getLookControl().setLookAt(tronc.getX() + 0.5, bete.getEyeY(), tronc.getZ() + 0.5);
+            if (plat > 1.6) {
+                bete.getNavigation().moveTo(tronc.getX() + 0.5, tronc.getY(), tronc.getZ() + 0.5, 1.4);
+                return;
+            }
+            // colle au tronc : Minecraft le laisse monter puisque onClimbable() est vrai
+            bete.getNavigation().stop();
+            double d = Math.sqrt(Math.max(0.01, plat));
+            var m = bete.getDeltaMovement();
+            bete.setDeltaMovement(dx / d * 0.12, 0.22, dz / d * 0.12);
+            bete.resetFallDistance();
+        }
+    }
 
     /**
      * L'ecureuil grimpe aux arbres : des qu'il bute contre un tronc ou des feuilles,
@@ -83,6 +161,7 @@ public class BeastEntity extends PathfinderMob {
         }
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(1, new PanicGoal(this, 1.6));
+        if (isSquirrel()) goalSelector.addGoal(1, new ClimbTreeGoal(this));
         goalSelector.addGoal(2, new AvoidEntityGoal<>(this, Player.class, swims() ? 5.0F : 8.0F, 1.2, 1.6));
         goalSelector.addGoal(3, new AvoidEntityGoal<>(this, Monster.class, 12.0F, 1.3, 1.7));
         goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8));

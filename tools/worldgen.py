@@ -257,14 +257,14 @@ def biomes():
           spawns={'water_ambient': [('minecraft:salmon', 6, 1, 5)], 'water_creature': SQUID, 'monster': [('lurker', 6, 1, 1)]})
     # faune des bois et des rivieres (les biomes des zones peintes ont leur propre json ecrit a la main)
     FAUNA = {
-        'grande_foret': [('deer', 8, 1, 3), ('roe_deer', 8, 1, 2), ('squirrel', 8, 1, 3)],
-        'foret_clairsemee': [('deer', 4, 1, 2), ('roe_deer', 6, 1, 2), ('squirrel', 6, 1, 2)],
-        'bosquets': [('roe_deer', 5, 1, 2), ('squirrel', 5, 1, 2)],
-        'plaines_vertes': [('roe_deer', 3, 1, 2)],
-        'plaines_jaunes': [('roe_deer', 2, 1, 2)],
-        'monts_rocheux': [('roe_deer', 2, 1, 1), ('squirrel', 2, 1, 2)],
-        'riviere': [('duck', 10, 2, 4), ('heron', 5, 1, 1), ('beaver', 5, 1, 2)],
-        'rivage': [('duck', 6, 2, 3), ('heron', 4, 1, 1)],
+        'grande_foret': [('deer', 24, 1, 3), ('roe_deer', 24, 1, 3), ('squirrel', 24, 1, 3)],
+        'foret_clairsemee': [('deer', 12, 1, 3), ('roe_deer', 18, 1, 3), ('squirrel', 18, 1, 3)],
+        'bosquets': [('roe_deer', 15, 1, 3), ('squirrel', 15, 1, 3)],
+        'plaines_vertes': [('roe_deer', 9, 1, 3)],
+        'plaines_jaunes': [('roe_deer', 6, 1, 3)],
+        'monts_rocheux': [('roe_deer', 6, 1, 3), ('squirrel', 6, 1, 3)],
+        'riviere': [('duck', 30, 2, 4), ('heron', 15, 1, 3), ('beaver', 15, 1, 3)],
+        'rivage': [('duck', 18, 2, 4), ('heron', 12, 1, 3)],
     }
     for id, lst in FAUNA.items():
         BIOMES[id]['spawners']['creature'] += [{'type': R(t), 'weight': w, 'minCount': a, 'maxCount': b} for (t, w, a, b) in lst]
