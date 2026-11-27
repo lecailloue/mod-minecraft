@@ -75,8 +75,6 @@ public class TownScreen extends Screen {
 
         // ---- la reputation, en bas
         bar(g, x0 + 16, y0 + h - 40, w - 32, 16);
-
-        super.render(g, mx, my, pt);
     }
 
     /** le plan : la carte deja decouverte, centree sur la ville */

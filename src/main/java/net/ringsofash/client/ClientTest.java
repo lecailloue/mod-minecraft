@@ -127,7 +127,8 @@ public final class ClientTest {
                     RingWheel.keepOpen = false;
                     if (s.name.contains("onglet")) { mc.options.hideGui = false; mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player)); }
                     if (s.name.contains("roue")) { mc.options.hideGui = false; RingWheel.keepOpen = true; mc.setScreen(new RingWheel()); }
-                    if (s.name.contains("ville")) { mc.options.hideGui = false; mc.setScreen(new TownScreen("comte", net.ringsofash.world.MapData.places().get("comte")[0], net.ringsofash.world.MapData.places().get("comte")[1])); }
+                    if (s.name.contains("ville_carte")) { mc.options.hideGui = false; mc.setScreen(new MapScreen()); }
+                    else if (s.name.contains("ville")) { mc.options.hideGui = false; mc.setScreen(new TownScreen("comte", net.ringsofash.world.MapData.places().get("comte")[0], net.ringsofash.world.MapData.places().get("comte")[1])); }
                     if (s.name.contains("rune_table")) { mc.options.hideGui = false; mc.setScreen(runicTable(mc)); }
                     if (s.name.contains("rune_bulle")) { mc.options.hideGui = false; mc.setScreen(new RuneTooltip(s.name.endsWith("bottes") ? 3 : s.name.endsWith("ordre") ? 2 : s.name.endsWith("combo") ? 1 : 0)); }
                     if (s.name.contains("anneaux") || s.name.contains("artefacts")) mc.options.hideGui = false;
@@ -437,6 +438,7 @@ public final class ClientTest {
         armourScenes();
         if (ARMOR_ONLY) return;
         SCENES.add(new Scene("ville_comte", 50, p -> { }));           // la fenetre de ville
+        SCENES.add(new Scene("ville_carte", 50, p -> { }));           // la carte, blanche tant qu'on n'a rien vu
         SCENES.add(new Scene("rune_bulle", 50, p -> { }));            // l'infobulle d'une arme sertie
         SCENES.add(new Scene("rune_bulle_combo", 50, p -> { }));      // elfique + vent = pouvoir d'Elrond
         SCENES.add(new Scene("rune_bulle_ordre", 50, p -> { }));      // feu, magie, noire : c'est le feu qui gagne
