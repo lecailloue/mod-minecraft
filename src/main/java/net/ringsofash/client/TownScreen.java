@@ -110,16 +110,16 @@ public class TownScreen extends Screen {
         int filled = Math.round((clamped + 100) / 200F * BAR_W);
         if (filled > 0) g.fill(x0 + BAR_X, y0 + BAR_Y, x0 + BAR_X + filled, y0 + BAR_Y + BAR_H, FILL);
         String txt = who.label + " — " + People.rank(rep) + " (" + rep + ")";
-        g.drawString(this.font, txt, x0 + BAR_X + (BAR_W - this.font.width(txt)) / 2, y0 + BAR_Y + 1, 0xFF2A1D0C, false);
+        g.drawString(this.font, txt, x0 + BAR_X + (BAR_W - this.font.width(txt)) / 2, y0 + BAR_Y + 1, 0xFFF4E6C0, true);
     }
 
     private List<String[]> list() {
         List<String[]> out = new ArrayList<>();
         int rep = ClientLore.rep[who.ordinal()];
-        out.add(new String[]{(rep >= 15 ? "✔ " : "• ") + "Gagner leur confiance", rep >= 15 ? "7FD68A" : "D8CCA8"});
-        out.add(new String[]{(ClientLore.quest >= 1 ? "✔ " : "• ") + "L'Anneau de Cendre", ClientLore.quest >= 1 ? "7FD68A" : "D8CCA8"});
-        out.add(new String[]{(ClientLore.quest >= 2 ? "✔ " : "• ") + "Le Mont Funeste", ClientLore.quest >= 2 ? "7FD68A" : "D8CCA8"});
-        if (rep <= -15) out.add(new String[]{"Ils ne vous laisseront pas entrer.", "E09050"});
+        out.add(new String[]{(rep >= 15 ? "✔ " : "• ") + "Leur confiance", rep >= 15 ? "7FD68A" : "D8CCA8"});
+        out.add(new String[]{(ClientLore.quest >= 1 ? "✔ " : "• ") + "L'Anneau", ClientLore.quest >= 1 ? "7FD68A" : "D8CCA8"});
+        out.add(new String[]{(ClientLore.quest >= 2 ? "✔ " : "• ") + "Mont Funeste", ClientLore.quest >= 2 ? "7FD68A" : "D8CCA8"});
+        if (rep <= -15) out.add(new String[]{"Ville fermée", "E09050"});
         return out;
     }
 
