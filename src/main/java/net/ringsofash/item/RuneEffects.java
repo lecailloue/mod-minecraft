@@ -240,10 +240,23 @@ public final class RuneEffects {
         return true;
     }
 
+    /** le rouge sombre de la Flamme d'Udun : une braise qui s'eteint vers le sang */
+    private static final net.minecraft.core.particles.DustColorTransitionOptions UDUN_RED =
+            new net.minecraft.core.particles.DustColorTransitionOptions(
+                    new org.joml.Vector3f(0.98F, 0.13F, 0.04F),
+                    new org.joml.Vector3f(0.38F, 0.01F, 0.00F), 1.7F);
+
     /** une nappe de feu de 3 blocs sur 4 autour de la cible */
     private static void blaze(LivingEntity target) {
         var level = target.level();
         if (level.isClientSide) return;
+        if (level instanceof net.minecraft.server.level.ServerLevel sl) {
+            // le rouge par-dessus l'orange du feu : c'est lui qu'on voit
+            sl.sendParticles(UDUN_RED, target.getX(), target.getY() + target.getBbHeight() * 0.5, target.getZ(),
+                    90, 1.4, 1.1, 1.4, 0.0);
+            sl.sendParticles(net.minecraft.core.particles.ParticleTypes.LAVA,
+                    target.getX(), target.getY() + 0.2, target.getZ(), 12, 0.9, 0.2, 0.9, 0.0);
+        }
         var base = target.blockPosition();
         for (int dx = -1; dx <= 1; dx++) for (int dz = -2; dz <= 1; dz++) {
             var pos = base.offset(dx, 0, dz);
@@ -499,8 +512,9 @@ public final class RuneEffects {
         double hx = p.getX() + side.x + look.x * 0.4, hy = p.getY() + 1.1, hz = p.getZ() + side.z + look.z * 0.4;
 
         if (udun || combos.contains(Rune.Combo.UDUN)) {
-            int n = udun ? 10 : 3;
-            sl.sendParticles(net.minecraft.core.particles.ParticleTypes.FLAME, hx, hy, hz, n, 0.08, 0.14, 0.08, 0.004);
+            int n = udun ? 12 : 4;
+            sl.sendParticles(UDUN_RED, hx, hy, hz, n, 0.09, 0.15, 0.09, 0.0);
+            sl.sendParticles(net.minecraft.core.particles.ParticleTypes.FLAME, hx, hy, hz, udun ? 3 : 1, 0.06, 0.12, 0.06, 0.003);
             if (udun) sl.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE, hx, hy + 0.2, hz, 3, 0.08, 0.1, 0.08, 0.004);
         }
         if (elrond || combos.contains(Rune.Combo.ELROND))
