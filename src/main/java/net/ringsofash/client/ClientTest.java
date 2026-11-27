@@ -438,6 +438,14 @@ public final class ClientTest {
         armourScenes();
         if (ARMOR_ONLY) return;
         SCENES.add(new Scene("ville_comte", 50, p -> { }));           // la fenetre de ville
+        SCENES.add(new Scene("ville_udun", 60, p -> {                 // la flamme d'Udun sur un orque
+            var mob = net.ringsofash.entity.ModEntities.ORC.get().create(p.level());
+            if (mob != null) {
+                mob.moveTo(p.getX() + p.getLookAngle().x * 3, p.getY(), p.getZ() + p.getLookAngle().z * 3, p.getYRot() + 180, 0);
+                p.level().addFreshEntity(mob);
+                net.ringsofash.item.UdunFire.ignite(mob, 600);
+            }
+        }));
         SCENES.add(new Scene("ville_carte", 50, p -> { }));           // la carte, blanche tant qu'on n'a rien vu
         SCENES.add(new Scene("rune_bulle", 50, p -> { }));            // l'infobulle d'une arme sertie
         SCENES.add(new Scene("rune_bulle_combo", 50, p -> { }));      // elfique + vent = pouvoir d'Elrond

@@ -200,6 +200,10 @@ public final class Reg {
     public static final DeferredBlock<Block> ROPE = BLOCKS.register("rope", () -> new RopeBlock(BlockBehaviour.Properties.of().noCollission().strength(0.2F).sound(SoundType.WOOL).noOcclusion()));
     public static final DeferredBlock<Block> DWARVEN_FORGE = BLOCKS.register("dwarven_forge", () -> new ForgeBlock(copy(Blocks.DEEPSLATE_BRICKS).noOcclusion().strength(5.0F, 8.0F).lightLevel(s -> ForgeBlock.isCenter(s) ? 13 : 0)));
     public static final DeferredBlock<Block> ALARM_PYRE = BLOCKS.register("alarm_pyre", () -> new AlarmPyreBlock(copy(Blocks.OAK_PLANKS).lightLevel(s -> s.getValue(AlarmPyreBlock.LIT) ? 15 : 0)));
+    public static final DeferredBlock<Block> UDUN_FIRE = BLOCKS.register("udun_fire", () -> new net.ringsofash.block.UdunFireBlock(
+            BlockBehaviour.Properties.of().mapColor(MapColor.FIRE).noCollission().noOcclusion().instabreak()
+                    .lightLevel(s -> 15).sound(SoundType.WOOL).noLootTable().replaceable()
+                    .pushReaction(PushReaction.DESTROY)));
     public static final DeferredBlock<Block> RUNIC_TABLE = BLOCKS.register("runic_table", () -> new net.ringsofash.block.RunicTableBlock(copy(Blocks.DEEPSLATE_BRICKS).strength(4.0F, 7.0F).lightLevel(s -> 6)));
 
     public static final DeferredItem<BlockItem> BI_ASH_BLOCK = ITEMS.registerSimpleBlockItem("ash_block", ASH_BLOCK);

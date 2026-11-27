@@ -183,7 +183,7 @@ public final class RuneEffects {
             // combo Flamme d'Udun : tout ce qui entoure la cible prend feu aussi
             if (combos.contains(Rune.Combo.UDUN)) {
                 for (LivingEntity near : target.level().getEntitiesOfClass(LivingEntity.class, target.getBoundingBox().inflate(3.0), x -> x != attacker))
-                    near.igniteForSeconds(4);
+                    UdunFire.ignite(near, 100);
             }
         }
         if (runes.contains(Rune.POISON) && rnd.nextFloat() < 0.5F)
@@ -261,9 +261,9 @@ public final class RuneEffects {
         for (int dx = -1; dx <= 1; dx++) for (int dz = -2; dz <= 1; dz++) {
             var pos = base.offset(dx, 0, dz);
             if (level.getBlockState(pos).isAir() && level.getBlockState(pos.below()).isSolidRender(level, pos.below()))
-                level.setBlock(pos, net.minecraft.world.level.block.Blocks.FIRE.defaultBlockState(), 3);
+                level.setBlock(pos, net.ringsofash.gen.Reg.UDUN_FIRE.get().defaultBlockState(), 3);
         }
-        target.igniteForSeconds(8);
+        UdunFire.ignite(target, 160);
     }
 
     // ------------------------------------------------------------------ clic droit : les pouvoirs

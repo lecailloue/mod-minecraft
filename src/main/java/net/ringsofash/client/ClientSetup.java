@@ -61,6 +61,7 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::tooltipFactories);
         NeoForge.EVENT_BUS.addListener(ClientSetup::runeSlotsTooltip);
         MapMemory.init(NeoForge.EVENT_BUS);
+        UdunFlameRender.init(NeoForge.EVENT_BUS);
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent e) -> e.registerSpriteSet(net.ringsofash.fluid.ModFluids.ICHOR_SMOKE.get(), IchorSmokeParticle.Provider::new));
         NeoForge.EVENT_BUS.addListener(ClientSetup::tick);
         if (System.getProperty("roa.clienttest") != null) ClientTest.init();
