@@ -65,7 +65,7 @@ public final class ClientTest {
     /** true : seulement les scenes d armures (iteration rapide) */
     private static final boolean ARMOR_ONLY = false;
     /** si non vide : seules les scenes dont le nom commence par l un de ces prefixes sont jouees (iteration rapide sur les sites) */
-    private static final String[] ONLY = {"rune", "ville"};
+    private static final String[] ONLY = {"rune", "ville", "udun"};
     private static Runnable hook = null;
     private static BlockPos volcano = BlockPos.ZERO;
     private static int volcanoRim = 0;
@@ -438,7 +438,7 @@ public final class ClientTest {
         armourScenes();
         if (ARMOR_ONLY) return;
         SCENES.add(new Scene("ville_comte", 50, p -> { }));           // la fenetre de ville
-        SCENES.add(new Scene("ville_udun", 60, p -> {                 // la flamme d'Udun sur un orque
+        SCENES.add(new Scene("udun_flamme", 60, p -> {                 // la flamme d'Udun sur un orque
             var mob = net.ringsofash.entity.ModEntities.ORC.get().create(p.level());
             if (mob != null) {
                 mob.moveTo(p.getX() + p.getLookAngle().x * 3, p.getY(), p.getZ() + p.getLookAngle().z * 3, p.getYRot() + 180, 0);
