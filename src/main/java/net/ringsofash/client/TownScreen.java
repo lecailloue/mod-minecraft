@@ -99,12 +99,7 @@ public class TownScreen extends Screen {
 
     private void quests(GuiGraphics g) {
         int y = y0 + QUEST_Y;
-        List<String[]> qs = list();
-        if (qs.isEmpty()) {
-            g.drawString(this.font, "Rien à faire", x0 + QUEST_X, y, 0xFF8A7B5E, false);
-            return;
-        }
-        for (String[] q : qs) {
+        for (String[] q : list()) {
             if (y > y0 + 130) break;
             for (var line : this.font.split(Component.literal(q[0]), QUEST_W)) {
                 if (y > y0 + 130) break;
@@ -125,13 +120,18 @@ public class TownScreen extends Screen {
         g.drawString(this.font, txt, x0 + BAR_X + (BAR_W - this.font.width(txt)) / 2, y0 + BAR_Y + 1, 0xFFF4E6C0, true);
     }
 
+    /**
+     * Seules les quetes qui touchent cette ville. S'il n'y en a aucune, la colonne
+     * reste vide : une ville sans affaire en cours n'a rien a dire.
+     */
     private List<String[]> list() {
         List<String[]> out = new ArrayList<>();
+        // la quete principale commence dans les mines naines des Monts de Fer
+        if (key.equals("montagne_solitaire") && ClientLore.quest < 1)
+            out.add(new String[]{"L'Anneau de Cendre", "D8CCA8"});
+        // tant que ce peuple-ci ne vous compte pas parmi ses amis, c'est une affaire locale
         int rep = ClientLore.rep[who.ordinal()];
-        out.add(new String[]{(rep >= 15 ? "✔ " : "") + "Leur confiance", rep >= 15 ? "7FD68A" : "D8CCA8"});
-        out.add(new String[]{(ClientLore.quest >= 1 ? "✔ " : "") + "L'Anneau", ClientLore.quest >= 1 ? "7FD68A" : "D8CCA8"});
-        out.add(new String[]{(ClientLore.quest >= 2 ? "✔ " : "") + "Mont Funeste", ClientLore.quest >= 2 ? "7FD68A" : "D8CCA8"});
-        if (rep <= -15) out.add(new String[]{"Ville fermée", "E09050"});
+        if (rep < 15) out.add(new String[]{"Amitié des " + who.label.toLowerCase() + " (" + rep + "/15)", "D8CCA8"});
         return out;
     }
 

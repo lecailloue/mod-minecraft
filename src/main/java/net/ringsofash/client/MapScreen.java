@@ -24,7 +24,9 @@ import java.util.Map;
 public class MapScreen extends Screen {
     static final int TEX = 640;
     private static final int[] COLORS = {
-            0x7FA850, 0xA9A858, 0x6E6A66, 0x4C7A3A, 0x7E7E7E, 0xE8ECEF, 0x33457A, 0xD4C48E, 0x3C5BA8, 0x4E4440, 0x6B9448, 0x74A050, 0xD4541A};
+            0x7FA850, 0xA9A858, 0x6E6A66, 0x4C7A3A, 0x7E7E7E, 0xE8ECEF, 0x33457A, 0xD4C48E, 0x3C5BA8, 0x4E4440, 0x6B9448, 0x74A050, 0xD4541A,
+            // les zones peintes : Comte, foret elfique (doree), Fangorn, marais des morts, cypres
+            0x8CB85E, 0xC2963A, 0x3B5A2E, 0x4C5742, 0x426450};
     private static ResourceLocation texture;
     /** Reperes poses par le joueur (coordonnees monde), enregistres dans ringsofash_markers.txt. */
     public static final class Marker {
@@ -138,7 +140,9 @@ public class MapScreen extends Screen {
         for (int py = 0; py < TEX; py++) {
             for (int px = 0; px < TEX; px++) {
                 int x = (int) (px * step - MapData.HALF), z = (int) (py * step - MapData.HALF);
-                int h = MapData.height(x, z), b = MapData.biome(x, z);
+                int h = MapData.height(x, z);
+                // les zones peintes par-dessus la grille : sans elles, la foret doree reste verte
+                int b = net.ringsofash.world.Zones.biomeFor(MapData.biome(x, z), x, z);
                 int rgb = COLORS[Math.max(0, Math.min(COLORS.length - 1, b))];
                 float shade;
                 if (h >= MapData.SEA) {
