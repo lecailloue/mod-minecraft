@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.ringsofash.RingsOfAsh;
 import net.ringsofash.world.MapData;
+import net.ringsofash.world.Towns;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,7 +22,7 @@ import java.util.Map;
 
 /** Carte geante de la Hautemarche (touche M) : relief, biomes, lieux, repères personnels, position du joueur. */
 public class MapScreen extends Screen {
-    private static final int TEX = 640;
+    static final int TEX = 640;
     private static final int[] COLORS = {
             0xBEEB9E, 0xFFEB9E, 0x96938E, 0x2F7A3A, 0x808080, 0xFFFFFF, 0x2A5FB0, 0xF0E0A0, 0x4F94EB, 0x60504A, 0x6FAF55, 0x9FD680, 0xFF6A14};
     private static ResourceLocation texture;
@@ -129,6 +130,12 @@ public class MapScreen extends Screen {
         texture = ResourceLocation.fromNamespaceAndPath(RingsOfAsh.MODID, "hautemarche_map");
         dynamic = new DynamicTexture(image);
         Minecraft.getInstance().getTextureManager().register(texture, dynamic);
+    }
+
+    /** la texture de la carte, construite si besoin : la fenetre de ville s'en sert aussi */
+    static ResourceLocation ensureTexture() {
+        if (texture == null) build();
+        return texture;
     }
 
     /** a refaire : on a change de monde, ou relu un fichier de decouverte */
@@ -286,6 +293,14 @@ public class MapScreen extends Screen {
         if (button == 0 && !dragged && Ui.in(mx, my, x0, y0, size, size) && Ui.in(pressX, pressY, x0, y0, size, size)) {
             loadMarkers();
             int i = markerAt(mx, my);
+            // un clic sur un village ouvre sa fenetre : plan, reputation, quetes
+            if (i < 0 && !placing) {
+                Map.Entry<String, int[]> e = placeAt(mx, my);
+                if (e != null && Towns.radius(e.getKey()) > 0) {
+                    Minecraft.getInstance().setScreen(new TownScreen(e.getKey(), e.getValue()[0], e.getValue()[1]));
+                    return true;
+                }
+            }
             if (i < 0 && placing) {
                 MARKERS.add(new Marker((int) toWorldX(mx), (int) toWorldZ(my), PALETTE[0], ""));
                 i = MARKERS.size() - 1;
@@ -369,7 +384,7 @@ public class MapScreen extends Screen {
         g.drawCenteredString(this.font, "OK", ex0 + EW - 68 + 30, ey0 + EH - 24 + 4, 0xFFF0E0B0);
     }
 
-    private static String pretty(String key) {
+    static String pretty(String key) {
         String name = key.replace('_', ' ');
         return Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }

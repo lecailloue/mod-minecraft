@@ -66,6 +66,9 @@ public final class Towns {
         return ShireDecorFeature.inStamp(x, z) || ShireDecorFeature.nearField(x, z, 40);
     }
 
+    /** le rayon de la ville, ou 0 si ce lieu n'en est pas une */
+    public static int radius(String key) { return SAFE.getOrDefault(key, 0); }
+
     /** le peuple a qui appartient ce coin de terre, ou null si on est en pleine nature */
     public static net.ringsofash.data.People owner(int x, int z) {
         for (int[] c : zones()) {
