@@ -28,7 +28,7 @@ public class TownScreen extends Screen {
     private static final int MAP_X = 13, MAP_Y = 11, MAP_W = 101, MAP_H = 72;
     private static final int NAME_X = 63, NAME_Y = 88;          // centre du mot efface
     private static final float NAME_SCALE = 1.4F;
-    private static final int QUEST_X = 123, QUEST_Y = 24, QUEST_W = 46;
+    private static final int QUEST_X = 121, QUEST_Y = 24, QUEST_W = 50;
     private static final int BAR_X = 13, BAR_Y = 144, BAR_W = 150, BAR_H = 9;
     private static final int FILL = 0xFFC9A04A;
 
@@ -116,9 +116,9 @@ public class TownScreen extends Screen {
     private List<String[]> list() {
         List<String[]> out = new ArrayList<>();
         int rep = ClientLore.rep[who.ordinal()];
-        out.add(new String[]{(rep >= 15 ? "✔ " : "• ") + "Leur confiance", rep >= 15 ? "7FD68A" : "D8CCA8"});
-        out.add(new String[]{(ClientLore.quest >= 1 ? "✔ " : "• ") + "L'Anneau", ClientLore.quest >= 1 ? "7FD68A" : "D8CCA8"});
-        out.add(new String[]{(ClientLore.quest >= 2 ? "✔ " : "• ") + "Mont Funeste", ClientLore.quest >= 2 ? "7FD68A" : "D8CCA8"});
+        out.add(new String[]{(rep >= 15 ? "✔ " : "") + "Leur confiance", rep >= 15 ? "7FD68A" : "D8CCA8"});
+        out.add(new String[]{(ClientLore.quest >= 1 ? "✔ " : "") + "L'Anneau", ClientLore.quest >= 1 ? "7FD68A" : "D8CCA8"});
+        out.add(new String[]{(ClientLore.quest >= 2 ? "✔ " : "") + "Mont Funeste", ClientLore.quest >= 2 ? "7FD68A" : "D8CCA8"});
         if (rep <= -15) out.add(new String[]{"Ville fermée", "E09050"});
         return out;
     }
