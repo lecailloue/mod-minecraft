@@ -112,27 +112,64 @@ public class MapScreen extends Screen {
         } catch (IOException ignored) { }
     }
 
+    /** le vide : ce qu'on n'a pas encore vu */
+    private static final int BLANK = 0xFFF4F2EA;
+
+    private static NativeImage image;
+    private static DynamicTexture dynamic;
+
+    /**
+     * La carte part blanche et ne montre que ce que le joueur a parcouru (voir MapMemory).
+     * On repeint un chunk des qu'il change, donc une maison batie finit par apparaitre.
+     */
     private static void build() {
-        NativeImage img = new NativeImage(TEX, TEX, false);
-        double step = MapData.SIZE / (double) TEX;
-        for (int py = 0; py < TEX; py++) {
-            for (int px = 0; px < TEX; px++) {
-                int x = (int) (px * step - MapData.HALF), z = (int) (py * step - MapData.HALF);
-                int h = MapData.height(x, z), b = MapData.biome(x, z);
-                int rgb = COLORS[Math.max(0, Math.min(COLORS.length - 1, b))];
-                float shade;
-                if (h >= MapData.SEA) {
-                    int dx = MapData.height(x + 6, z) - MapData.height(x - 6, z), dz = MapData.height(x, z + 6) - MapData.height(x, z - 6);
-                    shade = Math.max(0.55f, Math.min(1.35f, 0.95f + (dx + dz) * 0.012f));
-                } else {
-                    shade = 0.6f + 0.4f * Math.max(0, Math.min(1, (h + 20) / 80f));
-                }
-                int r = Math.min(255, (int) (((rgb >> 16) & 255) * shade)), g = Math.min(255, (int) (((rgb >> 8) & 255) * shade)), bl = Math.min(255, (int) ((rgb & 255) * shade));
-                img.setPixelRGBA(px, py, 0xFF000000 | bl << 16 | g << 8 | r);
-            }
-        }
+        image = new NativeImage(TEX, TEX, false);
+        image.fillRect(0, 0, TEX, TEX, abgr(BLANK));
+        for (Map.Entry<Long, Integer> e : MapMemory.all()) paint(e.getKey(), e.getValue());
         texture = ResourceLocation.fromNamespaceAndPath(RingsOfAsh.MODID, "hautemarche_map");
-        Minecraft.getInstance().getTextureManager().register(texture, new DynamicTexture(img));
+        dynamic = new DynamicTexture(image);
+        Minecraft.getInstance().getTextureManager().register(texture, dynamic);
+    }
+
+    /** a refaire : on a change de monde, ou relu un fichier de decouverte */
+    public static void forget() {
+        if (texture != null) Minecraft.getInstance().getTextureManager().release(texture);
+        texture = null;
+        image = null;
+        dynamic = null;
+    }
+
+    /** NativeImage range ses pixels a l'envers */
+    private static int abgr(int argb) {
+        return (argb & 0xFF00FF00) | ((argb >> 16) & 0xFF) | ((argb & 0xFF) << 16);
+    }
+
+    private static int toPixel(int world) {
+        return (int) Math.floor((world + MapData.HALF) / (double) MapData.SIZE * TEX);
+    }
+
+    private static void paint(long key, int argb) {
+        if (image == null) return;
+        int wx = net.minecraft.world.level.ChunkPos.getX(key) << 4, wz = net.minecraft.world.level.ChunkPos.getZ(key) << 4;
+        int px0 = toPixel(wx), px1 = Math.max(px0 + 1, toPixel(wx + 16));
+        int py0 = toPixel(wz), py1 = Math.max(py0 + 1, toPixel(wz + 16));
+        int col = abgr(argb);
+        for (int y = Math.max(0, py0); y < Math.min(TEX, py1); y++)
+            for (int x = Math.max(0, px0); x < Math.min(TEX, px1); x++)
+                image.setPixelRGBA(x, y, col);
+    }
+
+    /** on prend les nouveautes relevees depuis la derniere image */
+    private static void refresh() {
+        if (image == null) return;
+        boolean any = false;
+        for (int i = 0; i < 4096; i++) {
+            Long key = MapMemory.nextFresh();
+            if (key == null) break;
+            paint(key, MapMemory.color(key));
+            any = true;
+        }
+        if (any && dynamic != null) dynamic.upload();
     }
 
     private double span() { return MapData.SIZE / zoom; }
@@ -341,6 +378,7 @@ public class MapScreen extends Screen {
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
         if (texture == null) build();
+        refresh();
         loadMarkers();
         if (editInit >= 0 && editInit < MARKERS.size()) { int k = editInit; editInit = -1; openEdit(k); }
         this.renderBackground(g, mx, my, pt);
