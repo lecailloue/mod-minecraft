@@ -70,14 +70,7 @@ public class BeastEntity extends PathfinderMob {
         return false;
     }
 
-    @Override
-    public boolean causeFallDamage(float dist, float mult, net.minecraft.world.damagesource.DamageSource src) {
-        if (isSquirrel()) return false;                 // il retombe toujours sur ses pattes
-        return super.causeFallDamage(dist, mult, src);
-    }
 
-    @Override
-    public boolean canBreatheUnderwater() { return floats() || super.canBreatheUnderwater(); }
 
     @Override
     protected void registerGoals() {
@@ -123,7 +116,10 @@ public class BeastEntity extends PathfinderMob {
     }
 
     @Override
-    public boolean causeFallDamage(float dist, float mult, DamageSource source) { return !isCrow() && super.causeFallDamage(dist, mult, source); }
+    public boolean causeFallDamage(float dist, float mult, DamageSource source) {
+        // le corbeau vole, l'ecureuil retombe toujours sur ses pattes
+        return !isCrow() && !isSquirrel() && super.causeFallDamage(dist, mult, source);
+    }
     @Override
     protected SoundEvent getAmbientSound() {
         if (isCrow()) return SoundEvents.PARROT_AMBIENT;
