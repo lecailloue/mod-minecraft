@@ -1699,6 +1699,13 @@ public final class ClientTest {
         return w;
     }
 
+    /** des bottes encore vierges, mais deja legendaires : de quoi sceller */
+    private static net.minecraft.world.item.ItemStack bottesLibres() {
+        net.minecraft.world.item.ItemStack b = new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.ELVEN_BOOTS.get());
+        net.ringsofash.item.Runes.setTier(b, 4);
+        return b;
+    }
+
     /** des bottes elfiques serties : saut, nage et protection */
     private static net.minecraft.world.item.ItemStack bottesRuniques() {
         net.minecraft.world.item.ItemStack b = new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.ELVEN_BOOTS.get());
@@ -1730,10 +1737,11 @@ public final class ClientTest {
     private static net.minecraft.client.gui.screens.Screen runicTable(Minecraft mc, boolean armure) {
         net.ringsofash.menu.RunicMenu m = new net.ringsofash.menu.RunicMenu(1, mc.player.getInventory(),
                 net.minecraft.world.inventory.ContainerLevelAccess.NULL, armure);
-        m.put(0, armure ? new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.ELVEN_BOOTS.get()) : armeLibre());
+        m.put(0, armure ? bottesLibres() : armeLibre());
         m.put(1, armure ? net.ringsofash.item.Rune.JUMP_1.stack() : net.ringsofash.item.Rune.POISON.stack());
         m.put(2, new net.minecraft.world.item.ItemStack(net.ringsofash.gen.Reg.ORRUNE_INGOT.get(), 8));
-        return new RunicScreen(m, mc.player.getInventory(), net.minecraft.network.chat.Component.literal("Table runique"));
+        return new RunicScreen(m, mc.player.getInventory(),
+                net.minecraft.network.chat.Component.literal(armure ? "Enclume runique" : "Table runique"));
     }
 
     /** ecran nu qui n'affiche qu'une infobulle d'arme, pour la relire sur la capture */

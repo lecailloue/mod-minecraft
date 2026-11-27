@@ -92,7 +92,7 @@ public class TownScreen extends Screen {
     private void title(GuiGraphics g) {
         g.pose().pushPose();
         g.pose().translate(x0 + TITLE_X, y0 + TITLE_Y, 0);
-        g.pose().scale(NAME_SCALE, NAME_SCALE, 1F);
+        g.pose().scale(1.25F, 1.25F, 1F);
         g.drawString(this.font, "Quêtes", 0, 0, 0xFFC9A04A, false);
         g.pose().popPose();
     }
