@@ -74,7 +74,6 @@ def build():
     loot('crow', entry('minecraft:feather', 0, 1), entry('crow_feather', 0, 2, 0.8))
     loot('deer', entry('minecraft:leather', 1, 3), entry('minecraft:mutton', 2, 4), entry('stag_antler', 0, 1, 0.35))
     loot('roe_deer', entry('minecraft:leather', 1, 2), entry('minecraft:mutton', 1, 3))
-    loot('fox', entry('minecraft:rabbit_hide', 0, 2), entry('minecraft:bone', 0, 1, 0.3))
     loot('squirrel', entry('minecraft:stick', 0, 1), entry('minecraft:sweet_berries', 0, 2, 0.4))
     loot('duck', entry('minecraft:chicken', 1, 2), entry('minecraft:feather', 1, 3))
     loot('heron', entry('minecraft:feather', 1, 3), entry('minecraft:cod', 0, 1, 0.5))

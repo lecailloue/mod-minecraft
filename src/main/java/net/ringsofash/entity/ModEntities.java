@@ -79,7 +79,6 @@ public final class ModEntities {
     // faune des bois et des rivieres
     public static final DeferredHolder<EntityType<?>, EntityType<BeastEntity>> DEER = reg("deer", BeastEntity::new, MobCategory.CREATURE, 1.1F, 1.9F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<BeastEntity>> ROE_DEER = reg("roe_deer", BeastEntity::new, MobCategory.CREATURE, 0.8F, 1.3F, false);
-    public static final DeferredHolder<EntityType<?>, EntityType<BeastEntity>> FOX = reg("fox", BeastEntity::new, MobCategory.CREATURE, 0.7F, 0.7F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<BeastEntity>> SQUIRREL = reg("squirrel", BeastEntity::new, MobCategory.CREATURE, 0.4F, 0.6F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<BeastEntity>> DUCK = reg("duck", BeastEntity::new, MobCategory.CREATURE, 0.6F, 0.7F, false);
     public static final DeferredHolder<EntityType<?>, EntityType<BeastEntity>> HERON = reg("heron", BeastEntity::new, MobCategory.CREATURE, 0.6F, 1.5F, false);
@@ -159,7 +158,6 @@ public final class ModEntities {
         e.put(CROW.get(), mob(4, 1, 0.25, 0));
         e.put(DEER.get(), mob(14, 1, 0.3, 0));
         e.put(ROE_DEER.get(), mob(10, 1, 0.32, 0));
-        e.put(FOX.get(), mob(8, 2, 0.32, 0));
         e.put(SQUIRREL.get(), mob(4, 1, 0.3, 0));
         e.put(DUCK.get(), mob(4, 1, 0.25, 0));
         e.put(HERON.get(), mob(6, 1, 0.26, 0));
@@ -214,8 +212,17 @@ public final class ModEntities {
         e.register(EAGLE.get(), G, H, (t, l, r, p, rnd) -> Mob.checkMobSpawnRules(t, l, r, p, rnd), OP);
         e.register(CROW.get(), G, H, (t, l, r, p, rnd) -> Mob.checkMobSpawnRules(t, l, r, p, rnd), OP);
         // faune : les regles des animaux de vanilla (lumiere du jour, herbe), l'eau en plus pour les oiseaux d'eau
-        var ANIMAL = (SpawnPlacements.SpawnPredicate<BeastEntity>) (t, l, r, p, rnd) ->
-                l.getBlockState(p.below()).is(net.minecraft.tags.BlockTags.ANIMALS_SPAWNABLE_ON) && l.getRawBrightness(p, 0) > 8;
+        // sous les arbres il fait sombre et le sol n'est pas toujours de l'herbe :
+        // la faune des bois accepte la terre, le podzol, les aiguilles et la penombre
+        var ANIMAL = (SpawnPlacements.SpawnPredicate<BeastEntity>) (t, l, r, p, rnd) -> {
+            var below = l.getBlockState(p.below());
+            boolean sol = below.is(net.minecraft.tags.BlockTags.ANIMALS_SPAWNABLE_ON)
+                    || below.is(net.minecraft.tags.BlockTags.DIRT)
+                    || below.is(net.minecraft.tags.BlockTags.LEAVES)
+                    || below.is(net.minecraft.world.level.block.Blocks.MOSS_BLOCK)
+                    || below.is(net.ringsofash.gen.Reg.NEEDLE_LITTER.get());
+            return sol && l.getRawBrightness(p, 0) > 4;
+        };
         var WATERSIDE = (SpawnPlacements.SpawnPredicate<BeastEntity>) (t, l, r, p, rnd) -> {
             if (l.getRawBrightness(p, 0) <= 7) return false;
             if (!l.getBlockState(p.below()).isSolid() && !l.getFluidState(p.below()).is(FluidTags.WATER)) return false;
@@ -223,7 +230,7 @@ public final class ModEntities {
                 if (l.getFluidState(p.offset(dx, 0, dz)).is(FluidTags.WATER)) return true;
             return false;
         };
-        for (var t : java.util.List.of(DEER, ROE_DEER, FOX, SQUIRREL)) e.register(t.get(), G, H, ANIMAL, OP);
+        for (var t : java.util.List.of(DEER, ROE_DEER, SQUIRREL)) e.register(t.get(), G, H, ANIMAL, OP);
         for (var t : java.util.List.of(DUCK, HERON, BEAVER)) e.register(t.get(), G, H, WATERSIDE, OP);
     }
 

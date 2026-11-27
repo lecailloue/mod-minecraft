@@ -36,7 +36,7 @@ public final class ClientSetup {
     public static final KeyMapping SKILLS_KEY = new KeyMapping("key.ringsofash.skills", InputConstants.KEY_P, "key.categories.ringsofash");
     public static final KeyMapping SPECIAL_KEY = new KeyMapping("key.ringsofash.special", InputConstants.KEY_V, "key.categories.ringsofash");
     public static final KeyMapping MAP_KEY = new KeyMapping("key.ringsofash.map", InputConstants.KEY_M, "key.categories.ringsofash");
-    private static final String[] GEO = {"troll", "troll_chief", "warg", "stag", "demon", "lurker", "treeman", "eagle", "crow", "deer", "roe_deer", "fox", "squirrel", "duck", "heron", "beaver", "war_boar", "giant_arrow", "dragon", "mammoth", "ash_lord", "orc_1_nu", "orc_2_fourrure", "orc_3_mailles", "orc_4_casque", "orc_noir_1_main", "orc_noir_2_fer", "orc_chef", "spectre_epee", "spectre_lance", "spectre_hache", "spectre_dague", "spectre_roi", "ombre_1", "ombre_2", "gobelin_1", "gobelin_2", "gobelin_3", "gobelin_roi", "giant_spider", "sylvestre_ancien", "sylvestre_saule", "racines", "shadow_dragon", "shadow_chief"};
+    private static final String[] GEO = {"troll", "troll_chief", "warg", "stag", "demon", "lurker", "treeman", "eagle", "crow", "deer", "roe_deer", "squirrel", "duck", "heron", "beaver", "war_boar", "giant_arrow", "dragon", "mammoth", "ash_lord", "orc_1_nu", "orc_2_fourrure", "orc_3_mailles", "orc_4_casque", "orc_noir_1_main", "orc_noir_2_fer", "orc_chef", "spectre_epee", "spectre_lance", "spectre_hache", "spectre_dague", "spectre_roi", "ombre_1", "ombre_2", "gobelin_1", "gobelin_2", "gobelin_3", "gobelin_roi", "giant_spider", "sylvestre_ancien", "sylvestre_saule", "racines", "shadow_dragon", "shadow_chief"};
     private static final String[] HUMAN = {"plain", "elf", "orc", "goblin", "dwarf", "halfling"};
 
     public static ModelLayerLocation layer(String name) { return new ModelLayerLocation(RingsOfAsh.id(name), "main"); }
@@ -441,7 +441,6 @@ public final class ClientSetup {
         e.registerEntityRenderer(ModEntities.CROW.get(), c -> new Renderers.Geo<>(c, layer("geo_crow"), "crow", 0.25F, 0.5F, f -> "crow", null));
         e.registerEntityRenderer(ModEntities.DEER.get(), c -> new Renderers.Geo<>(c, layer("geo_deer"), "deer", 0.80F, 0.68F, f -> "deer", null));
         e.registerEntityRenderer(ModEntities.ROE_DEER.get(), c -> new Renderers.Geo<>(c, layer("geo_roe_deer"), "roe_deer", 0.60F, 0.60F, f -> "roe_deer", null));
-        e.registerEntityRenderer(ModEntities.FOX.get(), c -> new Renderers.Geo<>(c, layer("geo_fox"), "fox", 0.50F, 0.42F, f -> "fox", null));
         e.registerEntityRenderer(ModEntities.SQUIRREL.get(), c -> new Renderers.Geo<>(c, layer("geo_squirrel"), "squirrel", 0.30F, 0.25F, f -> "squirrel", null));
         e.registerEntityRenderer(ModEntities.DUCK.get(), c -> new Renderers.Geo<>(c, layer("geo_duck"), "duck", 0.35F, 0.30F, f -> "duck", null));
         e.registerEntityRenderer(ModEntities.HERON.get(), c -> new Renderers.Geo<>(c, layer("geo_heron"), "heron", 0.40F, 0.58F, f -> "heron", null));
