@@ -24,7 +24,7 @@ import java.util.Map;
 public class MapScreen extends Screen {
     static final int TEX = 640;
     private static final int[] COLORS = {
-            0xBEEB9E, 0xFFEB9E, 0x96938E, 0x2F7A3A, 0x808080, 0xFFFFFF, 0x2A5FB0, 0xF0E0A0, 0x4F94EB, 0x60504A, 0x6FAF55, 0x9FD680, 0xFF6A14};
+            0x7FA850, 0xA9A858, 0x6E6A66, 0x4C7A3A, 0x7E7E7E, 0xE8ECEF, 0x33457A, 0xD4C48E, 0x3C5BA8, 0x4E4440, 0x6B9448, 0x74A050, 0xD4541A};
     private static ResourceLocation texture;
     /** Reperes poses par le joueur (coordonnees monde), enregistres dans ringsofash_markers.txt. */
     public static final class Marker {
@@ -126,7 +126,7 @@ public class MapScreen extends Screen {
     private static void build() {
         image = new NativeImage(TEX, TEX, false);
         if (MapMemory.revealed()) generated(); else image.fillRect(0, 0, TEX, TEX, abgr(BLANK));
-        for (Map.Entry<Long, Integer> e : MapMemory.all()) paint(e.getKey(), e.getValue());
+        for (Map.Entry<Long, int[]> e : MapMemory.all()) paint(e.getKey(), e.getValue());
         texture = ResourceLocation.fromNamespaceAndPath(RingsOfAsh.MODID, "hautemarche_map");
         dynamic = new DynamicTexture(image);
         Minecraft.getInstance().getTextureManager().register(texture, dynamic);
@@ -178,15 +178,19 @@ public class MapScreen extends Screen {
         return (int) Math.floor((world + MapData.HALF) / (double) MapData.SIZE * TEX);
     }
 
-    private static void paint(long key, int argb) {
-        if (image == null) return;
+    private static void paint(long key, int[] quarters) {
+        if (image == null || quarters == null) return;
         int wx = net.minecraft.world.level.ChunkPos.getX(key) << 4, wz = net.minecraft.world.level.ChunkPos.getZ(key) << 4;
-        int px0 = toPixel(wx), px1 = Math.max(px0 + 1, toPixel(wx + 16));
-        int py0 = toPixel(wz), py1 = Math.max(py0 + 1, toPixel(wz + 16));
-        int col = abgr(argb);
-        for (int y = Math.max(0, py0); y < Math.min(TEX, py1); y++)
-            for (int x = Math.max(0, px0); x < Math.min(TEX, px1); x++)
-                image.setPixelRGBA(x, y, col);
+        for (int q = 0; q < 4; q++) {
+            if (quarters[q] == 0) continue;
+            int ox = (q & 1) * 8, oz = (q >> 1) * 8;
+            int px0 = toPixel(wx + ox), px1 = Math.max(px0 + 1, toPixel(wx + ox + 8));
+            int py0 = toPixel(wz + oz), py1 = Math.max(py0 + 1, toPixel(wz + oz + 8));
+            int col = abgr(quarters[q]);
+            for (int y = Math.max(0, py0); y < Math.min(TEX, py1); y++)
+                for (int x = Math.max(0, px0); x < Math.min(TEX, px1); x++)
+                    image.setPixelRGBA(x, y, col);
+        }
     }
 
     /** on prend les nouveautes relevees depuis la derniere image */

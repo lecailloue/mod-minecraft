@@ -28,9 +28,11 @@ public class TownScreen extends Screen {
     private static final int MAP_X = 13, MAP_Y = 11, MAP_W = 101, MAP_H = 72;
     private static final int NAME_X = 63, NAME_Y = 88;          // centre du mot efface
     private static final float NAME_SCALE = 1.4F;
-    private static final int QUEST_X = 121, QUEST_Y = 24, QUEST_W = 50;
+    private static final int QUEST_X = 121, QUEST_Y = 26, QUEST_W = 50;
+    private static final int TITLE_X = 121, TITLE_Y = 8;        // a la place du mot efface
     private static final int BAR_X = 13, BAR_Y = 144, BAR_W = 150, BAR_H = 9;
-    private static final int FILL = 0xFFC9A04A;
+    /** le remplissage laisse voir les graduations de la barre */
+    private static final int FILL = 0xB4C9A04A;
 
     private final String key;
     private final int wx, wz;
@@ -58,6 +60,7 @@ public class TownScreen extends Screen {
 
         plan(g);
         name(g);
+        title(g);
         quests(g);
         bar(g);
     }
@@ -82,6 +85,15 @@ public class TownScreen extends Screen {
         g.pose().translate(x0 + NAME_X - w / 2F, y0 + NAME_Y, 0);
         g.pose().scale(NAME_SCALE, NAME_SCALE, 1F);
         g.drawString(this.font, n, 0, 0, 0xFFC9A04A, false);
+        g.pose().popPose();
+    }
+
+    /** « Quêtes », dans la meme ecriture que le nom de la ville */
+    private void title(GuiGraphics g) {
+        g.pose().pushPose();
+        g.pose().translate(x0 + TITLE_X, y0 + TITLE_Y, 0);
+        g.pose().scale(NAME_SCALE, NAME_SCALE, 1F);
+        g.drawString(this.font, "Quêtes", 0, 0, 0xFFC9A04A, false);
         g.pose().popPose();
     }
 

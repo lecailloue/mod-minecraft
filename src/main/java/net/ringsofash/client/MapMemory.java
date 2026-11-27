@@ -38,7 +38,7 @@ public final class MapMemory {
     private MapMemory() {}
 
     /** couleur retenue pour chaque chunk, par sa cle de position */
-    private static final Map<Long, Integer> SEEN = new HashMap<>();
+    private static final Map<Long, int[]> SEEN = new HashMap<>();
     /** les chunks qui viennent de changer, que la carte doit repeindre */
     private static final Queue<Long> FRESH = new ArrayDeque<>();
 
@@ -50,6 +50,9 @@ public final class MapMemory {
     private static int sweep;
     private static boolean revealed;
 
+    /** marque du fichier : il range quatre couleurs par chunk */
+    private static final int MAGIC = 0x524F4132;
+
     private static final int LOOK = 4;      // on releve jusqu'a 4 chunks autour du joueur
     private static final int REFRESH = 3;   // et on repasse sur les 3 plus proches
 
@@ -59,9 +62,10 @@ public final class MapMemory {
 
     public static boolean known(long key) { return SEEN.containsKey(key); }
 
-    public static int color(long key) { return SEEN.getOrDefault(key, 0); }
+    /** les quatre quarts du chunk : nord-ouest, nord-est, sud-ouest, sud-est */
+    public static int[] color(long key) { return SEEN.get(key); }
 
-    public static Iterable<Map.Entry<Long, Integer>> all() { return SEEN.entrySet(); }
+    public static Iterable<Map.Entry<Long, int[]>> all() { return SEEN.entrySet(); }
 
     /** un chunk a repeindre, ou null s'il n'y a rien de neuf */
     public static Long nextFresh() { return FRESH.poll(); }
@@ -124,32 +128,39 @@ public final class MapMemory {
         if (!MapData.inside(wx, wz)) return;
         ChunkAccess chunk = level.getChunk(cx, cz);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        long r = 0, g = 0, b = 0;
-        int n = 0, hsum = 0;
-        for (int ox = 2; ox < 16; ox += 4) {
-            for (int oz = 2; oz < 16; oz += 4) {
-                int h = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, wx + ox, wz + oz);
-                pos.set(wx + ox, h - 1, wz + oz);
-                BlockState s = chunk.getBlockState(pos);
-                if (s.isAir()) continue;
-                int col = BlockTint.of(s, level, pos);
-                r += (col >> 16) & 255; g += (col >> 8) & 255; b += col & 255;
-                hsum += h;
-                n++;
+        int[] quarters = new int[4];
+        boolean any = false;
+        // un quart de chunk par couleur : la carte y gagne en finesse
+        for (int q = 0; q < 4; q++) {
+            int bx = (q & 1) * 8, bz = (q >> 1) * 8;
+            long r = 0, g = 0, b = 0;
+            int n = 0, hsum = 0;
+            for (int ox = bx + 1; ox < bx + 8; ox += 3) {
+                for (int oz = bz + 1; oz < bz + 8; oz += 3) {
+                    int h = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, wx + ox, wz + oz);
+                    pos.set(wx + ox, h - 1, wz + oz);
+                    BlockState st = chunk.getBlockState(pos);
+                    if (st.isAir()) continue;
+                    int col = BlockTint.of(st, level, pos);
+                    r += (col >> 16) & 255; g += (col >> 8) & 255; b += col & 255;
+                    hsum += h;
+                    n++;
+                }
             }
+            if (n == 0) continue;
+            int avg = hsum / n;
+            float shade = avg >= MapData.SEA
+                    ? Math.min(1.25F, 0.88F + (avg - MapData.SEA) * 0.004F)
+                    : Math.max(0.45F, 0.95F - (MapData.SEA - avg) * 0.012F);
+            quarters[q] = 0xFF000000
+                    | (Math.min(255, (int) (r / n * shade)) << 16)
+                    | (Math.min(255, (int) (g / n * shade)) << 8)
+                    | Math.min(255, (int) (b / n * shade));
+            any = true;
         }
-        if (n == 0) return;
-        int avg = hsum / n;
-        // au-dessus de la mer on eclaircit avec l'altitude, en dessous on assombrit
-        float shade = avg >= MapData.SEA
-                ? Math.min(1.25F, 0.88F + (avg - MapData.SEA) * 0.004F)
-                : Math.max(0.45F, 0.95F - (MapData.SEA - avg) * 0.012F);
-        int col = 0xFF000000
-                | (Math.min(255, (int) (r / n * shade)) << 16)
-                | (Math.min(255, (int) (g / n * shade)) << 8)
-                | Math.min(255, (int) (b / n * shade));
-        Integer old = SEEN.put(key, col);
-        if (old == null || old != col) { FRESH.add(key); dirty = true; }
+        if (!any) return;
+        int[] old = SEEN.put(key, quarters);
+        if (old == null || !java.util.Arrays.equals(old, quarters)) { FRESH.add(key); dirty = true; }
     }
 
     // ------------------------------------------------------------------ le fichier
@@ -182,8 +193,20 @@ public final class MapMemory {
         Path p = file(key);
         if (!Files.exists(p)) { MapScreen.forget(); return; }
         try (DataInputStream in = new DataInputStream(new GZIPInputStream(Files.newInputStream(p)))) {
-            int n = in.readInt();
-            for (int i = 0; i < n; i++) SEEN.put(in.readLong(), in.readInt());
+            int first = in.readInt();
+            if (first == MAGIC) {                       // format a quatre couleurs
+                int n = in.readInt();
+                for (int i = 0; i < n; i++) {
+                    long k = in.readLong();
+                    SEEN.put(k, new int[]{in.readInt(), in.readInt(), in.readInt(), in.readInt()});
+                }
+            } else {                                    // ancien format : une seule couleur
+                for (int i = 0; i < first; i++) {
+                    long k = in.readLong();
+                    int c = in.readInt();
+                    SEEN.put(k, new int[]{c, c, c, c});
+                }
+            }
             revealed = in.readBoolean();
             int v = in.readInt();
             for (int i = 0; i < v; i++) VISITED.add(in.readUTF());
@@ -197,10 +220,11 @@ public final class MapMemory {
     private static void write() {
         if (world == null || !dirty) return;
         try (DataOutputStream out = new DataOutputStream(new GZIPOutputStream(Files.newOutputStream(file(world))))) {
+            out.writeInt(MAGIC);
             out.writeInt(SEEN.size());
-            for (Map.Entry<Long, Integer> e : SEEN.entrySet()) {
+            for (Map.Entry<Long, int[]> e : SEEN.entrySet()) {
                 out.writeLong(e.getKey());
-                out.writeInt(e.getValue());
+                for (int c : e.getValue()) out.writeInt(c);
             }
             out.writeBoolean(revealed);
             out.writeInt(VISITED.size());
