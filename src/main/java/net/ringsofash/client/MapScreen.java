@@ -171,6 +171,7 @@ public class MapScreen extends Screen {
         texture = null;
         image = null;
         dynamic = null;
+        zoomCx = Double.NaN;
     }
 
     /** NativeImage range ses pixels a l'envers */
@@ -182,19 +183,90 @@ public class MapScreen extends Screen {
         return (int) Math.floor((world + MapData.HALF) / (double) MapData.SIZE * TEX);
     }
 
-    private static void paint(long key, int[] quarters) {
-        if (image == null || quarters == null) return;
+    private static void paint(long key, int[] cells) {
+        if (image == null || cells == null) return;
         int wx = net.minecraft.world.level.ChunkPos.getX(key) << 4, wz = net.minecraft.world.level.ChunkPos.getZ(key) << 4;
-        for (int q = 0; q < 4; q++) {
-            if (quarters[q] == 0) continue;
-            int ox = (q & 1) * 8, oz = (q >> 1) * 8;
-            int px0 = toPixel(wx + ox), px1 = Math.max(px0 + 1, toPixel(wx + ox + 8));
-            int py0 = toPixel(wz + oz), py1 = Math.max(py0 + 1, toPixel(wz + oz + 8));
-            int col = abgr(quarters[q]);
-            for (int y = Math.max(0, py0); y < Math.min(TEX, py1); y++)
-                for (int x = Math.max(0, px0); x < Math.min(TEX, px1); x++)
-                    image.setPixelRGBA(x, y, col);
+        int n = MapMemory.CELLS, c = MapMemory.CELL;
+        for (int j = 0; j < n; j++) {
+            for (int i = 0; i < n; i++) {
+                int col = cells[j * n + i];
+                if (col == 0) continue;
+                int px0 = toPixel(wx + i * c), px1 = Math.max(px0 + 1, toPixel(wx + (i + 1) * c));
+                int py0 = toPixel(wz + j * c), py1 = Math.max(py0 + 1, toPixel(wz + (j + 1) * c));
+                int abgr = abgr(col);
+                for (int y = Math.max(0, py0); y < Math.min(TEX, py1); y++)
+                    for (int x = Math.max(0, px0); x < Math.min(TEX, px1); x++)
+                        image.setPixelRGBA(x, y, abgr);
+            }
         }
+    }
+
+    // ------------------------------------------------------------------ la loupe
+
+    /** au-dela de ce zoom, on redessine la vue dans une texture a elle, bien plus fine */
+    private static final int DETAIL = 512;
+    private static final double DETAIL_SPAN = 2400;
+
+    private static NativeImage zoomImage;
+    private static DynamicTexture zoomTexture;
+    private static ResourceLocation zoomId;
+    private static double zoomCx = Double.NaN, zoomCz, zoomSpan;
+
+    /** la couleur du monde en ce point : ce qu'on a vu, sinon le relief si la carte est devoilee */
+    private static int worldColor(int wx, int wz) {
+        int[] cells = MapMemory.color(net.minecraft.world.level.ChunkPos.asLong(wx >> 4, wz >> 4));
+        if (cells != null) {
+            int i = (wx & 15) / MapMemory.CELL, j = (wz & 15) / MapMemory.CELL;
+            int col = cells[j * MapMemory.CELLS + i];
+            if (col != 0) return col;
+        }
+        return MapMemory.revealed() ? relief(wx, wz) : BLANK;
+    }
+
+    /** la teinte du relief a cet endroit, zones peintes comprises */
+    private static int relief(int x, int z) {
+        int h = MapData.height(x, z);
+        int b = net.ringsofash.world.Zones.biomeFor(MapData.biome(x, z), x, z);
+        int rgb = COLORS[Math.max(0, Math.min(COLORS.length - 1, b))];
+        float shade;
+        if (h >= MapData.SEA) {
+            int dx = MapData.height(x + 6, z) - MapData.height(x - 6, z), dz = MapData.height(x, z + 6) - MapData.height(x, z - 6);
+            shade = Math.max(0.55f, Math.min(1.35f, 0.95f + (dx + dz) * 0.012f));
+        } else {
+            shade = 0.6f + 0.4f * Math.max(0, Math.min(1, (h + 20) / 80f));
+        }
+        return 0xFF000000
+                | (Math.min(255, (int) (((rgb >> 16) & 255) * shade)) << 16)
+                | (Math.min(255, (int) (((rgb >> 8) & 255) * shade)) << 8)
+                | Math.min(255, (int) ((rgb & 255) * shade));
+    }
+
+    /** redessine la loupe si la vue a bouge ; rend null quand on est trop loin pour qu'elle serve */
+    private ResourceLocation zoomed() {
+        double span = span();
+        if (span > DETAIL_SPAN) return null;
+        if (zoomImage == null) {
+            zoomImage = new NativeImage(DETAIL, DETAIL, false);
+            zoomId = ResourceLocation.fromNamespaceAndPath(RingsOfAsh.MODID, "hautemarche_zoom");
+            zoomTexture = new DynamicTexture(zoomImage);
+            Minecraft.getInstance().getTextureManager().register(zoomId, zoomTexture);
+            zoomCx = Double.NaN;
+        }
+        boolean bouge = Double.isNaN(zoomCx) || Math.abs(zoomCx - cx) > span / DETAIL
+                || Math.abs(zoomCz - cz) > span / DETAIL || zoomSpan != span;
+        if (bouge) {
+            double step = span / DETAIL, x0w = cx - span / 2, z0w = cz - span / 2;
+            for (int py = 0; py < DETAIL; py++) {
+                int wz = (int) Math.floor(z0w + py * step);
+                for (int px = 0; px < DETAIL; px++) {
+                    int wx = (int) Math.floor(x0w + px * step);
+                    zoomImage.setPixelRGBA(px, py, abgr(MapData.inside(wx, wz) ? worldColor(wx, wz) : BLANK));
+                }
+            }
+            zoomTexture.upload();
+            zoomCx = cx; zoomCz = cz; zoomSpan = span;
+        }
+        return zoomId;
     }
 
     /** on prend les nouveautes relevees depuis la derniere image */
@@ -440,9 +512,14 @@ public class MapScreen extends Screen {
         g.fill(x0 - 2, y0 - 2, x0 + size + 2, y0 + size + 2, Ui.BRONZE_D);
         g.fill(x0 - 1, y0 - 1, x0 + size + 1, y0 + size + 1, Ui.GOLD);
 
-        double u = (cx - span() / 2 + MapData.HALF) / MapData.SIZE * TEX, v = (cz - span() / 2 + MapData.HALF) / MapData.SIZE * TEX;
-        int uw = Math.max(1, (int) Math.round(span() / MapData.SIZE * TEX));
-        g.blit(texture, x0, y0, size, size, (float) u, (float) v, uw, uw, TEX, TEX);
+        ResourceLocation loupe = zoomed();
+        if (loupe != null) {
+            g.blit(loupe, x0, y0, size, size, 0F, 0F, DETAIL, DETAIL, DETAIL, DETAIL);
+        } else {
+            double u = (cx - span() / 2 + MapData.HALF) / MapData.SIZE * TEX, v = (cz - span() / 2 + MapData.HALF) / MapData.SIZE * TEX;
+            int uw = Math.max(1, (int) Math.round(span() / MapData.SIZE * TEX));
+            g.blit(texture, x0, y0, size, size, (float) u, (float) v, uw, uw, TEX, TEX);
+        }
 
         g.enableScissor(x0, y0, x0 + size, y0 + size);
         Map.Entry<String, int[]> hover = Ui.in(mx, my, x0, y0, size, size) ? placeAt(mx, my) : null;

@@ -51,7 +51,8 @@ public final class MapMemory {
     private static boolean revealed;
 
     /** marque du fichier : il range quatre couleurs par chunk */
-    private static final int MAGIC = 0x524F4132;
+    private static final int MAGIC = 0x524F4132;        // quatre couleurs par chunk
+    private static final int MAGIC4 = 0x524F4134;       // seize couleurs par chunk
 
     private static final int LOOK = 4;      // on releve jusqu'a 4 chunks autour du joueur
     private static final int REFRESH = 3;   // et on repasse sur les 3 plus proches
@@ -62,8 +63,12 @@ public final class MapMemory {
 
     public static boolean known(long key) { return SEEN.containsKey(key); }
 
-    /** les quatre quarts du chunk : nord-ouest, nord-est, sud-ouest, sud-est */
+    /** la grille de CELLS x CELLS couleurs du chunk, lue ligne par ligne */
     public static int[] color(long key) { return SEEN.get(key); }
+
+    /** cases par cote dans un chunk : 4 cases de 4 blocs */
+    public static final int CELLS = 4;
+    public static final int CELL = 16 / CELLS;
 
     public static Iterable<Map.Entry<Long, int[]>> all() { return SEEN.entrySet(); }
 
@@ -128,42 +133,53 @@ public final class MapMemory {
         if (!MapData.inside(wx, wz)) return;
         ChunkAccess chunk = level.getChunk(cx, cz);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        int[] quarters = new int[4];
+        int[] cells = new int[CELLS * CELLS];
         boolean any = false;
-        // un quart de chunk par couleur : la carte y gagne en finesse
-        for (int q = 0; q < 4; q++) {
-            int bx = (q & 1) * 8, bz = (q >> 1) * 8;
-            long r = 0, g = 0, b = 0;
-            int n = 0, hsum = 0;
-            for (int ox = bx + 1; ox < bx + 8; ox += 3) {
-                for (int oz = bz + 1; oz < bz + 8; oz += 3) {
-                    int h = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, wx + ox, wz + oz);
-                    pos.set(wx + ox, h - 1, wz + oz);
-                    BlockState st = chunk.getBlockState(pos);
-                    if (st.isAir()) continue;
-                    int col = BlockTint.of(st, level, pos);
-                    r += (col >> 16) & 255; g += (col >> 8) & 255; b += col & 255;
-                    hsum += h;
-                    n++;
+        // une couleur par case de quatre blocs : de quoi tenir le zoom
+        for (int cj = 0; cj < CELLS; cj++) {
+            for (int ci = 0; ci < CELLS; ci++) {
+                long r = 0, g = 0, b = 0;
+                int n = 0, hsum = 0;
+                for (int ox = 1; ox < CELL; ox += 2) {
+                    for (int oz = 1; oz < CELL; oz += 2) {
+                        int bx = wx + ci * CELL + ox, bz = wz + cj * CELL + oz;
+                        int h = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, bx, bz);
+                        pos.set(bx, h - 1, bz);
+                        BlockState st = chunk.getBlockState(pos);
+                        if (st.isAir()) continue;
+                        int col = BlockTint.of(st, level, pos);
+                        r += (col >> 16) & 255; g += (col >> 8) & 255; b += col & 255;
+                        hsum += h;
+                        n++;
+                    }
                 }
+                if (n == 0) continue;
+                int avg = hsum / n;
+                float shade = avg >= MapData.SEA
+                        ? Math.min(1.25F, 0.88F + (avg - MapData.SEA) * 0.004F)
+                        : Math.max(0.45F, 0.95F - (MapData.SEA - avg) * 0.012F);
+                cells[cj * CELLS + ci] = 0xFF000000
+                        | (Math.min(255, (int) (r / n * shade)) << 16)
+                        | (Math.min(255, (int) (g / n * shade)) << 8)
+                        | Math.min(255, (int) (b / n * shade));
+                any = true;
             }
-            if (n == 0) continue;
-            int avg = hsum / n;
-            float shade = avg >= MapData.SEA
-                    ? Math.min(1.25F, 0.88F + (avg - MapData.SEA) * 0.004F)
-                    : Math.max(0.45F, 0.95F - (MapData.SEA - avg) * 0.012F);
-            quarters[q] = 0xFF000000
-                    | (Math.min(255, (int) (r / n * shade)) << 16)
-                    | (Math.min(255, (int) (g / n * shade)) << 8)
-                    | Math.min(255, (int) (b / n * shade));
-            any = true;
         }
         if (!any) return;
-        int[] old = SEEN.put(key, quarters);
-        if (old == null || !java.util.Arrays.equals(old, quarters)) { FRESH.add(key); dirty = true; }
+        int[] old = SEEN.put(key, cells);
+        if (old == null || !java.util.Arrays.equals(old, cells)) { FRESH.add(key); dirty = true; }
     }
 
     // ------------------------------------------------------------------ le fichier
+
+    /** un vieux releve a quatre quarts devient une grille de seize cases */
+    private static int[] spread(int[] q) {
+        int[] cells = new int[CELLS * CELLS];
+        for (int j = 0; j < CELLS; j++)
+            for (int i = 0; i < CELLS; i++)
+                cells[j * CELLS + i] = q[(j >= CELLS / 2 ? 2 : 0) + (i >= CELLS / 2 ? 1 : 0)];
+        return cells;
+    }
 
     private static Path file(String key) {
         return Minecraft.getInstance().gameDirectory.toPath().resolve("ringsofash_carte_" + key + ".dat");
@@ -194,17 +210,28 @@ public final class MapMemory {
         if (!Files.exists(p)) { MapScreen.forget(); return; }
         try (DataInputStream in = new DataInputStream(new GZIPInputStream(Files.newInputStream(p)))) {
             int first = in.readInt();
-            if (first == MAGIC) {                       // format a quatre couleurs
+            if (first == MAGIC4) {                      // format courant : seize couleurs
                 int n = in.readInt();
                 for (int i = 0; i < n; i++) {
                     long k = in.readLong();
-                    SEEN.put(k, new int[]{in.readInt(), in.readInt(), in.readInt(), in.readInt()});
+                    int[] cells = new int[CELLS * CELLS];
+                    for (int c = 0; c < cells.length; c++) cells[c] = in.readInt();
+                    SEEN.put(k, cells);
                 }
-            } else {                                    // ancien format : une seule couleur
+            } else if (first == MAGIC) {                // quatre couleurs : on les etale
+                int n = in.readInt();
+                for (int i = 0; i < n; i++) {
+                    long k = in.readLong();
+                    int[] q = {in.readInt(), in.readInt(), in.readInt(), in.readInt()};
+                    SEEN.put(k, spread(q));
+                }
+            } else {                                    // une seule couleur
                 for (int i = 0; i < first; i++) {
                     long k = in.readLong();
                     int c = in.readInt();
-                    SEEN.put(k, new int[]{c, c, c, c});
+                    int[] cells = new int[CELLS * CELLS];
+                    java.util.Arrays.fill(cells, c);
+                    SEEN.put(k, cells);
                 }
             }
             revealed = in.readBoolean();
@@ -220,7 +247,7 @@ public final class MapMemory {
     private static void write() {
         if (world == null || !dirty) return;
         try (DataOutputStream out = new DataOutputStream(new GZIPOutputStream(Files.newOutputStream(file(world))))) {
-            out.writeInt(MAGIC);
+            out.writeInt(MAGIC4);
             out.writeInt(SEEN.size());
             for (Map.Entry<Long, int[]> e : SEEN.entrySet()) {
                 out.writeLong(e.getKey());
