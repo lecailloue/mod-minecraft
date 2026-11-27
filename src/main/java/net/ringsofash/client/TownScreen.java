@@ -131,8 +131,18 @@ public class TownScreen extends Screen {
             out.add(new String[]{"L'Anneau de Cendre", "D8CCA8"});
         // tant que ce peuple-ci ne vous compte pas parmi ses amis, c'est une affaire locale
         int rep = ClientLore.rep[who.ordinal()];
-        if (rep < 15) out.add(new String[]{"Amitié des " + who.label.toLowerCase() + " (" + rep + "/15)", "D8CCA8"});
+        if (rep < 15) out.add(new String[]{"Amitié des " + court() + " (" + rep + "/15)", "D8CCA8"});
         return out;
+    }
+
+    /** la colonne est etroite : « Semi-hommes » n'y tient pas, « Hobbits » si */
+    private String court() {
+        return switch (who) {
+            case HUMAN -> "Hommes";
+            case ELF -> "Elfes";
+            case DWARF -> "Nains";
+            case HALFLING -> "Hobbits";
+        };
     }
 
     @Override
