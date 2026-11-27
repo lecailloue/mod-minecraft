@@ -1,0 +1,27 @@
+[27Nov2026 18:23:02.103] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, location] and [teleport, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[27Nov2026 18:23:02.105] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, location] and [teleport, targets] with inputs: [0.1 -0.5 .9, 0 0 0]
+[27Nov2026 18:23:02.109] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, destination] and [teleport, targets] with inputs: [Player, 0123, @e, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[27Nov2026 18:23:02.110] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, targets] and [teleport, destination] with inputs: [Player, 0123, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[27Nov2026 18:23:02.112] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, targets, location] and [teleport, targets, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[27Nov2026 18:23:02.258] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/home/runner/work/mod-minecraft/mod-minecraft/build/moddev/artifacts/neoforge-21.1.243.jar%23177!/assets/.mcassetsroot' uses unexpected schema
+[27Nov2026 18:23:02.259] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/home/runner/work/mod-minecraft/mod-minecraft/build/moddev/artifacts/neoforge-21.1.243.jar%23177!/data/.mcassetsroot' uses unexpected schema
+[27Nov2026 18:23:04.673] [Render thread/ERROR] [com.mojang.text2speech.Narrator/]: Error while loading the narrator
+[27Nov2026 18:23:04.957] [Worker-Main-1/WARN] [net.minecraft.client.sounds.SoundManager/]: File ringsofash:sounds/music/hautemarche.ogg does not exist, cannot add it to event ringsofash:music.hautemarche
+[27Nov2026 18:23:07.957] [Render thread/ERROR] [net.minecraft.client.sounds.SoundManager/]: Missing subtitle translation{key='Musique de la Hautemarche', args=[]} for sound event: ringsofash:music.hautemarche
+[27Nov2026 18:23:07.960] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:item.goat_horn.play
+[27Nov2026 18:23:07.960] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:entity.goat.screaming.horn_break
+[27Nov2026 18:23:07.990] [Render thread/ERROR] [net.minecraft.client.sounds.SoundEngine/SOUNDS]: Error starting SoundSystem. Turning off sounds & music
+[27Nov2026 18:23:08.569] [Render thread/WARN] [net.minecraft.client.renderer.ShaderInstance/]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
+[27Nov2026 18:23:13.728] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] creation du monde
+[27Nov2026 18:23:37.907] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] monde pret
+[27Nov2026 18:23:38.047] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene ville_comte
+[27Nov2026 18:23:40.564] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene udun_flamme
+[27Nov2026 18:23:43.536] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene ville_carte
+[27Nov2026 18:23:46.159] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene rune_bulle
+[27Nov2026 18:23:48.673] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene rune_bulle_combo
+[27Nov2026 18:23:51.225] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene rune_bulle_ordre
+[27Nov2026 18:23:53.771] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene rune_bulle_bottes
+[27Nov2026 18:23:56.326] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene rune_table
+[27Nov2026 18:23:58.920] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] scene rune_table_armure
+[27Nov2026 18:24:03.553] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] TERMINE
+[27Nov2026 18:24:03.557] [Render thread/INFO] [net.ringsofash.RingsOfAsh/]: [CLIENTTEST] TERMINE
